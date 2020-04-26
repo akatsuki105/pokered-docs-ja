@@ -1433,7 +1433,7 @@ wExpAmountGained:: ; cf4b
 ; 2-byte big-endian number
 ; the total amount of exp a mon gained
 
-wcf4b:: ds 2 ; storage buffer for various strings
+wcf4b:: ds 2 ; ?????????????????????(2???)
 
 wGainBoostedExp:: ; cf4d
 	ds 1

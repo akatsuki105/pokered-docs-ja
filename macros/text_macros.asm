@@ -1,19 +1,18 @@
 
 ; text macros
-text   EQUS "db $00," ; Start writing text.
-next   EQUS "db $4e," ; Move a line down.
-line   EQUS "db $4f," ; Start writing at the bottom line.
-para   EQUS "db $51," ; Start a new paragraph.
-cont   EQUS "db $55," ; Scroll to the next line.
-done   EQUS "db $57"  ; End a text box.
-prompt EQUS "db $58"  ; Prompt the player to end a text box (initiating some other event).
+text   EQUS "db $00," ; ここからテキストの描画を開始
+next   EQUS "db $4e," ; Move a line down. 
+line   EQUS "db $4f," ; テキストボックスの2行目にテキストを配置
+para   EQUS "db $51," ; 次のパラグラフ(セリフの区切り)を開始する
+cont   EQUS "db $55," ; 次の行にテキストボックスをスクロールさせる
+done   EQUS "db $57"  ; テキストボックスを終了させる。(イベントなし)
+prompt EQUS "db $58"  ; テキストボックスを終了させる。(この後ほかのイベントが開始する)
 
 page   EQUS "db $49,"     ; Start a new Pokedex page.
 dex    EQUS "db $5f, $50" ; End a Pokedex entry.
 
+; 第一引数で渡されたアドレスの中の文字列をテキストとして表示する
 TX_RAM: MACRO
-; prints text to screen
-; \1: RAM address to read from
 	db $1
 	dw \1
 ENDM

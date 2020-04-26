@@ -1,10 +1,10 @@
+; cレジスタ(width) * bレジスタ(height)分の文字が入るテキストボックスの枠を描画する
 TextBoxBorder::
-; Draw a c×b text box at hl.
 
-	; top row
-	push hl
+	; ボックスの上枠 ┌--------┐ 
+	push hl	; HLに文字を入れると描画されるようにするので元のHLを取っておく
 	ld a, "┌"
-	ld [hli], a
+	ld [hli], a ; AレジスタをHLをアドレスとするメモリに入れた後HL++する
 	inc a ; ─
 	call NPlaceChar
 	inc a ; ┐
@@ -14,12 +14,12 @@ TextBoxBorder::
 	ld de, SCREEN_WIDTH
 	add hl, de
 
-	; middle rows
+	; 真ん中の行 │        │ 
 .next
 	push hl
 	ld a, "│"
 	ld [hli], a
-	ld a, " "
+	ld a, " "	; テキストボックスの中身は空白
 	call NPlaceChar
 	ld [hl], "│"
 	pop hl
@@ -29,7 +29,7 @@ TextBoxBorder::
 	dec b
 	jr nz, .next
 
-	; bottom row
+	; ボックスの下枠 └--------┘
 	ld a, "└"
 	ld [hli], a
 	ld a, "─"
@@ -37,8 +37,8 @@ TextBoxBorder::
 	ld [hl], "┘"
 	ret
 
+; aレジスタの文字をc回描画
 NPlaceChar::
-; Place char a c times.
 	ld d, c
 .loop
 	ld [hli], a

@@ -148,13 +148,12 @@ charmap "ょ", $E2
 charmap "ー", $E3
 
 charmap "<pkmn>", $4A ; PkMn
-charmap "@", $50
-charmap "<PLAYER>", $52
-charmap "<RIVAL>", $53
-charmap "#", $54
-;charmap "POKé", $54
-charmap "<TARGET>", $59
-charmap "<USER>", $5A
+charmap "@", $50        ; 次にTX_RAMが来る直前に現れる  『@ \n TX_RAM ●●』で●●が示すアドレスの文字列をテキストとして表示する？
+charmap "<PLAYER>", $52 ; プレイヤーの名前を表す
+charmap "<RIVAL>", $53 ; ライバルの名前
+charmap "#", $54        ; POKéを表すバイトデータ
+charmap "<TARGET>", $59 ; ポケモンバトルにおける技のターゲット
+charmap "<USER>", $5A   ; ポケモンバトルにおける自分のポケモン(相手ターンなら相手のポケモンになる)
 charmap "′", $71
 charmap "″", $73
 charmap "№", $74
