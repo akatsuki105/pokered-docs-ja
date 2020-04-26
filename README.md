@@ -4,3 +4,13 @@
 
 日本語で解説を加えてはいますが、対象のROMは英語版のポケモン赤であることに注意してください。
 
+## 前提知識
+
+前提知識は結構多いです…
+
+- アセンブリやリンカなどの一般的な低レイヤの知識
+- 割り込みやMBC、バンクなどのGameBoyのハードウェア仕様
+- [rgbds(Rednex Game Boy Development System)](https://github.com/rednex/rgbds)に関する理解
+
+## ポケモン赤について
+
