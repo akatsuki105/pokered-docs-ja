@@ -3514,16 +3514,17 @@ Divide::
 	pop hl
 	ret
 
-; This function is used to wait a short period after printing a letter to the
-; screen unless the player presses the A/B button or the delay is turned off
-; through the [wd730] or [wLetterPrintingDelayFlags] flags.
+; プレイヤーによってA/Bボタンを押されていないときに文字を描画した後で少し待つ処理を行う  
+; つまり文字描画速度を調整している
 PrintLetterDelay::
+	; 遅延フラグが立っていなかったら何もしない
 	ld a, [wd730]
 	bit 6, a
 	ret nz
 	ld a, [wLetterPrintingDelayFlags]
 	bit 1, a
 	ret z
+
 	push hl
 	push de
 	push bc

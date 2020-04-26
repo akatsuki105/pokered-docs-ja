@@ -10,6 +10,8 @@
 - 割り込みやMBC、バンクなどのGameBoyのハードウェア仕様
 - [rgbds(Rednex Game Boy Development System)](https://github.com/rednex/rgbds)に関する理解
 
+またエディタを使ってコードを読む場合はVSCodeと[RGBDS用の拡張機能](https://marketplace.visualstudio.com/items?itemName=donaldhays.rgbds-z80)の使用を推奨します。
+
 ## 各ディレクトリの説明
 
 - [home](./home/README.md)

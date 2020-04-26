@@ -46,20 +46,27 @@ NPlaceChar::
 	jr nz, .loop
 	ret
 
+; アドレスdeに配置された文字列を描画する
 PlaceString::
 	push hl
+; アドレスdeに配置された文字を描画する
 PlaceNextChar::
 	ld a, [de]
 
 	cp "@"
-	jr nz, Char4ETest
+	jr nz, Char4ETest	; 文字列の先頭が@でないならChar4ETestへ(ここから特殊文字かどうかの制御が始まる)
+
+	; TX_RAMのためにBCにHLの中身を入れる
 	ld b, h
 	ld c, l
 	pop hl
 	ret
 
+; ここから特殊文字かどうか1つ1つ検討していく
+
+; 改行文字(next)なら改行
 Char4ETest::
-	cp $4E ; next
+	cp $4E ; ./text_macros.asm参照
 	jr nz, .char4FTest
 	ld bc, 2 * SCREEN_WIDTH
 	ld a, [hFlags_0xFFF6]
@@ -72,15 +79,17 @@ Char4ETest::
 	push hl
 	jp PlaceNextChar_inc
 
+; 改行文字(line)なら改行
 .char4FTest
-	cp $4F ; line
+	cp $4F ; ./text_macros.asm参照
 	jr nz, .next3
 	pop hl
 	coord hl, 1, 16
 	push hl
 	jp PlaceNextChar_inc
 
-.next3 ; Check against a dictionary
+; 描画対象の文字が特殊文字なら対応するハンドラに飛ぶ
+.next3
 dict: macro
 if \1 == 0
 	and a
@@ -111,8 +120,12 @@ endm
 	dict $59, Char59 ; TARGET
 	dict $5A, Char5A ; USER
 
+	; 文字を描画
 	ld [hli], a
 	call PrintLetterDelay
+
+; 描画する文字を1文字進める
+; PlaceNextCharではアドレスdeに配置された文字を描画するのでdeのインクリメントが1文字進めるのに対応する
 PlaceNextChar_inc::
 	inc de
 	jp PlaceNextChar

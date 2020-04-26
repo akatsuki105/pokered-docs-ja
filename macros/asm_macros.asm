@@ -50,10 +50,11 @@ validateCoords: MACRO
 	ENDC
 ENDM
 
-;\1 = r
-;\2 = X
-;\3 = Y
-;\4 = which tilemap (optional)
+; レジスタに指定したタイルマップの(X, Y)地点のタイル番号を格納する  
+; \1 = r レジスタ  
+; \2 = X タイル単位  
+; \3 = Y タイル単位  
+; \4 = どのタイルマップを使うか(指定しない場合はwTileMapという画面のバッファを使う)
 coord: MACRO
 	validateCoords \2, \3
 	IF _NARG >= 4
