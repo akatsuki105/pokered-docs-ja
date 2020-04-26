@@ -6,11 +6,12 @@
 
 ## 前提知識
 
-前提知識は結構多いです…
-
 - アセンブリやリンカなどの一般的な低レイヤの知識
 - 割り込みやMBC、バンクなどのGameBoyのハードウェア仕様
 - [rgbds(Rednex Game Boy Development System)](https://github.com/rednex/rgbds)に関する理解
 
-## ポケモン赤について
+## ドキュメント一覧
+
+- [カートリッジ](./docs/cartridge.md)
+- [バンク](./docs/bank.md)
 
