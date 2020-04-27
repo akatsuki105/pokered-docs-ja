@@ -14,6 +14,7 @@
 
 ## ドキュメント一覧
 
+- [1bpp](./docs/1bpp.md)
 - [2bpp](./docs/2bpp.md)
 - [カートリッジ](./docs/cartridge.md)
 - [バンク](./docs/bank.md)

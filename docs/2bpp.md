@@ -20,6 +20,10 @@ GameBoyのグラフィックフォーマット
 
 を表す。
 
+## 関連
+
+[1bpp](./1bpp.md)
+
 ## 参考
 
 [Learning the GFX Format - 2BPP Gameboy and SNES](https://wiki.superfamicom.org/learning-the-gfx-format-2bpp-gameboy-and-snes)

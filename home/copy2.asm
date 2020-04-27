@@ -1,6 +1,6 @@
+; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー  
+; wBufferの代わりにhROMBankTempを使う以外はFarCopyDataと同じ
 FarCopyData2::
-; Identical to FarCopyData, but uses hROMBankTemp
-; as temp space instead of wBuffer.
 	ld [hROMBankTemp], a
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -13,8 +13,9 @@ FarCopyData2::
 	ld [MBC1RomBank], a
 	ret
 
+; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー 
+; 使われていない様子
 FarCopyData3::
-; Copy bc bytes from a:de to hl.
 	ld [hROMBankTemp], a
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -35,9 +36,10 @@ FarCopyData3::
 	ld [MBC1RomBank], a
 	ret
 
+; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー 
+; その際に[hl]の1bppフォーマットのデータを2bppのデータに変換している
 FarCopyDataDouble::
-; Expand bc bytes of 1bpp image data
-; from a:hl to 2bpp data at de.
+	; ROMバンクの保存と切り替え
 	ld [hROMBankTemp], a
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -45,15 +47,19 @@ FarCopyDataDouble::
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 .loop
-	ld a, [hli]
+	; 1bpp -> 2bppに変換
+	ld a, [hli] 
 	ld [de], a
 	inc de
 	ld [de], a
 	inc de
+
 	dec bc
 	ld a, c
 	or b
 	jr nz, .loop
+
+	; ROMバンクの復帰
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
