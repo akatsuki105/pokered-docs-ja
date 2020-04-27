@@ -229,7 +229,7 @@ SaveSAVtoSRAM0:
 	ret
 
 SaveSAVtoSRAM1:
-; stored pokémon
+; stored pokÃ©mon
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
 	ld a, $1
@@ -258,7 +258,7 @@ SaveSAVtoSRAM2:
 	ld de, sPartyData
 	ld bc, wPartyDataEnd - wPartyDataStart
 	call CopyData
-	ld hl, wPokedexOwned ; pokédex only
+	ld hl, wPokedexOwned ; pokÃ©dex only
 	ld de, sMainData
 	ld bc, wPokedexSeenEnd - wPokedexOwned
 	call CopyData

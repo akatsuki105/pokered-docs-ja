@@ -147,9 +147,9 @@ MainSlotMachineLoop:
 	jp MainSlotMachineLoop
 
 CoinMultiplierSlotMachineText:
-	db   "×3"
-	next "×2"
-	next "×1@"
+	db   "Ã—3"
+	next "Ã—2"
+	next "Ã—1@"
 
 OutOfCoinsSlotMachineText:
 	TX_FAR _OutOfCoinsSlotMachineText
@@ -628,7 +628,7 @@ SlotMachine_PrintWinningSymbol:
 	inc a
 	ld [hl], a
 	coord hl, 18, 16
-	ld [hl], "▼"
+	ld [hl], "â–¼"
 	ret
 
 SlotMachine_SubtractBetFromPlayerCoins:
