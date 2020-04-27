@@ -88,10 +88,9 @@ VBlank::
 	pop af
 	reti
 
-
+; 次のVBlank割り込みがくるまでHALTする  
+; 無駄にCPUを働かせずバッテリーを節約するため
 DelayFrame::
-; Wait for the next vblank interrupt.
-; As a bonus, this saves battery.
 
 NOT_VBLANKED EQU 1
 

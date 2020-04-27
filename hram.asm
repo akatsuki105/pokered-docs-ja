@@ -183,15 +183,14 @@ hJoy5        EQU $FFB5
 hJoy6        EQU $FFB6
 hJoy7        EQU $FFB7
 
-; ???????????????  
-; ????????????????????????????????????????????
+; 現在のROMバンクの番号を保持する
 H_LOADEDROMBANK EQU $FFB8
 
 hSavedROMBank EQU $FFB9
 
-; is automatic background transfer during V-blank enabled?
-; if nonzero, yes
-; if zero, no
+; VBlank期間の自動的なBG転送が有効かどうか  
+; 0 => 無効  
+; 1 => 有効
 H_AUTOBGTRANSFERENABLED EQU $FFBA
 
 TRANSFERTOP    EQU 0
@@ -223,13 +222,13 @@ H_VBCOPYBGDEST EQU $FFC3 ; 2 bytes
 ; number of rows for VBlankCopyBgMap to copy
 H_VBCOPYBGNUMROWS EQU $FFC5
 
-; size of VBlankCopy transfer in 16-byte units
+; VBlankCopyの転送サイズ（16バイト単位）
 H_VBCOPYSIZE EQU $FFC6
 
-; source address for VBlankCopy function
+; VBlankCopyのコピー元
 H_VBCOPYSRC EQU $FFC7
 
-; destination address for VBlankCopy function
+; VBlankCopyのコピー先
 H_VBCOPYDEST EQU $FFC9
 
 ; size of source data for VBlankCopyDouble in 8-byte units
@@ -312,7 +311,7 @@ hCoordsInFrontOfPlayerMatch EQU $FFEA
 
 hSpriteAnimFrameCounter EQU $FFEA
 
-H_WHOSETURN EQU $FFF3 ; 0 on player’s turn, 1 on enemy’s turn
+H_WHOSETURN EQU $FFF3 ; 0 on playerâ€™s turn, 1 on enemyâ€™s turn
 
 ; bit 0: draw HP fraction to the right of bar instead of below (for party menu)
 ; bit 1: menu is double spaced

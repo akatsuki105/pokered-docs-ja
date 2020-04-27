@@ -1,7 +1,7 @@
 MonsterNames:
 	db "RHYDON@@@@"
 	db "KANGASKHAN"
-	db "NIDORAN♂@@"
+	db "NIDORANâ™‚@@"
 	db "CLEFAIRY@@"
 	db "SPEAROW@@@"
 	db "VOLTORB@@@"
@@ -13,7 +13,7 @@ MonsterNames:
 	db "EXEGGCUTE@"
 	db "GRIMER@@@@"
 	db "GENGAR@@@@"
-	db "NIDORAN♀@@"
+	db "NIDORANâ™€@@"
 	db "NIDOQUEEN@"
 	db "CUBONE@@@@"
 	db "RHYHORN@@@"

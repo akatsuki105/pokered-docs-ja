@@ -65,61 +65,79 @@ FarCopyDataDouble::
 	ld [MBC1RomBank], a
 	ret
 
+; 次のVBlankを待ってc枚の2bppフォーマットのタイルデータをbバンクのdeからhlにコピーする  
+; 一度の実行で8タイル分転送を行う  
+; つまりすべてのタイルデータの転送にc/8フレームほどの時間を要する  
+; 
+; 転送はH_VBCOPYSRC, H_VBCOPYDEST, H_VBCOPYSIZEに転送元、転送先、転送サイズを入れておけばVBlank時にVBlankハンドラが転送してくれる
 CopyVideoData::
-; Wait for the next VBlank, then copy c 2bpp
-; tiles from b:de to hl, 8 tiles at a time.
-; This takes c/8 frames.
 
+	; コピー中はBGの自動転送を無効にする
 	ld a, [H_AUTOBGTRANSFERENABLED]
 	push af
-	xor a ; disable auto-transfer while copying
+	xor a 
 	ld [H_AUTOBGTRANSFERENABLED], a
-
+	
+	; 元のROMバンクを退避
 	ld a, [H_LOADEDROMBANK]
 	ld [hROMBankTemp], a
-
+	; bの示すバンクにスイッチ
 	ld a, b
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
+	; コピー元を設定
 	ld a, e
 	ld [H_VBCOPYSRC], a
 	ld a, d
 	ld [H_VBCOPYSRC + 1], a
 
+	; コピー先を設定
 	ld a, l
 	ld [H_VBCOPYDEST], a
 	ld a, h
 	ld [H_VBCOPYDEST + 1], a
 
 .loop
+	; c-8 >= 0 なら次のフレームでも転送続行
 	ld a, c
 	cp 8
 	jr nc, .keepgoing
 
 .done
+	; 残りのタイルを転送
 	ld [H_VBCOPYSIZE], a
-	call DelayFrame
+	call DelayFrame			; 次のVBlankを待つ
+
+	; バンクをもとに戻す
 	ld a, [hROMBankTemp]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	; BGの自動転送フラグを戻す
 	pop af
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
 .keepgoing
+	; 8タイル分転送
 	ld a, 8
 	ld [H_VBCOPYSIZE], a
 	call DelayFrame
+
+	; c -= 8(タイル)
 	ld a, c
 	sub 8
 	ld c, a
+
 	jr .loop
 
+; 次のVBlankを待ってc枚の1bppフォーマットのタイルデータをbバンクのdeからhlにコピーする  
+; 一度の実行で8タイル分転送を行う  
+; つまりすべてのタイルデータの転送にc/8フレームほどの時間を要する  
+; 
+; 転送はH_VBCOPYDOUBLESRC, H_VBCOPYDOUBLEDEST, H_VBCOPYDOUBLESIZEに転送元、転送先、転送サイズを入れておけばVBlank時にVBlankハンドラが転送してくれる
 CopyVideoDataDouble::
-; Wait for the next VBlank, then copy c 1bpp
-; tiles from b:de to hl, 8 tiles at a time.
-; This takes c/8 frames.
 	ld a, [H_AUTOBGTRANSFERENABLED]
 	push af
 	xor a ; disable auto-transfer while copying
@@ -165,24 +183,30 @@ CopyVideoDataDouble::
 	ld c, a
 	jr .loop
 
+; hlを始点としてタイルマップを c*b枚だけクリア(空白タイルで上書き)する
 ClearScreenArea::
-; Clear tilemap area cxb at hl.
-	ld a, " " ; blank tile
-	ld de, 20 ; screen width
+	ld a, " " ; 空白のタイル
+	ld de, 20 ; スクリーンサイズ
 .y
 	push hl
 	push bc
 .x
+	; 1行分をクリア
 	ld [hli], a
 	dec c
 	jr nz, .x
+
+	; タイルアドレスとy座標を1行分進める
 	pop bc
 	pop hl
 	add hl, de
 	dec b
+
+	; 次の行へ
 	jr nz, .y
 	ret
 
+; 
 CopyScreenTileBufferToVRAM::
 ; Copy wTileMap to the BG Map starting at b * $100.
 ; This is done in thirds of 6 rows, so it takes 3 frames.
