@@ -4,7 +4,15 @@ GBC EQU $11
 
 ; MBC1
 MBC1SRamEnable      EQU $0000
+
+; ROMバンクスイッチを行うために利用
+; ```
+; ; 例
+; ld [MBC1RomBank], a
+; ``` 
+; 参考: https://gbdev.io/pandocs/#_2000-3fff-rom-bank-number-write-only
 MBC1RomBank         EQU $2000
+
 MBC1SRamBank        EQU $4000
 MBC1SRamBankingMode EQU $6000
 

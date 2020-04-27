@@ -9,7 +9,7 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  ファイル名  |  内容
 ---- | ----
  audio.asm  |  null
- copy.asm  |  null
+ copy.asm  |  データコピー用のユーティリティ関数
  copy2.asm  |  null
  fade.asm  |  null
  init.asm  |  null

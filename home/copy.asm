@@ -1,24 +1,29 @@
+; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー
 FarCopyData::
-; Copy bc bytes from a:hl to de.
+	; 元のバンク番号を保存
 	ld [wBuffer], a
 	ld a, [H_LOADEDROMBANK]
 	push af
+
+	; バンク切り替え
 	ld a, [wBuffer]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	call CopyData
+
+	; バンクを戻す
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	ret
 
+; hlが示すアドレスからdeが示すアドレスにbcバイトだけコピー
 CopyData::
-; Copy bc bytes from hl to de.
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec bc
 	ld a, c
 	or b
-	jr nz, CopyData
+	jr nz, CopyData	; もしbcが0になっていたら b | cも当然0なので
 	ret
