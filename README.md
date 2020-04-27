@@ -15,6 +15,8 @@
 ## 各ディレクトリの説明
 
 - [home](./home/README.md)
+- [text](./text/README.md)
+- [pic](./pic/README.md)
 
 ## ドキュメント一覧
 
