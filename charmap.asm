@@ -148,7 +148,7 @@ charmap "ょ", $E2
 charmap "ー", $E3
 
 charmap "<pkmn>", $4A ; PkMn
-charmap "@", $50        ; 次にTX_RAMが来る直前に現れる  『@ \n TX_RAM ●●』で●●が示すアドレスの文字列をテキストとして表示する？
+charmap "@", $50 ; 終端記号
 charmap "<PLAYER>", $52 ; プレイヤーの名前を表す
 charmap "<RIVAL>", $53 ; ライバルの名前
 charmap "#", $54        ; POKéを表すバイトデータ

@@ -55,10 +55,12 @@ TX_CRY_NIDORINA       EQUS "db $14"
 TX_CRY_PIDGEOT        EQUS "db $15"
 ;TX_CRY_DEWGONG       EQUS "db $16"
 
+; TODO  
+; 違うバンクにあるテキストを表示する？
 TX_FAR: MACRO
 	db $17
 	dw \1
-	db BANK(\1)
+	db BANK(\1)		; BANK(section_name) => section_nameが配置されるバンクを表すマクロ
 ENDM
 
 TX_VENDING_MACHINE         EQUS "db $f5"

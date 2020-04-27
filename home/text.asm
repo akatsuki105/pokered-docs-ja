@@ -53,8 +53,10 @@ PlaceString::
 PlaceNextChar::
 	ld a, [de]
 
-	cp "@"
-	jr nz, Char4ETest	; 文字列の先頭が@でないならChar4ETestへ(ここから特殊文字かどうかの制御が始まる)
+	; 描画する文字が終端記号@でないならChar4ETestへ(ここから特殊文字かどうかの制御が始まる)
+	; 終端記号@が来たなら文字列の描画を終える
+	cp "@" ; 終端記号
+	jr nz, Char4ETest	
 
 	; TX_RAMのためにBCにHLの中身を入れる
 	ld b, h
@@ -168,9 +170,9 @@ Char5B:: ; PC
 	jr FinishDTE
 
 Char5E:: ; ROCKET
-	push de
-	ld de, Char5EText
-	jr FinishDTE
+	push de	; 現在の文字ポインタを保存
+	ld de, Char5EText ; ROCKET@を入れる
+	jr FinishDTE ; 次の終端記号@(ROCKETの終わり)まで描画して、カーソルをROCKETの次の文字にして戻ってくる
 
 Char54:: ; POKé
 	push de
@@ -218,6 +220,11 @@ MonsterNameCharsCommon::
 	ld l, c
 	ld de, wEnemyMonNick ; enemy active monster name
 
+; 特殊文字@までを描画する  
+; 特殊文字は必ず@で終わっていることに留意する  
+; FinishDTE実行前にpush deによりどの文字列まで描画したかが保存されている  
+; 特殊文字の描画は通常の文字列描画に対する割り込み処理と考えると理解しやすいかも  
+; 特殊文字の描画が終わったらpop deにより中断した文字列描画から復帰して戻る
 FinishDTE::
 	call PlaceString
 	ld h, b
@@ -336,10 +343,10 @@ Char4C::
 	pop de
 	jp PlaceNextChar_inc
 
-; move both rows of text in the normal text box up one row
-; always called twice in a row
-; first time, copy the two rows of text to the "in between" rows that are usually emtpy
-; second time, copy the bottom row of text into the top row of text
+; 2行のテキストが表示されたテキストボックスを1行上にスクロールさせる  
+; この処理は2回連続して呼ばれる  
+; 1回目: 2行のテキストを『in between』行という常に空白の行にコピーする(スクロールのアニメーションを表現するため？)  
+; 2回目: 2行目のテキストを1行目にコピーする  
 ScrollTextUpOneLine::
 	coord hl, 0, 14 ; top row of text
 	coord de, 0, 13 ; empty line above text
@@ -374,8 +381,10 @@ ProtectedDelay3::
 	ret
 
 TextCommandProcessor::
+	; wLetterPrintingDelayFlagsを取っておく
 	ld a, [wLetterPrintingDelayFlags]
 	push af
+
 	set 1, a
 	ld e, a
 	ld a, [$fff4]
@@ -386,20 +395,30 @@ TextCommandProcessor::
 	ld a, b
 	ld [wTextDest + 1], a
 
+; 次のコマンドが終端記号@でないなら.doTextCommand
 NextTextCommand::
 	ld a, [hli]
 	cp "@" ; terminator
 	jr nz, .doTextCommand
+
+	; 取っておいたwLetterPrintingDelayFlagsを戻す
 	pop af
 	ld [wLetterPrintingDelayFlags], a
 	ret
 .doTextCommand
-	push hl
+	push hl ; コマンドを保存しておく
+
+	; コマンドがTextCommand17か
 	cp $17
 	jp z, TextCommand17
+
+	; コマンドがTextCommand0Bか
+	; もし (a != 0x17 && a >= 0x0e)なら 0x0Bのコマンド  
+	; それ以外、つまり a <= 0x0eならTextCommandJumpTableを使う
 	cp $0e
-	jp nc, TextCommand0B ; if a != 0x17 and a >= 0xE, go to command 0xB
-; if a < 0xE, use a jump table
+	jp nc, TextCommand0B
+
+	; 上のcp $0eによってこの時点でaレジスタの値からTextCommandJumpTableのどこに飛ぶべきかわかる
 	ld hl, TextCommandJumpTable
 	push bc
 	add a
