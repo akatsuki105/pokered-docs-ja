@@ -33,6 +33,6 @@ blkファイルはブロックIDからなるデータリストです。パレッ
 
 ## 参考
 
-[.blk Readability](https://github.com/pret/pokered/issues/158)
-[discord](https://discordapp.com/channels/442462691542695948/442462691542695957/626440045863370795)
-[Polished Map 4.5.0 and 2.5.0++: a pokecrystal and pokered map editor](https://hax.iimarckus.org/topic/7222/)
+[.blk Readability](https://github.com/pret/pokered/issues/158)  
+[discord](https://discordapp.com/channels/442462691542695948/442462691542695957/626440045863370795)  
+[Polished Map 4.5.0 and 2.5.0++: a pokecrystal and pokered map editor](https://hax.iimarckus.org/topic/7222/)  
