@@ -12,16 +12,38 @@
 
 またエディタを使ってコードを読む場合はVSCodeと[RGBDS用の拡張機能](https://marketplace.visualstudio.com/items?itemName=donaldhays.rgbds-z80)の使用を推奨します。
 
-## 各ディレクトリの説明
-
-- [home](./home/README.md)
-- [maps](./maps/README.md)
-- [pic](./pic/README.md)
-- [text](./text/README.md)
-
 ## ドキュメント一覧
 
 - [カートリッジ](./docs/cartridge.md)
 - [バンク](./docs/bank.md)
 - [テキストデータ](./docs/text.md)
 - [文字コード](./docs/charcode.md)
+
+## ファイル一覧
+
+ ファイル名  |  内容
+---- | ----
+ audio/  |  null
+ constants/  |  null
+ data/  |  null
+ engine/  |  null
+ gfx/  |  null
+ home/  |  [home](./home/README.md)参照
+ macros/  |  null
+ maps/  |  [maps](./maps/README.md)参照
+ pic/  |  [pic](./pic/README.md)参照
+ scripts/  |  null
+ text/  |  [text](./text/README.md)参照
+ tools/  |  [tools](./tools/README.md)参照
+ audio.asm  |  null
+ charmap.asm  |  文字コードを定義している
+ constants.asm  |  null
+ home.asm  |  null
+ hram.asm  |  null
+ macros.asm  |  null
+ main.asm  |  null
+ pokered.link  |  リンカスクリプト 各セクションがどのバンクのどのアドレスに配置されるかを指示している
+ sram.asm  |  null
+ text.asm  |  null
+ vram.asm  |  null
+ wram.asm  |  null
