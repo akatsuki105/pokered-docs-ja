@@ -46,10 +46,12 @@ NPlaceChar::
 	jr nz, .loop
 	ret
 
-; アドレスdeに配置された文字列を描画する
+; 文字列を特殊文字は処理を行ってから特定のアドレスに配置する  
+; de: 配置対象のテキストのアドレス  
+; hl: テキストの配置先
 PlaceString::
 	push hl
-; アドレスdeに配置された文字を描画する
+; deが示すアドレスに配置された文字を描画する
 PlaceNextChar::
 	ld a, [de]
 
@@ -58,7 +60,9 @@ PlaceNextChar::
 	cp "@" ; 終端記号
 	jr nz, Char4ETest	
 
+	; TODO
 	; TX_RAMのためにBCにHLの中身を入れる
+	; TX_RAM: BCに第一引数で渡されたアドレスの中の文字列を渡す  
 	ld b, h
 	ld c, l
 	pop hl
@@ -70,14 +74,14 @@ PlaceNextChar::
 Char4ETest::
 	cp $4E ; ./text_macros.asm参照
 	jr nz, .char4FTest
-	ld bc, 2 * SCREEN_WIDTH
+	ld bc, 2 * SCREEN_WIDTH ; タイル2枚分下に移動する
 	ld a, [hFlags_0xFFF6]
 	bit 2, a
 	jr z, .ok
-	ld bc, SCREEN_WIDTH
+	ld bc, SCREEN_WIDTH		; タイル1枚分下に移動する
 .ok
 	pop hl
-	add hl, bc
+	add hl, bc				; タイル2枚分下に移動する
 	push hl
 	jp PlaceNextChar_inc
 
@@ -127,7 +131,7 @@ endm
 	call PrintLetterDelay
 
 ; 描画する文字を1文字進める
-; PlaceNextCharではアドレスdeに配置された文字を描画するのでdeのインクリメントが1文字進めるのに対応する
+; PlaceNextCharではdeが示すアドレスに文字を配置していくのでdeのインクリメントが1文字進めるのに対応する
 PlaceNextChar_inc::
 	inc de
 	jp PlaceNextChar
@@ -220,7 +224,7 @@ MonsterNameCharsCommon::
 	ld l, c
 	ld de, wEnemyMonNick ; enemy active monster name
 
-; 特殊文字@までを描画する  
+; 特殊文字@までを処理する  
 ; 特殊文字は必ず@で終わっていることに留意する  
 ; FinishDTE実行前にpush deによりどの文字列まで描画したかが保存されている  
 ; 特殊文字の描画は通常の文字列描画に対する割り込み処理と考えると理解しやすいかも  
@@ -380,16 +384,22 @@ ProtectedDelay3::
 	pop bc
 	ret
 
+; bcに配置したテキストを処理する  
+; bc: テキストを配置するメモリアドレス  
+; 文字の描画が目的ではなくテキストデータを命令として扱う
 TextCommandProcessor::
 	; wLetterPrintingDelayFlagsを取っておく
 	ld a, [wLetterPrintingDelayFlags]
 	push af
 
+	; TODO: ポケモン図鑑のみの処理
 	set 1, a
 	ld e, a
 	ld a, [$fff4]
 	xor e
 	ld [wLetterPrintingDelayFlags], a
+
+	; wTextDestにbcを配置
 	ld a, c
 	ld [wTextDest], a
 	ld a, b

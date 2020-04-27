@@ -11,7 +11,7 @@ prompt EQUS "db $58"  ; テキストボックスを終了させる。(この後�
 page   EQUS "db $49,"     ; Start a new Pokedex page.
 dex    EQUS "db $5f, $50" ; End a Pokedex entry.
 
-; BCに第一引数で渡されたアドレスの中の文字列を渡す  
+; BCに第一引数で渡された値を渡す 
 ; 第一引数で渡されたアドレスの中の文字列をテキストとして表示するのに使う
 TX_RAM: MACRO
 	db $1
