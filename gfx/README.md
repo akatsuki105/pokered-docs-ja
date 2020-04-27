@@ -4,7 +4,7 @@ gfx = graphicsの略語
 
 グラフィックデータが配置されている
 
-そのままのpngフォーマットでは使えないので[専用のツール](https://rednex.github.io/rgbds/rgbgfx.1.html)を使って[GameBoyのグラフィックフォーマット](./docs/2bpp.md)に変換してからINCBINコマンドでインポートして利用する
+そのままのpngフォーマットでは使えないので[専用のツール](https://rednex.github.io/rgbds/rgbgfx.1.html)を使って[GameBoyのグラフィックフォーマット](../docs/2bpp.md)に変換してからINCBINコマンドでインポートして利用する
 
 ## ファイル一覧
 
