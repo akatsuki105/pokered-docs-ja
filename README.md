@@ -14,6 +14,7 @@
 
 ## ドキュメント一覧
 
+- [2bpp](./docs/2bpp.md)
 - [カートリッジ](./docs/cartridge.md)
 - [バンク](./docs/bank.md)
 - [テキストデータ](./docs/text.md)
@@ -27,7 +28,7 @@
  constants/  |  null
  data/  |  null
  engine/  |  null
- gfx/  |  null
+ gfx/  |  [gfx](./gfx/README.md)参照
  home/  |  [home](./home/README.md)参照
  macros/  |  null
  maps/  |  [maps](./maps/README.md)参照
