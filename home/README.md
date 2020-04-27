@@ -18,7 +18,7 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  pic.asm  |  null
  predef.asm  |  null
  serial.asm  |  null
- text.asm  |  テキストの描画
- timer.asm  |  null
+ text.asm  |  テキストの配置<br/>特殊文字の処理<br/>テキストコマンドの処理
+ timer.asm  |  タイマー割り込みハンドラ
  vblank.asm  |  null
  vcopy.asm  |  null

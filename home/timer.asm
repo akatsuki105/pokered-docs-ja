@@ -1,3 +1,3 @@
-; timer interrupt is apparently not invoked anyway
+; タイマー割り込みは起きている様子がない
 Timer::
 	reti

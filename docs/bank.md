@@ -2,7 +2,7 @@
 
  No    |  内容
  ----  | ----
- 0x00  |  ゲームシステムに必ず必要な機能<br/> - テキストの描画
+ 0x00  |  ゲームシステムに必ず必要な機能<br/> - テキストの処理
  0x01  |  null
  0x02  |  null
  0x03  |  null
@@ -50,3 +50,7 @@
  0x2d  |  null
  0x2e  |  null
  0x2f  |  null
+
+## 参照
+
+[pokered.link](../pokered.link)  
