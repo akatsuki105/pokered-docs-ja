@@ -2667,11 +2667,12 @@ wMissableObjectFlagsEnd::
 
 wd5cd:: ds 1 ; temp copy of c1x2 (sprite facing/anim)
 
-wMissableObjectList:: ; d5ce
-; each entry consists of 2 bytes
-; * the sprite ID (depending on the current map)
-; * the missable object index (global, used for wMissableObjectFlags)
-; terminated with $FF
+; d5ce  
+; each entry consists of 2 bytes  
+; * the sprite ID (depending on the current map)  
+; * the missable object index (global, used for wMissableObjectFlags)  
+; terminated with $FF  
+wMissableObjectList::
 	ds 17 * 2
 
 wGameProgressFlags:: ; d5f0

@@ -1,9 +1,11 @@
-
-; Constant enumeration is useful for monsters, items, moves, etc.
+; Constant enumeration  
+; constマクロで使用される  
 const_def: MACRO
 const_value = 0
 ENDM
 
+; golangのiotaみたいに定数を列挙していくためのもの  
+; ポケモン、アイテム、技などの定数定義で使われている  
 const: MACRO
 \1 EQU const_value
 const_value = const_value + 1

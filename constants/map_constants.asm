@@ -1,3 +1,7 @@
+; マップIDを定義
+
+; mapconst MAP_NAME height width  
+; マップのID、縦横の大きさを定義するマクロ
 mapconst: MACRO
 	const \1
 \1_HEIGHT EQU \2

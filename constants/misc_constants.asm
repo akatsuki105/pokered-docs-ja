@@ -1,3 +1,5 @@
+; その他の定数を定義
+
 MAX_LEVEL EQU 100
 
 NUM_MOVES     EQU 4

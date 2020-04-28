@@ -1,3 +1,5 @@
+; アイテムの内部ID
+
 const_value = 1
 
 	const MASTER_BALL   ; $01

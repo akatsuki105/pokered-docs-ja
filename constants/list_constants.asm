@@ -1,3 +1,5 @@
+; TODO
+
 ; list menu ID's
 PCPOKEMONLISTMENU  EQU $00 ; PC pokemon withdraw/deposit lists
 MOVESLISTMENU      EQU $01 ; XXX where is this used?

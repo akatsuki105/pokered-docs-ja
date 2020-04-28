@@ -3,6 +3,9 @@
 ; because those sprites are not (de)activated in a map's script
 ; (they are either items or sprites that deactivate after battle
 ; and are detected in wMissableObjectList)
+; ゲーム中に有効化/無効化できるスプライトのリスト  
+; コメント部分にXがついているスプライトはマップスクリプトで有効化されている様子がないため使われていないスプライトのようである  
+; TODO
 
 const_value = 0
 

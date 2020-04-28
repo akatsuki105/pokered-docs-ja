@@ -1,3 +1,5 @@
+; 技の内部ID
+
 const_value = 1
 
 	const POUND        ; 01

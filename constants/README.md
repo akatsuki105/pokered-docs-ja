@@ -29,8 +29,10 @@ COUNT      = COUNT + 1              ; COUNT += 1
 
 ### constマクロ
 
-TODO
+このレポジトリで定義されているマクロ  
+定数の列挙に使うマクロでgolangのiotaみたいなもの  
+詳しくは[data_macros.asm](../macros/data_macros.asm)参照
 
-### 各ファイルについて
+## 各ファイルについて
 
 各ファイル先頭のコメントを参照
