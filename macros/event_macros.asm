@@ -1,4 +1,5 @@
-;\1 = event index
+; イベントが消化済みかどうか調べるマクロ  
+;\1 = 対象のイベントID  
 ;\2 = return result in carry instead of zero flag
 CheckEvent: MACRO
 event_byte = ((\1) / 8)

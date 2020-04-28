@@ -1350,8 +1350,9 @@ wBattleResult:: ; cf0b
 ; $02 - draw
 	ds 1
 
-wAutoTextBoxDrawingControl:: ; cf0c
-; bit 0: if set, DisplayTextID automatically draws a text box
+; cf0c  
+; bit0が1なら、DisplayTextIDで自動的にテキストボックスが描画される
+wAutoTextBoxDrawingControl::
 	ds 1
 
 wcf0d:: ds 1 ; used with some overworld scripts (not exactly sure what it's used for)
@@ -1481,8 +1482,9 @@ wHPBarType:: ; cf94
 ; $01 = player HUD in battle / status screen
 ; $02 = party menu
 
-wListMenuID:: ; cf94
-; ID used by DisplayListMenuID
+; cf94  
+; DisplayListMenuIDで使われるID
+wListMenuID::
 	ds 1
 
 wRemoveMonFromBox:: ; cf95
@@ -1505,11 +1507,12 @@ wMaxItemQuantity:: ; cf97
 ; LoadMonData copies mon data here
 wLoadedMon:: party_struct wLoadedMon ; cf98
 
-wFontLoaded:: ; cfc4
-; bit 0: The space in VRAM that is used to store walk animation tile patterns
-;        for the player and NPCs is in use for font tile patterns.
-;        This means that NPC movement must be disabled.
-; The other bits are unused.
+; cfc4  
+; bit 0:  プレイヤーやNPCの歩きモーションを保持するVRAM領域にフォントのタイルが格納されているときに立つフラグ  
+; 歩きモーションのアニメーションがロードされていないのでこのフラグが立っているときはプレイヤーやNPCの動きは禁止される  
+; 
+; そのほかのbitは使われてない
+wFontLoaded::
 	ds 1
 
 wWalkCounter:: ; cfc5

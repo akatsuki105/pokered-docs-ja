@@ -1,37 +1,52 @@
-; function that performs initialization for DisplayTextID
+; DisplayTextIDの初期化処理
 DisplayTextIDInit:
+	; wListMenuID = 0
 	xor a
 	ld [wListMenuID], a
+	
+	; wAutoTextBoxDrawingControlのbit0が1ならテキストボックスを描画
 	ld a, [wAutoTextBoxDrawingControl]
 	bit 0, a
 	jr nz, .skipDrawingTextBoxBorder
-	ld a, [hSpriteIndexOrTextID] ; text ID (or sprite ID)
+
+	; テキストIDが0ならスタートメニュー
+	ld a, [hSpriteIndexOrTextID] ; テキストID (または スプライトID)
 	and a
 	jr nz, .notStartMenu
-; if text ID is 0 (i.e. the start menu)
+
+; テキストIDが0のとき (例: スタートメニュー)
+; スタートメニューの枠線は直下の関数で描画されるのでこれは不要に見えることに注意
 ; Note that the start menu text border is also drawn in the function directly
 ; below this, so this seems unnecessary.
+
+	; ポケモン図鑑取得のイベントを消化しているかによって枠線の描画処理が変わる
 	CheckEvent EVENT_GOT_POKEDEX
-; start menu with pokedex
+	; ポケモン図鑑取得後
 	coord hl, 10, 0
 	ld b, $0e
 	ld c, $08
 	jr nz, .drawTextBoxBorder
-; start menu without pokedex
+	; ポケモン図鑑取得前
 	coord hl, 10, 0
-	ld b, $0c
+	ld b, $0c				; POKEDEXの欄がない分、枠線の高さが小さい
 	ld c, $08
 	jr .drawTextBoxBorder
-; if text ID is not 0 (i.e. not the start menu) then do a standard dialogue text box
+
+; テキストIDが0でないなら、通常のテキストボックスを描画
 .notStartMenu
 	coord hl, 0, 12
 	ld b, $04
 	ld c, $12
+
+; テキストボックスを描画
 .drawTextBoxBorder
 	call TextBoxBorder
+
 .skipDrawingTextBoxBorder
+	; プレイヤーやNPCの移動を無効化
 	ld hl, wFontLoaded
 	set 0, [hl]
+	
 	ld hl, wFlags_0xcd60
 	bit 4, [hl]
 	res 4, [hl]

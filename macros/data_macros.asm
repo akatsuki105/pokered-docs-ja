@@ -91,15 +91,15 @@ LEFT  EQU $D2
 RIGHT EQU $D3
 NONE  EQU $FF
 
-;\1 sprite id
-;\2 x position
-;\3 y position
-;\4 movement (WALK/STAY)
-;\5 range or direction
-;\6 text id
-;\7 items only: item id
-;\7 trainers only: trainer class/pokemon id
-;\8 trainers only: trainer number/pokemon level
+;\1 sprite id  
+;\2 x position  
+;\3 y position  
+;\4 movement (WALK/STAY)  
+;\5 range or direction  
+;\6 text id  
+;\7 items only: item id  
+;\7 trainers only: trainer class/pokemon id  
+;\8 trainers only: trainer number/pokemon level  
 object: MACRO
 	db \1
 	db \3 + 4
@@ -120,24 +120,24 @@ object: MACRO
 	ENDC
 ENDM
 
-;\1 x position
-;\2 y position
-;\3 destination warp id
-;\4 destination map (-1 = wLastMap)
+;\1 x position  
+;\2 y position  
+;\3 destination warp id  
+;\4 destination map (-1 = wLastMap)  
 warp: MACRO
 	db \2, \1, \3, \4
 ENDM
 
-;\1 x position
-;\2 y position
-;\3 sign id
+;\1 x position  
+;\2 y position  
+;\3 sign id  
 sign: MACRO
 	db \2, \1, \3
 ENDM
 
-;\1 x position
-;\2 y position
-;\3 map width
+;\1 x position  
+;\2 y position  
+;\3 map width  
 warp_to: MACRO
 	EVENT_DISP \3, \2, \1
 ENDM
