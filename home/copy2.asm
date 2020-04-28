@@ -206,53 +206,61 @@ ClearScreenArea::
 	jr nz, .y
 	ret
 
-; 
+; wTileMap内のデータを b*0x100を始点としてBGタイルマップに配置する  
+; これは6行を3回に分けて行い1回1フレーム要するので、この関数の実行には3フレームかかる
 CopyScreenTileBufferToVRAM::
-; Copy wTileMap to the BG Map starting at b * $100.
-; This is done in thirds of 6 rows, so it takes 3 frames.
-
 	ld c, 6
 
-	ld hl, $600 * 0
-	coord de, 0, 6 * 0
+	ld hl, $600 * 0		; h:l => 0:0
+	coord de, 0, 6 * 0	; de = wTileMapの(0, 0)タイル
+	call .setup			; 転送準備
+	call DelayFrame		; 転送実行を待つ
+
+	ld hl, $600 * 1		; h:l => 6:0
+	coord de, 0, 6 * 1	; de = wTileMapの(0, 6)タイル
 	call .setup
 	call DelayFrame
 
-	ld hl, $600 * 1
-	coord de, 0, 6 * 1
-	call .setup
-	call DelayFrame
-
-	ld hl, $600 * 2
-	coord de, 0, 6 * 2
+	ld hl, $600 * 2		; h:l -> 12:0
+	coord de, 0, 6 * 2	; de = wTileMapの(0, 12)タイル
 	call .setup
 	jp DelayFrame
 
 .setup
+	; 転送元(上位アドレス)の設定
 	ld a, d
 	ld [H_VBCOPYBGSRC+1], a
+	
+	; 転送先の設定
 	call GetRowColAddressBgMap
 	ld a, l
 	ld [H_VBCOPYBGDEST], a
 	ld a, h
 	ld [H_VBCOPYBGDEST+1], a
+	
+	; 転送行数
 	ld a, c
 	ld [H_VBCOPYBGNUMROWS], a
+	
+	; 転送元(下位アドレス)の設定
 	ld a, e
 	ld [H_VBCOPYBGSRC], a
 	ret
 
+; wTileMapをクリアしてBGマップが更新されるのを待機する
 ClearScreen::
-; Clear wTileMap, then wait
-; for the bg map to update.
 	ld bc, 20 * 18
-	inc b
-	coord hl, 0, 0
+	inc b				; TODO
+	coord hl, 0, 0		; hlにwTileMapの始点のアドレスを格納
 	ld a, " "
 .loop
+	; クリア
 	ld [hli], a
+
+	; bcが0になるまでループ
 	dec c
 	jr nz, .loop
 	dec b
 	jr nz, .loop
+	; 待機
 	jp Delay3

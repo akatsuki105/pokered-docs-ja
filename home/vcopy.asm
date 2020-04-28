@@ -1,6 +1,8 @@
-; this function seems to be used only once
-; it store the address of a row and column of the VRAM background map in hl
-; INPUT: h - row, l - column, b - high byte of background tile map address in VRAM
+; 一度しか使われてなさそう  
+; hlレジスタに次の引数で指定したBGタイルマップの行と列のアドレスを入れる関数  
+; h -> 行  
+; l -> 列  
+; b -> BGタイルマップの上位バイト e.g. $98 -> 0x9800
 GetRowColAddressBgMap::
 	xor a
 	srl h

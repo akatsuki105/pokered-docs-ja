@@ -10,7 +10,7 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
 ---- | ----
  audio.asm  |  null
  copy.asm  |  データコピー用のユーティリティ関数
- copy2.asm  |  null
+ copy2.asm  |  データコピー用のユーティリティ関数<br/>copy.asmとは配置されるアドレスが離れている
  fade.asm  |  null
  init.asm  |  null
  joypad.asm  |  null
