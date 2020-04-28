@@ -1,3 +1,5 @@
+; レジスタやメモリマップなどのハードウェアに関する定数を定義
+
 ; From http://nocash.emubase.de/pandocs.htm.
 
 GBC EQU $11

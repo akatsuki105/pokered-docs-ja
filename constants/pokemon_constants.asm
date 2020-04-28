@@ -1,3 +1,6 @@
+; ポケモンの内部IDを定義
+; ポケモンの図鑑番号とは異なるIDであることに注意
+
 const_value = 1
 
 	const RHYDON       ; $01

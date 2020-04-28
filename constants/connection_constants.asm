@@ -1,3 +1,5 @@
+; TODO
+
 ; width of east/west connections
 ; height of north/south connections
 MAP_BORDER EQU 3

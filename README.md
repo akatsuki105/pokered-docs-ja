@@ -26,7 +26,7 @@
  ファイル名  |  内容
 ---- | ----
  audio/  |  null
- constants/  |  null
+ constants/  |  [constants](./constants/README.md)参照
  data/  |  null
  engine/  |  null
  gfx/  |  [gfx](./gfx/README.md)参照
@@ -38,8 +38,8 @@
  text/  |  [text](./text/README.md)参照
  tools/  |  [tools](./tools/README.md)参照
  audio.asm  |  null
- charmap.asm  |  文字コードを定義している
- constants.asm  |  null
+ charmap.asm  |  文字コードのマクロ定義
+ constants.asm  |  定数シンボルのマクロ定義
  home.asm  |  null
  hram.asm  |  null
  macros.asm  |  null

@@ -1,3 +1,5 @@
+; ポケモンの図鑑番号を定義
+
 const_value = 1
 
 	const DEX_BULBASAUR  ; 1

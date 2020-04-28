@@ -1,3 +1,5 @@
+; エンディングで流れるクレジットデータ
+
 const_value = 0
 
 	const CRED_VERSION        ; $00

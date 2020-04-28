@@ -1,6 +1,8 @@
+; 関数や文字コードなどのマクロ定義
 INCLUDE "macros.asm"
 INCLUDE "charmap.asm"
 
+; メモリマップ関連のマクロ定義
 INCLUDE "hram.asm"
 INCLUDE "vram.asm"
 
