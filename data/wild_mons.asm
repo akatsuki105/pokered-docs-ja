@@ -249,16 +249,15 @@ WildDataPointers:
 	dw NoMons
 	dw $FFFF
 
-; wild pokemon data is divided into two parts.
-; first part:  pokemon found in grass
-; second part: pokemon found while surfing
-; each part goes as follows:
+; 野生のポケモンのデータは2つのパートで表される  
+; パート1: 草むらで出現するポケモン  
+; パート2: 水上(波乗り中)で出現するポケモン  
+; 各パートは次のようになっている:  
     ; if first byte == 00, then
-        ; no wild pokemon on this map
+        ; そのマップで野生のポケモンは出現しない
     ; if first byte != 00, then
-        ; first byte is encounter rate
-        ; followed by 20 bytes:
-        ; level, species (ten times)
+        ; 最初のバイトはエンカウント率を表す
+        ; その後の20バイトで出現するポケモンのデータを定義している(2バイト*10種類)
 
 INCLUDE "data/wildPokemon/nomons.asm"
 INCLUDE "data/wildPokemon/route1.asm"
