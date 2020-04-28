@@ -21,6 +21,7 @@
 - [カートリッジ](./docs/cartridge.md)
 - [バンク](./docs/bank.md)
 - [テキストデータ](./docs/text.md)
+- [マップ](./docs/map.md)
 - [文字コード](./docs/charcode.md)
 
 ## ファイル一覧
