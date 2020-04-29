@@ -47,18 +47,22 @@ DisplayTextIDInit:
 	ld hl, wFontLoaded
 	set 0, [hl]
 	
+	; wFlags_0xcd60のbit 4をチェックしてクリア
 	ld hl, wFlags_0xcd60
 	bit 4, [hl]
-	res 4, [hl]
-	jr nz, .skipMovingSprites
+	res 4, [hl]					; bit 4をクリア
+	jr nz, .skipMovingSprites	; bit 4が1なら
+
 	call UpdateSprites
-.skipMovingSprites
+
 ; loop to copy C1X9 (direction the sprite is facing) to C2X9 for each sprite
 ; this is done because when you talk to an NPC, they turn to look your way
-; the original direction they were facing must be restored after the dialogue is over
+; the original direction they were facing must be restored after the dialogue is over 
+.skipMovingSprites
 	ld hl, wSpriteStateData1 + $19
 	ld c, $0f
 	ld de, $0010
+
 .spriteFacingDirectionCopyLoop
 	ld a, [hl]
 	inc h

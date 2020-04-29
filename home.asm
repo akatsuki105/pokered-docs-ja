@@ -920,15 +920,21 @@ INCLUDE "home/audio.asm"
 
 
 UpdateSprites::
+	; wUpdateSpritesEnabledが$00か$ffのときは何もしない
 	ld a, [wUpdateSpritesEnabled]
 	dec a
 	ret nz
+
+	; _UpdateSpritesのためにバンク切り替え
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, Bank(_UpdateSprites)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
 	call _UpdateSprites
+
+	; 元のバンクに復帰
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

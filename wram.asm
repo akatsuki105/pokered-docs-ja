@@ -1199,12 +1199,14 @@ wRightGBMonSpecies:: ; cd5f
 ; in the trade animation, the mon that leaves the right gameboy
 	ds 1
 
-wFlags_0xcd60:: ; cd60
+; cd60
 ; bit 0: is player engaged by trainer (to avoid being engaged by multiple trainers simultaneously)
 ; bit 1: boulder dust animation (from using Strength) pending
 ; bit 3: using generic PC
+; bit 4: 1 -> .skipMovingSprites
 ; bit 5: don't play sound when A or B is pressed in menu
 ; bit 6: tried pushing against boulder once (you need to push twice before it will move)
+wFlags_0xcd60::
 	ds 1
 
 	ds 9
@@ -1553,11 +1555,12 @@ wLastMusicSoundID:: ; cfca
 ; the music).
 	ds 1
 
-wUpdateSpritesEnabled:: ; cfcb
-; $00 = causes sprites to be hidden and the value to change to $ff
-; $01 = enabled
-; $ff = disabled
-; other values aren't used
+; cfcb  
+; $00 = スプライトを表示しなくして、そのあと$ffに変化する  
+; $01 = 有効化  
+; $ff = 無効化  
+; それ以外の値は取らない
+wUpdateSpritesEnabled::
 	ds 1
 
 wEnemyMoveNum:: ; cfcc
