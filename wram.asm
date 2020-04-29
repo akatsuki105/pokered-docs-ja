@@ -273,19 +273,19 @@ wSprite15StateData1::      spritestatedata1 wSprite15StateData1
 ; 
 ; - C2x0: 歩きモーションのアニメーションカウンタ ($10から移動した分だけ減っていく)
 ; - C2x1: ???
-; - C2x2: Y displacement (initialized at 8, supposed to keep moving sprites from moving too far, but bugged)
-; - C2x3: X displacement (initialized at 8, supposed to keep moving sprites from moving too far, but bugged)
-; - C2x4: Y position (in 2x2 tile grid steps, topmost 2x2 tile has value 4)
-; - C2x5: X position (in 2x2 tile grid steps, leftmost 2x2 tile has value 4)
-; - C2x6: movement byte 1 (determines whether a sprite can move, $ff:not moving, $fe:random movements, others unknown)
-; - C2x7: (?) (set to $80 when in grass, else $0; may be used to draw grass above the sprite)
-; - C2x8: delay until next movement (counted downwards, status (c1x1) is set to ready if reached 0)
+; - C2x2: Y 変化量 (8で初期化 スプライトが初期座標から離れすぎないために設定されていると考えられるがバグがある)
+; - C2x3: X 変化量 (8で初期化 スプライトが初期座標から離れすぎないために設定されていると考えられるがバグがある)
+; - C2x4: Y 座標 (2*2のグリッド単位, 一番上のグリッドにいるときは4となる)
+; - C2x5: X 座標 (2*2のグリッド単位, 一番左のグリッドにいるときは4となる)
+; - C2x6: スプライトの動きを決めるデータ ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用)
+; - C2x7: 用途不明 (草むらにスプライトがいるとき$80になってそれ以外では$0になっている おそらくスプライトの上に草むらを描画するのに利用)
+; - C2x8: 次の動きまでのクールタイム (どんどん減って行って, 0になるとC1x1が1にセットされる)
 ; - C2x9: ???
 ; - C2xA: ???
 ; - C2xB: ???
 ; - C2xC: ???
 ; - C2xD: ???
-; - C2xE: sprite image base offset (in video ram, player always has value 1, used to compute c1x2)
+; - C2xE: スプライトのイメージデータがVRAMのどのアドレスにあるか (主人公は常に1, C1x2で使用する) 画面非表示から表示に戻すときに必要になる？
 ; - C2xF: ???
 wSpriteStateData2::
 spritestatedata2: MACRO
