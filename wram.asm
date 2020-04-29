@@ -206,28 +206,33 @@ wTempoModifier:: ; c0f2
 
 SECTION "Sprite State Data", WRAM0
 
+; **wSpriteDataStart**  
+; 
+; 現在のマップ上のスプライトのデータを保持している領域
 wSpriteDataStart::
 
-wSpriteStateData1:: ; c100
-; data for all sprites on the current map
-; holds info for 16 sprites with $10 bytes each
-; player sprite is always sprite 0
-; C1x0: picture ID (fixed, loaded at map init)
-; C1x1: movement status (0: uninitialized, 1: ready, 2: delayed, 3: moving)
-; C1x2: sprite image index (changed on update, $ff if off screen, includes facing direction, progress in walking animation and a sprite-specific offset)
-; C1x3: Y screen position delta (-1,0 or 1; added to c1x4 on each walking animation update)
-; C1x4: Y screen position (in pixels, always 4 pixels above grid which makes sprites appear to be in the center of a tile)
-; C1x5: X screen position delta (-1,0 or 1; added to c1x6 on each walking animation update)
-; C1x6: X screen position (in pixels, snaps to grid if not currently walking)
-; C1x7: intra-animation-frame counter (counting upwards to 4 until c1x8 is incremented)
-; C1x8: animation frame counter (increased every 4 updates, hold four states (totalling to 16 walking frames)
-; C1x9: facing direction (0: down, 4: up, 8: left, $c: right)
-; C1xA
-; C1xB
-; C1xC
-; C1xD
-; C1xE
-; C1xF
+; c100  
+; 現在のマップに配置されたすべてのスプライトのデータ   
+; 16スプライト分の領域がある(1つのスプライトにつき16バイト)
+; プレイヤーのスプライトは常に0番目の領域に配置される
+;  
+; - C1x0: picture ID (定数、マップ初期化時に読み込まれる)  
+; - C1x1: 現在のスプライトの動作状況 (0: 未初期化, 1: 準備完了, 2: 遅延中, 3: 動作中)  
+; - C1x2: スプライトのイメージ番号(スプライトの更新時に変化 $ffなら画面非表示で、特定の方向を向いたり、歩きモーション中だったりスプライト特有のオフセットのときと、いろいろな変化があり、それを示す番号)  
+; - C1x3: スプライトのY座標変化 (-1/0/1のどれか スプライトの更新時にC1x4に加算される)   
+; - C1x4: スプライトのY座標 (ピクセル単位 常にグリッド(16*16)の4ピクセル上にあるため、スプライトはタイルの中央に表示される 立体的に見せるため)  
+; - C1x5: スプライトのX座標変化 (-1/0/1のどれか スプライトの更新時にC1x6に加算される)  
+; - C1x6: スプライトのX座標 (ピクセル単位 移動中でないならグリッド(16*16)にぴったりおさまる)  
+; - C1x7: 0から4までのフレームカウンタ 4になるとc1x8がインクリメントされる 歩きモーションなどのアニメーションのフレームカウントに利用  
+; - C1x8: 0から3までのカウンタ 歩きモーションなどのアニメーションの状態を表すのに利用 つまり歩きモーションには16フレームかかる 
+; - C1x9: スプライトの方向 (0: 下, 4: 上, 8: 左, $c: 右)  
+; - C1xA: ???  
+; - C1xB: ???  
+; - C1xC: ???  
+; - C1xD: ???  
+; - C1xE: ???  
+; - C1xF: ???  
+wSpriteStateData1::
 spritestatedata1: MACRO
 \1PictureID:: db
 \1MovementStatus:: db
@@ -243,6 +248,7 @@ spritestatedata1: MACRO
 \1End::
 endm
 
+; 主人公のスプライト合わせて16スプライト分
 wSpritePlayerStateData1::  spritestatedata1 wSpritePlayerStateData1
 wSprite01StateData1::      spritestatedata1 wSprite01StateData1
 wSprite02StateData1::      spritestatedata1 wSprite02StateData1
@@ -260,26 +266,28 @@ wSprite13StateData1::      spritestatedata1 wSprite13StateData1
 wSprite14StateData1::      spritestatedata1 wSprite14StateData1
 wSprite15StateData1::      spritestatedata1 wSprite15StateData1
 
-wSpriteStateData2:: ; c200
-; more data for all sprites on the current map
-; holds info for 16 sprites with $10 bytes each
-; player sprite is always sprite 0
-; C2x0: walk animation counter (counting from $10 backwards when moving)
-; C2x1:
-; C2x2: Y displacement (initialized at 8, supposed to keep moving sprites from moving too far, but bugged)
-; C2x3: X displacement (initialized at 8, supposed to keep moving sprites from moving too far, but bugged)
-; C2x4: Y position (in 2x2 tile grid steps, topmost 2x2 tile has value 4)
-; C2x5: X position (in 2x2 tile grid steps, leftmost 2x2 tile has value 4)
-; C2x6: movement byte 1 (determines whether a sprite can move, $ff:not moving, $fe:random movements, others unknown)
-; C2x7: (?) (set to $80 when in grass, else $0; may be used to draw grass above the sprite)
-; C2x8: delay until next movement (counted downwards, status (c1x1) is set to ready if reached 0)
-; C2x9
-; C2xA
-; C2xB
-; C2xC
-; C2xD
-; C2xE: sprite image base offset (in video ram, player always has value 1, used to compute c1x2)
-; C2xF
+; c200
+; 現在のマップに配置されたすべてのスプライトのデータその2  
+; 16スプライト分の領域がある(1つのスプライトにつき16バイト)
+; プレイヤーのスプライトは常に0番目の領域に配置される
+; 
+; - C2x0: 歩きモーションのアニメーションカウンタ ($10から移動した分だけ減っていく)
+; - C2x1: ???
+; - C2x2: Y displacement (initialized at 8, supposed to keep moving sprites from moving too far, but bugged)
+; - C2x3: X displacement (initialized at 8, supposed to keep moving sprites from moving too far, but bugged)
+; - C2x4: Y position (in 2x2 tile grid steps, topmost 2x2 tile has value 4)
+; - C2x5: X position (in 2x2 tile grid steps, leftmost 2x2 tile has value 4)
+; - C2x6: movement byte 1 (determines whether a sprite can move, $ff:not moving, $fe:random movements, others unknown)
+; - C2x7: (?) (set to $80 when in grass, else $0; may be used to draw grass above the sprite)
+; - C2x8: delay until next movement (counted downwards, status (c1x1) is set to ready if reached 0)
+; - C2x9: ???
+; - C2xA: ???
+; - C2xB: ???
+; - C2xC: ???
+; - C2xD: ???
+; - C2xE: sprite image base offset (in video ram, player always has value 1, used to compute c1x2)
+; - C2xF: ???
+wSpriteStateData2::
 spritestatedata2: MACRO
 \1WalkAnimationCounter:: db
 	ds 1
