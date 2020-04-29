@@ -805,10 +805,13 @@ DoScriptedNPCMovement:
 	ld a, c
 	ld [hl], a ; facing direction
 
-	call AnimScriptedNPCMovement
+	call AnimScriptedNPCMovement	; スプライトのアニメーションを更新
+	
+	; wScriptedNPCWalkCounter(8から減っていく)を減らす
 	ld hl, wScriptedNPCWalkCounter
 	dec [hl]
 	ret nz
+	; wScriptedNPCWalkCounterが0になった
 	ld a, 8
 	ld [wScriptedNPCWalkCounter], a
 	ld hl, wNPCMovementDirections2Index
@@ -877,16 +880,22 @@ AnimScriptedNPCMovement:
 ; a = スプライトの方向
 ; b = VRAMスロット
 .anim
-	; hSpriteVRAMSlotAndFacingを更新
+	; hSpriteVRAMSlotAndFacingを現在の方向に更新
 	add b
 	ld b, a
 	ld [hSpriteVRAMSlotAndFacing], a
 	
+	; アニメーションフレームを更新
 	call AdvanceScriptedNPCAnimFrameCounter
+	
+	; [hl] = c1X2
 	ld hl, wSpriteStateData1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $2
 	ld l, a
+
+	; c1X2 = [hSpriteVRAMSlotAndFacing] + [hSpriteAnimFrameCounter]
+	; つまりスプライトのイメージ番号を更新
 	ld a, [hSpriteVRAMSlotAndFacing]
 	ld b, a
 	ld a, [hSpriteAnimFrameCounter]
@@ -894,21 +903,28 @@ AnimScriptedNPCMovement:
 	ld [hl], a
 	ret
 
+; プログラムされたNPCのフレームカウンタ(c1X7)を進める関数  
+; フレームカウンタが4になっていたら0にリセットしてアニメーションカウンタ(c1X8)をインクリメント
 AdvanceScriptedNPCAnimFrameCounter:
+	; フレームカウンタ(c1X7)をインクリメント
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $7
 	ld l, a
-	ld a, [hl] ; intra-animation frame counter
+	ld a, [hl]
 	inc a
 	ld [hl], a
+
+	; フレームカウンタが4になっていたら0にリセット
 	cp 4
 	ret nz
 	xor a
 	ld [hl], a ; reset intra-animation frame counter
+
+	; アニメーションカウンタ(c1X8)をインクリメント
 	inc l
 	ld a, [hl] ; animation frame counter
 	inc a
-	and $3
+	and $3			; c1X8が4になったら0に戻す
 	ld [hl], a
 	ld [hSpriteAnimFrameCounter], a
 	ret

@@ -1401,7 +1401,8 @@ wCurSpriteMovement2:: ; cf14
 wNPCMovementScriptSpriteOffset::
 	ds 1
 
-wScriptedNPCWalkCounter:: ; cf18
+; cf18
+wScriptedNPCWalkCounter::
 	ds 1
 
 	ds 1

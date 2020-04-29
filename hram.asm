@@ -307,6 +307,7 @@ hDividend2 EQU $FFE5
 hDivisor2  EQU $FFE6
 hQuotient2 EQU $FFE7
 
+; 現在の方向を考慮したスプライトのタイルイメージのあるアドレス?
 hSpriteVRAMSlotAndFacing EQU $FFE9
 
 hCoordsInFrontOfPlayerMatch EQU $FFEA

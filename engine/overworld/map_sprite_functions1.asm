@@ -45,6 +45,7 @@ _UpdateSprites:
 ; NPCのスプライト更新処理
 ; a: $c2Xeの値
 UpdateNonPlayerSprite:
+	; TODO: ???
 	dec a
 	swap a
 	ld [$ff93], a  ; $10 * sprite#
