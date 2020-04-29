@@ -1,43 +1,61 @@
 _UpdateSprites:
 	ld h, $c1
-	inc h
+	inc h		; h = $c2
 	ld a, $e    ; wSpriteStateData2 + $0e
+
+; 各スプライトの更新処理
+; $c2XeのXの値でどのスプライトを処理しているかわかる(0 <= X < 16)
 .spriteLoop
-	ld l, a
+	ld l, a		; hl = $c2Xe = (wSpriteStateData2 + $Xe)
 	sub $e
 	ld c, a
 	ld [H_CURRENTSPRITEOFFSET], a
+
+	; $c2Xeが0ならスプライトの更新をスキップ
 	ld a, [hl]
 	and a
-	jr z, .skipSprite   ; tests $c2Xe
+	jr z, .skipSprite
+
+	; レジスタを退避してスプライトの更新処理
 	push hl
 	push de
 	push bc
 	call .updateCurrentSprite
+	; レジスタを復帰
 	pop bc
 	pop de
 	pop hl
+
+; スプライトの更新をスキップ
 .skipSprite
 	ld a, l
-	add $10             ; move to next sprite
-	cp $e               ; test for overflow (back at $0e)
+	add $10             ; 16バイト足して次のスプライトのデータを指すようにする
+	; すべてのスプライトの更新処理が終わればオーバーフローして$0eに戻っている
+	cp $e               
 	jr nz, .spriteLoop
 	ret
+
+; スプライトの更新処理
 .updateCurrentSprite
+	; 主人公は常にc2Xeが1
 	cp $1
 	jp nz, UpdateNonPlayerSprite
 	jp UpdatePlayerSprite
 
+; NPCのスプライト更新処理
+; a: $c2Xeの値
 UpdateNonPlayerSprite:
 	dec a
 	swap a
 	ld [$ff93], a  ; $10 * sprite#
-	ld a, [wNPCMovementScriptSpriteOffset] ; some sprite offset?
+
+	; wNPCMovementScriptSpriteOffset と H_CURRENTSPRITEOFFSET を比較
+	ld a, [wNPCMovementScriptSpriteOffset] 	; some sprite offset?
 	ld b, a
-	ld a, [H_CURRENTSPRITEOFFSET]
+	ld a, [H_CURRENTSPRITEOFFSET]			 
 	cp b
-	jr nz, .unequal
-	jp DoScriptedNPCMovement
+	jr nz, .unequal							; 等しくない
+	jp DoScriptedNPCMovement				; 等しいとき
 .unequal
 	jp UpdateNPCSprite
 

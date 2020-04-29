@@ -1394,8 +1394,9 @@ wCurSpriteMovement2:: ; cf14
 
 	ds 2
 
-wNPCMovementScriptSpriteOffset:: ; cf17
-; sprite offset of sprite being controlled by NPC movement script
+; cf17  
+; NPCの移動スクリプトによって制御されるスプライトのオフセット
+wNPCMovementScriptSpriteOffset::
 	ds 1
 
 wScriptedNPCWalkCounter:: ; cf18
