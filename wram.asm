@@ -602,7 +602,8 @@ wAnimPalette:: ; cc79
 
 	ds 29
 
-wNPCMovementDirections2:: ; cc97
+; cc97
+wNPCMovementDirections2::
 
 wSwitchPartyMonTempBuffer:: ; cc97
 ; temporary buffer when swapping party mon data
@@ -827,7 +828,8 @@ wInGameTradeReceiveMonSpecies::
 
 	ds 2
 
-wNPCMovementDirections2Index:: ; cd37
+; cd37
+wNPCMovementDirections2Index::
 
 wUnusedCD37:: ; cd37
 
@@ -3020,25 +3022,27 @@ wd72d:: ; d72d
 ; battles anyway).
 	ds 1
 
-wd72e:: ; d72e
-; bit 0: the player has received Lapras in the Silph Co. building
-; bit 1: set in various places, but doesn't appear to have an effect
-; bit 2: the player has healed pokemon at a pokemon center at least once
-; bit 3: the player has a received a pokemon from Prof. Oak
+; d72e  
+; 様々なフラグ管理のためのメモリ  
+; bit 0: シルフコーポレーションでラプラス受け取りイベントを済ませているか  
+; bit 1: 様々な場所で立っているフラグだが、用途は不明  
+; bit 2: 一度でもポケモンセンターを利用したか  
+; bit 3: オーキド博士からポケモンを受け取ったか  
 ; bit 4: disable battles
 ; bit 5: set when a battle ends and when the player blacks out in the overworld due to poison
 ; bit 6: using the link feature
-; bit 7: set if scripted NPC movement has been initialised
+; bit 7: NPCのプログラム動作が初期化されているときに立つ  
+wd72e::
 	ds 1
 
 	ds 1
 
 ; d730  
-; bit 0: NPCスプライトがスクリプトによって動かされているか
-; bit 5: キー入力を無視する
+; bit 0: NPCスプライトがスクリプトによって動かされているか  
+; bit 5: キー入力を無視する  
 ; bit 6: テキスト出力時に文字ごとに遅延を生じさせるか  
-; bit 7: set if joypad states are being simulated in the overworld or an NPC's movement is being scripted  
-wd730:: ; d730
+; bit 7: キー入力がゲーム内で勝手に入れられている場合、またはNPCの動きがスクリプト化されている場合にフラグが立つ
+wd730::
 	ds 1
 
 	ds 1

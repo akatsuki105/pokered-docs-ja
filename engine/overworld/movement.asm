@@ -728,18 +728,21 @@ LoadDEPlusA:
 	ld a, [de]
 	ret
 
+; - NPCの動きをプログラムするメソッドの代替品でゲーム内でも数回しか利用されていない  
+; - NPCとプレイヤーが同じ方向に一緒に動く場合(つまりプレイヤーがNPCの後をぴったりつけて歩く場合に使われる 強制的な連行イベントのこと？)  
+; - 他のメソッドでNPCをプレイヤーと同じ方向に動かすことはできない
 DoScriptedNPCMovement:
-; This is an alternative method of scripting an NPC's movement and is only used
-; a few times in the game. It is used when the NPC and player must walk together
-; in sync, such as when the player is following the NPC somewhere. An NPC can't
-; be moved in sync with the player using the other method.
+	; wd730[7]が0なら何もしない
 	ld a, [wd730]
 	bit 7, a
 	ret z
+
+	; InitScriptedNPCMovementが必ず行われている状態にする
 	ld hl, wd72e
 	bit 7, [hl]
 	set 7, [hl]
-	jp z, InitScriptedNPCMovement
+	jp z, InitScriptedNPCMovement	; まだ行われていないなら実行(wd72e[7]を見て判断)
+
 	ld hl, wNPCMovementDirections2
 	ld a, [wNPCMovementDirections2Index]
 	add l
