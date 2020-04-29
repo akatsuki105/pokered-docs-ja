@@ -269,6 +269,8 @@ hTilesetType EQU $FFD7
 
 hMovingBGTilesCounter1 EQU $FFD8
 
+; 現在処理中のスプライトの番号に$10をかけたもの  
+; $10をかけるのはスプライトのデータ領域1つのサイズが$10であるから  
 H_CURRENTSPRITEOFFSET EQU $FFDA ; multiple of $10
 
 hItemCounter EQU $FFDB

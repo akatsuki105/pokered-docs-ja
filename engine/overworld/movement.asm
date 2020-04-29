@@ -729,7 +729,7 @@ LoadDEPlusA:
 	ret
 
 ; - NPCの動きをプログラムするメソッドの代替品でゲーム内でも数回しか利用されていない  
-; - NPCとプレイヤーが同じ方向に一緒に動く場合(つまりプレイヤーがNPCの後をぴったりつけて歩く場合に使われる 強制的な連行イベントのこと？)  
+; - NPCとプレイヤーが同じ方向に一緒に動く場合(つまりプレイヤーがNPCの後をぴったりつけて歩く場合 強制的な連行イベントのこと？)に使われる 
 ; - 他のメソッドでNPCをプレイヤーと同じ方向に動かすことはできない
 DoScriptedNPCMovement:
 	; wd730[7]が0なら何もしない
@@ -743,36 +743,39 @@ DoScriptedNPCMovement:
 	set 7, [hl]
 	jp z, InitScriptedNPCMovement	; まだ行われていないなら実行(wd72e[7]を見て判断)
 
+	; hl = wNPCMovementDirections2 + [wNPCMovementDirections2Index]
 	ld hl, wNPCMovementDirections2
 	ld a, [wNPCMovementDirections2Index]
-	add l
+	add l						
 	ld l, a
 	jr nc, .noCarry
-	inc h
+	inc h				; キャリーがあった場合は帳尻を合わせる
 .noCarry
 	ld a, [hl]
-; check if moving up
+	
+	; NPCが上に動いているかチェック
 	cp NPC_MOVEMENT_UP
-	jr nz, .checkIfMovingDown
+	jr nz, .checkIfMovingDown		; そうでないなら次は下に動いているか
+	; NPCが上に動いている場合
 	call GetSpriteScreenYPointer
 	ld c, SPRITE_FACING_UP
 	ld a, -2
 	jr .move
-.checkIfMovingDown
+.checkIfMovingDown	; 下
 	cp NPC_MOVEMENT_DOWN
 	jr nz, .checkIfMovingLeft
 	call GetSpriteScreenYPointer
 	ld c, SPRITE_FACING_DOWN
 	ld a, 2
 	jr .move
-.checkIfMovingLeft
+.checkIfMovingLeft	; 左
 	cp NPC_MOVEMENT_LEFT
 	jr nz, .checkIfMovingRight
 	call GetSpriteScreenXPointer
 	ld c, SPRITE_FACING_LEFT
 	ld a, -2
 	jr .move
-.checkIfMovingRight
+.checkIfMovingRight	; 右
 	cp NPC_MOVEMENT_RIGHT
 	jr nz, .noMatch
 	call GetSpriteScreenXPointer
@@ -782,16 +785,26 @@ DoScriptedNPCMovement:
 .noMatch
 	cp $ff
 	ret
+; スプライトを移動させる、つまり座標などの位置データを変更する  
+; a: 移動量  
+; c: 移動方向  
+; l: 元のXまたはY座標のポインタ
 .move
+	; 座標に移動量を加える
 	ld b, a
 	ld a, [hl]
 	add b
-	ld [hl], a
+	ld [hl], a		; [hl] += a
+
+	; hl = スプライトの方向のポインタ
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $9
-	ld l, a
+	ld l, a							; hは上でc1がセットされたままなので
+
+	; 方向を設定
 	ld a, c
 	ld [hl], a ; facing direction
+
 	call AnimScriptedNPCMovement
 	ld hl, wScriptedNPCWalkCounter
 	dec [hl]
@@ -809,37 +822,49 @@ InitScriptedNPCMovement:
 	ld [wScriptedNPCWalkCounter], a
 	jp AnimScriptedNPCMovement
 
+; 現在処理中のスプライトのY座標を返す
 GetSpriteScreenYPointer:
-	ld a, $4
+	ld a, $4			; GetSpriteScreenXYPointerCommonでc1X4とするため
 	ld b, a
 	jr GetSpriteScreenXYPointerCommon
 
+; 現在処理中のスプライトのX座標を返す
 GetSpriteScreenXPointer:
-	ld a, $6
+	ld a, $6			; GetSpriteScreenXYPointerCommonでc1X6とするため
 	ld b, a
 
+; 現在処理中のスプライトのXまたはY座標を返す  
+; bに x座標が欲しいなら$6,  y座標が欲しいなら$4を入れる  
+; lに座標のポインタが入って帰ってくる
 GetSpriteScreenXYPointerCommon:
 	ld hl, wSpriteStateData1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add l
-	add b
+	add b		; a = wSpriteStateData1 + [H_CURRENTSPRITEOFFSET] + b
 	ld l, a
 	ret
 
 AnimScriptedNPCMovement:
+	; [hl] = スプライトのイメージデータがあるアドレス
 	ld hl, wSpriteStateData2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $e
 	ld l, a
+	
+	; TODO
+	; b = VRAMスロット
 	ld a, [hl] ; VRAM slot
 	dec a
 	swap a
 	ld b, a
+	
+	; a = スプライトの移動方向
 	ld hl, wSpriteStateData1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $9
 	ld l, a
 	ld a, [hl] ; facing direction
+
 	cp SPRITE_FACING_DOWN
 	jr z, .anim
 	cp SPRITE_FACING_UP
@@ -849,10 +874,14 @@ AnimScriptedNPCMovement:
 	cp SPRITE_FACING_RIGHT
 	jr z, .anim
 	ret
+; a = スプライトの方向
+; b = VRAMスロット
 .anim
+	; hSpriteVRAMSlotAndFacingを更新
 	add b
 	ld b, a
 	ld [hSpriteVRAMSlotAndFacing], a
+	
 	call AdvanceScriptedNPCAnimFrameCounter
 	ld hl, wSpriteStateData1
 	ld a, [H_CURRENTSPRITEOFFSET]
