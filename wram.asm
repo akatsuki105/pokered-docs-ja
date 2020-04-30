@@ -1530,8 +1530,9 @@ wLoadedMon:: party_struct wLoadedMon ; cf98
 wFontLoaded::
 	ds 1
 
-wWalkCounter:: ; cfc5
-; walk animation counter
+; cfc5  
+; プレイヤーの歩きモーションカウンタ
+wWalkCounter::
 	ds 1
 
 wTileInFrontOfPlayer:: ; cfc6

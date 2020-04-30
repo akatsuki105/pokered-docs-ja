@@ -45,7 +45,7 @@ _UpdateSprites:
 ; NPCのスプライト更新処理
 ; a: $c2Xeの値
 UpdateNonPlayerSprite:
-	; TODO: ???
+	; UpdateSpriteImageで利用するためにスプライト番号を$ff93に保存
 	dec a
 	swap a
 	ld [$ff93], a  ; $10 * sprite#

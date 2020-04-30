@@ -1,3 +1,5 @@
+; マップ上にテキストボックスが存在するとき、
+; マップが表示されているのは Y <= $60つまり上から96pxまでであることを示している
 MAP_TILESET_SIZE EQU $60
 
 UpdatePlayerSprite:
@@ -521,38 +523,49 @@ CheckSpriteAvailability:
 	cp b
 	jr c, .spriteInvisible  ; スプライトがプレイヤーより画面上で右にいる
 
-; make the sprite invisible if a text box is in front of it
+; テキストボックスで隠れるときにスプライトを非表示にする  
 ; $5F is the maximum number for map tiles
 .skipXVisibilityTest
 	call GetTileSpriteStandsOn
 	ld d, MAP_TILESET_SIZE
 	ld a, [hli]
 	cp d
-	jr nc, .spriteInvisible ; standing on tile with ID >=MAP_TILESET_SIZE (bottom left tile)
+	jr nc, .spriteInvisible ; スプライトがいるグリッド(16*16px)の左下のタイル(8*8px)がテキストボックスに隠れている
 	ld a, [hld]
 	cp d
-	jr nc, .spriteInvisible ; standing on tile with ID >=MAP_TILESET_SIZE (bottom right tile)
+	jr nc, .spriteInvisible ; スプライトがいるグリッド(16*16px)の右下のタイル(8*8px)がテキストボックスに隠れている
+
+	; 1行分(20 = 160/8)上に戻る
 	ld bc, -20
 	add hl, bc              ; go back one row of tiles
+
 	ld a, [hli]
 	cp d
-	jr nc, .spriteInvisible ; standing on tile with ID >=MAP_TILESET_SIZE (top left tile)
+	jr nc, .spriteInvisible ; スプライトがいるグリッド(16*16px)の右上のタイル(8*8px)がテキストボックスに隠れている
 	ld a, [hl]
 	cp d
-	jr c, .spriteVisible    ; standing on tile with ID >=MAP_TILESET_SIZE (top right tile)
+	jr c, .spriteVisible    ; スプライトがいるグリッド(16*16px)の右上のタイル(8*8px)がテキストボックスに隠れてい"ない"
+
+; スプライトを画面非表示にする
 .spriteInvisible
+	; a = c1X2 = スプライトのイメージ番号($ffなら画面非表示)
 	ld h, wSpriteStateData1 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $2
 	ld l, a
+	; c1X2 = $ff
 	ld [hl], $ff       ; c1x2
 	scf
 	jr .done
+; スプライトを画面に表示する
 .spriteVisible
 	ld c, a
+
+	; a = wWalkCounter = 0 つまりプレイヤーが現在歩きモーション中でないことを確認
 	ld a, [wWalkCounter]
 	and a
 	jr nz, .done           ; if player is currently walking, we're done
+
 	call UpdateSpriteImage
 	inc h
 	ld a, [H_CURRENTSPRITEOFFSET]
@@ -569,22 +582,32 @@ CheckSpriteAvailability:
 .done
 	ret
 
+; 
 UpdateSpriteImage:
+	; hl = $c1X8
 	ld h, $c1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $8
 	ld l, a
+
+	; a = スプライトの方向
+	; b = 歩きモーションカウンタ
 	ld a, [hli]        ; c1x8: walk animation frame
 	ld b, a
 	ld a, [hl]         ; c1x9: facing direction
+	; b = a + b
 	add b
 	ld b, a
+
 	ld a, [$ff93]  ; current sprite offset
 	add b
 	ld b, a
+
+	; hl = $c1X2 = スプライトのイメージ番号
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $2
 	ld l, a
+
 	ld [hl], b         ; c1x2: sprite to display
 	ret
 
@@ -702,35 +725,48 @@ CanWalkOntoTile:
 	scf                ; set carry (marking failure to walk)
 	ret
 
-; calculates the tile pointer pointing to the tile the current sprite stands on
-; this is always the lower left tile of the 2x2 tile blocks all sprites are snapped to
-; hl: output pointer
+; 現在のスプライトが表示されている場所のアドレスのポインタを計算する  
+; これは常に、すべてのスプライトがスナップされる2x2タイルブロック(16*16)の左下のタイルとなる  
+; hlに結果(ポインタ)が格納されて返る
+; 
+; 例:  
+; 例えばスクリーン左上から見て左3タイル目、上から4タイル目( (x, y)=(3,4) )の位置にスプライトが立っているなら、
+; wTileMap + 20*(4 + 1) + 3のアドレスがhlに格納されて返る(yが+1されているのはコードを参照)
 GetTileSpriteStandsOn:
+	; a = c1x4 = スプライトのY座標
 	ld h, wSpriteStateData1 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
-	ld a, [hli]     ; c1x4: screen Y position
-	add $4          ; align to 2*2 tile blocks (Y position is always off 4 pixels to the top)
-	and $f0         ; in case object is currently moving
+	ld a, [hli]
+
+	add $4          ; タイルブロックに合わせる(Y座標は常に4px分加算されているので+4して+8にしてタイルに合わせる)
+	and $f0         ; TODO: in case object is currently moving
 	srl a           ; screen Y tile * 4
 	ld c, a
 	ld b, $0
+
+	; a = c1X6 = スプライトのX座標
 	inc l
-	ld a, [hl]      ; c1x6: screen Y position
+	ld a, [hl]      ; c1x6: screen X position
 	srl a
 	srl a
 	srl a            ; screen X tile
 	add SCREEN_WIDTH ; screen X tile + 20
 	ld d, $0
 	ld e, a
+
+	; hl = wTileMapの始点
 	coord hl, 0, 0
+
+	; wTileMap + 20*(screen Y tile + 1) + screen X tile
+	; hlに現在処理中のスプライトが存在している画面のバッファアドレスが入る
 	add hl, bc
 	add hl, bc
 	add hl, bc
 	add hl, bc
 	add hl, bc
-	add hl, de     ; wTileMap + 20*(screen Y tile + 1) + screen X tile
+	add hl, de     ; hl = 5*bc + de
 	ret
 
 ; loads [de+a] into a
