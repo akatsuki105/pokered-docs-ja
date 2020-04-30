@@ -97,30 +97,41 @@ InitializeMissableObjectsFlags:
 	inc hl
 	jr .missableObjectsLoop
 
-; tests if current sprite is a missable object that is hidden/has been removed
+; 現在処理中のスプライトが非表示になっているかを確認する  
+; 結果はAレジスタに格納される 0なら表示 0以外なら非表示
 IsObjectHidden:
+	; b = 現在処理中のスプライト番号
 	ld a, [H_CURRENTSPRITEOFFSET]
 	swap a
 	ld b, a
+	; hl = wMissableObjectList
 	ld hl, wMissableObjectList
 .loop
+	; いきなり終端記号$FF
 	ld a, [hli]
 	cp $ff
 	jr z, .notHidden ; not missable -> not hidden
+
+	; 現在処理中のスプライト番号と一致するか確認
 	cp b
 	ld a, [hli]
-	jr nz, .loop
+	jr nz, .loop			; 一致しないなら次
+
+	; a = 現在処理中のスプライト番号
+	; wMissableObjectFlagsのcビット目を読みだす
 	ld c, a
 	ld b, FLAG_TEST
 	ld hl, wMissableObjectFlags
-	call MissableObjectFlagAction
+	call MissableObjectFlagAction			; 結果はcに入っている
+	
+	; cが0以外ならスプライトは非表示になっている
 	ld a, c
 	and a
 	jr nz, .hidden
 .notHidden
 	xor a
 .hidden
-	ld [$ffe5], a
+	ld [$ffe5], a	; 結果を格納
 	ret
 
 ; adds missable object (items, leg. pokemon, etc.) to the map
@@ -144,8 +155,8 @@ HideObject:
 	call MissableObjectFlagAction   ; set "removed" flag
 	jp UpdateSprites
 
+; FlagAction と全く同じ処理
 MissableObjectFlagAction:
-; identical to FlagAction
 
 	push hl
 	push de

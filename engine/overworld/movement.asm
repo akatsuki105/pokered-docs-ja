@@ -481,41 +481,49 @@ InitializeSpriteScreenPosition:
 
 ; スプライトが非表示か、何もできない状態であるか確認する
 CheckSpriteAvailability:
+	; スプライトが非表示状態か確認
 	predef IsObjectHidden
 	ld a, [$ffe5]
 	and a
-	jp nz, .spriteInvisible
-	ld h, wSpriteStateData2 / $100
+	jp nz, .spriteInvisible			; スプライトは非表示
+
+	; a = [$c2X6] = 動作データ1 ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用) 
+	ld h, wSpriteStateData2 / $100	; h = $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
 	ld l, a
-	ld a, [hl]      ; c2x6: movement byte 1
+	ld a, [hl]
+
 	cp $fe
-	jr c, .skipXVisibilityTest ; movement byte 1 < $fe (i.e. the sprite's movement is scripted)
+	jr c, .skipXVisibilityTest ; 動作データ1 < $fe (スプライトの動きがプログラム化されているときなど)
+
+	; b = [$c2X4] = スプライトのY座標
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
-	ld b, [hl]      ; c2x4: Y pos (+4)
+	ld b, [hl]
+
 	ld a, [wYCoord]
 	cp b
-	jr z, .skipYVisibilityTest
-	jr nc, .spriteInvisible ; above screen region
+	jr z, .skipYVisibilityTest	; プレイヤーとスプライトのY座標が一致
+	jr nc, .spriteInvisible ; スプライトがプレイヤーより画面上で上にいる
 	add $8                  ; screen is 9 tiles high
 	cp b
-	jr c, .spriteInvisible  ; below screen region
+	jr c, .spriteInvisible  ; スプライトがプレイヤーより画面上で下にいる
 .skipYVisibilityTest
 	inc l
 	ld b, [hl]      ; c2x5: X pos (+4)
 	ld a, [wXCoord]
 	cp b
-	jr z, .skipXVisibilityTest
-	jr nc, .spriteInvisible ; left of screen region
+	jr z, .skipXVisibilityTest	; プレイヤーとスプライトのX座標が一致
+	jr nc, .spriteInvisible ; スプライトがプレイヤーより画面上で左にいる
 	add $9                  ; screen is 10 tiles wide
 	cp b
-	jr c, .spriteInvisible  ; right of screen region
-.skipXVisibilityTest
+	jr c, .spriteInvisible  ; スプライトがプレイヤーより画面上で右にいる
+
 ; make the sprite invisible if a text box is in front of it
 ; $5F is the maximum number for map tiles
+.skipXVisibilityTest
 	call GetTileSpriteStandsOn
 	ld d, MAP_TILESET_SIZE
 	ld a, [hli]

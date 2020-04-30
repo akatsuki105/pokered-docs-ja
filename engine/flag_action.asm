@@ -1,14 +1,16 @@
 FlagActionPredef:
 	call GetPredefRegisters
 
+; hlのビットフィールドのビットcにおいてアクションbを実行する
+; 
+; アクションb
+; - 0: cビットをクリア
+; - 1: cビットをセット
+; - 2: cビットをリード
+; 
+; cレジスタに結果を入れて返す
 FlagAction:
-; Perform action b on bit c
-; in the bitfield at hl.
-;  0: reset
-;  1: set
-;  2: read
-; Return the result in c.
-
+	; レジスタを退避
 	push hl
 	push de
 	push bc
@@ -66,8 +68,10 @@ FlagAction:
 	ld a, d
 	and b
 .done
+	; レジスタを復帰
 	pop bc
 	pop de
 	pop hl
+	; 結果を格納
 	ld c, a
 	ret

@@ -2401,11 +2401,14 @@ wCurrentTileBlockMapViewPointer:: ; d35f
 ; pointer to the upper left corner of the current view in the tile block map
 	ds 2
 
-wYCoord:: ; d361
-; playerâ€™s position on the current map
+; d361  
+; 現在のマップでのプレイヤーのY座標(ピクセル単位)
+wYCoord::
 	ds 1
 
-wXCoord:: ; d362
+; d362  
+; 現在のマップでのプレイヤーのX座標(ピクセル単位)
+wXCoord::
 	ds 1
 
 wYBlockCoord:: ; d363
@@ -2679,8 +2682,10 @@ wUnusedD5A3:: ; d5a3
 wPlayerCoins:: ; d5a4
 	ds 2 ; BCD
 
-wMissableObjectFlags:: ; d5a6
-; bit array of missable objects. set = removed
+; d5a6  
+; 非表示のオブジェクトを表すbit列  
+; bitが1なら非表示  
+wMissableObjectFlags::
 	ds 32
 wMissableObjectFlagsEnd::
 
@@ -2689,10 +2694,10 @@ wMissableObjectFlagsEnd::
 wd5cd:: ds 1 ; temp copy of c1x2 (sprite facing/anim)
 
 ; d5ce  
-; each entry consists of 2 bytes  
-; * the sprite ID (depending on the current map)  
-; * the missable object index (global, used for wMissableObjectFlags)  
-; terminated with $FF  
+; 各エントリごとに2バイトのサイズ(最大17エントリ)      
+; - スプライトID(現在のマップに依存)  
+; - そのスプライトの番号(wSpriteDataStartにおいて何番目にあるか)  
+; 終端記号として$FF  
 wMissableObjectList::
 	ds 17 * 2
 
