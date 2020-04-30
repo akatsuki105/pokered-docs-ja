@@ -149,10 +149,13 @@ add_predef: MACRO
 	dw \1
 ENDM
 
+; Aレジスタに指定したpredef-routineのIDを格納
 predef_id: MACRO
 	ld a, (\1Predef - PredefPointers) / 3
 ENDM
 
+; 引数で指定したpredef-routineを呼び出す  
+; \1: predefマクロで呼び出すpredef-routine
 predef: MACRO
 	predef_id \1
 	call Predef
