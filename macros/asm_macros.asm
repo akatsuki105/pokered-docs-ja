@@ -142,6 +142,7 @@ predef_const: MACRO
 	const \1PredefID
 ENDM
 
+; バンク番号とアドレスをPredefテーブルに追加する
 add_predef: MACRO
 \1Predef::
 	db BANK(\1)

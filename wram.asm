@@ -277,7 +277,7 @@ wSprite15StateData1::      spritestatedata1 wSprite15StateData1
 ; - C2x3: X 変化量 (8で初期化 スプライトが初期座標から離れすぎないために設定されていると考えられるがバグがある)
 ; - C2x4: Y 座標 (2*2のグリッド単位, 一番上のグリッドにいるときは4となる)
 ; - C2x5: X 座標 (2*2のグリッド単位, 一番左のグリッドにいるときは4となる)
-; - C2x6: スプライトの動きを決めるデータ ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用)
+; - C2x6: 動作データ1(スプライトの動きを決めるデータ) ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用)
 ; - C2x7: 用途不明 (草むらにスプライトがいるとき$80になってそれ以外では$0になっている おそらくスプライトの上に草むらを描画するのに利用)
 ; - C2x8: 次の動きまでのクールタイム (どんどん減って行って, 0になるとC1x1が1にセットされる)
 ; - C2x9: ???
@@ -1390,8 +1390,9 @@ wPredefParentBank:: ; cf12
 
 wSpriteIndex:: ds 1
 
-wCurSpriteMovement2:: ; cf14
-; movement byte 2 of current sprite
+; cf14  
+; 現在処理中のスプライトの動作データ2
+wCurSpriteMovement2::
 	ds 1
 
 	ds 2
@@ -2594,8 +2595,10 @@ wYOffsetSinceLastSpecialWarp:: ; d4e2
 wXOffsetSinceLastSpecialWarp:: ; d4e3
 	ds 1
 
-wMapSpriteData:: ; d4e4
-; two bytes per sprite (movement byte 2, text ID)
+; d4e4  
+; スプライトごとに2バイト  
+; [動作データ2, テキストID]
+wMapSpriteData::
 	ds 32
 
 wMapSpriteExtraData:: ; d504

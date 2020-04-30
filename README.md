@@ -22,6 +22,7 @@
 - [バンク](./docs/bank.md)
 - [テキストデータ](./docs/text.md)
 - [マップ](./docs/map.md)
+- [predef](./docs/predef.md)
 - [スプライト](./docs/sprite.md)
 - [文字コード](./docs/charcode.md)
 

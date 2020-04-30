@@ -112,20 +112,27 @@ UnusedReadSpriteDataFunction:
 	ret
 
 UpdateNPCSprite:
+	; a = 処理中のスプライト番号 
 	ld a, [H_CURRENTSPRITEOFFSET]
-	swap a
+	swap a				; H_CURRENTSPRITEOFFSETは$10倍した値なので
+	; hl = [動作データ2, テキストID]
 	dec a
-	add a
+	add a				; wMapSpriteDataは各2バイトなので2倍
 	ld hl, wMapSpriteData
 	add l
 	ld l, a
-	ld a, [hl]        ; read movement byte 2
+
+	; wCurSpriteMovement2を現在処理中のスプライトの値に更新
+	ld a, [hl]        ; a = 動作データ2
 	ld [wCurSpriteMovement2], a
+
+	; a = 現在のスプライトの動作状況(c1X1)
 	ld h, $c1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	ld l, a
 	inc l
 	ld a, [hl]        ; c1x1
+	; 未初期化なら初期化
 	and a
 	jp z, InitializeSpriteStatus
 	call CheckSpriteAvailability
@@ -472,7 +479,7 @@ InitializeSpriteScreenPosition:
 	ld [hl], a      ; c1x6 (screen X position)
 	ret
 
-; tests if sprite is off screen or otherwise unable to do anything
+; スプライトが非表示か、何もできない状態であるか確認する
 CheckSpriteAvailability:
 	predef IsObjectHidden
 	ld a, [$ffe5]

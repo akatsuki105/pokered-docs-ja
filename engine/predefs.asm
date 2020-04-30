@@ -1,46 +1,55 @@
+; wPredefIDで指定したPredef関数のバンクとポインタを取得する    
+; レジスタ(hl, de, bc)の中身をwPredefRegistersに退避  
+; 次に、バンクとpredef wPredefIDのアドレスを[wPredefBank]とhlに格納
+; 
+; 返り値:
+; - wPredefBank: Predef関数のバンク番号
+; - hl: Predef関数のアドレス
 GetPredefPointer:
-; Store the contents of the register
-; pairs (hl, de, bc) at wPredefRegisters.
-; Then put the bank and address of predef
-; wPredefID in [wPredefBank] and hl.
-
+	; hlを退避
 	ld a, h
 	ld [wPredefRegisters], a
 	ld a, l
 	ld [wPredefRegisters + 1], a
 
+	; deを退避
 	ld hl, wPredefRegisters + 2
 	ld a, d
 	ld [hli], a
 	ld a, e
 	ld [hli], a
 
+	; bcを退避
 	ld a, b
 	ld [hli], a
 	ld [hl], c
 
+	; PredefPointers
 	ld hl, PredefPointers
-	ld de, 0
 
-	ld a, [wPredefID]
+	; deがPredefPointersのwPredefIDのオフセットを指すようにする
+	ld de, 0
+	ld a, [wPredefID]		; a = wPredefID
+	ld e, a					; e = wPredefID
+	add a					; a *= 2
+	add e					; a *= 3 各エントリのサイズは3バイトなので
 	ld e, a
-	add a
-	add e
-	ld e, a
-	jr nc, .nocarry
+	jr nc, .nocarry			; キャリーを処理
 	inc d
 
 .nocarry
+	; deがPredefPointersのwPredefIDのエントリアドレスを指すようにする
 	add hl, de
 	ld d, h
 	ld e, l
 
-	; get bank of predef routine
+	; wPredefBankに対象のPredef関数のバンク番号を入れる
 	ld a, [de]
 	ld [wPredefBank], a
 
 	; get pointer
-	inc de
+	inc de		; エントリの1バイト目はバンク番号なのでいらない
+	; hl = Predef関数のアドレス
 	ld a, [de]
 	ld l, a
 	inc de
@@ -49,9 +58,11 @@ GetPredefPointer:
 
 	ret
 
+; **PredefPointers**  
+; Predefされた関数のテーブル  
+; 各エントリはPredefされた関数のバンク番号とアドレスを持っている  
+; overworld mapスクリプト内で使用されている様子
 PredefPointers::
-; these are pointers to ASM routines.
-; they appear to be used in overworld map scripts.
 	add_predef DrawPlayerHUDAndHPBar
 	add_predef CopyUncompressedPicToTilemap
 	add_predef AnimateSendingOutMon
