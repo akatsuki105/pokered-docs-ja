@@ -40,7 +40,7 @@ predef [predef_routine_name]
 
 のようにしてpredef-routineを実行することができる
 
-## 参照
+## 参考
 
  - [predef.asm](../home/predef.asm)
  - [predefs.asm](../engine/predefs.asm)

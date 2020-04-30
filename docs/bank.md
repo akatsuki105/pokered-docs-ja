@@ -51,6 +51,6 @@
  0x2e  |  null
  0x2f  |  null
 
-## 参照
+## 参考
 
 [pokered.link](../pokered.link)  
