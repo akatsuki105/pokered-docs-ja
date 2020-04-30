@@ -117,6 +117,7 @@ UpdateNPCSprite:
 	; a = 処理中のスプライト番号 
 	ld a, [H_CURRENTSPRITEOFFSET]
 	swap a				; H_CURRENTSPRITEOFFSETは$10倍した値なので
+
 	; hl = [動作データ2, テキストID]
 	dec a
 	add a				; wMapSpriteDataは各2バイトなので2倍
@@ -124,7 +125,7 @@ UpdateNPCSprite:
 	add l
 	ld l, a
 
-	; wCurSpriteMovement2を現在処理中のスプライトの値に更新
+	; wCurSpriteMovement2を現在処理中のスプライトの動作データ2に更新
 	ld a, [hl]        ; a = 動作データ2
 	ld [wCurSpriteMovement2], a
 
@@ -137,24 +138,37 @@ UpdateNPCSprite:
 	; 未初期化なら初期化
 	and a
 	jp z, InitializeSpriteStatus
+
+	; スプライトがテキストボックスに隠れていて非表示か、または草むらにいる、もしくは主人公が歩きモーション中か確認してそうなら戻る
 	call CheckSpriteAvailability
 	ret c             ; if sprite is invisible, on tile >=MAP_TILESET_SIZE, in grass or player is currently walking
+
+	; a = c1x1
 	ld h, $c1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	ld l, a
 	inc l
 	ld a, [hl]        ; c1x1
+
+	; NPCがプレイヤーの方向を向いていないなら向かせる
 	bit 7, a ; is the face player flag set?
 	jp nz, MakeNPCFacePlayer
+
+	; b = c1x1
 	ld b, a
+
+	; 会話の準備
 	ld a, [wFontLoaded]
 	bit 0, a
 	jp nz, notYetMoving
+
+	; c1x1 == 2かもしくは3か
 	ld a, b
 	cp $2
 	jp z, UpdateSpriteMovementDelay  ; c1x1 == 2
 	cp $3
 	jp z, UpdateSpriteInWalkingAnimation  ; c1x1 == 3
+
 	ld a, [wWalkCounter]
 	and a
 	ret nz           ; don't do anything yet if player is currently moving (redundant, already tested in CheckSpriteAvailability)
@@ -411,11 +425,10 @@ notYetMoving:
 	ld [hl], $0             ; c1x8 = 0 (walk animation frame)
 	jp UpdateSpriteImage
 
+; プレイヤーに話しかけられたときにNPCにプレイヤーの方向を向かせる関数
 MakeNPCFacePlayer:
-; Make an NPC face the player if the player has spoken to him or her.
-
-; Check if the behaviour of the NPC facing the player when spoken to is
-; disabled. This is only done when rubbing the S.S. Anne captain's back.
+; プレイヤーに話しかけられたときに方向が変わらないNPCもいるのでそれの確認を行う  
+; これはサントアンヌ号の船長の背後から話しかけたときのみ起こる
 	ld a, [wd72d]
 	bit 5, a
 	jr nz, notYetMoving
@@ -482,6 +495,7 @@ InitializeSpriteScreenPosition:
 	ret
 
 ; スプライトが非表示か、何もできない状態であるか確認する
+; 何もできない状態 = 主人公が歩きモーション中のときとかが該当する
 CheckSpriteAvailability:
 	; スプライトが非表示状態か確認
 	predef IsObjectHidden
@@ -566,23 +580,28 @@ CheckSpriteAvailability:
 	and a
 	jr nz, .done           ; if player is currently walking, we're done
 
-	call UpdateSpriteImage
+	call UpdateSpriteImage ; c1X2を更新
+
+	; hl = c2X7
 	inc h
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $7
 	ld l, a
+
+	; スプライトが草むらにいるか確認
 	ld a, [wGrassTile]
 	cp c
-	ld a, $0
+	ld a, $0		; 草むらにいない c2X7 = $00
 	jr nz, .notInGrass
-	ld a, $80
+
+	ld a, $80		; 草むらにいる c2X7 = $80
 .notInGrass
 	ld [hl], a       ; c2x7
 	and a
 .done
 	ret
 
-; 
+; $c1X2を更新する
 UpdateSpriteImage:
 	; hl = $c1X8
 	ld h, $c1

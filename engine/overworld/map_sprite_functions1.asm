@@ -50,13 +50,13 @@ UpdateNonPlayerSprite:
 	swap a
 	ld [$ff93], a  ; $10 * sprite#
 
-	; wNPCMovementScriptSpriteOffset と H_CURRENTSPRITEOFFSET を比較
+	; 更新対象のスプライトがプログラム化されているNPCかで更新処理を分岐
 	ld a, [wNPCMovementScriptSpriteOffset] 	; some sprite offset?
 	ld b, a
 	ld a, [H_CURRENTSPRITEOFFSET]			 
 	cp b
-	jr nz, .unequal							; 等しくない
-	jp DoScriptedNPCMovement				; 等しいとき
+	jr nz, .unequal
+	jp DoScriptedNPCMovement				; プログラム化されているNPC
 .unequal
 	jp UpdateNPCSprite
 

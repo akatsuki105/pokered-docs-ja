@@ -1398,7 +1398,7 @@ wCurSpriteMovement2::
 	ds 2
 
 ; cf17  
-; NPCの移動スクリプトによって制御されるスプライトのオフセット
+; NPCの移動プログラムによって制御されるスプライトのオフセット
 wNPCMovementScriptSpriteOffset::
 	ds 1
 
@@ -2656,7 +2656,8 @@ wTilesetCollisionPtr:: ; d530
 wTilesetTalkingOverTiles:: ; d532
 	ds 3
 
-wGrassTile:: ; d535
+; d535
+wGrassTile::
 	ds 1
 
 	ds 4
