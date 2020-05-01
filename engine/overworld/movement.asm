@@ -237,25 +237,30 @@ UpdateNPCSprite:
 	call GetTileSpriteStandsOn
 	call Random
 
-; a
-; hl
 .determineDirection
-	ld b, a
+	ld b, a				; aをbに退避
+
+	; movement byte 2の方向データが優先される
 	ld a, [wCurSpriteMovement2]
 	cp $d0
-	jr z, .moveDown    ; movement byte 2 = $d0 forces down
+	jr z, .moveDown    	; movement byte 2 = $d0 forces down
 	cp $d1
-	jr z, .moveUp      ; movement byte 2 = $d1 forces up
+	jr z, .moveUp      	; movement byte 2 = $d1 forces up
 	cp $d2
-	jr z, .moveLeft    ; movement byte 2 = $d2 forces left
+	jr z, .moveLeft    	; movement byte 2 = $d2 forces left
 	cp $d3
-	jr z, .moveRight   ; movement byte 2 = $d3 forces right
-	ld a, b
-	cp $40             ; a < $40: down (or left)
+	jr z, .moveRight   	; movement byte 2 = $d3 forces right
+
+	ld a, b				; bに退避しておいたaを復帰
+
+	; a < $40: down (or left)
+	cp $40             	
 	jr nc, .notDown
+
+	; movement byte 2 = $2 only allows left or right
 	ld a, [wCurSpriteMovement2]
 	cp $2
-	jr z, .moveLeft    ; movement byte 2 = $2 only allows left or right
+	jr z, .moveLeft
 .moveDown
 	ld de, 2*SCREEN_WIDTH
 	add hl, de         ; move tile pointer two rows down

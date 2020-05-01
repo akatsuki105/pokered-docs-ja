@@ -1,5 +1,10 @@
-
-lb: MACRO ; r, hi, lo
+; \1 = uint8(\2) | uint8(\3)
+; 
+; args
+; - \1: 2バイトレジスタ e.g. BC, DE
+; - \2: 上位バイト
+; - \3: 下位バイト
+lb: MACRO
 	ld \1, ((\2) & $ff) << 8 + ((\3) & $ff)
 ENDM
 

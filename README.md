@@ -9,7 +9,7 @@
 ## 前提知識
 
 - アセンブリやリンカなどの一般的な低レイヤの知識
-- 割り込みやMBC、バンクなどのGameBoyのハードウェア仕様
+- gbz80のISAや割り込みやMBC、バンクなどのGameBoyのハードウェア仕様
 - [rgbds(Rednex Game Boy Development System)](https://github.com/rednex/rgbds)に関する多少の理解
 
 またエディタを使ってコードを読む場合はVSCodeと[rgbds用の拡張機能](https://marketplace.visualstudio.com/items?itemName=donaldhays.rgbds-z80)の使用を推奨します。
@@ -24,6 +24,7 @@
 - [文字コード](./docs/charcode.md)
 - [マップオブジェクト](./docs/map_object.md)
 - [マップ](./docs/map.md)
+- [movement byte](./docs/movement_byte.md)
 - [picファイル](./docs/pic_format.md)
 - [predef](./docs/predef.md)
 - [rgbgfx](./docs/rgbgfx.md)
