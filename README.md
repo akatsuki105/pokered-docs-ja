@@ -24,12 +24,14 @@
 - [文字コード](./docs/charcode.md)
 - [マップオブジェクト](./docs/map_object.md)
 - [マップ](./docs/map.md)
+- [picファイル](./docs/pic_format.md)
 - [predef](./docs/predef.md)
 - [rgbgfx](./docs/rgbgfx.md)
 - [スプライトデータ](./docs/sprite_data.md)
 - [スプライト](./docs/sprite.md)
 - [テキストID](./docs/text_id.md)
 - [テキストデータ](./docs/text.md)
+- [野生のポケモン](./docs/wild_pokemon.md)
 
 ## ファイル一覧
 
