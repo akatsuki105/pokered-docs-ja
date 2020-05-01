@@ -118,15 +118,15 @@ UpdateNPCSprite:
 	ld a, [H_CURRENTSPRITEOFFSET]
 	swap a				; H_CURRENTSPRITEOFFSETは$10倍した値なので
 
-	; hl = [動作データ2, テキストID]
+	; hl = [movement byte 2, テキストID]
 	dec a
 	add a				; wMapSpriteDataは各2バイトなので2倍
 	ld hl, wMapSpriteData
 	add l
 	ld l, a
 
-	; wCurSpriteMovement2を現在処理中のスプライトの動作データ2に更新
-	ld a, [hl]        ; a = 動作データ2
+	; wCurSpriteMovement2を現在処理中のスプライトの"movement byte 2"に更新
+	ld a, [hl]        ; a = "movement byte 2"
 	ld [wCurSpriteMovement2], a
 
 	; a = 現在のスプライトの動作状況(c1X1)
@@ -178,7 +178,7 @@ UpdateNPCSprite:
 	; スプライトのXY座標を計算
 	call InitializeSpriteScreenPosition
 
-	; c2x6 = 動作データ1が$FEか$FFならランダムウォーム
+	; c2x6 = "movement byte 1"が$FEか$FFならランダムウォーク
 	ld h, $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
@@ -188,32 +188,34 @@ UpdateNPCSprite:
 	jr z, .randomMovement  ; value $FF
 	inc a
 	jr z, .randomMovement  ; value $FE
-; プログラム化された動きを実行
+
+	; 以後はscripted NPCの動作(.randomMovementまで)
+	
 	; [c2x6] + 2 - 1 = [c2X6] + 1
 	dec a
 	ld [hl], a       ; increment movement byte 1 (movement data index)
 	; [c2x6] + 2 - 1 - 1 = [c2x6] 
 	dec a
-	push hl	; hlを退避
+	push hl	; hl(c2x6)を退避
 
 	; wNPCNumScriptedStepsを減らす
 	ld hl, wNPCNumScriptedSteps
 	dec [hl]         ; decrement wNPCNumScriptedSteps
 
-	; a = [wNPCMovementDirections + 動作データ1]
+	; a = [wNPCMovementDirections + "movement byte 1"] = 次のscripted NPCの動作
 	pop hl
 	ld de, wNPCMovementDirections
 	call LoadDEPlusA
 
-	; aが方向転換させるか
-	; aをその場にとどまらせるか
+	; aを方向転換させるか
 	cp $e0
 	jp z, ChangeFacingDirection
+	; またはaをその場にとどまらせ"ない"か
 	cp STAY
 	jr nz, .next
 
-; reached end of wNPCMovementDirections list
-	ld [hl], a ; store $ff in movement byte 1, disabling scripted movement
+	; STAYのとき ここでscripted NPCの動作は終了
+	ld [hl], a	; "movement byte 1"に$ffを設定して動作終了
 	ld hl, wd730
 	res 0, [hl]
 	xor a
@@ -221,16 +223,22 @@ UpdateNPCSprite:
 	ld [wWastedByteCD3A], a
 	ret
 .next
+	; "movement byte 1" != WALK($fe)
 	cp WALK
 	jr nz, .determineDirection
-; current NPC movement data is $fe. this seems buggy
-	ld [hl], $1     ; set movement byte 1 to $1
+
+	; TODO: 何してるか不明
+	; "movement byte 1" == WALK($fe). this seems buggy
+	ld [hl], $1     ; "movement byte 1" = $1
 	ld de, wNPCMovementDirections
 	call LoadDEPlusA ; a = [wNPCMovementDirections + $fe] (?)
 	jr .determineDirection
 .randomMovement
 	call GetTileSpriteStandsOn
 	call Random
+
+; a
+; hl
 .determineDirection
 	ld b, a
 	ld a, [wCurSpriteMovement2]
@@ -532,7 +540,7 @@ CheckSpriteAvailability:
 	and a
 	jp nz, .spriteInvisible			; スプライトは非表示
 
-	; a = [$c2X6] = 動作データ1 ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用) 
+	; a = [$c2X6] = "movement byte 1" ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用) 
 	ld h, wSpriteStateData2 / $100	; h = $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
@@ -540,7 +548,7 @@ CheckSpriteAvailability:
 	ld a, [hl]
 
 	cp $fe
-	jr c, .skipXVisibilityTest ; 動作データ1 < $fe (スプライトの動きがプログラム化されているときなど)
+	jr c, .skipXVisibilityTest ; "movement byte 1" < $fe (スプライトの動きがプログラム化されているときなど)
 
 	; b = [$c2X4] = スプライトのY座標
 	ld a, [H_CURRENTSPRITEOFFSET]

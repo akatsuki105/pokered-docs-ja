@@ -4570,10 +4570,9 @@ GivePokemon::
 	ld [wMonDataLocation], a
 	jpba _GivePokemon
 
-
+; 乱数[$0, $ff]をAレジスタに入れて返す関数  
+; バトルのときはこの関数ではなくBattleRandomを利用している
 Random::
-; Return a random number in a.
-; For battles, use BattleRandom.
 	push hl
 	push de
 	push bc

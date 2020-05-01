@@ -277,7 +277,7 @@ wSprite15StateData1::      spritestatedata1 wSprite15StateData1
 ; - C2x3: X 変化量 (8で初期化 スプライトが初期座標から離れすぎないために設定されていると考えられるがバグがある)
 ; - C2x4: Y 座標 (2*2のグリッド単位, 一番上のグリッドにいるときは4となる)
 ; - C2x5: X 座標 (2*2のグリッド単位, 一番左のグリッドにいるときは4となる)
-; - C2x6: 動作データ1(スプライトの動きを決めるデータ) ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用)
+; - C2x6: movement byte 1(スプライトの動きを決めるデータ) ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用)
 ; - C2x7: 用途不明 (草むらにスプライトがいるとき$80になってそれ以外では$0になっている おそらくスプライトの上に草むらを描画するのに利用)
 ; - C2x8: 次の動きまでのクールタイム (どんどん減って行って, 0になるとC1x1が1にセットされる)
 ; - C2x9: ???
@@ -624,10 +624,11 @@ wAddedToParty:: ; ccd3
 ; 0 = not added
 ; 1 = added
 
-wSimulatedJoypadStatesEnd:: ; ccd3
-; this is the end of the joypad states
-; the list starts above this address and extends downwards in memory until here
+; ccd3  
+; this is the end of the joypad states  
+; the list starts above this address and extends downwards in memory until here  
 ; overloaded with below labels
+wSimulatedJoypadStatesEnd::
 
 wParentMenuItem:: ; ccd3
 
@@ -841,17 +842,19 @@ wFilteredBagItemsCount:: ; cd37
 ; number of items in wFilteredBagItems list
 	ds 1
 
-wSimulatedJoypadStatesIndex:: ; cd38
+; cd38  
 ; the next simulated joypad state is at wSimulatedJoypadStatesEnd plus this value minus 1
-; 0 if the joypad state is not being simulated
+; 0 ならキー入力はシミュレートされていない(ポケモン赤によって勝手にキー入力されている状態ではない)
+wSimulatedJoypadStatesIndex::
 	ds 1
 
 wWastedByteCD39:: ; cd39
 ; written to but nothing ever reads it
 	ds 1
 
-wWastedByteCD3A:: ; cd3a
-; written to but nothing ever reads it
+; cd3a  
+; データが書き込まれてはいるが、読みだされている様子はない
+wWastedByteCD3A::
 	ds 1
 
 wOverrideSimulatedJoypadStatesMask:: ; cd3b
@@ -1396,7 +1399,7 @@ wPredefParentBank:: ; cf12
 wSpriteIndex:: ds 1
 
 ; cf14  
-; 現在処理中のスプライトの動作データ2
+; 現在処理中のスプライトのmovement byte 2
 wCurSpriteMovement2::
 	ds 1
 
@@ -2606,7 +2609,7 @@ wXOffsetSinceLastSpecialWarp:: ; d4e3
 
 ; d4e4  
 ; スプライトごとに2バイト  
-; [動作データ2, テキストID]
+; [movement byte 2, テキストID]
 wMapSpriteData::
 	ds 32
 
