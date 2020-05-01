@@ -48,10 +48,10 @@
  constants.asm  |  定数シンボルのマクロ定義
  home.asm  |  null
  hram.asm  |  null
- macros.asm  |  null
+ macros.asm  |  macros/以下の各マクロファイルをまとめている
  main.asm  |  null
- pokered.link  |  リンカスクリプト 各セクションがどのバンクのどのアドレスに配置されるかを指示している
+ pokered.link  |  リンカスクリプト <br/>各セクションがどのバンクのどのアドレスに配置されるかを指示している
  sram.asm  |  null
- text.asm  |  null
+ text.asm  |  各テキストデータファイルをまとめている <br/>pokered.linkでROMバンク$20以降に配置されている 
  vram.asm  |  null
- wram.asm  |  null
+ wram.asm  |  WRAM領域にどのようなデータが配置されるかの定義を行っている
