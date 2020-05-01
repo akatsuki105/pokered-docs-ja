@@ -1,5 +1,7 @@
 # rgbgfx
 
+**このドキュメントは[RGBGFX(1)](https://rednex.github.io/rgbds/rgbgfx.1.html)を日本語に翻訳・意訳したドキュメントである**
+
 png画像をGameBoyで利用できるグラフィックフォーマットにする変換ツール
 
 ## 概要
@@ -21,8 +23,6 @@ rgbgfx	[-CDhmuVv] [-f | -F] [-a attrmap | -A] [-d depth] [-o out_file] [-p pal_f
 
 ### オプション一覧
 
-Note that options can be abbreviated as long as the abbreviation is unambiguous: --verb is - -verbose, but --ver is invalid because it could also be --version. The arguments are as follows:
-
 オプションは一意に定まる範囲でなら省略が可能  
 例: --verboseは --verbまでなら省略が可能だが--verは--versionとの識別ができないので不可能
 
@@ -30,12 +30,12 @@ Note that options can be abbreviated as long as the abbreviation is unambiguous:
  ----  | ---- | ----
  -a  | --attr-map | Generate a file of tile mirroring attributes for OAM or (CGB-only) background tiles. For each tile in the input file, a byte is written representing the dimensions that the associated tile in the output file should be mirrored. Useful in combination with -m to keep track the mirror direction of mirrored duplicate tiles.
  -A  | --output-attr-map | Same as -a, but the attrmap file output name is made by taking the input filename, removing the file extension, and appending .attrmap.
- -C  | --color-curve | Use the color curve of the Game Boy Color when generating palettes.
- -D  | --debug | Debug features are enabled.
+ -C  | --color-curve | パレットを生成する際にGameBoy Colorのcolor curveを利用する
+ -D  | --debug | デバッグオプションを有効にする
  -d  | --depth | 出力データのビット深度 デフォルトでは2(2ビットで1pxを表す)
- -f  | --fix | Fix the input PNG file to be a correctly indexed image.
+ -f  | --fix | 入力で与えられたpngファイルを正しくインデックス付けされた画像に修正する
  -F  | --fix-and-save | Same as -f, but additionally, the supplied command line parameters are saved within the PNG and will be loaded and automatically used next time.
- -h  | --horizontal | Lay out tiles horizontally rather than vertically.
+ -h  | --horizontal | タイルを垂直ではなく水平にレイアウトする
  -m  | --mirror-tiles | Truncate tiles by checking for tiles that are mirrored versions of others and omitting these from the output file. Useful with tilemaps and attrmaps together to keep track of the duplicated tiles and the dimension mirrored. Tiles are checked for horizontal, vertical, and horizontal-vertical mirroring. Implies -u.
  -o  | --output | 出力先のファイル名
  -p  | --palette | Output the image's palette in standard GBC palette format: bytes (8 bytes for two bits per pixel, 4 bytes for one bit per pixel) containing the RGB15 values in little-endian byte order. If the palette contains too few colors, the remaining entries are set to black.
@@ -44,8 +44,8 @@ Note that options can be abbreviated as long as the abbreviation is unambiguous:
  -T  | --output-tilemap | Same as -t, but the tilemap file output name is made by taking the input filename, removing the file extension, and appending .tilemap.
  -u  | --unique-tiles | Truncate tiles by checking for tiles that are exact duplicates of others and omitting these from the output file. Useful with tilemaps to keep track of the duplicated tiles.
  -V  | --version | rgbgfxのバージョンを出力
- -v  | --verbose | Verbose. Print errors when the command line parameters and the parameters in the PNG file don't match.
- -x  | --trim-end | Trim the end of the output file by this many tiles.
+ -v  | --verbose | Verboseオプションを有効にする コマンドライン引数と入力pngファイルのパラメータが一致しないときにエラーを出力する
+ -x  | --trim-end | このオプションで指定したタイル数で出力ファイルの末尾をトリミングする
 
 ## 例
 
