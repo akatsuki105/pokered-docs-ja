@@ -23,7 +23,7 @@
 - [テキストデータ](./docs/text.md)
 - [マップ](./docs/map.md)
 - [predef](./docs/predef.md)
-- [rgbrgx](./docs/rgbgfx.md)
+- [rgbgfx](./docs/rgbgfx.md)
 - [スプライト](./docs/sprite.md)
 - [文字コード](./docs/charcode.md)
 
