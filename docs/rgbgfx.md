@@ -65,5 +65,5 @@ $ rgbgfx in.png
 
 ## 参考
 
-[RGBGFX(1)](https://rednex.github.io/rgbds/rgbgfx.1.html)
-[PNGの規格を簡単に説明する](https://dawn.hateblo.jp/entry/2017/10/22/205417)
+- [RGBGFX(1)](https://rednex.github.io/rgbds/rgbgfx.1.html)
+- [PNGの規格を簡単に説明する](https://dawn.hateblo.jp/entry/2017/10/22/205417)
