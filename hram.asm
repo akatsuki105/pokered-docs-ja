@@ -44,7 +44,7 @@ hMapWidth  EQU $FF8C
 hNorthSouthConnectionStripWidth EQU $FF8B
 hNorthSouthConnectedMapWidth    EQU $FF8C
 
-; DisplayTextID's argument
+; DisplayTextIDの引数
 hSpriteIndexOrTextID EQU $FF8C
 
 hPartyMonIndex EQU $FF8C

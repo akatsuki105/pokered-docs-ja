@@ -1072,9 +1072,10 @@ LoadEastWestConnectionsTileMap::
 	jr nz, LoadEastWestConnectionsTileMap
 	ret
 
-; function to check if there is a sign or sprite in front of the player
-; if so, it is stored in [hSpriteIndexOrTextID]
-; if not, [hSpriteIndexOrTextID] is set to 0
+; signかスプライトがプレイヤーの目の前に存在しているかを確認する関数  
+; 
+; 存在している: it is stored in [hSpriteIndexOrTextID]  
+; 存在していない: [hSpriteIndexOrTextID]を0クリア
 IsSpriteOrSignInFrontOfPlayer::
 	xor a
 	ld [hSpriteIndexOrTextID], a
@@ -1127,8 +1128,8 @@ IsSpriteOrSignInFrontOfPlayer::
 	dec b
 	jr nz, .counterTilesLoop
 
-; part of the above function, but sometimes its called on its own, when signs are irrelevant
-; the caller must zero [hSpriteIndexOrTextID]
+; 上の関数の一部でもあるが、これ自体が関数として呼び出されるとき(signs are irrelevant)もある
+; 呼び出し元は[hSpriteIndexOrTextID]が0でなければならない
 IsSpriteInFrontOfPlayer::
 	ld d, $10 ; talking range in pixels (normal range)
 IsSpriteInFrontOfPlayer2::
