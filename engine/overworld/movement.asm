@@ -143,7 +143,7 @@ UpdateNPCSprite:
 	call CheckSpriteAvailability
 	ret c             ; if sprite is invisible, on tile >=MAP_TILESET_SIZE, in grass or player is currently walking
 
-	; a = c1x1
+	; a = c1x1 = スプライトの状態
 	ld h, $c1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	ld l, a
@@ -162,17 +162,23 @@ UpdateNPCSprite:
 	bit 0, a
 	jp nz, notYetMoving
 
-	; c1x1 == 2かもしくは3か
+	; スプライトがクールタイム中か、移動中か
 	ld a, b
 	cp $2
 	jp z, UpdateSpriteMovementDelay  ; c1x1 == 2
 	cp $3
 	jp z, UpdateSpriteInWalkingAnimation  ; c1x1 == 3
 
+	; プレイヤーが歩きモーション中なら返る
+	; すでにCheckSpriteAvailabilityで確認しているので余計なコード
 	ld a, [wWalkCounter]
 	and a
-	ret nz           ; don't do anything yet if player is currently moving (redundant, already tested in CheckSpriteAvailability)
+	ret nz
+
+	; スプライトのXY座標を計算
 	call InitializeSpriteScreenPosition
+
+	; c2x6 = 動作データ1が$FEか$FFならランダムウォーム
 	ld h, $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
@@ -182,20 +188,30 @@ UpdateNPCSprite:
 	jr z, .randomMovement  ; value $FF
 	inc a
 	jr z, .randomMovement  ; value $FE
-; scripted movement
+; プログラム化された動きを実行
+	; [c2x6] + 2 - 1 = [c2X6] + 1
 	dec a
 	ld [hl], a       ; increment movement byte 1 (movement data index)
+	; [c2x6] + 2 - 1 - 1 = [c2x6] 
 	dec a
-	push hl
+	push hl	; hlを退避
+
+	; wNPCNumScriptedStepsを減らす
 	ld hl, wNPCNumScriptedSteps
 	dec [hl]         ; decrement wNPCNumScriptedSteps
+
+	; a = [wNPCMovementDirections + 動作データ1]
 	pop hl
 	ld de, wNPCMovementDirections
-	call LoadDEPlusA ; a = [wNPCMovementDirections + movement byte 1]
+	call LoadDEPlusA
+
+	; aが方向転換させるか
+	; aをその場にとどまらせるか
 	cp $e0
 	jp z, ChangeFacingDirection
 	cp STAY
 	jr nz, .next
+
 ; reached end of wNPCMovementDirections list
 	ld [hl], a ; store $ff in movement byte 1, disabling scripted movement
 	ld hl, wd730
@@ -273,17 +289,19 @@ UpdateNPCSprite:
 	lb bc, 1, SPRITE_FACING_RIGHT
 	jr TryWalking
 
-; changes facing direction by zeroing the movement delta and calling TryWalking
+; 移動量を0にすることで向きの変更だけを行うようにし、そのまま下のTryWalkingへ
 ChangeFacingDirection:
 	ld de, $0
-	; fall through
+	; そのまま下の処理に(TryWalking)
 
-; b: direction (1,2,4 or 8)
-; c: new facing direction (0,4,8 or $c)
-; d: Y movement delta (-1, 0 or 1)
-; e: X movement delta (-1, 0 or 1)
-; hl: pointer to tile the sprite would walk onto
-; set carry on failure, clears carry on success
+; TryWalking
+; - b: 方向(1, 2, 4, 8)
+; - c: 新しい方向(0, 4, 8, $c)
+; - d: Y移動量
+; - e: X移動量
+; - hl: スプライトが歩く先にあるスプライトのタイルへのポインタ
+; 
+; 成功時にはCフラグがクリア、失敗時にはセットされる
 TryWalking:
 	push hl
 	ld h, $c1
@@ -470,26 +488,37 @@ InitializeSpriteStatus:
 	ld [hl], a    ; $c2x3: set X displacement to 8
 	ret
 
-; calculates the sprite's screen position form its map position and the player position
+; マップの位置とプレーヤーの位置からスプライトの画面位置を計算
 InitializeSpriteScreenPosition:
+	; hl = c2X4
 	ld h, wSpriteStateData2 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
+
+	; b = プレイヤーのY座標(16*16pxのタイルブロック単位)
 	ld a, [wYCoord]
 	ld b, a
+
+	; スプライトのプレイヤー相対Y座標を計算
 	ld a, [hl]      ; c2x4 (Y position + 4)
 	sub b           ; relative to player position
-	swap a          ; * 16
+	swap a          ; a *= 16 タイルブロック単位 => ピクセル単位
 	sub $4          ; - 4
+	; 計算したY座標をc1x4に格納
 	dec h
 	ld [hli], a     ; c1x4 (screen Y position)
 	inc h
+
+	; b = プレイヤーのX座標(16*16pxのタイルブロック単位)
 	ld a, [wXCoord]
 	ld b, a
+
+	; スプライトのプレイヤー相対X座標を計算
 	ld a, [hli]     ; c2x6 (X position + 4)
 	sub b           ; relative to player position
 	swap a          ; * 16
+	; 計算したX座標をc1x6に格納
 	dec h
 	ld [hl], a      ; c1x6 (screen X position)
 	ret

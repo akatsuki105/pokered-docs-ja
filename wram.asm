@@ -582,7 +582,8 @@ wBoostExpByExpAll:: ; cc5b
 wAnimationType:: ; cc5b
 ; values between 0-6. Shake screen horizontally, shake screen vertically, blink Pokemon...
 
-wNPCMovementDirections:: ; cc5b
+; cc5b
+wNPCMovementDirections::
 	ds 1
 
 wDexRatingNumMonsOwned:: ; cc5c
@@ -1373,7 +1374,8 @@ wTilePlayerStandingOn:: ; cf0e
 ; used in CheckForTilePairCollisions2 to store the tile the player is on
 	ds 1
 
-wNPCNumScriptedSteps:: ds 1 ; cf0f
+; cf0f
+wNPCNumScriptedSteps:: ds 1
 
 wNPCMovementScriptFunctionNum:: ; cf10
 ; which script function within the pointer table indicated by
@@ -2403,12 +2405,12 @@ wCurrentTileBlockMapViewPointer:: ; d35f
 	ds 2
 
 ; d361  
-; 現在のマップでのプレイヤーのY座標(ピクセル単位)
+; 現在のマップでのプレイヤーのY座標(16*16pxのタイルブロック単位)
 wYCoord::
 	ds 1
 
 ; d362  
-; 現在のマップでのプレイヤーのX座標(ピクセル単位)
+; 現在のマップでのプレイヤーのX座標(16*16pxのタイルブロック単位)
 wXCoord::
 	ds 1
 
