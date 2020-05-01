@@ -352,8 +352,11 @@ wSerialEnemyMonsPatchList:: ; c5d0
 
 	ds 80
 
+; c6e8
 wTempPic::
-wOverworldMap:: ; c6e8
+
+; c6e8
+wOverworldMap::
 	ds 1300
 wOverworldMapEnd::
 

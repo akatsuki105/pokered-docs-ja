@@ -51,7 +51,7 @@
  charmap.asm  |  文字コードのマクロ定義
  constants.asm  |  定数シンボルのマクロ定義
  home.asm  |  null
- hram.asm  |  null
+ hram.asm  |  HRAM領域にどのようなデータが配置されるかの定義を行っている
  macros.asm  |  macros/以下の各マクロファイルをまとめている
  main.asm  |  null
  pokered.link  |  リンカスクリプト <br/>各セクションがどのバンクのどのアドレスに配置されるかを指示している

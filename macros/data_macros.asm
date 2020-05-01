@@ -29,9 +29,10 @@ ENDM
 coins equs "bcd2"
 money equs "bcd3"
 
-;\1 = Map Width
-;\2 = Rows above (Y-blocks)
-;\3 = X movement (X-blocks)
+; args
+; - \1 = Map Width  
+; - \2 = Rows above (Y-blocks)  
+; - \3 = X movement (X-blocks)  
 EVENT_DISP: MACRO
 	dw (wOverworldMap + 7 + (\1) + ((\1) + 6) * ((\2) >> 1) + ((\3) >> 1)) ; Ev.Disp
 	db \2,\3 ;Y,X
