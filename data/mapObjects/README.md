@@ -88,6 +88,8 @@ object SPRITE_SLOWBRO, 27, 13, STAY, DOWN, 1, MEWTWO, 70
 TODO: 要検証  
 spriteIDはsignsのsignIDと同じスコープに存在していて、`DisplayTextID`の対象の識別子として使われるID
 
+テキストIDについては[ドキュメント](../../docs/text_id.md)参照
+
 ### warp_to
 
 TODO
