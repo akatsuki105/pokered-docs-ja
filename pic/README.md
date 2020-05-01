@@ -2,7 +2,7 @@
 
 ゲーム内で利用するグラフィックデータが入っている
 
-そのままのpngフォーマットでは使えないので[専用のツール](https://rednex.github.io/rgbds/rgbgfx.1.html)を使って[GameBoyのグラフィックフォーマット](../docs/2bpp.md)に変換してからINCBINコマンドでインポートして利用する
+そのままのpngフォーマットでは使えないので[変換ツール](../docs/rgbgfx.md)を使って[GameBoyのグラフィックフォーマット](../docs/2bpp.md)に変換してからINCBINコマンドでインポートして利用する
 
 ## ファイル
 
