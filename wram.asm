@@ -1406,7 +1406,7 @@ wCurSpriteMovement2::
 	ds 2
 
 ; cf17  
-; NPCの移動プログラムによって制御されるスプライトのオフセット
+; NPC movement script によって制御されるスプライトのオフセット
 wNPCMovementScriptSpriteOffset::
 	ds 1
 

@@ -113,6 +113,9 @@ UnusedReadSpriteDataFunction:
 	pop bc
 	ret
 
+; **UpdateNPCSprite**  
+; 
+; NPCの移動を実行するスクリプト
 UpdateNPCSprite:
 	; a = 処理中のスプライト番号 
 	ld a, [H_CURRENTSPRITEOFFSET]
@@ -162,7 +165,7 @@ UpdateNPCSprite:
 	bit 0, a
 	jp nz, notYetMoving
 
-	; スプライトがクールタイム中か、移動中か
+	; スプライトがクールタイム中か、歩行中か
 	ld a, b
 	cp $2
 	jp z, UpdateSpriteMovementDelay  ; c1x1 == 2
@@ -261,11 +264,13 @@ UpdateNPCSprite:
 	ld a, [wCurSpriteMovement2]
 	cp $2
 	jr z, .moveLeft
+
+; 各方向に移動
 .moveDown
 	ld de, 2*SCREEN_WIDTH
-	add hl, de         ; move tile pointer two rows down
-	lb de, 1, 0
-	lb bc, 4, SPRITE_FACING_DOWN
+	add hl, de         				; タイルポインタを画面2行(1行=8px)分下に
+	lb de, 1, 0						; (x, y) = (0, +1)
+	lb bc, 4, SPRITE_FACING_DOWN	
 	jr TryWalking
 .notDown
 	cp $80             ; $40 <= a < $80: up (or right)
@@ -307,9 +312,9 @@ ChangeFacingDirection:
 	ld de, $0
 	; そのまま下の処理に(TryWalking)
 
-; TryWalking
+; 止まっている状態から歩行を始める関数  
 ; - b: 方向(1, 2, 4, 8)
-; - c: 新しい方向(0, 4, 8, $c)
+; - c: 新しく向く方向(0, 4, 8, $c)
 ; - d: Y移動量
 ; - e: X移動量
 ; - hl: スプライトが歩く先にあるスプライトのタイルへのポインタ
@@ -317,11 +322,15 @@ ChangeFacingDirection:
 ; 成功時にはCフラグがクリア、失敗時にはセットされる
 TryWalking:
 	push hl
+
+	; [c1x9] = c つまりスプライトの方向を更新
 	ld h, $c1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $9
 	ld l, a
 	ld [hl], c          ; c1x9 (update facing direction)
+
+	; スプライトの座標を更新
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $3
 	ld l, a
@@ -329,12 +338,17 @@ TryWalking:
 	inc l
 	inc l
 	ld [hl], e          ; c1x5 (update X movement delta)
+
 	pop hl
+
+	; スプライトが先のタイルマスに進行可能でないなら返る
 	push de
 	ld c, [hl]          ; read tile to walk onto
 	call CanWalkOntoTile
 	pop de
 	ret c               ; cannot walk there (reinitialization of delay values already done)
+
+	; c2x4, c2x5を更新
 	ld h, $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
@@ -345,12 +359,18 @@ TryWalking:
 	ld a, [hl]          ; c2x5: X position
 	add e
 	ld [hl], a          ; update X position
+
+	; 歩きモーションカウンタを$10にセットする
 	ld a, [H_CURRENTSPRITEOFFSET]
 	ld l, a
 	ld [hl], $10        ; c2x0=16: walk animation counter
+
+	; スプライトの状態を歩きモーション中に
 	dec h
 	inc l
 	ld [hl], $3         ; c1x1: set movement status to walking
+
+	; 画像を歩きモーションの画像で更新
 	jp UpdateSpriteImage
 
 ; update the walking animation parameters for a sprite that is currently walking
@@ -672,12 +692,15 @@ UpdateSpriteImage:
 	ld [hl], b         ; c1x2: sprite to display
 	ret
 
-; tests if sprite can walk the specified direction
-; b: direction (1,2,4 or 8)
-; c: ID of tile the sprite would walk onto
-; d: Y movement delta (-1, 0 or 1)
-; e: X movement delta (-1, 0 or 1)
-; set carry on failure, clears carry on success
+; スプライトが指定した方向に進行可能かチェック  
+; args
+; - b: 方向 (1,2,4 or 8)
+; - c: ID of tile the sprite would walk onto
+; - c: スプライトが進行する先のタイルID
+; - d: Y変化量 (-1, 0 or 1)
+; - e: X変化量 (-1, 0 or 1)
+; 
+; 進行できないならCフラグがセット、進行可能ならCフラグがクリア
 CanWalkOntoTile:
 	ld h, wSpriteStateData2 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
@@ -840,9 +863,11 @@ LoadDEPlusA:
 	ld a, [de]
 	ret
 
-; - NPCの動きをプログラムするメソッドの代替品でゲーム内でも数回しか利用されていない  
-; - NPCとプレイヤーが同じ方向に一緒に動く場合(つまりプレイヤーがNPCの後をぴったりつけて歩く場合 強制的な連行イベントのこと？)に使われる 
-; - 他のメソッドでNPCをプレイヤーと同じ方向に動かすことはできない
+; **DoScriptedNPCMovement**  
+; - NPCの動きをプログラムするメソッドの代替品  
+; - ゲーム内でも数回しか利用されていない  
+; - NPCとプレイヤーが同時に動く場合(例えば強制的な連行イベント)に使われる 
+; - 他のメソッドでNPCをプレイヤーと同じタイミングで動かすことはできない
 DoScriptedNPCMovement:
 	; wd730[7]が0なら何もしない
 	ld a, [wd730]

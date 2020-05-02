@@ -42,7 +42,9 @@ _UpdateSprites:
 	jp nz, UpdateNonPlayerSprite
 	jp UpdatePlayerSprite
 
-; NPCのスプライト更新処理
+; **UpdateNonPlayerSprite**
+;  
+; NPCスプライトの移動処理を行う関数  
 ; a: $c2Xeの値
 UpdateNonPlayerSprite:
 	; UpdateSpriteImageで利用するためにスプライト番号を$ff93に保存
@@ -50,13 +52,13 @@ UpdateNonPlayerSprite:
 	swap a
 	ld [$ff93], a  ; $10 * sprite#
 
-	; 更新対象のスプライトがプログラム化されているNPCかで更新処理を分岐
-	ld a, [wNPCMovementScriptSpriteOffset] 	; some sprite offset?
+	; 更新対象のスプライトが"Scripted NPC"かで更新処理を分岐
+	ld a, [wNPCMovementScriptSpriteOffset]
 	ld b, a
 	ld a, [H_CURRENTSPRITEOFFSET]			 
 	cp b
 	jr nz, .unequal
-	jp DoScriptedNPCMovement				; プログラム化されているNPC
+	jp DoScriptedNPCMovement				; Scripted NPCのとき
 .unequal
 	jp UpdateNPCSprite
 
