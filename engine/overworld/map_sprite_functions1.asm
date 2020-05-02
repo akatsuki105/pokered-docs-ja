@@ -62,27 +62,28 @@ UpdateNonPlayerSprite:
 .unequal
 	jp UpdateNPCSprite
 
-; This detects if the current sprite (whose offset is at H_CURRENTSPRITEOFFSET)
-; is going to collide with another sprite by looping over the other sprites.
-; The current sprite's offset will be labelled with i (e.g. $c1i0).
-; The loop sprite's offset will labelled with j (e.g. $c1j0).
+; 現在処理中のスプライトが他のスプライトと衝突することになるかどうか他のスプライトを1つ1つ見ていくことで確認する  
+; 現在処理中のスプライトのオフセットはiでラベル付けされる(e.g. $c1i0)  
+; 1つ1つ確認しているスプライトのオフセットはj(e.g. $c1j0)  
 ;
-; Note that the Y coordinate of the sprite (in [$c1k4]) is one of the following
-; 9 values when the sprite is aligned with the grid: $fc, $0c, $1c, $2c, ..., $7c.
-; The reason that 4 is added below to the coordinate is to make it align with a
-; multiple of $10 to make comparisons easier.
+; スプライトのY座標([$c1k4])はスプライトがgridにすっぽりおさまるように配置されているときには$fc, $0c, $1c, $2c, ... $7cの
+; どれかの値になることに注意  
+; Y座標から4を引くのは、比較を容易にするために、$10の倍数に合わせて調整するため
 DetectCollisionBetweenSprites:
 	nop
 
+	; hl = $c1i0
 	ld h, wSpriteStateData1 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add wSpriteStateData1 % $100
 	ld l, a
 
+	; オフセットiのスプライトが有効でないなら戻る
 	ld a, [hl] ; a = [$c1i0] (picture) (0 if slot is unused)
 	and a ; is this sprite slot slot used?
 	ret z ; return if not used
 
+	; hl = $c1i3
 	ld a, l
 	add 3
 	ld l, a
@@ -90,43 +91,44 @@ DetectCollisionBetweenSprites:
 	ld a, [hli] ; a = [$c1i3] (delta Y) (-1, 0, or 1)
 	call SetSpriteCollisionValues
 
+	; a = Y座標
 	ld a, [hli] ; a = [$C1i4] (Y screen coordinate)
-	add 4 ; align with multiple of $10
+	add 4 ; グリッドに合わせる
 
-; The effect of the following 3 lines is to
-; add 7 to a if moving south or
-; subtract 7 from a if moving north.
+	; 次の3行のコードで南に移動するならaレジスタに+7 北に移動するならaレジスタから-7している
 	add b
 	and $f0
 	or c
 
 	ld [$ff90], a ; store Y coordinate adjusted for direction of movement
 
+	; 次はX方向
 	ld a, [hli] ; a = [$c1i5] (delta X) (-1, 0, or 1)
 	call SetSpriteCollisionValues
 	ld a, [hl] ; a = [$C1i6] (X screen coordinate)
 
-; The effect of the following 3 lines is to
-; add 7 to a if moving east or
-; subtract 7 from a if moving west.
+	; 次の3行のコードで東に移動するならaレジスタに+7 西に移動するならaレジスタから-7している
 	add b
 	and $f0
 	or c
 
 	ld [$ff91], a ; store X coordinate adjusted for direction of movement
 
+	; hl = $C1id
 	ld a, l
 	add 7
 	ld l, a
 
 	xor a
-	ld [hld], a ; zero [$c1id] XXX what's [$c1id] for?
-	ld [hld], a ; zero [$c1ic] (directions in which collisions occurred)
+	ld [hld], a ; [$c1id] = 0
+	ld [hld], a ; [$c1ic] = 0 (directions in which collisions occurred)
 
+	; [$ff91] = [$c1id] = adjusted X coordinate
 	ld a, [$ff91]
-	ld [hld], a ; [$c1ib] = adjusted X coordinate
+	ld [hld], a
+	; [$ff90] = [$c1ia] = adjusted Y coordinate
 	ld a, [$ff90]
-	ld [hl], a ; [$c1ia] = adjusted Y coordinate
+	ld [hl], a
 
 	xor a ; zero the loop counter
 
@@ -338,19 +340,23 @@ DetectCollisionBetweenSprites:
 	jp nz, .loop
 	ret
 
-; takes delta X or delta Y in a
-; b = delta X/Y
-; c = 0 if delta X/Y is 0
-; c = 7 if delta X/Y is 1
-; c = 9 if delta X/Y is -1
+; aレジスタのXかYの座標変化量(delta X/Y)を見てbとcに値を格納
+; 
+; b = delta X/Y  
+; c = 0 if (delta X/Y == 0)  
+; c = 7 if (delta X/Y == 1)  
+; c = 9 if (delta X/Y == -1)  
 SetSpriteCollisionValues:
+	; delta X/Yが0
 	and a
 	ld b, 0
 	ld c, 0
-	jr z, .done
+	jr z, .done ; aが0なら.done
+	; delta X/Yが-1
 	ld c, 9
 	cp -1
 	jr z, .ok
+	; delta X/Yが1
 	ld c, 7
 	ld a, 0
 .ok

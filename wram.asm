@@ -2632,10 +2632,10 @@ wMapViewVRAMPointer:: ; d526
 ; In the comments for the player direction variables below, "moving" refers to
 ; both walking and changing facing direction without taking a step.
 
-wPlayerMovingDirection:: ; d528
-; if the player is moving, the current direction
-; if the player is not moving, zero
-; map scripts write to this in order to change the player's facing direction
+; d528  
+; もしプレイヤーが歩行中なら、現在歩行している方向 歩行中でないなら0  
+; map scriptsはプレイヤーの向いている方向を変更するためにここに書き込みを行う  
+wPlayerMovingDirection::
 	ds 1
 
 wPlayerLastStopDirection:: ; d529
@@ -3094,12 +3094,13 @@ wBeatLorelei:: ; d734
 ; the game uses this to tell when Elite 4 events need to be reset
 	ds 2
 
-wd736:: ; d736
-; bit 0: check if the player is standing on a door and make him walk down a step if so
-; bit 1: the player is currently stepping down from a door
-; bit 2: standing on a warp
-; bit 6: jumping down a ledge / fishing animation
-; bit 7: player sprite spinning due to spin tiles (Rocket hideout / Viridian Gym)
+; d736  
+; - bit 0: check if the player is standing on a door and make him walk down a step if so
+; - bit 1: the player is currently stepping down from a door
+; - bit 2: standing on a warp
+; - bit 6: jumping down a ledge / fishing animation
+; - bit 7: player sprite spinning due to spin tiles (Rocket hideout / Viridian Gym)
+wd736::
 	ds 1
 
 wCompletedInGameTradeFlags:: ; d737

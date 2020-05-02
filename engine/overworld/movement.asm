@@ -2,6 +2,9 @@
 ; マップが表示されているのは Y <= $60つまり上から96pxまでであることを示している
 MAP_TILESET_SIZE EQU $60
 
+; **UpdatePlayerSprite**  
+; 
+; プレイヤーの移動を実行する関数
 UpdatePlayerSprite:
 	ld a, [wSpriteStateData2]
 	and a
@@ -11,29 +14,33 @@ UpdatePlayerSprite:
 	dec a
 	ld [wSpriteStateData2], a
 	jr .disableSprite
-; check if a text box is in front of the sprite by checking if the lower left
-; background tile the sprite is standing on is greater than $5F, which is
-; the maximum number for map tiles
+; プレイヤーが立っている左下の背景タイルが$5F($5Fより大きいとテキストボックスに隠れる)より大きいかどうかを確認して、
+; テキストボックスがスプライトの前にあるかどうかをチェック
 .checkIfTextBoxInFrontOfSprite
-	aCoord 8, 9
-	ld [hTilePlayerStandingOn], a
+	aCoord 8, 9						; a = wTileMapの
+	ld [hTilePlayerStandingOn], a	; 
 	cp MAP_TILESET_SIZE
 	jr c, .lowerLeftTileIsMapTile
+; プレイヤーを非表示
 .disableSprite
 	ld a, $ff
 	ld [wSpriteStateData1 + 2], a
 	ret
 .lowerLeftTileIsMapTile
+	; TODO: ???
 	call DetectCollisionBetweenSprites
 	ld h, wSpriteStateData1 / $100
+
+	; wWalkCounter > 0 なら.movingへ
 	ld a, [wWalkCounter]
 	and a
 	jr nz, .moving
+
 	ld a, [wPlayerMovingDirection]
 ; check if down
 	bit PLAYER_DIR_BIT_DOWN, a
 	jr z, .checkIfUp
-	xor a ; ld a, SPRITE_FACING_DOWN
+	xor a ; ld a, SPRITE_FACING_DOWN (SPRITE_FACING_DOWNは0なので)
 	jr .next
 .checkIfUp
 	bit PLAYER_DIR_BIT_UP, a
@@ -51,13 +58,15 @@ UpdatePlayerSprite:
 	ld a, SPRITE_FACING_RIGHT
 	jr .next
 .notMoving
-; zero the animation counters
+	; animation countersを0クリア
 	xor a
 	ld [wSpriteStateData1 + 7], a
 	ld [wSpriteStateData1 + 8], a
 	jr .calcImageIndex
 .next
-	ld [wSpriteStateData1 + 9], a ; facing direction
+	ld [wSpriteStateData1 + 9], a	; 向いている方向を変更
+
+	; フォントがロードされているので歩行できない
 	ld a, [wFontLoaded]
 	bit 0, a
 	jr nz, .notMoving
@@ -102,6 +111,7 @@ UpdatePlayerSprite:
 	ld [wSpriteStateData2 + 7], a
 	ret
 
+; 未使用  
 UnusedReadSpriteDataFunction:
 	push bc
 	push af

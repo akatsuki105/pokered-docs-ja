@@ -56,10 +56,10 @@ validateCoords: MACRO
 ENDM
 
 ; レジスタに指定したタイルマップの(X, Y)地点のアドレスを格納する  
-; \1 = r レジスタ  
-; \2 = X タイル単位  
-; \3 = Y タイル単位  
-; \4 = どのタイルマップを使うか(指定しない場合はwTileMapという画面のバッファを使う)
+; - \1 = r レジスタ  
+; - \2 = X タイル(8*8)単位  
+; - \3 = Y タイル単位  
+; - \4 = どのタイルマップを使うか(指定しない場合はwTileMapという画面のバッファを使う)
 coord: MACRO
 	validateCoords \2, \3
 	IF _NARG >= 4
@@ -69,9 +69,10 @@ coord: MACRO
 	ENDC
 ENDM
 
-;\1 = X
-;\2 = Y
-;\3 = which tilemap (optional)
+; Aレジスタに指定したタイルマップの(X, Y)地点のアドレスを格納する
+; - \1 = X タイル(8*8)単位 
+; - \2 = Y タイル単位
+; - \3 = どのタイルマップを使うか(指定しない場合はwTileMapという画面のバッファを使う)
 aCoord: MACRO
 	validateCoords \1, \2
 	IF _NARG >= 3

@@ -28,12 +28,12 @@
  $C1x7  | intra-animation-frame counter  |  0から4までのアニメーションフレームカウンタ<br/>4になるとc1x8がインクリメントされる 歩きモーションなどのアニメーションのフレームカウントに利用
  $C1x8  | animation frame counter  |  0から3までのカウンタ <br/>歩きモーションなどのアニメーションの状態を表すのに利用 つまり歩きモーションには16フレームかかる 
  $C1x9  | facing direction  |  スプライトの方向 <br/>0: 下, 4: 上, 8: 左, $c: 右
- $C1xa  | undefined  |  未使用
- $C1xb  | undefined  |  未使用
- $C1xc  | undefined  |  未使用
- $C1xd  | undefined  |  未使用
- $C1xe  | undefined  |  未使用
- $C1xf  | undefined  |  未使用
+ $C1xa  | undefined  |  ???
+ $C1xb  | undefined  |  ???
+ $C1xc  | undefined  |  ???
+ $C1xd  | undefined  |  ???
+ $C1xe  | undefined  |  ???
+ $C1xf  | undefined  |  ???
 
 #### animation frame counter(\$C1x7,\$C1x8)
 
