@@ -4,7 +4,7 @@ MAP_TILESET_SIZE EQU $60
 
 ; **UpdatePlayerSprite**  
 ; 
-; プレイヤーの移動を実行する関数
+; プレイヤーの方向転換やアニメーション画像の変化を実行する関数
 UpdatePlayerSprite:
 	ld a, [wSpriteStateData2]
 	and a
@@ -17,8 +17,8 @@ UpdatePlayerSprite:
 ; プレイヤーが立っている左下の背景タイルが$5F($5Fより大きいとテキストボックスに隠れる)より大きいかどうかを確認して、
 ; テキストボックスがスプライトの前にあるかどうかをチェック
 .checkIfTextBoxInFrontOfSprite
-	aCoord 8, 9						; a = wTileMapの
-	ld [hTilePlayerStandingOn], a	; 
+	aCoord 8, 9						; a = プレイヤーがいる位置(基本的にプレイヤーは画面真ん中(64px, 72px)にいる)
+	ld [hTilePlayerStandingOn], a
 	cp MAP_TILESET_SIZE
 	jr c, .lowerLeftTileIsMapTile
 ; プレイヤーを非表示
@@ -71,17 +71,25 @@ UpdatePlayerSprite:
 	bit 0, a
 	jr nz, .notMoving
 .moving
+	; プレイヤーがスピンタイルに乗ってスピンしている
 	ld a, [wd736]
-	bit 7, a ; is the player sprite spinning due to a spin tile?
+	bit 7, a
 	jr nz, .skipSpriteAnim
+
+	; intra-animation-frame counterをインクリメント
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $7
 	ld l, a
 	ld a, [hl]
 	inc a
 	ld [hl], a
+
+	; intra-animation-frame counterが4ではない
 	cp 4
 	jr nz, .calcImageIndex
+
+	; intra-animation-frame counterが4なので0にリセット
+	; プレイヤーのanimation frame counterをインクリメント
 	xor a
 	ld [hl], a
 	inc hl
@@ -90,23 +98,24 @@ UpdatePlayerSprite:
 	and $3
 	ld [hl], a
 .calcImageIndex
+	; $c1x2 = c1x8 + c1x9
 	ld a, [wSpriteStateData1 + 8]
 	ld b, a
 	ld a, [wSpriteStateData1 + 9]
 	add b
 	ld [wSpriteStateData1 + 2], a
+
+; 草むらにいるか判定してc2X7に結果を入れる
 .skipSpriteAnim
-; If the player is standing on a grass tile, make the player's sprite have
-; lower priority than the background so that it's partially obscured by the
-; grass. Only the lower half of the sprite is permitted to have the priority
-; bit set by later logic.
+	; プレイヤーが草むらにいるときにはプレイヤーのスプライトの描画優先度を背景より低くすることで草むら内にいることを表現する
+	; スプライトの下半分のみが、後のロジックで優先ビットを設定できる
 	ld a, [hTilePlayerStandingOn]
 	ld c, a
 	ld a, [wGrassTile]
 	cp c
-	ld a, $0
+	ld a, $0		; 草むらにいない
 	jr nz, .next2
-	ld a, $80
+	ld a, $80		; 草むらにいる
 .next2
 	ld [wSpriteStateData2 + 7], a
 	ret

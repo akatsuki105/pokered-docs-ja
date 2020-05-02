@@ -35,6 +35,14 @@
  $C1xe  | undefined  |  ???
  $C1xf  | undefined  |  ???
 
+#### sprite image index(\$C1x2)
+
+sprite image indexは次の式で算出される [参考: .calcImageIndex](./../engine/overworld/movement.asm)
+
+```
+[$C1x2] = [$C1x8] + [$C1x9] = (animation frame counter) + (facing direction)
+```
+
 #### animation frame counter(\$C1x7,\$C1x8)
 
 アニメーションフレームカウンタが\$C1x7と\$C1x8の2つの領域に分かれているのは、アニメーション自体には16フレームかかるが、取りうるアニメーションの画像は4パターンしかないので、アニメーションフレームを階層構造を持たせてカウントするためだと考えられる
