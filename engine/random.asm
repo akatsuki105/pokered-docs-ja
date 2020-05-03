@@ -1,10 +1,13 @@
+; 16bitの乱数を生成する
 Random_::
-; Generate a random 16-bit value.
+	; [hRandomAdd] += DIVレジスタ
 	ld a, [rDIV]
 	ld b, a
 	ld a, [hRandomAdd]
 	adc b
 	ld [hRandomAdd], a
+
+	; [hRandomSub] -= DIVレジスタ
 	ld a, [rDIV]
 	ld b, a
 	ld a, [hRandomSub]

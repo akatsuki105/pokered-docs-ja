@@ -58,8 +58,8 @@ predefs7.asm | バンク7に属するpredef-routineを定義
 predefs12.asm | バンク12に属するpredef-routineを定義
 predefs17_2.asm | バンク17に属するpredef-routineを定義
 predefs17.asm | バンク17に属するpredef-routineを定義 その2
-print_waiting_text.asm | null
-random.asm | null
+print_waiting_text.asm | 『つうしんたいきちゅう!』を表示する関数を定義
+random.asm | 乱数生成処理
 remove_pokemon.asm | null
 save.asm | null
 slot_machine.asm | null

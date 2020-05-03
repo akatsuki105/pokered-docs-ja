@@ -2960,9 +2960,10 @@ BankswitchBack::
 	ld [MBC1RomBank], a
 	ret
 
+; self-contained bankswitch, use this when not in the home bank    
+; - b: スイッチしたいROMバンクの番号
+; - hl: バンクスイッチした後にジャンプするアドレス 
 Bankswitch::
-; self-contained bankswitch, use this when not in the home bank
-; switches to the bank in b
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, b
@@ -3198,8 +3199,8 @@ LoadScreenTilesFromBuffer1::
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
+; cレジスタで指定したフレームの間haltする
 DelayFrames::
-; wait c frames
 	call DelayFrame
 	dec c
 	jr nz, DelayFrames
@@ -4576,8 +4577,8 @@ Random::
 	push hl
 	push de
 	push bc
-	callba Random_
-	ld a, [hRandomAdd]
+	callba Random_		; 16bitの乱数を生成
+	ld a, [hRandomAdd]	; 生成した16bitの乱数のうち8bitだけ利用
 	pop bc
 	pop de
 	pop hl

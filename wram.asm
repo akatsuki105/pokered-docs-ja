@@ -1659,11 +1659,14 @@ wTrainerName:: ; d04a
 ; unused trailing letters
 	ds 13
 
-wIsInBattle:: ; d057
-; lost battle, this is -1
-; no battle, this is 0
-; wild battle, this is 1
-; trainer battle, this is 2
+; d057  
+; バトル中かを管理するフラグ
+; 
+; - lost battle, this is -1
+; - no battle, this is 0
+; - wild battle, this is 1
+; - trainer battle, this is 2
+wIsInBattle::
 	ds 1
 
 wPartyGainExpFlags:: ; d058

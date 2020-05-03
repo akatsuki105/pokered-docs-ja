@@ -22,6 +22,7 @@ ENDM
 
 farcall EQUS "callba"
 
+; far-call dest  
 callba: MACRO
 	ld b, BANK(\1)
 	ld hl, \1
