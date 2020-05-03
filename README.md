@@ -19,6 +19,7 @@
 - [1bpp](./docs/1bpp.md)
 - [2bpp](./docs/2bpp.md)
 - [バンク](./docs/bank.md)
+- [ポケモンのデータ構造](./docs/baseStats.md)
 - [blk](./docs/blk.md)
 - [カートリッジ](./docs/cartridge.md)
 - [文字コード](./docs/charcode.md)
