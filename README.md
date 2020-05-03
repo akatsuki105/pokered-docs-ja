@@ -23,6 +23,7 @@
 - [blk](./docs/blk.md)
 - [カートリッジ](./docs/cartridge.md)
 - [文字コード](./docs/charcode.md)
+- [マクロ](./docs/macro.md)
 - [マップオブジェクト](./docs/map_object.md)
 - [マップ](./docs/map.md)
 - [movement byte](./docs/movement_byte.md)
@@ -45,7 +46,7 @@
  engine/  |  null
  gfx/  |  [gfx](./gfx/README.md)参照
  home/  |  [home](./home/README.md)参照
- macros/  |  null
+ macros/  |  [macros](./macros/README.md)参照
  maps/  |  [maps](./maps/README.md)参照
  pic/  |  [pic](./pic/README.md)参照
  scripts/  |  null
