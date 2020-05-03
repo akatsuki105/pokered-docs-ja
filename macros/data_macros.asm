@@ -234,14 +234,12 @@ EAST_MAP_CONNECTION: MACRO
 ENDM
 
 tmlearn: MACRO
-    x = 0
-
-    REPT _NARG
-        IF \1 != 0
-            x = x | (1 << ((\1 - 1) % 8))
-        ENDC
-        SHIFT	; \2 -> \1, \3 -> \2, ...
-    ENDR
-
-        db x
-    ENDM
+x = 0
+	REPT _NARG
+IF \1 != 0
+x = x | (1 << ((\1 - 1) % 8))
+ENDC
+	SHIFT
+	ENDR
+	db x
+ENDM
