@@ -271,6 +271,13 @@ SafariSteps:
 SafariBallText:
 	db "BALL×× @"
 
+; **GetTileAndCoordsInFrontOfPlayer**  
+; 
+; プレイヤーの目の前の座標とタイルアドレスを得る  
+; OUTPUT:  
+; - d: 目の前のY座標(16*16単位)
+; - e: 目の前のX座標(16*16単位)
+; - [wTileInFrontOfPlayer]: プレイヤーの目の前の背景マップのタイルアドレス
 GetTileAndCoordsInFrontOfPlayer:
 	call GetPredefRegisters
 
@@ -283,15 +290,15 @@ _GetTileAndCoordsInFrontOfPlayer:
 	and a ; cp SPRITE_FACING_DOWN
 	jr nz, .notFacingDown
 ; facing down
-	aCoord 8, 11
-	inc d
+	aCoord 8, 11	; (8, 9+2)
+	inc d			; Y += 16
 	jr .storeTile
 .notFacingDown
 	cp SPRITE_FACING_UP
 	jr nz, .notFacingUp
 ; facing up
-	aCoord 8, 7
-	dec d
+	aCoord 8, 7		; (8, 9-2)
+	dec d			; Y -= 16s
 	jr .storeTile
 .notFacingUp
 	cp SPRITE_FACING_LEFT

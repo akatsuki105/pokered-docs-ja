@@ -3141,8 +3141,8 @@ LoadHpBarAndStatusTilePatterns::
 	jp CopyVideoData ; if LCD is on, transfer during V-blank
 
 
+; hlからbcバイト分をaの値で埋める
 FillMemory::
-; Fill bc bytes at hl with a.
 	push de
 	ld d, a
 .loop

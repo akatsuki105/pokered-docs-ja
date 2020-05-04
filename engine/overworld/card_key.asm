@@ -1,19 +1,29 @@
 PrintCardKeyText:
+	; ループの初期化
 	ld hl, SilphCoMapList
 	ld a, [wCurMap]
 	ld b, a
 .silphCoMapListLoop
+	; a = SilphCoMapList[i] (i: ループ回数)
 	ld a, [hli]
+
+	; 現在SilphCoMapListの中にいない
 	cp $ff
 	ret z
+	
+	; 次の要素を確認
 	cp b
 	jr nz, .silphCoMapListLoop
+
+	; プレイヤーの目の前のタイルがカードキーのドアのタイルである
 	predef GetTileAndCoordsInFrontOfPlayer
 	ld a, [wTileInFrontOfPlayer]
-	cp $18
+	cp $18	; タイルID
 	jr z, .cardKeyDoorInFrontOfPlayer
-	cp $24
+	cp $24  ; タイルID
 	jr z, .cardKeyDoorInFrontOfPlayer
+
+	; SILPH_CO_11FだけはタイルID=$5eもOK
 	ld b, a
 	ld a, [wCurMap]
 	cp SILPH_CO_11F
@@ -22,9 +32,13 @@ PrintCardKeyText:
 	cp $5e
 	ret nz
 .cardKeyDoorInFrontOfPlayer
+	; カードキーで開くドアの前にいる
+
+	; カードキーを持っていない
 	ld b, CARD_KEY
 	call IsItemInBag
 	jr z, .noCardKey
+
 	call GetCoordsInFrontOfPlayer
 	push de
 	tx_pre_id CardKeySuccessText

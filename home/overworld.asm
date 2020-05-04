@@ -3,8 +3,8 @@ HandleMidJump::
 ; a ledge in the overworld.
 	jpba _HandleMidJump
 
-EnterMap::
 ; Load a new map.
+EnterMap::
 	ld a, $ff
 	ld [wJoyIgnore], a
 	call LoadMapData

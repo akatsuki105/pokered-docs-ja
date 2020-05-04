@@ -969,8 +969,9 @@ wPlayerSpinWhileMovingUpOrDownAnimDeltaY:: ; cd3d
 
 wHiddenObjectFunctionArgument:: ; cd3d
 
-wWhichTrade:: ; cd3d
-; which entry from TradeMons to select
+; cd3d
+; which entry from TradeMons to select  
+wWhichTrade::
 
 wTrainerSpriteOffset:: ; cd3d
 
@@ -2417,7 +2418,9 @@ wMapPalOffset:: ; d35d
 ; normally, it is 0. it is 6 when Flash is needed, causing FadePal2 to be used instead of FadePal4
 	ds 1
 
-wCurMap:: ; d35e
+; d35e  
+; 現在のマップID
+wCurMap::
 	ds 1
 
 wCurrentTileBlockMapViewPointer:: ; d35f
@@ -3135,7 +3138,8 @@ wWarpedFromWhichMap:: ; d73c
 
 	ds 2
 
-wCardKeyDoorY:: ; d73f
+; d73f
+wCardKeyDoorY::
 	ds 1
 
 wCardKeyDoorX:: ; d740
