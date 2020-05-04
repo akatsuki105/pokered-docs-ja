@@ -4,7 +4,10 @@ flag_array: MACRO
 	ds ((\1) + 7) / 8
 ENDM
 
+; box_structのバイト長
 box_struct_length EQU 25 + NUM_MOVES * 2
+
+; ボックスのポケモン1匹のデータ構造  
 box_struct: MACRO
 \1Species::    db
 \1HP::         dw
@@ -3226,9 +3229,10 @@ wNumSafariBalls:: ; da47
 	ds 1
 
 
-wDayCareInUse:: ; da48
-; 0 if no pokemon is in the daycare
-; 1 if pokemon is in the daycare
+; da48  
+; 0 -> 育て屋にポケモンがいない  
+; 1 -> 育て屋にポケモンがいる  
+wDayCareInUse::
 	ds 1
 
 wDayCareMonName:: ds NAME_LENGTH ; da49
