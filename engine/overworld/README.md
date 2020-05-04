@@ -15,7 +15,7 @@ clear_variables.asm | null
 cut.asm | null
 cut2.asm | null
 daycare_exp.asm | null    
-doors.asm | null
+doors.asm | ドアタイルから強制的に下に歩かせる処理
 elevator.asm | null       
 emotion_bubbles.asm | null
 field_move_messages.asm | null

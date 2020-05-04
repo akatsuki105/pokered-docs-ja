@@ -12,5 +12,6 @@ RemoveGuardDrink:
 	jr z, .drinkLoop
 	jpba RemoveItemByID
 
+; これらのアイテムのどれかを持っていればいい
 GuardDrinksList:
 	db FRESH_WATER, SODA_POP, LEMONADE, $00

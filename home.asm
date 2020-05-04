@@ -2706,11 +2706,12 @@ StartSimulatingJoypadStates::
 	set 7, [hl]
 	ret
 
+; **IsItemInBag**  
+; 
+; bにアイテムIDを指定  
+; 指定したアイテムをプレイヤーがかばんに所持してい"ない"ならZフラグをセット、所持しているならZフラグをクリア  
+; ポケモンタワーや『ゆうれい』戦に関係
 IsItemInBag::
-; given an item_id in b
-; set zero flag if item isn't in player's bag
-; else reset zero flag
-; related to Pokémon Tower and ghosts
 	predef GetQuantityOfItemInBag
 	ld a, b
 	and a
