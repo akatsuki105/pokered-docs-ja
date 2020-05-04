@@ -114,7 +114,7 @@ AccessedMyPCText:
 	TX_FAR _AccessedMyPCText
 	db "@"
 
-; removes one of the specified item ID [hItemToRemoveID] from bag (if existent)
+; かばんからhItemToRemoveID経由で渡されたアイテムIDと一致するアイテムを1つ取り除く
 RemoveItemByID:
 	ld hl, wBagItems
 	ld a, [hItemToRemoveID]

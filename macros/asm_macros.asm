@@ -35,6 +35,7 @@ callab: MACRO
 	call Bankswitch
 ENDM
 
+; far jump
 jpba: MACRO
 	ld b, BANK(\1)
 	ld hl, \1
