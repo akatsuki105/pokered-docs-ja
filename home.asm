@@ -1100,28 +1100,37 @@ DisplayTextID::
 	cp e
 	jr z, .spriteHandling
 	jr nc, .skipSpriteHandling
+
+; スプライトのテキストIDを取得
 .spriteHandling
-	; スプライトのテキストIDを取得
 	push hl
+
+	; プレイヤーが話しかけたスプライトのグラフィックを更新 (to face the right direction)
 	push de
 	push bc
-	callba UpdateSpriteFacingOffsetAndDelayMovement ; update the graphics of the sprite the player is talking to (to face the right direction)
+	callba UpdateSpriteFacingOffsetAndDelayMovement
 	pop bc
 	pop de
+
+	; hl = wMapSpriteData[hSpriteIndexOrTextID-1]
 	ld hl, wMapSpriteData ; NPC text entries
 	ld a, [hSpriteIndexOrTextID]
-	dec a
-	add a
+	dec a				  ; プレイヤーの分デクリメント
+	add a				  ; wMapSpriteDataは各エントリ2バイトなので
 	add l
 	ld l, a
 	jr nc, .noCarry
 	inc h
+
 .noCarry
+	; a = スプライトのテキストID
 	inc hl
 	ld a, [hl] ; a = text ID of the sprite
 	pop hl
+
+; マップのテキストエントリの中から対象のテキストのアドレスを探す  
+; a = テキストID (スプライトの時も.spriteHandlingでテキストIDがaに入れられている)
 .skipSpriteHandling
-; look up the address of the text in the map's text entries
 	dec a
 	ld e, a
 	sla e
