@@ -32,6 +32,7 @@
 - [rgbgfx](./docs/rgbgfx.md)
 - [スプライトデータ](./docs/sprite_data.md)
 - [スプライト](./docs/sprite.md)
+- [用語](./docs/term.md)
 - [テキストID](./docs/text_id.md)
 - [テキストデータ](./docs/text.md)
 - [タイル](./docs/tile.md)

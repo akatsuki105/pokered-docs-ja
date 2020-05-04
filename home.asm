@@ -4488,9 +4488,10 @@ RestoreScreenTilesAndReloadTilePatterns::
 GBPalWhiteOutWithDelay3::
 	call GBPalWhiteOut
 
+
+; bg mapが3回に分けて各フレームごとに更新される(計3フレーム)  
+; bg mapが完全に更新されるように3フレーム待つ処理  
 Delay3::
-; The bg map is updated each frame in thirds.
-; Wait three frames to let the bg map fully update.
 	ld c, 3
 	jp DelayFrames
 

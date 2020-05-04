@@ -128,6 +128,11 @@ CompareMapMusicBankWithCurrentBank::
 	scf
 	ret
 
+; **PlayMusic**  
+; 
+; INPUT:
+; - a = ??>
+; - c = ???
 PlayMusic::
 	ld b, a
 	ld [wNewSoundID], a
@@ -138,7 +143,10 @@ PlayMusic::
 	ld [wAudioSavedROMBank], a
 	ld a, b
 
-; plays music specified by a. If value is $ff, music is stopped
+; **PlaySound**  
+; 
+; INPUT:
+; - a = musicID ($ffならoffにして音楽を止める)
 PlaySound::
 	push hl
 	push de

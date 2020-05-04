@@ -16,7 +16,7 @@ cut.asm | null
 cut2.asm | null
 daycare_exp.asm | null    
 doors.asm | ドアタイルから強制的に下に歩かせる処理
-elevator.asm | null       
+elevator.asm | エレベータを揺らす処理       
 emotion_bubbles.asm | null
 field_move_messages.asm | null
 healing_machine.asm | null

@@ -171,9 +171,9 @@ hSerialSendData EQU $FFAC
 hSerialReceiveData EQU $FFAD
 
 ; these values are copied to SCX, SCY, and WY during V-blank
-hSCX EQU $FFAE
-hSCY EQU $FFAF
-hWY  EQU $FFB0
+hSCX EQU $FFAE      ; SCXにコピーされるアドレス
+hSCY EQU $FFAF      ; SCYにコピーされるアドレス
+hWY  EQU $FFB0      ; VBlank中、WYにコピーされるアドレス
 
 hJoyLast     EQU $FFB1
 hJoyReleased EQU $FFB2

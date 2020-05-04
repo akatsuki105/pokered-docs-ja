@@ -2638,8 +2638,9 @@ wCurrentMapWidth2:: ; d525
 ; map width in 2x2 meta-tiles
 	ds 1
 
-wMapViewVRAMPointer:: ; d526
-; the address of the upper left corner of the visible portion of the BG tile map in VRAM
+; d526  
+; VRAMのBGタイルマップの表示部分の左上隅のアドレス
+wMapViewVRAMPointer::
 	ds 2
 
 ; In the comments for the player direction variables below, "moving" refers to
