@@ -843,7 +843,7 @@ wFilteredBagItemsCount:: ; cd37
 	ds 1
 
 ; cd38  
-; the next simulated joypad state is at wSimulatedJoypadStatesEnd plus this value minus 1
+; 次に勝手に入力されるキー入力は、wSimulatedJoypadStatesEndに存在しこの値から1を引いたもの  
 ; 0 ならキー入力はシミュレートされていない(ポケモン赤によって勝手にキー入力されている状態ではない)
 wSimulatedJoypadStatesIndex::
 	ds 1
@@ -857,9 +857,10 @@ wWastedByteCD39:: ; cd39
 wWastedByteCD3A::
 	ds 1
 
-wOverrideSimulatedJoypadStatesMask:: ; cd3b
-; mask indicating which real button presses can override simulated ones
-; XXX is it ever not 0?
+; cd3b  
+; bitが1の場所に該当するキー入力は実際のボタンを押すと勝手に入力されたボタンをオーバーライドできる  
+; XXX is it ever not 0?  
+wOverrideSimulatedJoypadStatesMask::
 	ds 1
 
 	ds 1
@@ -1240,8 +1241,9 @@ wActionResultOrTookBattleTurn:: ; cd6a
 ; and the player is not allowed to make a move and the two uses are compatible.
 	ds 1
 
-wJoyIgnore:: ; cd6b
+; cd6b  
 ; Set buttons are ignored.
+wJoyIgnore::
 	ds 1
 
 wDownscaledMonSize:: ; cd6c
@@ -3102,7 +3104,8 @@ wBeatLorelei:: ; d734
 
 ; d736  
 ; - bit 0: check if the player is standing on a door and make him walk down a step if so
-; - bit 1: the player is currently stepping down from a door
+; - bit 0: プレイヤーがドアに立っているか確認し、そうであるなら下に1歩歩かせる
+; - bit 1: 1ならプレイヤーは今、ドアから下に向かって歩いている状態である
 ; - bit 2: standing on a warp
 ; - bit 6: jumping down a ledge / fishing animation
 ; - bit 7: player sprite spinning due to spin tiles (Rocket hideout / Viridian Gym)

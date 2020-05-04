@@ -1,28 +1,39 @@
-; returns whether the player is standing on a door tile in carry
+; プレイヤーがドアタイルにいるならキャリーをセット いないならキャリーをクリアする関数
 IsPlayerStandingOnDoorTile:
+	; DoorTileIDPointersから現在のタイルセットのエントリを探す
 	push de
 	ld hl, DoorTileIDPointers
 	ld a, [wCurMapTileset]
 	ld de, $3
 	call IsInArray
 	pop de
-	jr nc, .notStandingOnDoor
-	inc hl
+
+	jr nc, .notStandingOnDoor	; タイルセットが見つからない
+	
+	; ???
+	inc hl ; タイルセット名 -> ドアタイルID
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; b = 画面(8, 9)のタイルID
 	aCoord 8, 9 ; a = lower left background tile under player's sprite
 	ld b, a
 .loop
+	; ドアタイルをすべて検討したが、プレイヤーはいなかった
 	ld a, [hli]
 	and a
 	jr z, .notStandingOnDoor
+
+	; ドアタイルにいない
 	cp b
 	jr nz, .loop
-	scf
+
+	; ドアタイルにいる
+	scf		; キャリーセット
 	ret
 .notStandingOnDoor
-	and a
+	and a	; キャリークリア
 	ret
 
 ; dbw タイルセット名, タイルセットIDの何番がドアのタイルか
@@ -42,7 +53,7 @@ DoorTileIDPointers:
 	dbw PLATEAU,     PlateauDoorTileIDs
 	db $ff
 
-; タイルセットの($1b, $1c), ($58, $59)がドアタイル
+; タイルセットの$1b(+$1c), $58(+$59)がドアタイル
 OverworldDoorTileIDs:
 	db $1B,$58,$00
 

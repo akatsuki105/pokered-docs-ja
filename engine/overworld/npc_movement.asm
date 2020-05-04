@@ -1,12 +1,19 @@
+; プレイヤーがドアタイルに立っているときに下に強制的に移動させる  
+; プレイヤーが建物から外に出たときはドアタイルにワープするので、そこからドアの前に移動させる動作を実現するのに使う
 PlayerStepOutFromDoor:
 	; wd730のbit1をクリア
 	ld hl, wd730
 	res 1, [hl]
-	
+
+	; プレイヤーがドアタイルにいない
 	call IsPlayerStandingOnDoorTile
 	jr nc, .notStandingOnDoor
+
+	; プレイヤーのボタン入力を無効化
 	ld a, $fc
 	ld [wJoyIgnore], a
+
+	; プレイヤーを下に1歩だけ勝手に歩かせる準備
 	ld hl, wd736
 	set 1, [hl]
 	ld a, $1
@@ -15,16 +22,23 @@ PlayerStepOutFromDoor:
 	ld [wSimulatedJoypadStatesEnd], a
 	xor a
 	ld [wSpriteStateData1 + 2], a
+
+	; 勝手に歩かせる
 	call StartSimulatingJoypadStates
 	ret
 .notStandingOnDoor
+	; キー入力のシミュレートをしない
 	xor a
 	ld [wWastedByteCD3A], a
 	ld [wSimulatedJoypadStatesIndex], a
 	ld [wSimulatedJoypadStatesEnd], a
+
+	; ドアから下に進んでいる状態を表すフラグをクリア
 	ld hl, wd736
 	res 0, [hl]
 	res 1, [hl]
+
+	; キー入力のシミュレートをしているときにたつフラグをクリア
 	ld hl, wd730
 	res 7, [hl]
 	ret

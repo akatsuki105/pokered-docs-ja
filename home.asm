@@ -2695,9 +2695,13 @@ FuncTX_PokemonCenterPC::
 	jr bankswitchAndContinue
 
 StartSimulatingJoypadStates::
+	; ユーザーが勝手に動けないようにする
 	xor a
 	ld [wOverrideSimulatedJoypadStatesMask], a
-	ld [wSpriteStateData2 + $06], a ; player's sprite movement byte 1
+
+	ld [wSpriteStateData2 + $06], a ; playerの "movement byte 1" = 0
+
+	; プレイヤーがScripted NPCのように勝手に動かされていることを示すフラグを立てる
 	ld hl, wd730
 	set 7, [hl]
 	ret
@@ -4438,7 +4442,8 @@ CallFunctionInTable::
 
 ; 配列hlからaの値を探す 配列は終端が必ず$ff  
 ; 配列の各要素のサイズはdeで表される  
-; 見つかれば、bに対象のインデックスを入れてキャリーをセットして返る 
+; 見つかれば、bに対象のインデックスを入れてキャリーをセットして返る  
+; このときhlは対象の要素を指している
 IsInArray::
 	ld b, 0	; インデックスを初期化
 
