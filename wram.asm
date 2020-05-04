@@ -1493,8 +1493,9 @@ wItemPrices:: ; cf8f
 
 wcf91:: ds 1 ; used with a lot of things (too much to list here)
 
-wWhichPokemon:: ; cf92
+; cf92
 ; which pokemon you selected
+wWhichPokemon::
 	ds 1
 
 wPrintItemPrices:: ; cf93
@@ -1523,7 +1524,8 @@ wMoveMonType:: ; cf95
 ; 3 = move from party to daycare
 	ds 1
 
-wItemQuantity:: ; cf96
+; cf96
+wItemQuantity::
 	ds 1
 
 wMaxItemQuantity:: ; cf97
@@ -2359,8 +2361,12 @@ wPokedexSeenEnd::
 
 wNumBagItems:: ; d31d
 	ds 1
-wBagItems:: ; d31e
-; item, quantity
+
+; d31e  
+; かばんの中身を表す配列  
+; 各要素は[アイテムID,　数量]で2バイト  
+; 最後に終端記号用の1バイト
+wBagItems::
 	ds BAG_ITEM_CAPACITY * 2
 	ds 1 ; end
 

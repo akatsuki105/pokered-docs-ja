@@ -1,3 +1,6 @@
+; **RemoveGuardDrink**  
+; 
+; ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す関数
 RemoveGuardDrink:
 	ld hl, GuardDrinksList
 .drinkLoop

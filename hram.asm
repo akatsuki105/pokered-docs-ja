@@ -292,8 +292,8 @@ hOaksAideRequirement  EQU $FFDB ; required number of owned mons
 hOaksAideRewardItem   EQU $FFDC
 hOaksAideNumMonsOwned EQU $FFDD
 
-hItemToRemoveID    EQU $FFDB
-hItemToRemoveIndex EQU $FFDC
+hItemToRemoveID    EQU $FFDB    ; RemoveItemByIDで削除対象のアイテムID
+hItemToRemoveIndex EQU $FFDC    ; RemoveItemByIDで削除対象のアイテムをループで探すときのループカウンタ
 
 hVendingMachineItem  EQU $FFDB
 hVendingMachinePrice EQU $FFDC ; 3-byte BCD number

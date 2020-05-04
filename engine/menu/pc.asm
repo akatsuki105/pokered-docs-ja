@@ -119,20 +119,32 @@ RemoveItemByID:
 	ld hl, wBagItems
 	ld a, [hItemToRemoveID]
 	ld b, a
+
+	; ループカウンタを初期化
 	xor a
 	ld [hItemToRemoveIndex], a
 .loop
+	; a = 次のアイテムID
 	ld a, [hli]
+
+	; かばんの底(『やめる』？)に到達
 	cp -1 ; reached terminator?
 	ret z
+
+	; Remove対象のアイテム発見 
 	cp b
 	jr z, .foundItem
-	inc hl
+
+	inc hl 	; アイテムID -> アイテムの個数
+
+	; ループカウンタをインクリメント
 	ld a, [hItemToRemoveIndex]
 	inc a
 	ld [hItemToRemoveIndex], a
+
 	jr .loop
 .foundItem
+	; 見つけたアイテムをかばんから1つ削除
 	ld a, $1
 	ld [wItemQuantity], a
 	ld a, [hItemToRemoveIndex]

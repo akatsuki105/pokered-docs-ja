@@ -39,7 +39,7 @@ poison.asm | null
 pokecenter.asm | null
 pokemart.asm | null
 push_boulder.asm | null
-saffron_guards.asm | null
+saffron_guards.asm | ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す処理
 set_blackout_map.asm | null
 ssanne.asm | null
 tileset_header.asm | null

@@ -1331,11 +1331,11 @@ AddAmountSoldToMoney::
 	call PlaySoundWaitForCurrent
 	jp WaitForSoundToFinish
 
-; function to remove an item (in varying quantities) from the player's bag or PC box
+; プレイヤーのかばんかPCから指定した個数だけ指定したアイテムを削除する関数  
 ; INPUT:
-; HL = address of inventory (either wNumBagItems or wNumBoxItems)
-; [wWhichPokemon] = index (within the inventory) of the item to remove
-; [wItemQuantity] = quantity to remove
+; - HL = 削除対象のインベントリのポインタ(wNumBagItems(かばん) または wNumBoxItems(PC))
+; - [wWhichPokemon] = 削除する対象のアイテムがインベントリの何番目にあるか
+; - [wItemQuantity] = 削除する個数
 RemoveItemFromInventory::
 	ld a, [H_LOADEDROMBANK]
 	push af
