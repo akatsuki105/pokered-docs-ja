@@ -1,3 +1,5 @@
+; タイルセットのオフセットを定義  
+
 const_value = 0
 
 	const OVERWORLD    ; 0

@@ -4436,30 +4436,35 @@ CallFunctionInTable::
 	ret
 
 
+; 配列hlからaの値を探す 配列は終端が必ず$ff  
+; 配列の各要素のサイズはdeで表される  
+; 見つかれば、bに対象のインデックスを入れてキャリーをセットして返る 
 IsInArray::
-; Search an array at hl for the value in a.
-; Entry size is de bytes.
-; Return count b and carry if found.
-	ld b, 0
+	ld b, 0	; インデックスを初期化
 
 IsInRestOfArray::
 	ld c, a
 .loop
+	; 最後まで探したが無い
 	ld a, [hl]
 	cp -1
 	jr z, .notfound
+
+	; 見つかった
 	cp c
 	jr z, .found
-	inc b
+
+	; 次の要素に
+	inc b		; ここでインデックスが加算されている
 	add hl, de
 	jr .loop
 
 .notfound
-	and a
+	and a		; キャリーをクリア
 	ret
 
 .found
-	scf
+	scf			; キャリーをセット
 	ret
 
 

@@ -34,6 +34,7 @@
 - [スプライト](./docs/sprite.md)
 - [テキストID](./docs/text_id.md)
 - [テキストデータ](./docs/text.md)
+- [タイル](./docs/tile.md)
 - [野生のポケモン](./docs/wild_pokemon.md)
 
 ## ファイル一覧
@@ -43,7 +44,7 @@
  audio/  |  null
  constants/  |  [constants](./constants/README.md)参照
  data/  |  null
- engine/  |  null
+ engine/  |  [engine](./engine/README.md)参照
  gfx/  |  [gfx](./gfx/README.md)参照
  home/  |  [home](./home/README.md)参照
  macros/  |  [macros](./macros/README.md)参照

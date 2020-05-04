@@ -120,7 +120,7 @@ dn: MACRO
 	db (\1 << 4 | \2)
 ENDM
 
-; macro for putting a byte then a word
+; db \1 した後で dw \2 する
 dbw: MACRO
 	db \1
 	dw \2

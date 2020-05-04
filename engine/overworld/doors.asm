@@ -25,6 +25,7 @@ IsPlayerStandingOnDoorTile:
 	and a
 	ret
 
+; dbw タイルセット名, タイルセットIDの何番がドアのタイルか
 DoorTileIDPointers:
 	dbw OVERWORLD,   OverworldDoorTileIDs
 	dbw FOREST,      ForestDoorTileIDs
@@ -41,6 +42,7 @@ DoorTileIDPointers:
 	dbw PLATEAU,     PlateauDoorTileIDs
 	db $ff
 
+; タイルセットの($1b, $1c), ($58, $59)がドアタイル
 OverworldDoorTileIDs:
 	db $1B,$58,$00
 

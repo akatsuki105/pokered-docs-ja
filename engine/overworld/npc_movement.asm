@@ -1,6 +1,8 @@
 PlayerStepOutFromDoor:
+	; wd730のbit1をクリア
 	ld hl, wd730
 	res 1, [hl]
+	
 	call IsPlayerStandingOnDoorTile
 	jr nc, .notStandingOnDoor
 	ld a, $fc
