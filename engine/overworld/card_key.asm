@@ -95,8 +95,11 @@ CardKeyFailText:
 	TX_FAR _CardKeyFailText
 	db "@"
 
-; d = Y
-; e = X
+; プレイヤーの目の前のマスの座標(16*16単位)を得る
+; 
+; OUTPUT: 
+; - d: Y座標
+; - e: X座標
 GetCoordsInFrontOfPlayer:
 	ld a, [wYCoord]
 	ld d, a

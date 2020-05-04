@@ -2382,8 +2382,9 @@ LoadMapData::
 	ld [MBC1RomBank], a
 	ret
 
-; function to switch to the ROM bank that a map is stored in
-; Input: a = map number
+; **SwitchToMapRomBank**  
+; マップ(のデータ？)が格納されているバンクにスイッチする関数  
+; Input: a = マップID
 SwitchToMapRomBank::
 	push hl
 	push bc

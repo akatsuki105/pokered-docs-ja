@@ -1048,28 +1048,40 @@ FadeOutAudio::
 	ld [wNewSoundID], a
 	jp PlaySound
 
-; this function is used to display sign messages, sprite dialog, etc.
-; INPUT: [hSpriteIndexOrTextID] = sprite ID or text ID
+
+; **DisplayTextID**  
+; signメッセージやスプライトのダイアログ表示などで利用される  
+; 
+; INPUT: [hSpriteIndexOrTextID] = sprite ID or text ID (sprite IDがわたされたときはそのスプライトが保持しているTextIDのテキストを表示する)
 DisplayTextID::
 	ld a, [H_LOADEDROMBANK]
 	push af
 	callba DisplayTextIDInit ; initialization
+
+	; wTextPredefFlag[0]がセットされている
 	ld hl, wTextPredefFlag
 	bit 0, [hl]
-	res 0, [hl]
+	res 0, [hl]				; wTextPredefFlag[0]はクリアしておく
 	jr nz, .skipSwitchToMapBank
+
+	; 現在のマップデータが格納されているバンクにスイッチ
 	ld a, [wCurMap]
 	call SwitchToMapRomBank
 .skipSwitchToMapBank
 	ld a, 30 ; half a second
 	ld [H_FRAMECOUNTER], a ; used as joypad poll timer
+
+	; hl = map text pointer 
 	ld hl, wMapTextPtr
 	ld a, [hli]
 	ld h, [hl]
-	ld l, a ; hl = map text pointer
+	ld l, a
+
 	ld d, $00
 	ld a, [hSpriteIndexOrTextID] ; text ID
 	ld [wSpriteIndex], a
+
+	; 特殊なテキスト描画処理でないか検討
 	and a
 	jp z, DisplayStartMenu
 	cp TEXT_SAFARI_GAME_OVER
@@ -1080,6 +1092,8 @@ DisplayTextID::
 	jp z, DisplayPlayerBlackedOutText
 	cp TEXT_REPEL_WORE_OFF
 	jp z, DisplayRepelWoreOffText
+
+	; [hSpriteIndexOrTextID] <= スプライトの数 なら hSpriteIndexOrTextIDはspriteIDである
 	ld a, [wNumSprites]
 	ld e, a
 	ld a, [hSpriteIndexOrTextID] ; sprite ID
@@ -1087,7 +1101,7 @@ DisplayTextID::
 	jr z, .spriteHandling
 	jr nc, .skipSpriteHandling
 .spriteHandling
-; get the text ID of the sprite
+	; スプライトのテキストIDを取得
 	push hl
 	push de
 	push bc
@@ -4644,6 +4658,8 @@ PrintPredefTextID::
 	ld [hSpriteIndexOrTextID], a
 	ld hl, TextPredefs
 	call SetMapTextPointer
+
+	; wTextPredefFlag[0]をセット
 	ld hl, wTextPredefFlag
 	set 0, [hl]
 	call DisplayTextID
@@ -4657,16 +4673,21 @@ RestoreMapTextPointer::
 	ret
 
 SetMapTextPointer::
+	; [$ffec] = [wMapTextPtr]
 	ld a, [wMapTextPtr]
 	ld [$ffec], a
 	ld a, [wMapTextPtr + 1]
 	ld [$ffec + 1], a
+
+	; [wMapTextPtr] = hl
 	ld a, l
 	ld [wMapTextPtr], a
 	ld a, h
 	ld [wMapTextPtr + 1], a
 	ret
 
+; PrintPredefTextIDで利用されるPredefTextを定義したテーブル 
+; オフセット = PredefTextID 
 TextPredefs::
 const_value = 1
 

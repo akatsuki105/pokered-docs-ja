@@ -254,7 +254,7 @@ hRedrawRowOrColumnDest EQU $FFD1
 hRandomAdd EQU $FFD3
 hRandomSub EQU $FFD4
 
-H_FRAMECOUNTER EQU $FFD5 ; decremented every V-blank (used for delays)
+H_FRAMECOUNTER EQU $FFD5 ; VBlankごとにデクリメントされる(遅延処理の実現に利用)
 
 ; V-blank sets this to 0 each time it runs.
 ; So, by setting it to a nonzero value and waiting for it to become 0 again,

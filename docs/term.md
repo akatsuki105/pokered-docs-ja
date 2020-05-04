@@ -3,4 +3,5 @@
  term  |  ja  |  description
 ---- | ---- | ----
  bg map  |  背景マップ  |  $9800-$9BFF or $9C00-$9FFFのこと
+ coords  |  座標  |  ここでは16*16のマス目単位の座標を指す？
  null  |  null  |  null

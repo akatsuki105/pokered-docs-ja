@@ -711,6 +711,7 @@ TextCommand0D::
 	pop hl
 	jp NextTextCommand
 
+; for TX_FAR  
 ; process text commands in another ROM bank
 ; 17AAAABB
 ; AAAA = address of text commands

@@ -186,6 +186,7 @@ db_tx_pre: MACRO
 	db (\1_id - TextPredefs) / 2 + 1
 ENDM
 
+; 引数で指定したテキストのTextPredefsでのオフセットをaに格納
 tx_pre_id: MACRO
 	ld a, (\1_id - TextPredefs) / 2 + 1
 ENDM

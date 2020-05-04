@@ -55,8 +55,8 @@ TX_CRY_NIDORINA       EQUS "db $14"
 TX_CRY_PIDGEOT        EQUS "db $15"
 ;TX_CRY_DEWGONG       EQUS "db $16"
 
-; TODO  
-; 違うバンクにあるテキストを表示する？
+; 違うバンクにあるテキストの表示  
+; $17はTextCommand17というテキストコマンドとして解釈される
 TX_FAR: MACRO
 	db $17
 	dw \1

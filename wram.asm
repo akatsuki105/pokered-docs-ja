@@ -1394,9 +1394,9 @@ wNPCMovementScriptFunctionNum:: ; cf10
 ; wNPCMovementScriptPointerTableNum
 	ds 1
 
-wTextPredefFlag:: ; cf11
-; bit 0: set when printing a text predef so that DisplayTextID doesn't switch
-;        to the current map's bank
+; cf11  
+; bit 0: DisplayTextIDで現在のマップのバンクにスイッチしないようにPredefテキストを表示するときにセットされる
+wTextPredefFlag::
 	ds 1
 
 wPredefParentBank:: ; cf12
@@ -2466,7 +2466,8 @@ wCurMapWidth:: ; d369
 wMapDataPtr:: ; d36a
 	ds 2
 
-wMapTextPtr:: ; d36c
+; d36c
+wMapTextPtr::
 	ds 2
 
 wMapScriptPtr:: ; d36e
@@ -2615,8 +2616,9 @@ wSignCoords:: ; d4b1
 wSignTextIDs:: ; d4d1
 	ds 16
 
-wNumSprites:: ; d4e1
-; number of sprites on the current map
+; d4e1  
+; 現在のマップのスプライトの数
+wNumSprites::
 	ds 1
 
 ; these two variables track the X and Y offset in blocks from the last special warp used
