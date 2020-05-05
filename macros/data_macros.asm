@@ -29,7 +29,9 @@ ENDM
 coins equs "bcd2"
 money equs "bcd3"
 
-; args
+; **EVENT_DISP**  
+; 
+; INPUT:
 ; - \1 = Map Width  
 ; - \2 = Rows above (Y-blocks)  
 ; - \3 = X movement (X-blocks)  

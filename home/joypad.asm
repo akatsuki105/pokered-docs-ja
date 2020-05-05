@@ -1,21 +1,27 @@
+; **ReadJoypad**  
+; キー入力を読み取る  
+;  
+; OUTPUT: [hJoyInput] = [↓, ↑, ←, →, Start, Select, B, A]  
+; 本来GameBoyではボタンが押されているときはbitがクリアされるが、ここではボタンが押されているときにbitが立つようにする 
 ReadJoypad::
-; Poll joypad input.
-; Unlike the hardware register, button
-; presses are indicated by a set bit.
-
-	ld a, 1 << 5 ; select direction keys
+	; 方向キー入力を受け付ける
+	ld a, 1 << 5
 	ld c, 0
+	ld [rJOYP], a	; [rJOYP] = %00100000
 
-	ld [rJOYP], a
+	; キー入力がしっかり読み込めるように何回か読み取りを繰り返している(最初のキー入力読み込みは遅延処理のために使うことでキー入力を安定させている)
 	rept 6
 	ld a, [rJOYP]
 	endr
+	
+	; b[7-4] = [↓, ↑, ←, →]
 	cpl
 	and %1111
 	swap a
 	ld b, a
 
-	ld a, 1 << 4 ; select button keys
+	; a = [↓, ↑, ←, →, Start, Select, B, A]
+	ld a, 1 << 4
 	ld [rJOYP], a
 	rept 10
 	ld a, [rJOYP]
@@ -24,16 +30,18 @@ ReadJoypad::
 	and %1111
 	or b
 
+	; hJoyInputに反映
 	ld [hJoyInput], a
 
-	ld a, 1 << 4 + 1 << 5 ; deselect keys
+	; rJOYPをリセットする
+	ld a, 1 << 4 + 1 << 5	; %00110000
 	ld [rJOYP], a
 	ret
 
+; ジョイパッドの状態を記録する変数を更新:  
+; - [hJoyReleased]  keys released since last time
+; - [hJoyPressed]   keys pressed since last time
+; - [hJoyHeld] currently pressed keys
 Joypad::
-; Update the joypad state variables:
-; [hJoyReleased]  keys released since last time
-; [hJoyPressed]   keys pressed since last time
-; [hJoyHeld] currently pressed keys
 	homecall _Joypad
 	ret

@@ -712,7 +712,7 @@ UpdateSpriteImage:
 	ret
 
 ; スプライトが指定した方向に進行可能かチェック  
-; args
+; INPUT:
 ; - b: 方向 (1,2,4 or 8)
 ; - c: ID of tile the sprite would walk onto
 ; - c: スプライトが進行する先のタイルID
