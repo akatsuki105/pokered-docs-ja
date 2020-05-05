@@ -8,6 +8,8 @@ lb: MACRO
 	ld \1, ((\2) & $ff) << 8 + ((\3) & $ff)
 ENDM
 
+; **homecall**  
+; \1で指定された関数をバンクスイッチして実行し、実行後元のバンクに復帰する  
 homecall: MACRO
 	ld a, [H_LOADEDROMBANK]
 	push af
