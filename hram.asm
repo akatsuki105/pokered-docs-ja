@@ -188,7 +188,7 @@ H_LOADEDROMBANK EQU $FFB8
 
 hSavedROMBank EQU $FFB9
 
-; VBlank期間の自動的なBG転送が有効かどうか  
+; VBlank期間の自動的なBG転送(WRAMからVRAMへ)が有効かどうか  
 ; 0 => 無効  
 ; 1 => 有効
 H_AUTOBGTRANSFERENABLED EQU $FFBA

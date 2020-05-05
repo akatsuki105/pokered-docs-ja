@@ -1071,7 +1071,7 @@ DisplayTextID::
 	ld a, 30 ; half a second
 	ld [H_FRAMECOUNTER], a ; used as joypad poll timer
 
-	; hl = map text pointer 
+	; hl = マップのテキストエントリの先頭
 	ld hl, wMapTextPtr
 	ld a, [hli]
 	ld h, [hl]
@@ -1130,66 +1130,105 @@ DisplayTextID::
 
 ; マップのテキストエントリの中から対象のテキストのアドレスを探す  
 ; a = テキストID (スプライトの時も.spriteHandlingでテキストIDがaに入れられている)
+; hl = wMapTextPtr + 1
 .skipSpriteHandling
+	; hl = (textID-1)*2 + マップのテキストエントリ
 	dec a
 	ld e, a
 	sla e
 	add hl, de
+
+	; hl = テキストIDに対応するテキストがあるアドレス
 	ld a, [hli]
 	ld h, [hl]
-	ld l, a ; hl = address of the text
-	ld a, [hl] ; a = first byte of text
-; check first byte of text for special cases
-	cp $fe   ; Pokemart NPC
+	ld l, a
+	ld a, [hl] ; a = テキストの1バイト目
+	
+	; 最初の1バイト目を見て特殊なテキストであるならそのハンドラにジャンプ
+	; PokemartのNPC
+	cp $fe
 	jp z, DisplayPokemartDialogue
-	cp $ff   ; Pokemon Center NPC
+
+	; Pokemon CenterのNPC
+	cp $ff   
 	jp z, DisplayPokemonCenterDialogue
-	cp $fc   ; Item Storage PC
+
+	; Item Storage PC
+	cp $fc
 	jp z, FuncTX_ItemStoragePC
-	cp $fd   ; Bill's PC
+
+	; Bill's PC
+	cp $fd
 	jp z, FuncTX_BillsPC
-	cp $f9   ; Pokemon Center PC
+
+	; ポケモンセンターのPC
+	cp $f9
 	jp z, FuncTX_PokemonCenterPC
-	cp $f5   ; Vending Machine
+
+	; 自動販売機で"ない"
+	cp $f5
 	jr nz, .notVendingMachine
+
+	; 自動販売機
 	callba VendingMachineMenu ; jump banks to vending machine routine
 	jr AfterDisplayingTextID
+
+; 自動販売機ではないが特殊なテキスト
 .notVendingMachine
+	; ゲームコーナーの景品
 	cp $f7   ; prize menu
 	jp z, FuncTX_GameCornerPrizeMenu
+
+	; ケーブルクラブではない => 普通のテキスト
 	cp $f6   ; cable connection NPC in Pokemon Center
 	jr nz, .notSpecialCase
+
+	; ケーブルクラブ
 	callab CableClubNPC
 	jr AfterDisplayingTextID
+
+; 普通のテキストの場合
 .notSpecialCase
 	call PrintText_NoCreatingTextBox ; display the text
+
+	; テキストがボタンを押さなくても次に進んでいく場合
 	ld a, [wDoNotWaitForButtonPressAfterDisplayingText]
 	and a
 	jr nz, HoldTextDisplayOpen
 
 AfterDisplayingTextID::
+	; ???
 	ld a, [wEnteringCableClub]
 	and a
 	jr nz, HoldTextDisplayOpen
-	call WaitForTextScrollButtonPress ; wait for a button press after displaying all the text
+
+	call WaitForTextScrollButtonPress ; テキストがすべて表示された後でAボタンが押されるまで待機
 
 ; loop to hold the dialogue box open as long as the player keeps holding down the A button
+; プレイヤーがAボタンを押し続けている限りダイアログボックスを表示し続ける
 HoldTextDisplayOpen::
 	call Joypad
 	ld a, [hJoyHeld]
 	bit 0, a ; is the A button being pressed?
 	jr nz, HoldTextDisplayOpen
 
+; テキスト表示を終える
 CloseTextDisplay::
+	; マップバンクにスイッチ
 	ld a, [wCurMap]
 	call SwitchToMapRomBank
+
+	; ウィンドウを非表示に
 	ld a, $90
 	ld [hWY], a ; move the window off the screen
 	call DelayFrame
-	call LoadGBPal
+
+	call LoadGBPal ; TODO: ???
+	; VBlank期間の自動的なBG転送を無効に
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a ; disable continuous WRAM to VRAM transfer each V-blank
-; loop to make sprites face the directions they originally faced before the dialogue
+	
+; すべてのスプライトが会話前に向いていた方向を向くようにする
 	ld hl, wSpriteStateData2 + $19
 	ld c, $0f
 	ld de, $0010
@@ -4208,8 +4247,10 @@ AutoTextBoxDrawingCommon::
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a ; make DisplayTextID wait for button press
 	ret
 
+; **PrintText**  
+; 
+; 8*8のタイル単位で(1, 14)にテキストhlを表示する
 PrintText::
-; Print text hl at (1, 14).
 	push hl
 	ld a, MESSAGE_BOX
 	ld [wTextBoxID], a
@@ -4217,6 +4258,7 @@ PrintText::
 	call UpdateSprites
 	call Delay3
 	pop hl
+; 8*8のタイル単位で(1, 14)にテキストhlを表示する(テキストボックスは無し)
 PrintText_NoCreatingTextBox::
 	coord bc, 1, 14
 	jp TextCommandProcessor

@@ -461,8 +461,10 @@ wTradeCenterPointerTableIndex:: ; cc38
 wTextDest::
 	ds 2
 
-wDoNotWaitForButtonPressAfterDisplayingText:: ; cc3c
-; if non-zero, skip waiting for a button press after displaying text in DisplayTextID
+; cc3c  
+; 0でないならDisplayTextIDでのテキストの描画の後にボタンが押されるのを待機する処理をスキップする  
+; つまり0でないならテキストがボタンを押さなくても次に進んでいく
+wDoNotWaitForButtonPressAfterDisplayingText::
 	ds 1
 
 wSerialSyncAndExchangeNybbleReceiveData:: ; cc3d
@@ -2413,9 +2415,10 @@ wMapMusicSoundID:: ; d35b
 wMapMusicROMBank:: ; d35c
 	ds 1
 
-wMapPalOffset:: ; d35d
-; offset subtracted from FadePal4 to get the background and object palettes for the current map
-; normally, it is 0. it is 6 when Flash is needed, causing FadePal2 to be used instead of FadePal4
+; d35d  
+; 現在のマップのBGP, OBP0, OBP1を得るためにFadePal4から差し引かれるオフセット  
+; 通常は0だが、フラッシュが必要な時は6でFadePal4ではなくFadePal2が使用される  
+wMapPalOffset::
 	ds 1
 
 ; d35e  
