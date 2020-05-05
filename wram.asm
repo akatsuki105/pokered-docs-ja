@@ -3224,8 +3224,12 @@ wCurMapScript:: ; da39
 
 wPlayTimeHours:: ; da41
 	ds 1
-wPlayTimeMaxed:: ; da42
+
+; da42  
+; プレイ時間がカンストしていることを表すフラグ
+wPlayTimeMaxed::
 	ds 1
+
 wPlayTimeMinutes:: ; da43
 	ds 1
 wPlayTimeSeconds:: ; da44

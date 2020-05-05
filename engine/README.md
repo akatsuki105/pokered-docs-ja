@@ -51,7 +51,7 @@ oak_speech2.asm | null
 oam_dma.asm | OAM DMA転送を行う処理
 palettes.asm | null
 pathfinding.asm | null
-play_time.asm | null
+play_time.asm | プレイ時間をフレーム単位でインクリメントする処理
 pokedex_rating.asm | null
 predefs.asm | predefに関するスクリプト <br/>predefについては[ドキュメント](../docs/predef.md)を参照
 predefs7.asm | バンク7に属するpredef-routineを定義

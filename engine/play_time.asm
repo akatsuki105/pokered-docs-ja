@@ -1,16 +1,26 @@
+; **TrackPlayTime**  
+; プレイ時間をフレーム単位でインクリメントする処理 VBlankのたびに実行される
 TrackPlayTime:
 	call CountDownIgnoreInputBitReset
+	
+	; プレイ時間をカウントしてない状態なら何もしない
 	ld a, [wd732]
 	bit 0, a
 	ret z
+
+	; wPlayTimeMaxedがカンストしているなら何もしない
 	ld a, [wPlayTimeMaxed]
 	and a
 	ret nz
+
+	; フレームをインクリメント、60フレーム経ってなかったら返る
 	ld a, [wPlayTimeFrames]
 	inc a
 	ld [wPlayTimeFrames], a
 	cp 60
 	ret nz
+
+	; 60フレーム経っているので秒インクリメント
 	xor a
 	ld [wPlayTimeFrames], a
 	ld a, [wPlayTimeSeconds]
@@ -18,6 +28,8 @@ TrackPlayTime:
 	ld [wPlayTimeSeconds], a
 	cp 60
 	ret nz
+
+	; 分インクリメント
 	xor a
 	ld [wPlayTimeSeconds], a
 	ld a, [wPlayTimeMinutes]
@@ -25,6 +37,8 @@ TrackPlayTime:
 	ld [wPlayTimeMinutes], a
 	cp 60
 	ret nz
+
+	; 時(hour)インクリメント
 	xor a
 	ld [wPlayTimeMinutes], a
 	ld a, [wPlayTimeHours]
@@ -32,10 +46,13 @@ TrackPlayTime:
 	ld [wPlayTimeHours], a
 	cp $ff
 	ret nz
+
+	; プレイ時間カンスト
 	ld a, $ff
 	ld [wPlayTimeMaxed], a
 	ret
 
+; [wIgnoreInputCounter]をデクリメントして0になったらwd730をリセット
 CountDownIgnoreInputBitReset:
 
 	; [wIgnoreInputCounter]をデクリメント
