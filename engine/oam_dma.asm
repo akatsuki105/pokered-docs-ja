@@ -1,10 +1,11 @@
+; 下で定義した関数DMARoutineをHRAMにコピーする関数  
+; OAMDMA中はほかのメモリ領域にはアクセス不可能  
 WriteDMACodeToHRAM:
-; Since no other memory is available during OAM DMA,
-; DMARoutine is copied to HRAM and executed there.
 	ld c, $ff80 % $100
 	ld b, DMARoutineEnd - DMARoutine
 	ld hl, DMARoutine
 .copy
+	; hlからbバイトを$ff80にコピー
 	ld a, [hli]
 	ld [$ff00+c], a
 	inc c
@@ -12,12 +13,14 @@ WriteDMACodeToHRAM:
 	jr nz, .copy
 	ret
 
+; OAMDMA転送を行う関数 (ROM/RAM -> OAM memory)  
+; [wOAMBuffer:wOAMBuffer+160]までをOAMに転送
 DMARoutine:
-	; initiate DMA
+	; DMAを開始
 	ld a, wOAMBuffer / $100
 	ld [rDMA], a
 
-	; wait for DMA to finish
+	; DMAが終わるまで待機する
 	ld a, $28
 .wait
 	dec a

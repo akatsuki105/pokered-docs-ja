@@ -37,6 +37,8 @@ TrackPlayTime:
 	ret
 
 CountDownIgnoreInputBitReset:
+
+	; [wIgnoreInputCounter]をデクリメント
 	ld a, [wIgnoreInputCounter]
 	and a
 	jr nz, .asm_18e40
@@ -48,13 +50,19 @@ CountDownIgnoreInputBitReset:
 	ld [wIgnoreInputCounter], a
 	and a
 	ret nz
+
+	; デクリメントの結果、[wIgnoreInputCounter]が0になった場合
+
+	; wd730の1,2,5bitをクリア
 	ld a, [wd730]
-	res 1, a
-	res 2, a
-	bit 5, a
-	res 5, a
+	res 1, a 		; wd730[1] = 0
+	res 2, a		; wd730[2] = 0
+	bit 5, a		; check wd730[5]
+	res 5, a		; wd730[5] = 0
 	ld [wd730], a
 	ret z
+
+	; wd730[5] = 1なら
 	xor a
 	ld [hJoyPressed], a
 	ld [hJoyHeld], a

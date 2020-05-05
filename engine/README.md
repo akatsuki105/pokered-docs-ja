@@ -48,7 +48,7 @@ mon_party_sprites.asm | null
 multiply_divide.asm | null
 oak_speech.asm | null
 oak_speech2.asm | null
-oam_dma.asm | null
+oam_dma.asm | OAM DMA転送を行う処理
 palettes.asm | null
 pathfinding.asm | null
 play_time.asm | null

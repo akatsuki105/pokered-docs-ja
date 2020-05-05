@@ -330,8 +330,9 @@ wSpriteDataEnd::
 ; Object Attribute Memory(スプライトテーブル)
 SECTION "OAM Buffer", WRAM0
 
-wOAMBuffer:: ; c300
-; buffer for OAM data. Copied to OAM by DMA
+; c300  
+; OAM DMAで転送されるデータ(160バイト)を格納しておくバッファ
+wOAMBuffer::
 	ds 4 * 40
 
 ; c3a0  
@@ -2269,9 +2270,10 @@ wSavedSpriteMapX:: ; d133
 wWhichPrize:: ; d139
 	ds 1
 
-wIgnoreInputCounter:: ; d13a
-; counts downward each frame
-; when it hits 0, bit 5 (ignore input bit) of wd730 is reset
+; d13a  
+; このアドレスの値は各フレームごとにデクリメントされていく  
+; 0になったとき、wd730[5](キー入力を無視するフラグ)がクリアされる  
+wIgnoreInputCounter::
 	ds 1
 
 wStepCounter:: ; d13b
@@ -3092,18 +3094,18 @@ wd730::
 
 	ds 1
 
-wd732:: ; d732
-; bit 0: play time being counted
-; bit 1: remnant of debug mode? not set by the game code.
-; if it is set
-; 1. skips most of Prof. Oak's speech, and uses NINTEN as the player's name and SONY as the rival's name
-; 2. does not have the player start in floor two of the player's house (instead sending them to [wLastMap])
-; 3. allows wild battles to be avoided by holding down B
-; bit 2: the target warp is a fly warp (bit 3 set or blacked out) or a dungeon warp (bit 4 set)
-; bit 3: used warp pad, escape rope, dig, teleport, or fly, so the target warp is a "fly warp"
-; bit 4: jumped into hole (Pokemon Mansion, Seafoam Islands, Victory Road) or went down waterfall (Seafoam Islands), so the target warp is a "dungeon warp"
-; bit 5: currently being forced to ride bike (cycling road)
-; bit 6: map destination is [wLastBlackoutMap] (usually the last used pokemon center, but could be the player's house)
+; d732  
+; - bit 0: プレイ時間がカウントされている
+; - bit 1: デバッグモードで使っていたフラグを消し忘れた？とりあえずセットされる様子はない セットされているときは
+;	- 1. オーキド博士の話がスキップされ、プレイヤーとライバルの名前にNINTENとSONYが入る
+; 	- 2. プレイヤーのゲーム開始地点がプレイヤーの家の2階からではなく[wLastMap]のマップIDになる
+; 	- 3. Bボタンを押していると野生のポケモンとのエンカウントが発生しなくなる
+; - bit 2: the target warp is a fly warp (bit 3 set or blacked out) or a dungeon warp (bit 4 set)
+; - bit 3: used warp pad, escape rope, dig, teleport, or fly, so the target warp is a "fly warp"
+; - bit 4: jumped into hole (Pokemon Mansion, Seafoam Islands, Victory Road) or went down waterfall (Seafoam Islands), so the target warp is a "dungeon warp"
+; - bit 5: 自転車に乗ることを強制されているときに立つフラグ
+; - bit 6: map destination is [wLastBlackoutMap] (usually the last used pokemon center, but could be the player's house)
+wd732::
 	ds 1
 
 wFlags_D733:: ; d733
