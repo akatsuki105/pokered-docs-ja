@@ -72,4 +72,4 @@ titlescreen2.asm | null
 town_map.asm | null
 trade.asm | null
 trade2.asm | null
-turn_sprite.asm | null
+turn_sprite.asm | スプライトのグラフィックに現在の方向を反映させる

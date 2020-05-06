@@ -59,8 +59,8 @@ ScaleLastSpriteColumnByTwo:
 	ret
 
 ; scales the given 4 bits in a (4x1 pixels) to 2 output bytes (8x2 pixels)
-; hl: destination pointer
-; bc: destination pointer offset (added after the two bytes have been written)
+; hl = destination pointer
+; bc = destination pointer offset (added after the two bytes have been written)
 ScalePixelsByTwo:
 	push hl
 	and $f

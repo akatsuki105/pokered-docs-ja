@@ -713,11 +713,11 @@ UpdateSpriteImage:
 
 ; スプライトが指定した方向に進行可能かチェック  
 ; INPUT:
-; - b: 方向 (1,2,4 or 8)
-; - c: ID of tile the sprite would walk onto
-; - c: スプライトが進行する先のタイルID
-; - d: Y変化量 (-1, 0 or 1)
-; - e: X変化量 (-1, 0 or 1)
+; - b = 方向 (1,2,4 or 8)
+; - c = ID of tile the sprite would walk onto
+; - c = スプライトが進行する先のタイルID
+; - d = Y変化量 (-1, 0 or 1)
+; - e = X変化量 (-1, 0 or 1)
 ; 
 ; 進行できないならCフラグがセット、進行可能ならCフラグがクリア
 CanWalkOntoTile:
@@ -942,9 +942,9 @@ DoScriptedNPCMovement:
 	cp $ff
 	ret
 ; スプライトを移動させる、つまり座標などの位置データを変更する  
-; a: 移動量  
-; c: 移動方向  
-; l: 元のXまたはY座標のポインタ
+; a = 移動量  
+; c = 移動方向  
+; l = 元のXまたはY座標のポインタ
 .move
 	; 座標に移動量を加える
 	ld b, a

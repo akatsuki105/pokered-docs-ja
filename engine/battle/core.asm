@@ -635,8 +635,8 @@ HurtByLeechSeedText:
 
 ; decreases the mon's current HP by 1/16 of the Max HP (multiplied by number of toxic ticks if active)
 ; note that the toxic ticks are considered even if the damage is not poison (hence the Leech Seed glitch)
-; hl: HP pointer
-; bc (out): total damage
+; hl = HP pointer
+; bc (out) = total damage
 HandlePoisonBurnLeechSeed_DecreaseOwnHP:
 	push hl
 	push hl

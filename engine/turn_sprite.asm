@@ -1,10 +1,11 @@
+; **UpdateSpriteFacingOffsetAndDelayMovement**  
+; スプライトのイメージデータに現在の方向を反映し、クールタイムに入らせる
 UpdateSpriteFacingOffsetAndDelayMovement:
-	; hl = $c2X8
+	; [$c2X8] = $7f (最長のクールタイム)
 	ld h, $c2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $8
 	ld l, a
-	; [$c2X8] = $7f (最長のクールタイム)
 	ld a, $7f ; maximum movement delay
 	ld [hl], a ; c2x8 (movement delay)
 
@@ -28,7 +29,7 @@ UpdateSpriteFacingOffsetAndDelayMovement:
 	add $2
 	ld l, a
 
-	; TODO: スプライトの方向を$c1X9の方向に設定?
+	; $c1x2(sprite image index)に方向を反映
 	ld a, [hl] ; c1x2 (facing and animation table offset)
 	or b ; or in the facing direction
 	ld [hld], a

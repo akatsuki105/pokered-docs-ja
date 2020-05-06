@@ -1,5 +1,6 @@
 INCLUDE "constants.asm"
 
+; arg÷8バイト確保(余りは切り上げ)
 flag_array: MACRO
 	ds ((\1) + 7) / 8
 ENDM
@@ -2362,7 +2363,9 @@ wPokedexOwned:: ; d2f7
 	flag_array NUM_POKEMON
 wPokedexOwnedEnd::
 
-wPokedexSeen:: ; d30a
+; d30a  
+; 151÷8 = 19(切り上げ)
+wPokedexSeen::
 	flag_array NUM_POKEMON
 wPokedexSeenEnd::
 

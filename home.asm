@@ -1351,11 +1351,13 @@ RepelWoreOffText::
 INCLUDE "engine/menu/start_menu.asm"
 
 ; function to count how many bits are set in a string of bytes
+; 文字列の各バイトのうち何ビットがセットされているかカウントする関数
+; 
 ; INPUT:
-; hl = address of string of bytes
-; b = length of string of bytes
+; hl = 文字列の先頭アドレス
+; b = 文字列の長さ
 ; OUTPUT:
-; [wNumSetBits] = number of set bits
+; [wNumSetBits] = セットされたビットの数
 CountSetBits::
 	ld c, 0
 .loop
@@ -2885,8 +2887,8 @@ _GetPointerWithinSpriteStateData:
 ; decodes a $ff-terminated RLEncoded list
 ; each entry is a pair of bytes <byte value> <repetitions>
 ; the final $ff will be replicated in the output list and a contains the number of bytes written
-; de: input list
-; hl: output list
+; de = input list
+; hl = output list
 DecodeRLEList::
 	xor a
 	ld [wRLEByteCount], a     ; count written bytes here
@@ -3685,9 +3687,9 @@ CalcStats::
 	ret
 
 ; calculates stat c of current mon
-; c: stat to calc (HP=1,Atk=2,Def=3,Spd=4,Spc=5)
-; b: consider stat exp?
-; hl: base ptr to stat exp values ([hl + 2*c - 1] and [hl + 2*c])
+; c = stat to calc (HP=1,Atk=2,Def=3,Spd=4,Spc=5)
+; b = consider stat exp?
+; hl = base ptr to stat exp values ([hl + 2*c - 1] and [hl + 2*c])
 CalcStat::
 	push hl
 	push de
@@ -3894,7 +3896,7 @@ MoveMon::
 	ret
 
 ; skips a text entries, each of size NAME_LENGTH (like trainer name, OT name, rival name, ...)
-; hl: base pointer, will be incremented by NAME_LENGTH * a
+; hl = base pointer, will be incremented by NAME_LENGTH * a
 SkipFixedLengthTextEntries::
 	and a
 	ret z
