@@ -30,6 +30,7 @@
 - [マップ](./docs/map.md)
 - [movement byte](./docs/movement_byte.md)
 - [picファイル](./docs/pic_format.md)
+- [ポケモン図鑑](./docs/pokedex.md)
 - [predef](./docs/predef.md)
 - [rgbgfx](./docs/rgbgfx.md)
 - [スプライトデータ](./docs/sprite_data.md)

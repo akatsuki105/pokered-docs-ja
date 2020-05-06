@@ -2359,6 +2359,8 @@ wPartyDataEnd::
 
 wMainDataStart::
 
+; d30a  
+; 151÷8 = 19(切り上げ)
 wPokedexOwned:: ; d2f7
 	flag_array NUM_POKEMON
 wPokedexOwnedEnd::

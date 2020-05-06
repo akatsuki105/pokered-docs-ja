@@ -1360,19 +1360,30 @@ INCLUDE "engine/menu/start_menu.asm"
 ; [wNumSetBits] = セットされたビットの数
 CountSetBits::
 	ld c, 0
+; 文字列の各文字に対するループ
 .loop
 	ld a, [hli]
 	ld e, a
 	ld d, 8
-.innerLoop ; count how many bits are set in the current byte
+; 文字の各ビットに対するループ
+; INPUT:  
+; - d = 左から数えて何ビット目か(innerLoopのカウンタ)
+; - e = 現在の文字  
+.innerLoop
+	; c += e[8-d]
 	srl e
 	ld a, 0
 	adc c
 	ld c, a
+
+	; 次のbitへ
 	dec d
 	jr nz, .innerLoop
+
+	; 次の文字へ
 	dec b
 	jr nz, .loop
+
 	ld a, c
 	ld [wNumSetBits], a
 	ret

@@ -1,30 +1,41 @@
 DisplayDexRating:
+	; [hDexRatingNumMonsSeen] = 見つけたポケモンの数
 	ld hl, wPokedexSeen
 	ld b, wPokedexSeenEnd - wPokedexSeen
 	call CountSetBits
 	ld a, [wNumSetBits]
 	ld [hDexRatingNumMonsSeen], a
+
+	; [hDexRatingNumMonsOwned] = 捕まえたポケモンの数
 	ld hl, wPokedexOwned
 	ld b, wPokedexOwnedEnd - wPokedexOwned
 	call CountSetBits
 	ld a, [wNumSetBits]
 	ld [hDexRatingNumMonsOwned], a
+
 	ld hl, DexRatingsTable
 .findRating
+	; 捕まえた数から該当のRatingエントリを探す
 	ld a, [hli]
 	ld b, a
 	ld a, [hDexRatingNumMonsOwned]
 	cp b
 	jr c, .foundRating
+
+	; 次のRatingエントリに
 	inc hl
 	inc hl
 	jr .findRating
 .foundRating
+	; hl = 評価テキストのアドレス
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a ; load text pointer into hl
+
+	; 
 	CheckAndResetEventA EVENT_HALL_OF_FAME_DEX_RATING
 	jr nz, .hallOfFame
+	
 	push hl
 	ld hl, PokedexRatingText_441cc
 	call PrintText
@@ -56,8 +67,8 @@ PokedexRatingText_441cc:
 	db "@"
 
 DexRatingsTable:
-	db 10
-	dw PokedexRatingText_44201
+	db 10						; ポケモン数
+	dw PokedexRatingText_44201	; 図鑑の捕まえた数 < 10 のときのオーキド博士からの評価テキスト
 	db 20
 	dw PokedexRatingText_44206
 	db 30
