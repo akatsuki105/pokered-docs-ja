@@ -1,3 +1,4 @@
+; ポケモン図鑑の評価テキストを表示する処理
 DisplayDexRating:
 	; [hDexRatingNumMonsSeen] = 見つけたポケモンの数
 	ld hl, wPokedexSeen
@@ -107,7 +108,7 @@ DexRatingsTable:
 	db 150
 	dw PokedexRatingText_44247
 	db NUM_POKEMON + 1
-	dw PokedexRatingText_4424c
+	dw PokedexRatingText_4424c	; 150 <= 図鑑の捕まえた数 < 152 のときのオーキド博士からの評価テキスト
 
 PokedexRatingText_44201:
 	TX_FAR _OaksLabText_44201
