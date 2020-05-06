@@ -564,7 +564,8 @@ wVermilionDockTileMapBuffer:: ; cc5b
 
 wOaksAideRewardItemName:: ; cc5b
 
-wDexRatingNumMonsSeen:: ; cc5b
+; cc5b
+wDexRatingNumMonsSeen::
 
 wFilteredBagItems:: ; cc5b
 ; List of bag items that has been filtered to a certain type of items,
@@ -596,7 +597,8 @@ wAnimationType:: ; cc5b
 wNPCMovementDirections::
 	ds 1
 
-wDexRatingNumMonsOwned:: ; cc5c
+; cc5c
+wDexRatingNumMonsOwned::
 	ds 1
 
 wDexRatingText:: ; cc5d
@@ -3168,7 +3170,11 @@ wSecondLockTrashCanIndex:: ; d744
 	ds 1
 
 	ds 2
-wEventFlags:: ; d747
+
+; d747  
+; イベントフラグを管理する領域  
+; イベント数は全部で$9ff => 2559なので 2560 = 320*8 で320バイト
+wEventFlags::
 	ds 320
 
 wLinkEnemyTrainerName:: ; d887

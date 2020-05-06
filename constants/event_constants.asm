@@ -1,4 +1,4 @@
-; イベントの内部ID
+; event index を定義
 
 const_value = 0
 

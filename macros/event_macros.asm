@@ -118,10 +118,17 @@ CheckAndSetEventA: MACRO
 	ld [wEventFlags + ((\1) / 8)], a
 	ENDM
 
-;\1 = event index
+; **CheckAndResetEventA**  
+; \1で指定した`event index`のイベントのフラグが立っているかチェックしてその後そのフラグをクリアする  
+; フラグが立っているならnz
 CheckAndResetEventA: MACRO
+	; a = イベントフラグのあるアドレス
 	ld a, [wEventFlags + ((\1) / 8)]
+	
+	; イベントが該当するbitからイベントフラグを抽出
 	bit (\1) % 8, a
+	
+	; 該当のbitをクリア
 	res (\1) % 8, a
 	ld [wEventFlags + ((\1) / 8)], a
 	ENDM

@@ -27,30 +27,38 @@ DisplayDexRating:
 	inc hl
 	jr .findRating
 .foundRating
-	; hl = 評価テキストのアドレス
+	; hl = 評価テキスト
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a ; load text pointer into hl
 
-	; 
+	; 殿堂入り時の図鑑評価の時
 	CheckAndResetEventA EVENT_HALL_OF_FAME_DEX_RATING
 	jr nz, .hallOfFame
 	
+	; 評価テキストの前置きテキストを表示
 	push hl
 	ld hl, PokedexRatingText_441cc
 	call PrintText
 	pop hl
+	
+	; 評価テキストを表示
 	call PrintText
 	callba PlayPokedexRatingSfx
 	jp WaitForTextScrollButtonPress
 .hallOfFame
+	; [wDexRatingNumMonsSeen] = [hDexRatingNumMonsSeen]
 	ld de, wDexRatingNumMonsSeen
 	ld a, [hDexRatingNumMonsSeen]
 	ld [de], a
+
+	; [wDexRatingNumMonsOwned] = [hDexRatingNumMonsOwned]
 	inc de
 	ld a, [hDexRatingNumMonsOwned]
 	ld [de], a
-	inc de
+
+; wDexRatingText に 評価テキストをコピー
+	inc de ; de = wDexRatingText
 .copyRatingTextLoop
 	ld a, [hli]
 	cp "@"
@@ -62,6 +70,7 @@ DisplayDexRating:
 	ld [de], a
 	ret
 
+; 『みつけた ポケモン ●●●! つかまえた ポケモン ●●●! オーキドはかせの ひょうか…』というテキスト
 PokedexRatingText_441cc:
 	TX_FAR _OaksLabText_441cc
 	db "@"

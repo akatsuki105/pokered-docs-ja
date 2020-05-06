@@ -52,7 +52,7 @@ oam_dma.asm | OAM DMA転送を行う処理
 palettes.asm | null
 pathfinding.asm | null
 play_time.asm | プレイ時間をフレーム単位でインクリメントする処理
-pokedex_rating.asm | null
+pokedex_rating.asm | ポケモン図鑑の評価テキストを表示する処理
 predefs.asm | predefに関するスクリプト <br/>predefについては[ドキュメント](../docs/predef.md)を参照
 predefs7.asm | バンク7に属するpredef-routineを定義
 predefs12.asm | バンク12に属するpredef-routineを定義
