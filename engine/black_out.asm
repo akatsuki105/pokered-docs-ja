@@ -1,5 +1,6 @@
+; 『めのまえが まっくらに なった！』ときのゲームの状態を更新する処理
 ResetStatusAndHalveMoneyOnBlackout::
-; Reset player status on blackout.
+	; 各種変数をリセット
 	xor a
 	ld [wBattleResult], a
 	ld [wWalkBikeSurfState], a
@@ -10,13 +11,16 @@ ResetStatusAndHalveMoneyOnBlackout::
 	ld [wNPCMovementScriptPointerTableNum], a
 	ld [wFlags_0xcd60], a
 
+	; プレイヤーのお金が0以上かチェック
 	ld [hMoney], a
 	ld [hMoney + 1], a
 	ld [hMoney + 2], a
 	call HasEnoughMoney
+
+	; 0未満の場合
 	jr c, .lostmoney ; never happens
 
-	; Halve the player's money.
+	; 0以上の場合(常にここに到達)はプレイヤーのお金を半分にする
 	ld a, [wPlayerMoney]
 	ld [hMoney], a
 	ld a, [wPlayerMoney + 1]
@@ -36,6 +40,7 @@ ResetStatusAndHalveMoneyOnBlackout::
 	ld a, [hDivideBCDQuotient + 2]
 	ld [wPlayerMoney + 2], a
 
+; 未使用
 .lostmoney
 	ld hl, wd732
 	set 2, [hl]

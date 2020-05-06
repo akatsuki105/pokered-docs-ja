@@ -12,7 +12,7 @@ menu/ | null
 overworld/ | null
 add_mon.asm | null
 bcd.asm | null
-black_out.asm | null
+black_out.asm | 『めのまえが まっくらに なった！』ときのゲームの状態を更新する処理
 cable_club.asm | null
 clear_save.asm | null
 debug1.asm | null

@@ -2992,9 +2992,8 @@ GetTrainerInformation::
 GetTrainerName::
 	jpba GetTrainerName_
 
+; プレイヤーが[hMoney]以上のお金を持っているならcarryをクリア、未満ならcarryをセット
 HasEnoughMoney::
-; Check if the player has at least as much
-; money as the 3-byte BCD value at hMoney.
 	ld de, wPlayerMoney
 	ld hl, hMoney
 	ld c, 3
@@ -3916,8 +3915,13 @@ AddNTimes::
 	jr nz, .loop
 	ret
 
-; Compare strings, c bytes in length, at de and hl.
-; Often used to compare big endian numbers in battle calculations.
+; de と hl を cバイトだけ文字列として比較する  
+; バトルの計算処理でビッグエンディアンの数値を比較するのに用いられる  
+;  
+; OUTPUT:  
+; de > hl -> carry is 0  
+; de == hl -> carry is 0  
+; de < hl -> carry is 1  
 StringCmp::
 	ld a, [de]
 	cp [hl]

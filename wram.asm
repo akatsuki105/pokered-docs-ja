@@ -2378,7 +2378,9 @@ wBagItems::
 	ds BAG_ITEM_CAPACITY * 2
 	ds 1 ; end
 
-wPlayerMoney:: ; d347
+; d347  
+; プレイヤーの所持金を表す
+wPlayerMoney::
 	ds 3 ; BCD
 
 wRivalName:: ; d34a
