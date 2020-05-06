@@ -1,7 +1,8 @@
 ; ジョイパッドの状態を記録する変数を更新:  
-; - hJoyReleased: (hJoyLast ^ hJoyInput) & hJoyLast  
-; - hJoyPressed:  (hJoyLast ^ hJoyInput) & hJoyInput  
-; - hJoyLast:     hJoyInput
+; - hJoyReleased: (hJoyLast ^ hJoyInput) & hJoyLast 
+; - hJoyPressed:  (hJoyLast ^ hJoyInput) & hJoyInput (wJoyIgnoreを考慮)
+; - hJoyLast:     hJoyInput 今回の_Joypad処理で押されたボタン
+; - hJoyHeld:	  今回の_Joypad処理で押されたボタン(wJoyIgnoreを考慮)
 _Joypad::
 	ld a, [hJoyInput]	; [↓, ↑, ←, →, Start, Select, B, A] 押されているときにbitが立つ
 
@@ -18,11 +19,11 @@ _Joypad::
 	xor b
 	ld d, a
 
-	; hJoyReleased = (hJoyLast ^ hJoyInput) & hJoyLast
+	; hJoyReleased = (hJoyLast ^ hJoyInput) & hJoyLast = 今回の_Joypad処理でONからOFFに変わったボタン
 	and e
 	ld [hJoyReleased], a
 
-	; hJoyPressed =  (hJoyLast ^ hJoyInput) & hJoyInput 
+	; hJoyPressed =  (hJoyLast ^ hJoyInput) & hJoyInput = 今回の_Joypad処理でOFFからONに変わったボタン
 	ld a, d
 	and b
 	ld [hJoyPressed], a
@@ -31,17 +32,21 @@ _Joypad::
 	ld a, b
 	ld [hJoyLast], a
 
+	; キー入力を無視するモードだったときは入力を読み捨てる
 	ld a, [wd730]
 	bit 5, a
 	jr nz, DiscardButtonPresses
 
+	; [hJoyHeld] = [↓, ↑, ←, →, Start, Select, B, A]
 	ld a, [hJoyLast]
 	ld [hJoyHeld], a
 
+	; wJoyIgnore = 0のときはボタンをignoreする処理が必要ないのでこのまま終了
 	ld a, [wJoyIgnore]
 	and a
 	ret z
 
+	; hJoyHeld, hJoyPressedのうち、wJoyIgnoreのビットが立っているところをクリアする
 	cpl
 	ld b, a
 	ld a, [hJoyHeld]
@@ -52,6 +57,7 @@ _Joypad::
 	ld [hJoyPressed], a
 	ret
 
+; 受け取ったキー入力を全て捨てる
 DiscardButtonPresses:
 	xor a
 	ld [hJoyHeld], a

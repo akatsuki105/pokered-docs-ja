@@ -13,6 +13,7 @@
         <ul>
             <li>ハードウェアの制御</li>
             <li>テキストの処理</li>
+            <li>キー入力の処理</li>
         </ul>
     </td>
   </tr>
@@ -284,4 +285,4 @@
 
 ## 参考
 
-[pokered.link](../pokered.link)  
+- [pokered.link](../pokered.link)  

@@ -13,7 +13,7 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  copy2.asm  |  データコピー用のユーティリティ関数 <br/>copy.asmとは配置されるアドレスが離れている
  fade.asm  |  null
  init.asm  |  null
- joypad.asm  |  null
+ joypad.asm  |  キー入力を処理する関数
  overworld.asm  |  null
  pic.asm  |  null
  predef.asm  |  predefに関する処理 <br/>predefについては[ドキュメント](../docs/predef.md)参照

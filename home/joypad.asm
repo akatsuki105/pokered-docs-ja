@@ -38,10 +38,12 @@ ReadJoypad::
 	ld [rJOYP], a
 	ret
 
-; ジョイパッドの状態を記録する変数を更新:  
-; - [hJoyReleased]  keys released since last time
-; - [hJoyPressed]   keys pressed since last time
-; - [hJoyHeld] currently pressed keys
+; ジョイパッドの状態を記録する変数を更新: 
+; 
+; OUTPUT:  
+; - [hJoyReleased]  今回の_Joypad処理でONからOFFに変わったボタン 
+; - [hJoyPressed]   今回の_Joypad処理でOFFからONに変わったボタン 
+; - [hJoyHeld] 		現在押されているボタン	[↓, ↑, ←, →, Start, Select, B, A]で押されているボタンはビットが立つ
 Joypad::
 	homecall _Joypad
 	ret
