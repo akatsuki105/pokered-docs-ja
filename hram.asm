@@ -150,7 +150,7 @@ hNPCPlayerRelativePosFlags EQU $FF9D
 ; some code zeroes this for no reason when writing a coin amount
 hUnusedCoinsByte EQU $FF9F
 
-hMoney EQU $FF9F ; 3-byte BCD number
+hMoney EQU $FF9F ; 3バイト(10進数で6桁)のBCDフォーマットの数値
 hCoins EQU $FFA0 ; 2-byte BCD number
 
 hDivideBCDDivisor  EQU $FFA2 ; 3-byte BCD number

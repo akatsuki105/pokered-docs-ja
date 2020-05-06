@@ -2379,7 +2379,7 @@ wBagItems::
 	ds 1 ; end
 
 ; d347  
-; プレイヤーの所持金を表す
+; BCDフォーマットでプレイヤーの所持金を表す
 wPlayerMoney::
 	ds 3 ; BCD
 

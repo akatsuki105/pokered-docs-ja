@@ -4,6 +4,8 @@ DivideBCDPredef3::
 DivideBCDPredef4::
 	call GetPredefRegisters
 
+; hDivideBCDQuotient = hMoney ÷ hDivideBCDBuffer  
+; 『めのまえが まっくらに なった！』ときの所持金を半分にする処理でのみ利用
 DivideBCD::
 	xor a
 	ld [hDivideBCDBuffer], a

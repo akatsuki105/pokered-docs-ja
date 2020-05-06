@@ -11,7 +11,7 @@ ResetStatusAndHalveMoneyOnBlackout::
 	ld [wNPCMovementScriptPointerTableNum], a
 	ld [wFlags_0xcd60], a
 
-	; プレイヤーのお金が0以上かチェック
+	; プレイヤーの所持金が0以上かチェック
 	ld [hMoney], a
 	ld [hMoney + 1], a
 	ld [hMoney + 2], a
@@ -20,7 +20,7 @@ ResetStatusAndHalveMoneyOnBlackout::
 	; 0未満の場合
 	jr c, .lostmoney ; never happens
 
-	; 0以上の場合(常にここに到達)はプレイヤーのお金を半分にする
+	; 0以上の場合(常にここに到達)はプレイヤーの所持金を半分にする
 	ld a, [wPlayerMoney]
 	ld [hMoney], a
 	ld a, [wPlayerMoney + 1]
@@ -30,7 +30,7 @@ ResetStatusAndHalveMoneyOnBlackout::
 	xor a
 	ld [hDivideBCDDivisor], a
 	ld [hDivideBCDDivisor + 1], a
-	ld a, 2
+	ld a, 2							; ÷2
 	ld [hDivideBCDDivisor + 2], a
 	predef DivideBCDPredef3
 	ld a, [hDivideBCDQuotient]
