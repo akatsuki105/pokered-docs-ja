@@ -375,11 +375,13 @@ wTopMenuItemY:: ; cc24
 wTopMenuItemX:: ; cc25
 	ds 1
 
-wCurrentMenuItem:: ; cc26
-; the id of the currently selected menu item
-; the top item has id 0, the one below that has id 1, etc.
-; note that the "top item" means the top item currently visible on the screen
-; add this value to [wListScrollOffset] to get the item's position within the list
+; cc26  
+; 現在メニューで選択されているアイテムを表すID  
+; TODO: アイテムとあるがバッグのどうぐのことではなく、選択式のものメニューならどんなものでも当てはまる？  
+; 一番上のアイテムはIDが0、1つ下はIDが1となる  
+; 一番上のアイテムというのは現在画面で見えている一番上のアイテムのことを指すことに注意  
+; このスクリーン上のオフセットに[wListScrollOffset]を加えることでメニューリスト中の本当のアイテムオフセットを得る  
+wCurrentMenuItem::
 	ds 1
 
 wTileBehindCursor:: ; cc27
@@ -390,8 +392,10 @@ wMaxMenuItem:: ; cc28
 ; id of the bottom menu item
 	ds 1
 
-wMenuWatchedKeys:: ; cc29
-; bit mask of keys that the menu will respond to
+; cc29  
+; キー入力のうち、入力されたときになんらかの反応をしめすキーの一覧  
+; [↓, ↑, ←, →, Start, Select, B, A]
+wMenuWatchedKeys::
 	ds 1
 
 wLastMenuItem:: ; cc2a
@@ -567,9 +571,9 @@ wOaksAideRewardItemName:: ; cc5b
 ; cc5b
 wDexRatingNumMonsSeen::
 
-wFilteredBagItems:: ; cc5b
-; List of bag items that has been filtered to a certain type of items,
-; such as drinks or fossils.
+; cc5b  
+; 飲み物や化石など、特定の種類のアイテムにフィルターされたかばんのアイテムのリスト
+wFilteredBagItems::
 
 wElevatorWarpMaps:: ; cc5b
 
@@ -847,8 +851,9 @@ wNPCMovementDirections2Index::
 
 wUnusedCD37:: ; cd37
 
-wFilteredBagItemsCount:: ; cd37
-; number of items in wFilteredBagItems list
+; cd37
+; 配列 wFilteredBagItems の要素の個数
+wFilteredBagItemsCount::
 	ds 1
 
 ; cd38  

@@ -1,10 +1,16 @@
 GiveFossilToCinnabarLab:
+	; テキスト表示に遅延を発生させる
 	ld hl, wd730
 	set 6, [hl]
+
+	; [wCurrentMenuItem] = 0
 	xor a
 	ld [wCurrentMenuItem], a
+
+	; ABボタン以外は押しても何もおきない
 	ld a, A_BUTTON | B_BUTTON
 	ld [wMenuWatchedKeys], a
+
 	ld a, [wFilteredBagItemsCount]
 	dec a
 	ld [wMaxMenuItem], a
