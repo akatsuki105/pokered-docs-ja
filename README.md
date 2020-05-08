@@ -28,6 +28,7 @@
 - [マクロ](./docs/macro.md)
 - [マップオブジェクト](./docs/map_object.md)
 - [マップ](./docs/map.md)
+- [メニュー](./docs/menu.md)
 - [movement byte](./docs/movement_byte.md)
 - [picファイル](./docs/pic_format.md)
 - [ポケモン図鑑](./docs/pokedex.md)

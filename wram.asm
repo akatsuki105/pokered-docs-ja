@@ -386,8 +386,10 @@ wTopMenuItemX::
 wCurrentMenuItem::
 	ds 1
 
-wTileBehindCursor:: ; cc27
-; the tile that was behind the menu cursor's current location
+; cc27  
+; the tile that was behind the menu cursor's current location  
+; メニューカーソルの現在の位置でのタイルアドレス
+wTileBehindCursor::
 	ds 1
 
 wMaxMenuItem:: ; cc28
@@ -400,8 +402,11 @@ wMaxMenuItem:: ; cc28
 wMenuWatchedKeys::
 	ds 1
 
-wLastMenuItem:: ; cc2a
-; id of previously selected menu item
+; cc2a  
+; id of previously selected menu item  
+; 最後に選択されたメニューアイテムのID  
+; 選択された場所を記録しておいて次に開いたときにそこにカーソルを合わせたいときに使う?  
+wLastMenuItem::
 	ds 1
 
 wPartyAndBillsPCSavedMenuItem:: ; cc2b

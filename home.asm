@@ -4158,26 +4158,40 @@ HandleMenuInput_::
 	jr z, .checkOtherKeys
 	jr .checkIfAButtonOrBButtonPressed
 
+; **PlaceMenuCursor**  
+; 
+; 選択メニューにカーソルを表示させる  
+; INPUT: [wCurrentMenuItem] = 現在選択しているアイテムの画面上でのオフセット
 PlaceMenuCursor::
+	; [wTopMenuItemY] = 0
 	ld a, [wTopMenuItemY]
 	and a ; is the y coordinate 0?
 	jr z, .adjustForXCoord
+	
+	; hl = (0, wTopMenuItemY)のタイルアドレス
 	coord hl, 0, 0
 	ld bc, SCREEN_WIDTH
 .topMenuItemLoop
 	add hl, bc
 	dec a
 	jr nz, .topMenuItemLoop
+
 .adjustForXCoord
+	; hl = (wTopMenuItemX, wTopMenuItemY)のタイルのポインタ
 	ld a, [wTopMenuItemX]
 	ld b, 0
 	ld c, a
 	add hl, bc
 	push hl
+
+	; [wLastMenuItem] == 0のとき
 	ld a, [wLastMenuItem]
 	and a ; was the previous menu id 0?
 	jr z, .checkForArrow1
+
 	push af
+	
+	; bc = 各行の行間の大きさ = 20(1タイル) or 40(2タイル) 
 	ld a, [hFlags_0xFFF6]
 	bit 1, a ; is the menu double spaced?
 	jr z, .doubleSpaced1
@@ -4185,25 +4199,36 @@ PlaceMenuCursor::
 	jr .getOldMenuItemScreenPosition
 .doubleSpaced1
 	ld bc, 40
+
+	; hl = 最後に選択したアイテムのカーソルがあるタイルのポインタ
 .getOldMenuItemScreenPosition
-	pop af
+	pop af	; a = [wLastMenuItem]
 .oldMenuItemLoop
 	add hl, bc
 	dec a
 	jr nz, .oldMenuItemLoop
+
 .checkForArrow1
+	; 最後に選択したアイテムのタイルアドレスにカーソルが出ていない
 	ld a, [hl]
 	cp "▶" ; was an arrow next to the previously selected menu item?
 	jr nz, .skipClearingArrow
+
 .clearArrow
+	; 最後に選択したアイテムのタイルにカーソルが出ているときはカーソルを消す
 	ld a, [wTileBehindCursor]
 	ld [hl], a
+
 .skipClearingArrow
-	pop hl
+	pop hl	; hl = (wTopMenuItemX, wTopMenuItemY)のタイルのポインタ
+
+	; [wCurrentMenuItem] = 0
 	ld a, [wCurrentMenuItem]
 	and a
 	jr z, .checkForArrow2
 	push af
+
+	; hl = 現在選択中のアイテムのカーソルがあるタイルのポインタ
 	ld a, [hFlags_0xFFF6]
 	bit 1, a ; is the menu double spaced?
 	jr z, .doubleSpaced2
@@ -4212,23 +4237,31 @@ PlaceMenuCursor::
 .doubleSpaced2
 	ld bc, 40
 .getCurrentMenuItemScreenPosition
-	pop af
+	pop af	; a = [wCurrentMenuItem]
 .currentMenuItemLoop
 	add hl, bc
 	dec a
 	jr nz, .currentMenuItemLoop
+
+	; 現在選択中の位置にカーソルを表示させる
 .checkForArrow2
 	ld a, [hl]
 	cp "▶" ; has the right arrow already been placed?
 	jr z, .skipSavingTile ; if so, don't lose the saved tile
 	ld [wTileBehindCursor], a ; save tile before overwriting with right arrow
+
 .skipSavingTile
+	; カーソルの表示をタイルに反映
 	ld a, "▶" ; place right arrow
 	ld [hl], a
+
+	; [wMenuCursorLocation] = カーソルのタイルポインタ
 	ld a, l
 	ld [wMenuCursorLocation], a
 	ld a, h
 	ld [wMenuCursorLocation + 1], a
+
+	; wLastMenuItemを更新
 	ld a, [wCurrentMenuItem]
 	ld [wLastMenuItem], a
 	ret

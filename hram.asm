@@ -315,8 +315,9 @@ hSpriteAnimFrameCounter EQU $FFEA
 
 H_WHOSETURN EQU $FFF3 ; 0 on playerâ€™s turn, 1 on enemyâ€™s turn
 
-; bit 0: draw HP fraction to the right of bar instead of below (for party menu)
-; bit 1: menu is double spaced
+; **hFlags_0xFFF6**  
+; - bit 0: draw HP fraction to the right of bar instead of below (for party menu)  
+; - bit 1: メニューの各アイテムの行間を2タイル分に(0なら1タイル分)
 hFlags_0xFFF6 EQU $FFF6
 
 hFieldMoveMonMenuTopMenuItemX EQU $FFF7
