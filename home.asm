@@ -4054,16 +4054,22 @@ HandleMenuInput_::
 	ld a, 6
 	ld [H_DOWNARROWBLINKCNT2], a ; blinking down arrow timing value 2
 .loop1
+	; 選択メニューで選択している行にカーソルを配置
 	xor a
 	ld [wAnimCounter], a ; counter for pokemon shaking animation
 	call PlaceMenuCursor
 	call Delay3
 .loop2
 	push hl
+
+	; 選択メニューがポケモン選択メニューでない
 	ld a, [wPartyMenuAnimMonEnabled]
 	and a ; is it a pokemon selection menu?
 	jr z, .getJoypadState
+
+	; 選択メニューがポケモン選択メニューならポケモンのアイコンのアニメーション処理を行う
 	callba AnimatePartyMon ; shake mini sprite of selected pokemon
+	
 .getJoypadState
 	pop hl
 	call JoypadLowSensitivity
