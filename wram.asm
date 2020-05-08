@@ -1973,7 +1973,8 @@ wSubAnimSubEntryAddr:: ; d096
 wOutwardSpiralTileMapPointer:: ; d09a
 	ds 1
 
-wPartyMenuAnimMonEnabled:: ; d09b
+; d09b  
+wPartyMenuAnimMonEnabled::
 
 wTownMapSpriteBlinkingEnabled:: ; d09b
 ; non-zero when enabled. causes nest locations to blink on and off.

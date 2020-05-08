@@ -4035,14 +4035,20 @@ WriteOAMBlock::
 	ret
 
 HandleMenuInput::
+	; 選択メニューがポケモン選択メニュー(手持ちポケモン一覧など)のときに選択しているポケモン以外のアニメーションを無効にする?
 	xor a
 	ld [wPartyMenuAnimMonEnabled], a
 
 HandleMenuInput_::
+	; H_DOWNARROWBLINKCNT1/2を退避
 	ld a, [H_DOWNARROWBLINKCNT1]
 	push af
 	ld a, [H_DOWNARROWBLINKCNT2]
 	push af ; save existing values on stack
+
+	; カーソル点滅速度を変更
+	; H_DOWNARROWBLINKCNT1 = 0
+	; H_DOWNARROWBLINKCNT2 = 6
 	xor a
 	ld [H_DOWNARROWBLINKCNT1], a ; blinking down arrow timing value 1
 	ld a, 6

@@ -37,7 +37,8 @@ GiveFossilToCinnabarLab:
 	call TextBoxBorder
 
 	call UpdateSprites
-	call PrintFossilsInBag
+	call PrintFossilsInBag	; テキストボックス内に化石名一覧を表示
+
 	ld hl, wd730
 	res 6, [hl]
 	call HandleMenuInput
