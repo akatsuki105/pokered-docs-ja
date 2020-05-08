@@ -102,7 +102,6 @@ LabFossil_610bd:
 	TX_FAR _Lab4Text_610bd
 	db "@"
 
-; Prints each fossil in the player's bag on a separate line in the menu.
 ; プレイヤーの持っている化石をアイテム選択メニューに表示
 PrintFossilsInBag:
 	; ループの初期化処理
@@ -113,21 +112,26 @@ PrintFossilsInBag:
 	; a = 現在処理中のアイテム
 	ld a, [hli]
 
-	; 終了
+	; 表示する化石がこれ以上ないので終了
 	cp $ff
 	ret z
 	
-	; 
+	; de = 化石名
 	push hl
 	ld [wd11e], a
 	call GetItemName
+
+	; hl = 描画先のタイルアドレス
 	coord hl, 2, 2
-	
 	ld a, [hItemCounter]
 	ld bc, SCREEN_WIDTH * 2
 	call AddNTimes
+
+	; 化石名をテキストボックスに配置
 	ld de, wcd6d
 	call PlaceString
+
+	; アイテムカウンターを増やして次の化石を表示する
 	ld hl, hItemCounter
 	inc [hl]
 	pop hl

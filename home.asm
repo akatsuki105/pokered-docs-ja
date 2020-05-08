@@ -2014,9 +2014,10 @@ GetMonName::
 	pop hl
 	ret
 
-; given an item ID at [wd11e], store the name of the item into a string
-; アイテムIDに対応するアイテムの名前を文字列として格納する  
-; INPUT: [wd11e] = アイテムID
+; 入力で渡した どうぐ のアイテムIDに対応するアイテム名を得る  
+; INPUT: [wd11e] = アイテムID  
+; 
+; OUTPUT: de = アイテム名のポインタ  
 GetItemName::
 	; starting at wcd6d
 	push hl
