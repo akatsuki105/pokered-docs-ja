@@ -4069,20 +4069,28 @@ HandleMenuInput_::
 
 	; 選択メニューがポケモン選択メニューならポケモンのアイコンのアニメーション処理を行う
 	callba AnimatePartyMon ; shake mini sprite of selected pokemon
-	
 .getJoypadState
 	pop hl
+	
+	; キー入力があった場合 -> .keyPressed
 	call JoypadLowSensitivity
 	ld a, [hJoy5]
 	and a ; was a key pressed?
 	jr nz, .keyPressed
+
 	push hl
+
+	; (18, 11)で"▼"を点滅させる
 	coord hl, 18, 11 ; coordinates of blinking down arrow in some menus
 	call HandleDownArrowBlinkTiming ; blink down arrow (if any)
+
 	pop hl
+
+	; 時間切れ
 	ld a, [wMenuJoypadPollCount]
 	dec a
 	jr z, .giveUpWaiting
+
 	jr .loop2
 .giveUpWaiting
 ; if a key wasn't pressed within the specified number of checks
@@ -4295,14 +4303,13 @@ EraseMenuCursor::
 	ld [hl], " "
 	ret
 
-; This toggles a blinking down arrow at hl on and off after a delay has passed.
-; This is often called even when no blinking is occurring.
-; The reason is that most functions that call this initialize H_DOWNARROWBLINKCNT1 to 0.
-; The effect is that if the tile at hl is initialized with a down arrow,
-; this function will toggle that down arrow on and off, but if the tile isn't
-; initialized with a down arrow, this function does nothing.
-; That allows this to be called without worrying about if a down arrow should
-; be blinking.
+; **HandleDownArrowBlinkTiming**  
+; タイルhlで"▼"を一定時間ごとに点滅させる関数  
+; 
+; 点滅が生じないときもしばしば呼び出されている  
+; これは、これを呼び出すほとんどの関数がH_DOWNARROWBLINKCNT1を0に初期化するためである  
+; この関数はタイルhlに"▼"がセットされている場合は"▼"の点滅を行うが、セットされていない場合は何もしない  
+; そのため点滅が生じないときもとりあえずこの関数を呼び出すといったことをしても問題にはならない   
 HandleDownArrowBlinkTiming::
 	ld a, [hl]
 	ld b, a

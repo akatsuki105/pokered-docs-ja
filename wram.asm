@@ -443,8 +443,10 @@ wMenuCursorLocation:: ; cc30
 
 	ds 2
 
-wMenuJoypadPollCount:: ; cc34
-; how many times should HandleMenuInput poll the joypad state before it returns?
+; cc34  
+; HandleMenuInputがリターンする前に何回キー入力のチェックを行うかを定義  
+; キー入力に回数制限を設けたいときに設定
+wMenuJoypadPollCount::
 	ds 1
 
 wMenuItemToSwap:: ; cc35
