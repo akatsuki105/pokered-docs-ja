@@ -1971,26 +1971,43 @@ PrintListMenuEntries::
 ListMenuCancelText::
 	db "CANCEL@"
 
+; ポケモンの名前を取得する
+; 
+; INPUT:  
+; - [wd11e] = 対象のアイテムID
+; 
+; OUTPUT:
+; - de = wcd6d = ポケモンの名前を格納したbufferのポインタ
 GetMonName::
 	push hl
+
+	; MonsterNamesのあるバンクにスイッチ
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, BANK(MonsterNames)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	; hl = 該当のポケモンの名前のポインタ
 	ld a, [wd11e]
 	dec a
 	ld hl, MonsterNames
 	ld c, 10
 	ld b, 0
 	call AddNTimes
+
+	; wcd6dを使いたいので元のデータを退避
 	ld de, wcd6d
 	push de
+
+	; [wcd6d:wcd6d+11]に `ポケモン名@`(11文字) を格納
 	ld bc, 10
 	call CopyData
 	ld hl, wcd6d + 10
 	ld [hl], "@"
-	pop de
+
+	; 復帰処理をして戻る
+	pop de	; de = wcd6d
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
@@ -3316,30 +3333,33 @@ WaitForSoundToFinish::
 	pop hl
 	ret
 
+; アイテムのType番号 => そのTypeのアイテムの名前リストのポインタ
 NamePointers::
-	dw MonsterNames
-	dw MoveNames
-	dw UnusedNames
-	dw ItemNames
-	dw wPartyMonOT ; player's OT names list
-	dw wEnemyMonOT ; enemy's OT names list
-	dw TrainerNames
+	dw MonsterNames	; 1
+	dw MoveNames	; 2
+	dw UnusedNames	; 3
+	dw ItemNames	; 4
+	dw wPartyMonOT 	; 5 player's OT names list
+	dw wEnemyMonOT 	; 6 enemy's OT names list
+	dw TrainerNames	; 7
 
 ; **GetName**  
 ; アイテムの名前を取得する  
 ; 
 ; INPUT:  
 ; - [wd0b5] = 対象のアイテムID
-; - [wNameListType] = アイテムの名前を含むリスト
+; - [wNameListType] = アイテムのType ID(カテゴリ別に割り振られたID constants/list_constants.asm)
 ; - [wPredefBank] = リストのあるバンク番号
 ;
 ; OUTPUT:  
-; - returns pointer to name in de
+; - [wcd6d] = アイテム名の文字列データ
+; - [wUnusedCF8D] = アイテム名終端のポインタ
 GetName::
+	; [wd11e] = アイテムID
 	ld a, [wd0b5]
 	ld [wd11e], a
 
-	; TM names are separate from item names.
+	; 技マシンは通常のアイテムと別のアイテムテーブルにあるので分岐する
 	; BUG: This applies to all names instead of just items.
 	cp HM_01
 	jp nc, GetMachineName
@@ -3349,31 +3369,43 @@ GetName::
 	push hl
 	push bc
 	push de
+
+	; 対象のアイテムリストがポケモンの名前ではないとき
 	ld a, [wNameListType]    ;List3759_entrySelector
 	dec a
 	jr nz, .otherEntries
-	;1 = MON_NAMES
-	call GetMonName
+
+	; 対象の名前リストがポケモンの名前、つまりポケモンの名前を取得したいとき
+	call GetMonName 
 	ld hl, NAME_LENGTH
 	add hl, de
 	ld e, l
-	ld d, h
+	ld d, h		; de = ポケモンの名前の終端文字のポインタ
 	jr .gotPtr
 .otherEntries
-	;2-7 = OTHER ENTRIES
+	; その他のアイテムの名前を取得したいとき (2 <= [wNameListType] <= 7)
+
+	; アイテムの名前のリストのあるバンクにスイッチ
 	ld a, [wPredefBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
-	ld a, [wNameListType]    ;VariousNames' entryID
+
+	; a = 2(a-1) (2 <= a <= 7)
+	ld a, [wNameListType]    ; VariousNames' entryID
 	dec a
 	add a
+
+	; de = 2(a-1)
 	ld d, 0
 	ld e, a
 	jr nc, .skip
 	inc d
 .skip
+	; hl = アイテムの名前リストの先頭
 	ld hl, NamePointers
 	add hl, de
+	
+	; h:l = l:h
 	ld a, [hli]
 	ld [$ff96], a
 	ld a, [hl]
@@ -3382,6 +3414,8 @@ GetName::
 	ld h, a
 	ld a, [$ff96]
 	ld l, a
+
+	; リストからアイテム検索
 	ld a, [wd0b5]
 	ld b, a
 	ld c, 0
@@ -3392,20 +3426,26 @@ GetName::
 	ld a, [hli]
 	cp "@"
 	jr nz, .nextChar
-	inc c           ;entry counter
-	ld a, b          ;wanted entry
+	inc c            ; entry counter
+	ld a, b          ; wanted entry
 	cp c
 	jr nz, .nextName
+	; hl = 該当の名前のポインタ
 	ld h, d
 	ld l, e
+
+	; wcd6dにアイテム名を格納
 	ld de, wcd6d
 	ld bc, $0014
 	call CopyData
 .gotPtr
+	; wUnusedCF8D = アイテムの名前の終端のアドレス
 	ld a, e
 	ld [wUnusedCF8D], a
 	ld a, d
 	ld [wUnusedCF8D + 1], a
+	
+	; 復帰処理
 	pop de
 	pop bc
 	pop hl
@@ -3928,7 +3968,7 @@ SkipFixedLengthTextEntries::
 	jr nz, .skipLoop
 	ret
 
-; add bc to hl a times
+; add bc to hl a times  
 ; hl += a * bc
 AddNTimes::
 	and a

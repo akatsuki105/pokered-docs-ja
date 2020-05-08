@@ -1,3 +1,5 @@
+; **MonsterNames**  
+; ポケモンの名前のリスト(各要素は10byte)
 MonsterNames:
 	db "RHYDON@@@@"
 	db "KANGASKHAN"

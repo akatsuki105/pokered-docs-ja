@@ -2068,7 +2068,8 @@ wSpriteDecodeTable1Ptr:: ; d0b3
 
 wd0b5:: ds 1 ; used as a temp storage area for Pokemon Species, and other Pokemon/Battle related things
 
-wNameListType:: ; d0b6
+; d0b6
+wNameListType::
 	ds 1
 
 wPredefBank:: ; d0b7
