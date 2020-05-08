@@ -369,15 +369,17 @@ wRedrawRowOrColumnSrcTiles:: ; cbfc
 ; the tiles of the row or column to be redrawn by RedrawRowOrColumn
 	ds SCREEN_WIDTH * 2
 
-; coordinates of the position of the cursor for the top menu item (id 0)
-wTopMenuItemY:: ; cc24
+; cc24  
+; アイテム選択メニューで一番上(id 0)のカーソルの位置の Y coords  
+wTopMenuItemY:: 
 	ds 1
-wTopMenuItemX:: ; cc25
+; cc25  
+; アイテム選択メニューで一番上(id 0)のカーソルの位置の X coords  
+wTopMenuItemX::
 	ds 1
 
 ; cc26  
-; 現在メニューで選択されているアイテムを表すID  
-; TODO: アイテムとあるがバッグのどうぐのことではなく、選択式のものメニューならどんなものでも当てはまる？  
+; 現在アイテム選択メニューで選択されているアイテムを表すID  
 ; 一番上のアイテムはIDが0、1つ下はIDが1となる  
 ; 一番上のアイテムというのは現在画面で見えている一番上のアイテムのことを指すことに注意  
 ; このスクリーン上のオフセットに[wListScrollOffset]を加えることでメニューリスト中の本当のアイテムオフセットを得る  
@@ -2186,7 +2188,8 @@ wMoveType:: ; d11e
 
 wNumSetBits:: ; d11e
 
-wd11e:: ds 1 ; used as a Pokemon and Item storage value. Also used as an output value for CountSetBits
+; used as a Pokemon and Item storage value. Also used as an output value for CountSetBits
+wd11e:: ds 1
 
 wForcePlayerToChooseMon:: ; d11f
 ; When this value is non-zero, the player isn't allowed to exit the party menu

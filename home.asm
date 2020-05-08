@@ -1997,21 +1997,27 @@ GetMonName::
 	pop hl
 	ret
 
-GetItemName::
 ; given an item ID at [wd11e], store the name of the item into a string
-;     starting at wcd6d
+; アイテムIDに対応するアイテムの名前を文字列として格納する  
+; INPUT: [wd11e] = アイテムID
+GetItemName::
+	; starting at wcd6d
 	push hl
 	push bc
+
+	; アイテムが技マシンのとき
 	ld a, [wd11e]
 	cp HM_01 ; is this a TM/HM?
 	jr nc, .Machine
 
+	; アイテム名をdeに格納
 	ld [wd0b5], a
 	ld a, ITEM_NAME
 	ld [wNameListType], a
 	ld a, BANK(ItemNames)
 	ld [wPredefBank], a
 	call GetName
+
 	jr .Finish
 
 .Machine
@@ -3319,13 +3325,17 @@ NamePointers::
 	dw wEnemyMonOT ; enemy's OT names list
 	dw TrainerNames
 
-GetName::
-; arguments:
-; [wd0b5] = which name
-; [wNameListType] = which list
-; [wPredefBank] = bank of list
+; **GetName**  
+; アイテムの名前を取得する  
+; 
+; INPUT:  
+; - [wd0b5] = 対象のアイテムID
+; - [wNameListType] = アイテムの名前を含むリスト
+; - [wPredefBank] = リストのあるバンク番号
 ;
-; returns pointer to name in de
+; OUTPUT:  
+; - returns pointer to name in de
+GetName::
 	ld a, [wd0b5]
 	ld [wd11e], a
 
@@ -3918,8 +3928,9 @@ SkipFixedLengthTextEntries::
 	jr nz, .skipLoop
 	ret
 
-AddNTimes::
 ; add bc to hl a times
+; hl += a * bc
+AddNTimes::
 	and a
 	ret z
 .loop

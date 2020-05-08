@@ -11,23 +11,31 @@ GiveFossilToCinnabarLab:
 	ld a, A_BUTTON | B_BUTTON
 	ld [wMenuWatchedKeys], a
 
+	; [wMaxMenuItem] = アイテムの最大オフセット(0から始まる)
 	ld a, [wFilteredBagItemsCount]
 	dec a
 	ld [wMaxMenuItem], a
+
+	; 化石選択メニューのカーソル位置を設定 
 	ld a, 2
 	ld [wTopMenuItemY], a
 	ld a, 1
 	ld [wTopMenuItemX], a
+
+	; hl = 3 + a*2 -1 = 2 + a*2 = (上下の枠線) + アイテム数
 	ld a, [wFilteredBagItemsCount]
 	dec a
 	ld bc, 2
 	ld hl, 3
 	call AddNTimes
 	dec l
+
+	; テキストボックスを描画 
 	ld b, l
 	ld c, $d
 	coord hl, 0, 0
 	call TextBoxBorder
+
 	call UpdateSprites
 	call PrintFossilsInBag
 	ld hl, wd730
@@ -94,19 +102,27 @@ LabFossil_610bd:
 	TX_FAR _Lab4Text_610bd
 	db "@"
 
-PrintFossilsInBag:
 ; Prints each fossil in the player's bag on a separate line in the menu.
+; プレイヤーの持っている化石をアイテム選択メニューに表示
+PrintFossilsInBag:
+	; ループの初期化処理
 	ld hl, wFilteredBagItems
 	xor a
 	ld [hItemCounter], a
 .loop
+	; a = 現在処理中のアイテム
 	ld a, [hli]
+
+	; 終了
 	cp $ff
 	ret z
+	
+	; 
 	push hl
 	ld [wd11e], a
 	call GetItemName
 	coord hl, 2, 2
+	
 	ld a, [hItemCounter]
 	ld bc, SCREEN_WIDTH * 2
 	call AddNTimes
