@@ -3514,10 +3514,10 @@ CopyString::
 	jr nz, CopyString
 	ret
 
-; this function is used when lower button sensitivity is wanted (e.g. menus)
-; OUTPUT: [hJoy5] = pressed buttons in usual format
-; there are two flags that control its functionality, [hJoy6] and [hJoy7]
-; there are essentially three modes of operation
+; this function is used when lower button sensitivity is wanted (e.g. menus)  
+; OUTPUT: [hJoy5] = pressed buttons in usual format  
+; there are two flags that control its functionality, [hJoy6] and [hJoy7]  
+; there are essentially three modes of operation  
 ; 1. Get newly pressed buttons only
 ;    ([hJoy7] == 0, [hJoy6] == any)
 ;    Just copies [hJoyPressed] to [hJoy5].
@@ -4034,6 +4034,11 @@ WriteOAMBlock::
 	ld [hli], a
 	ret
 
+; **HandleMenuInput**  
+; メニューでのキー入力に対処するハンドラ  
+; 
+; INPUT: [wMenuWatchedKeys] = 反応する対象のキー入力 上下ボタンは必ず反応して選択オフセットを上下に移動させる  
+; OUTPUT: a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]
 HandleMenuInput::
 	; 選択メニューがポケモン選択メニュー(手持ちポケモン一覧など)のときに選択しているポケモン以外のアニメーションを無効にする?
 	xor a
@@ -4093,36 +4098,51 @@ HandleMenuInput_::
 
 	jr .loop2
 .giveUpWaiting
-; if a key wasn't pressed within the specified number of checks
+	; 一定回数のチェックの間にキー入力がされなかった場合
+
+	; 退避したH_DOWNARROWBLINKCNT1/2を復帰して戻る 
 	pop af
 	ld [H_DOWNARROWBLINKCNT2], a
 	pop af
 	ld [H_DOWNARROWBLINKCNT1], a ; restore previous values
+	; menu wrappingを無効化
 	xor a
-	ld [wMenuWrappingEnabled], a ; disable menu wrapping
+	ld [wMenuWrappingEnabled], a
 	ret
 .keyPressed
+	; [wCheckFor180DegreeTurn] = 0
 	xor a
 	ld [wCheckFor180DegreeTurn], a
+
+	; 上ボタンを押したか確認
 	ld a, [hJoy5]
 	ld b, a
 	bit 6, a ; pressed Up key?
-	jr z, .checkIfDownPressed
+	jr z, .checkIfDownPressed	; 次は下ボタンのチェック
+
+	; 上ボタンを押したとき
 .upPressed
+	; 一番上を選択中かどうか
 	ld a, [wCurrentMenuItem] ; selected menu item
 	and a ; already at the top of the menu?
 	jr z, .alreadyAtTop
 .notAtTop
+	; 選択オフセットをデクリメントする
 	dec a
 	ld [wCurrentMenuItem], a ; move selected menu item up one space
 	jr .checkOtherKeys
 .alreadyAtTop
+	; menu wrappingが有効、つまり一周回って一番下に戻るか 
 	ld a, [wMenuWrappingEnabled]
 	and a ; is wrapping around enabled?
 	jr z, .noWrappingAround
+
+	; menu wrappingが有効なら一番下に戻る
 	ld a, [wMaxMenuItem]
 	ld [wCurrentMenuItem], a ; wrap to the bottom of the menu
 	jr .checkOtherKeys
+	
+	; 下ボタンのチェック(上ボタンと同様)
 .checkIfDownPressed
 	bit 7, a
 	jr z, .checkOtherKeys
@@ -4141,29 +4161,41 @@ HandleMenuInput_::
 .notAtBottom
 	ld a, c
 	ld [wCurrentMenuItem], a
+
+	; ほかのボタンのチェック
 .checkOtherKeys
+	; [hJoy5] & [wMenuWatchedKeys] > 0 つまりチェックしているボタンのいずれかが押されているか確認
 	ld a, [wMenuWatchedKeys]
 	and b ; does the menu care about any of the pressed keys?
 	jp z, .loop1
 .checkIfAButtonOrBButtonPressed
+	; 押されたのがA/Bボタンか
 	ld a, [hJoy5]
 	and A_BUTTON | B_BUTTON
 	jr z, .skipPlayingSound
 .AButtonOrBButtonPressed
+	; A/Bボタンが押されたときはPress時のSEを鳴らす
+
+	; Press時にSEを鳴らすフラグが有効かチェック
 	push hl
 	ld hl, wFlags_0xcd60
 	bit 5, [hl]
 	pop hl
 	jr nz, .skipPlayingSound
+	; SEを鳴らす
 	ld a, SFX_PRESS_AB
 	call PlaySound
 .skipPlayingSound
+	; 退避したH_DOWNARROWBLINKCNT1/2を復帰
 	pop af
 	ld [H_DOWNARROWBLINKCNT2], a
 	pop af
 	ld [H_DOWNARROWBLINKCNT1], a ; restore previous values
+	; menu wrappingを無効化
 	xor a
 	ld [wMenuWrappingEnabled], a ; disable menu wrapping
+
+	; 押したキーをaに入れて返る
 	ld a, [hJoy5]
 	ret
 .noWrappingAround

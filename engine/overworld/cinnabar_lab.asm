@@ -39,18 +39,29 @@ GiveFossilToCinnabarLab:
 	call UpdateSprites
 	call PrintFossilsInBag	; テキストボックス内に化石名一覧を表示
 
+	; 遅延を無効化 
 	ld hl, wd730
 	res 6, [hl]
+	
+	; キー入力をチェック
 	call HandleMenuInput
+	
+	; Bボタンが押されたら化石の受け渡しをキャンセル 
 	bit 1, a ; pressed B?
 	jr nz, .cancelledGivingFossil
+
+	; hl = 化石一覧で現在選択中の化石のポインタ
 	ld hl, wFilteredBagItems
 	ld a, [wCurrentMenuItem]
 	ld d, 0
 	ld e, a
 	add hl, de
+
+	; a = アイテムID
 	ld a, [hl]
 	ld [$ffdb], a
+
+	; 各化石ごとに分岐
 	cp DOME_FOSSIL
 	jr z, .choseDomeFossil
 	cp HELIX_FOSSIL
@@ -62,10 +73,14 @@ GiveFossilToCinnabarLab:
 	jr .fossilSelected
 .choseDomeFossil
 	ld b, KABUTO
+	; 化石が選択された後の処理  
+	; b = 化石を復元してできるポケモンID
 .fossilSelected
+	; wFossilItem/wFossilMon に 化石のアイテムIDと復元されるポケモンのIDを格納
 	ld [wFossilItem], a
 	ld a, b
 	ld [wFossilMon], a
+
 	call LoadFossilItemAndMonName
 	ld hl, LabFossil_610ae
 	call PrintText

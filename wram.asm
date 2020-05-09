@@ -535,13 +535,15 @@ wMonDataLocation:: ; cc49
 ; If the entire value is 0, then the player is allowed to name the mon.
 	ds 1
 
-wMenuWrappingEnabled:: ; cc4a
-; set to 1 if you can go from the bottom to the top or top to bottom of a menu
-; set to 0 if you can't go past the top or bottom of the menu
+; cc4a  
+; メニューの上部または下部を通過できる場合に1にセットされる  
+; メニューの上部または下部を通過できない場合は0に設定します  
+wMenuWrappingEnabled::
 	ds 1
 
-wCheckFor180DegreeTurn:: ; cc4b
+; cc4b  
 ; whether to check for 180-degree turn (0 = don't, 1 = do)
+wCheckFor180DegreeTurn::
 	ds 1
 
 	ds 1
@@ -1242,12 +1244,12 @@ wRightGBMonSpecies:: ; cd5f
 	ds 1
 
 ; cd60
-; bit 0: is player engaged by trainer (to avoid being engaged by multiple trainers simultaneously)
-; bit 1: boulder dust animation (from using Strength) pending
-; bit 3: using generic PC
-; bit 4: 1 -> .skipMovingSprites
-; bit 5: don't play sound when A or B is pressed in menu
-; bit 6: tried pushing against boulder once (you need to push twice before it will move)
+; bit 0: is player engaged by trainer (to avoid being engaged by multiple trainers simultaneously)  
+; bit 1: boulder dust animation (from using Strength) pending  
+; bit 3: using generic PC  
+; bit 4: 1 -> .skipMovingSprites  
+; bit 5: don't play sound when A or B is pressed in menu  
+; bit 6: tried pushing against boulder once (you need to push twice before it will move)  
 wFlags_0xcd60::
 	ds 1
 
@@ -3000,12 +3002,14 @@ wSafariSteps:: ; d70d
 ; starts at 502
 	ds 2
 
-wFossilItem:: ; d70f
-; item given to cinnabar lab
+; d70f  
+; cinnabar labに渡す化石のアイテムIDを格納
+wFossilItem::
 	ds 1
 
-wFossilMon:: ; d710
-; mon that will result from the item
+; d710  
+; cinnabar labで渡した化石から復元されるポケモンのID
+wFossilMon::
 	ds 1
 
 	ds 2
