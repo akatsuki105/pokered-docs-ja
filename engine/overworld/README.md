@@ -17,7 +17,7 @@ cut2.asm | null
 daycare_exp.asm | 育て屋のポケモンの経験値をインクリメントする処理    
 doors.asm | ドアタイルから強制的に下に歩かせる処理
 elevator.asm | エレベータを揺らす処理       
-emotion_bubbles.asm | null
+emotion_bubbles.asm | !マークなどの感情を表す吹き出しを表示させる処理
 field_move_messages.asm | null
 healing_machine.asm | null
 hidden_items.asm | null

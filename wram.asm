@@ -1201,11 +1201,13 @@ wSlotMachineRerollCounter:: ; cd4f
 ; The remaining number of times wheel 3 will roll down a symbol until a match is
 ; found, when winning is enabled. It's initialized to 4 each bet.
 
-wEmotionBubbleSpriteIndex:: ; cd4f
-; the index of the sprite the emotion bubble is to be displayed above
+; cd4f  
+; Emotion Bubbleを表示する対象のスプライトのオフセット
+wEmotionBubbleSpriteIndex::
 	ds 1
 
-wWhichEmotionBubble:: ; cd50
+; cd50
+wWhichEmotionBubble::
 
 wSlotMachineBet:: ; cd50
 ; how many coins the player bet on the slot machine (1 to 3)
@@ -3157,7 +3159,7 @@ wBeatLorelei:: ; d734
 ; - bit 0: プレイヤーがドアに立っているか確認し、そうであるなら下に1歩歩かせる
 ; - bit 1: 1ならプレイヤーは今、ドアから下に向かって歩いている状態である
 ; - bit 2: standing on a warp
-; - bit 6: jumping down a ledge / fishing animation
+; - bit 6: 段差をジャンプしているモーション中 / 釣りのモーション中に立つフラグ
 ; - bit 7: player sprite spinning due to spin tiles (Rocket hideout / Viridian Gym)
 wd736::
 	ds 1

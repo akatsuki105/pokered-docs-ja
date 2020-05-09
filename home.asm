@@ -3997,15 +3997,21 @@ StringCmp::
 	jr nz, StringCmp
 	ret
 
+; **WriteOAMBlock**  
+; OAMBufferにOAM blockのデータを書き込む  
+; OAM block: 2*2のOAMタイルの塊  
+; 
 ; INPUT:
-; a = oam block index (each block is 4 oam entries)
-; b = Y coordinate of upper left corner of sprite
-; c = X coordinate of upper left corner of sprite
-; de = base address of 4 tile number and attribute pairs
+; - a = OAM blockのインデックス
+; - b = OAM blockの左上角のYcoord
+; - c = OAM blockの左上角のXcoord
+; - de = OAM blockの4つのタイル番号と属性のペアの開始アドレス
 WriteOAMBlock::
+	; hl = 対象のOAM blockのwOAMBufferでの開始アドレス
 	ld h, wOAMBuffer / $100
-	swap a ; multiply by 16
+	swap a ; *= 16 => 各OAM blockは16バイトなので
 	ld l, a
+
 	call .writeOneEntry ; upper left
 	push bc
 	ld a, 8
@@ -4019,8 +4025,9 @@ WriteOAMBlock::
 	call .writeOneEntry ; lower left
 	ld a, 8
 	add c
-	ld c, a
-	                      ; lower right
+	ld c, a				
+						; lower right
+	; INPUT: [hl] = OAMエントリ
 .writeOneEntry
 	ld [hl], b ; Y coordinate
 	inc hl

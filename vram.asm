@@ -1,8 +1,8 @@
-vChars0 EQU $8000
-vChars1 EQU $8800
+vChars0 EQU $8000   ; タイルアセットを配置する領域1
+vChars1 EQU $8800   ; タイルアセットを配置する領域2
 vChars2 EQU $9000
-vBGMap0 EQU $9800
-vBGMap1 EQU $9c00
+vBGMap0 EQU $9800   ; BGマップ1
+vBGMap1 EQU $9c00   ; BGマップ2
 
 ; Battle/Menu
 vSprites  EQU vChars0

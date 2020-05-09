@@ -24,3 +24,10 @@ NPCは基本ランダムウォークだが、たまに動きが一定つまり�
 ## スプライトの移動
 
 TODO
+
+## Emotion Bubble
+
+!マークなどの感情を表す吹き出しのこと
+
+`engine/overworld/emotion_bubbles.asm`で詳細に定義されている
+
