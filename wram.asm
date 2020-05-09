@@ -2983,6 +2983,8 @@ wGameProgressFlagsEnd::
 
 	ds 56
 
+; hidden itemが発見されているかを表すbitフラグ  
+; bitが立っていたら発見済み
 wObtainedHiddenItemsFlags::
 	ds 14
 

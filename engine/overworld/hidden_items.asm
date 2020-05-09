@@ -1,15 +1,25 @@
+; INPUT: 
+; - [wCurMap] = 現在のマップ
+; - [wHiddenObjectX]/[wHiddenObjectY] = 現在調べているマスのcoord
 HiddenItems:
+	; [wHiddenItemOrCoinsIndex] = HiddenItemCoordsのオフセット
 	ld hl, HiddenItemCoords
 	call FindHiddenItemOrCoinsIndex
 	ld [wHiddenItemOrCoinsIndex], a
+
+	; wObtainedHiddenItemsFlagsの[wHiddenItemOrCoinsIndex]bit目をcレジスタに入れる
 	ld hl, wObtainedHiddenItemsFlags
 	ld a, [wHiddenItemOrCoinsIndex]
 	ld c, a
 	ld b, FLAG_TEST
 	predef FlagActionPredef
+
+	; 1ならhidden itemは発見済み
 	ld a, c
 	and a
 	ret nz
+
+	; 
 	call EnableAutoTextBoxDrawing
 	ld a, 1
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
@@ -131,19 +141,35 @@ DroppedHiddenCoinsText:
 	TX_FAR _DroppedHiddenCoinsText
 	db "@"
 
+; 現在調べているマスにhidden itemがあるなら該当するHiddenItemCoordsのオフセットを取得する
+; 
+; INPUT: 
+; - hl = HiddenItemCoords
+; - [wCurMap] = 現在のマップ
+; - [wHiddenObjectX]/[wHiddenObjectY] = 現在調べているマスのcoord
+; 
+; OUTPUT: a = HiddenItemCoordsのオフセット hidden itemがなかったら$ff
 FindHiddenItemOrCoinsIndex:
+	; de = 現在調べている座標
 	ld a, [wHiddenObjectY]
 	ld d, a
 	ld a, [wHiddenObjectX]
 	ld e, a
+	; bc = ([wCurMap] << 8 | 0xff)
 	ld a, [wCurMap]
 	ld b, a
 	ld c, -1
 .loop
 	inc c
+	
+	; a = hidden itemのマップID
 	ld a, [hli]
+	
+	; hidden itemのエントリをすべて見たが該当するものはなかった 
 	cp $ff ; end of the list?
 	ret z  ; if so, we're done here
+	
+	; 現在調べているマップのマスとhidden itemの場所が一致するか
 	cp b
 	jr nz, .next1
 	ld a, [hli]
@@ -154,6 +180,7 @@ FindHiddenItemOrCoinsIndex:
 	jr nz, .loop
 	ld a, c
 	ret
+	; 次のエントリを検討
 .next1
 	inc hl
 .next2
