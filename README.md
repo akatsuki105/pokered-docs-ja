@@ -49,7 +49,7 @@
 ---- | ----
  audio/  |  null
  constants/  |  [constants](./constants/README.md)参照
- data/  |  null
+ data/  |  [data](./data/README.md)参照
  engine/  |  [engine](./engine/README.md)参照
  gfx/  |  [gfx](./gfx/README.md)参照
  home/  |  [home](./home/README.md)参照

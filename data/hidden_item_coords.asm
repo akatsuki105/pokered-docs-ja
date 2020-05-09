@@ -1,5 +1,8 @@
+; **HiddenItemCoords**  
+
+; 隠しアイテムの位置を定義しているテーブル  
+; db マップID, Xcoord, Ycoord  
 HiddenItemCoords:
-; map ID, then coords
 	db VIRIDIAN_FOREST,$12,$01
 	db VIRIDIAN_FOREST,$2a,$10
 	db MT_MOON_B2F,$0c,$12
