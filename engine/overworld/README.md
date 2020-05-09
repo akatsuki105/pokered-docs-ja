@@ -10,7 +10,7 @@ NPCの動きなどを定義している
 ---- | ----
 cable_club_npc.asm | null 
 card_key.asm | null       
-cinnabar_lab.asm | null   
+cinnabar_lab.asm | グレンタウンの『ポケモンけんきゅうじょ』で化石を研究員に渡す処理   
 clear_variables.asm | マップが切り替わるときにマップにかかわる変数を初期化する処理
 cut.asm | null
 cut2.asm | null

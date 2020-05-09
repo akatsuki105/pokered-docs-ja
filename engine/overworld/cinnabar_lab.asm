@@ -82,12 +82,19 @@ GiveFossilToCinnabarLab:
 	ld [wFossilMon], a
 
 	call LoadFossilItemAndMonName
+
+	; 化石の名前を出して復元するか選択させる
 	ld hl, LabFossil_610ae
 	call PrintText
 	call YesNoChoice
+
+	; はい/いいえ
 	ld a, [wCurrentMenuItem]
 	and a
 	jr nz, .cancelledGivingFossil
+
+	; 『はい』を選択
+	; 化石を渡してフラグを立てる
 	ld hl, LabFossil_610b3
 	call PrintText
 	ld a, [wFossilItem]
@@ -97,6 +104,8 @@ GiveFossilToCinnabarLab:
 	call PrintText
 	SetEvents EVENT_GAVE_FOSSIL_TO_LAB, EVENT_LAB_STILL_REVIVING_FOSSIL
 	ret
+
+	; 『いいえ』を選択
 .cancelledGivingFossil
 	ld hl, LabFossil_610bd
 	call PrintText
@@ -153,7 +162,14 @@ PrintFossilsInBag:
 	pop hl
 	jr .loop
 
-; loads the names of the fossil item and the resulting mon
+; 化石名と化石から復元されるポケモンの名前を取得する  
+; INPUT:  
+; - [wFossilMon] = 化石から復元されるポケモンのID
+; - [wFossilItem] = 化石のアイテムID
+; 
+; OUTPUT: 
+; - de = 化石名
+; - [wcf4b] = 復元されるポケモン名
 LoadFossilItemAndMonName:
 	ld a, [wFossilMon]
 	ld [wd11e], a
