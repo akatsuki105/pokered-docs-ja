@@ -30,6 +30,7 @@
 - [マップ](./docs/map.md)
 - [メニュー](./docs/menu.md)
 - [movement byte](./docs/movement_byte.md)
+- [OAM](./docs/oam.md)
 - [picファイル](./docs/pic_format.md)
 - [ポケモン図鑑](./docs/pokedex.md)
 - [predef](./docs/predef.md)
