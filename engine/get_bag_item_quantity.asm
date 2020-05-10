@@ -1,6 +1,9 @@
+; **GetQuantityOfItemInBag**  
+; 引数で指定したアイテムがかばんにいくつ入っているかを取得する  
+; - - -
+; INPUT: b = 対象のアイテムID  
+; OUTPUT: b = かばんに対象のアイテムがいくつ入っているか  
 GetQuantityOfItemInBag:
-; In: b = item ID
-; Out: b = how many of that item are in the bag
 	call GetPredefRegisters
 	ld hl, wNumBagItems
 .loop

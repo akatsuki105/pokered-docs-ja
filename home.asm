@@ -1051,7 +1051,7 @@ FadeOutAudio::
 
 ; **DisplayTextID**  
 ; signメッセージやスプライトのダイアログ表示などで利用される  
-; 
+; - - -  
 ; INPUT: [hSpriteIndexOrTextID] = sprite ID or text ID (sprite IDがわたされたときはそのスプライトが保持しているTextIDのテキストを表示する)
 DisplayTextID::
 	ld a, [H_LOADEDROMBANK]
@@ -2806,7 +2806,7 @@ StartSimulatingJoypadStates::
 	ret
 
 ; **IsItemInBag**  
-; 
+; - - - 
 ; bにアイテムIDを指定  
 ; 指定したアイテムをプレイヤーがかばんに所持してい"ない"ならZフラグをセット、所持しているならZフラグをクリア  
 ; ポケモンタワーや『ゆうれい』戦に関係
@@ -3346,7 +3346,7 @@ NamePointers::
 
 ; **GetName**  
 ; アイテムの名前を取得する  
-; 
+; - - - 
 ; INPUT:  
 ; - [wd0b5] = 対象のアイテムID
 ; - [wNameListType] = アイテムのType ID(カテゴリ別に割り振られたID constants/list_constants.asm)
@@ -4000,7 +4000,7 @@ StringCmp::
 ; **WriteOAMBlock**  
 ; OAMBufferにOAM blockのデータを書き込む  
 ; OAM block: 2*2のOAMタイルの塊  
-; 
+; - - - 
 ; INPUT:
 ; - a = OAM blockのインデックス
 ; - b = OAM blockの左上角のYcoord
@@ -4043,7 +4043,7 @@ WriteOAMBlock::
 
 ; **HandleMenuInput**  
 ; メニューでのキー入力に対処するハンドラ  
-; 
+; - - - 
 ; INPUT: [wMenuWatchedKeys] = 反応する対象のキー入力 上下ボタンは必ず反応して選択オフセットを上下に移動させる  
 ; OUTPUT: a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]
 HandleMenuInput::
@@ -4212,8 +4212,8 @@ HandleMenuInput_::
 	jr .checkIfAButtonOrBButtonPressed
 
 ; **PlaceMenuCursor**  
-; 
-; 選択メニューにカーソルを表示させる  
+; 選択メニューにカーソルを表示させる
+; - - -   
 ; INPUT: [wCurrentMenuItem] = 現在選択しているアイテムの画面上でのオフセット
 PlaceMenuCursor::
 	; [wTopMenuItemY] = 0
@@ -4344,7 +4344,7 @@ EraseMenuCursor::
 
 ; **HandleDownArrowBlinkTiming**  
 ; タイルhlで"▼"を一定時間ごとに点滅させる関数  
-; 
+; - - -  
 ; 点滅が生じないときもしばしば呼び出されている  
 ; これは、これを呼び出すほとんどの関数がH_DOWNARROWBLINKCNT1を0に初期化するためである  
 ; この関数はタイルhlに"▼"がセットされている場合は"▼"の点滅を行うが、セットされていない場合は何もしない  
@@ -4393,6 +4393,7 @@ HandleDownArrowBlinkTiming::
 ; The following code either enables or disables the automatic drawing of
 ; text boxes by DisplayTextID. Both functions cause DisplayTextID to wait
 ; for a button press after displaying text (unless [wEnteringCableClub] is set).
+; 以下のコードは`DisplayTextID`によるテキストボックスの自動的な描画を有効化/無効化をする処理
 
 EnableAutoTextBoxDrawing::
 	xor a
@@ -4401,6 +4402,10 @@ EnableAutoTextBoxDrawing::
 DisableAutoTextBoxDrawing::
 	ld a, $01
 
+; **AutoTextBoxDrawingCommon**  
+; - - -  
+; 自動で会話が進むテキスト
+; INPUT: a = 
 AutoTextBoxDrawingCommon::
 	ld [wAutoTextBoxDrawingControl], a
 	xor a
@@ -4408,7 +4413,7 @@ AutoTextBoxDrawingCommon::
 	ret
 
 ; **PrintText**  
-; 
+; - - -  
 ; 8*8のタイル単位で(1, 14)にテキストhlを表示する
 PrintText::
 	push hl
@@ -4865,6 +4870,10 @@ CheckForHiddenObjectOrBookshelfOrCardKeyDoor::
 	ld [H_LOADEDROMBANK], a
 	ret
 
+; **PrintPredefTextID**  
+; - - - 
+; PredefTextを画面に描画する  
+; INPUT: a = TextPredefs(PredefTextのテーブル)のオフセット
 PrintPredefTextID::
 	ld [hSpriteIndexOrTextID], a
 	ld hl, TextPredefs
@@ -4883,6 +4892,9 @@ RestoreMapTextPointer::
 	ld [hl], a
 	ret
 
+; **SetMapTextPointer**  
+; - - -
+; [$ffec] = [wMapTextPtr] の後に [wMapTextPtr] = hlを行う
 SetMapTextPointer::
 	; [$ffec] = [wMapTextPtr]
 	ld a, [wMapTextPtr]

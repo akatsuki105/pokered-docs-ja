@@ -146,11 +146,11 @@ hNPCPlayerRelativePosPerspective EQU $FF9B
 ; 1 = target is to the west
 hNPCPlayerRelativePosFlags EQU $FF9D
 
-; some code zeroes this for no reason when writing a coin amount
+; いくつかのコードがこのフラグを0にしているが特に理由はなさそう  
 hUnusedCoinsByte EQU $FF9F
 
 hMoney EQU $FF9F ; 3バイト(10進数で6桁)のBCDフォーマットの数値
-hCoins EQU $FFA0 ; 2-byte BCD number
+hCoins EQU $FFA0 ; 2バイトのBCD数値 一時的なコイン枚数を格納するバッファ?
 
 hDivideBCDDivisor  EQU $FFA2 ; 3-byte BCD number
 hDivideBCDQuotient EQU $FFA2 ; 3-byte BCD number

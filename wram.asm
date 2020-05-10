@@ -478,7 +478,6 @@ wTextDest::
 
 ; cc3c  
 ; 0でないならDisplayTextIDでのテキストの描画の後にボタンが押されるのを待機する処理をスキップする  
-; つまり0でないならテキストがボタンを押さなくても次に進んでいく
 wDoNotWaitForButtonPressAfterDisplayingText::
 	ds 1
 
@@ -989,7 +988,8 @@ wPlayerSpinInPlaceAnimFrameDelay:: ; cd3d
 
 wPlayerSpinWhileMovingUpOrDownAnimDeltaY:: ; cd3d
 
-wHiddenObjectFunctionArgument:: ; cd3d
+; cd3d  
+wHiddenObjectFunctionArgument::
 
 ; cd3d
 ; which entry from TradeMons to select  
@@ -2988,6 +2988,8 @@ wGameProgressFlagsEnd::
 wObtainedHiddenItemsFlags::
 	ds 14
 
+; hidden coinが発見されているかを表すbitフラグ  
+; bitが立っていたら発見済み
 wObtainedHiddenCoinsFlags::
 	ds 2
 

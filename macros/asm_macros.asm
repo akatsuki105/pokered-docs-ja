@@ -198,6 +198,7 @@ tx_pre: MACRO
 	call PrintPredefTextID
 ENDM
 
+; 引数で指定したPredefTextを表示する
 tx_pre_jump: MACRO
 	tx_pre_id \1
 	jp PrintPredefTextID

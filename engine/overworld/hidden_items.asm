@@ -1,3 +1,7 @@
+; **HiddenItems**  
+; 隠しアイテムを調べる処理  
+; 隠しアイテムが存在する場所かつまだ取得フラグが立っていないのなら隠しアイテムを取得する  
+; - - -
 ; INPUT: 
 ; - [wCurMap] = 現在のマップ
 ; - [wHiddenObjectX]/[wHiddenObjectY] = 現在調べているマスのcoord
@@ -23,9 +27,13 @@ HiddenItems:
 	call EnableAutoTextBoxDrawing
 	ld a, 1
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
+	
+	; hidden itemの名前を取得
 	ld a, [wHiddenObjectFunctionArgument] ; item ID
 	ld [wd11e], a
 	call GetItemName
+
+	; hidden item発見テキストを表示する
 	tx_pre_jump FoundHiddenItemText
 
 INCLUDE "data/hidden_item_coords.asm"
@@ -59,12 +67,22 @@ HiddenItemBagFullText:
 	TX_FAR _HiddenItemBagFullText
 	db "@"
 
+; **HiddenCoins**  
+; 隠しコインを調べる処理  
+; 隠しコインが存在する場所かつまだ取得フラグが立っていないのなら隠しアイテムを取得する  
+; - - -  
+; INPUT: 
+; - [wCurMap] = 現在のマップ
+; - [wHiddenObjectX]/[wHiddenObjectY] = 現在調べているマスのcoord  
 HiddenCoins:
+	; コインケースを持っていないなら返る
 	ld b, COIN_CASE
 	predef GetQuantityOfItemInBag
 	ld a, b
 	and a
 	ret z
+
+	; hidden coinが存在するか調べて、存在しない or 既に取得済み なら返る 
 	ld hl, HiddenCoinCoords
 	call FindHiddenItemOrCoinsIndex
 	ld [wHiddenItemOrCoinsIndex], a
@@ -76,19 +94,29 @@ HiddenCoins:
 	ld a, c
 	and a
 	ret nz
+
+	; hCoins = 0
 	xor a
 	ld [hUnusedCoinsByte], a
 	ld [hCoins], a
 	ld [hCoins + 1], a
+
+	; 
 	ld a, [wHiddenObjectFunctionArgument]
-	sub COIN
+	sub COIN	; コインのアイテムID
+	; コイン10枚を発見
 	cp 10
 	jr z, .bcd10
+	; コイン20枚を発見
 	cp 20
 	jr z, .bcd20
+	; コイン40枚を発見(なぜか.bcd20 おそらくミス)
 	cp 40
 	jr z, .bcd20 ; should be bcd40
+	; それ以外はコイン100枚
 	jr .bcd100
+
+	; hCoinsに取得したhidden coinの枚数を格納
 .bcd10
 	ld a, $10
 	ld [hCoins + 1], a
@@ -104,6 +132,7 @@ HiddenCoins:
 .bcd100
 	ld a, $1
 	ld [hCoins], a
+	
 .bcdDone
 	ld de, wPlayerCoins + 1
 	ld hl, hCoins + 1
@@ -141,10 +170,11 @@ DroppedHiddenCoinsText:
 	TX_FAR _DroppedHiddenCoinsText
 	db "@"
 
-; 現在調べているマスにhidden itemがあるなら該当するHiddenItemCoordsのオフセットを取得する
-; 
+; **FindHiddenItemOrCoinsIndex**  
+; 現在調べているマスにhidden item(coin)があるなら該当するHiddenItemCoordsのオフセットを取得する
+; - - -  
 ; INPUT: 
-; - hl = HiddenItemCoords
+; - hl = HiddenItemCoords or HiddenCoinCoords
 ; - [wCurMap] = 現在のマップ
 ; - [wHiddenObjectX]/[wHiddenObjectY] = 現在調べているマスのcoord
 ; 
