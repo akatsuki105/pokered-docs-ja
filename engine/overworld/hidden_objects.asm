@@ -67,6 +67,8 @@ CheckForHiddenObject:
 	ld hl, HiddenObjectPointers
 	add hl, de
 
+	; format: y-coord, x-coord, text id/item id, object routine
+	; h:l = Ycoord/Xcoord
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
