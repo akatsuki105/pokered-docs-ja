@@ -38,6 +38,7 @@ HiddenItems:
 
 INCLUDE "data/hidden_item_coords.asm"
 
+; hidden item取得フラグを立てた後取得テキストを表示する関数
 FoundHiddenItemText:
 	TX_FAR _FoundHiddenItemText
 	TX_ASM
@@ -132,26 +133,33 @@ HiddenCoins:
 .bcd100
 	ld a, $1
 	ld [hCoins], a
-	
+
 .bcdDone
+	; プレイヤーの所持コインとhidden coinをの枚数を足す
 	ld de, wPlayerCoins + 1
 	ld hl, hCoins + 1
 	ld c, $2
 	predef AddBCDPredef
+
+	; コイン取得フラグを立てる
 	ld hl, wObtainedHiddenCoinsFlags
 	ld a, [wHiddenItemOrCoinsIndex]
 	ld c, a
 	ld b, FLAG_SET
 	predef FlagActionPredef
+
 	call EnableAutoTextBoxDrawing
+	; コインがカンストしてるかチェック
 	ld a, [wPlayerCoins]
 	cp $99
 	jr nz, .roomInCoinCase
 	ld a, [wPlayerCoins + 1]
 	cp $99
 	jr nz, .roomInCoinCase
+	; コインが9999枚のときはコインを落としたテキストを表示して終了
 	tx_pre_id DroppedHiddenCoinsText
 	jr .done
+	; コインを拾ったテキストを表示
 .roomInCoinCase
 	tx_pre_id FoundHiddenCoinsText
 .done

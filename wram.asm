@@ -2746,8 +2746,10 @@ wNumHoFTeams:: ; d5a2
 wUnusedD5A3:: ; d5a3
 	ds 1
 
-wPlayerCoins:: ; d5a4
-	ds 2 ; BCD
+; d5a4  
+; プレイヤーのゲームコインの所持数を表すBCDフォーマットの数値
+wPlayerCoins::
+	ds 2
 
 ; d5a6  
 ; 非表示のオブジェクトを表すbit列  

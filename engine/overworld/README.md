@@ -20,7 +20,7 @@ elevator.asm | エレベータを揺らす処理
 emotion_bubbles.asm | !マークなどの感情を表す吹き出しを表示させる処理
 field_move_messages.asm | null
 healing_machine.asm | null
-hidden_items.asm | null
+hidden_items.asm | 隠しアイテム取得の処理
 hidden_objects.asm | null
 is_player_just_outside_map.asm | null
 item.asm | null

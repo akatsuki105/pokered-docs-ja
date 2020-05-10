@@ -161,22 +161,43 @@ DivideBCD_getNextDigit:
 	jr .loop
 
 
+; **AddBCDPredef**  
+; BCD数値を足し合わせるpredef-routine  
+; - - -  
+; INPUT:  
+; - c = BCD数値のサイズ
+; - de = 対象のBCD数値のポインタ1 (nバイトある場合はnバイト目を指す)
+; - hl = 対象のBCD数値のポインタ2
+; OUTPUT: [de] = [de] + [hl] 
 AddBCDPredef::
 	call GetPredefRegisters
 
+; **AddBCD**  
+; BCD数値を足し合わせる  
+; - - -  
+; INPUT:  
+; - c = BCD数値のサイズ
+; - de = 対象のBCD数値のポインタ1 (nバイトある場合はnバイト目を指す)
+; - hl = 対象のBCD数値のポインタ2
+; OUTPUT: [de] = [de] + [hl]
 AddBCD::
 	and a
 	ld b, c
 .add
+	; [de] = [de] + [hl]
 	ld a, [de]
 	adc [hl]
 	daa
 	ld [de], a
+
+	; cバイト分のBCD数値を足す
 	dec de
 	dec hl
 	dec c
 	jr nz, .add
 	jr nc, .done
+
+	; cバイト足し終えた後 [de]を99で埋めていく
 	ld a, $99
 	inc de
 .fill

@@ -22,7 +22,7 @@ evos_moves.asm | null
 facing.asm | null
 force_bike_surf.asm | null
 good_rod.asm | null
-hidden_coins.asm | null
+hidden_coins.asm | 隠しコインの位置を定義しているテーブル
 hidden_item_coords.asm | 隠しアイテムの位置を定義しているテーブル
 hidden_objects.asm | null
 hide_show_data.asm | null
