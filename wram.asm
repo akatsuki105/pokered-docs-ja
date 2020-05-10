@@ -3060,8 +3060,10 @@ wDungeonWarpDestinationMap:: ; d71d
 ; destination map for dungeon warps
 	ds 1
 
-wWhichDungeonWarp:: ; d71e
-; which dungeon warp within the source map was used
+; d71e  
+; which dungeon warp within the source map was used  
+; マップ内でどのダンジョンワープが使われたか
+wWhichDungeonWarp::
 	ds 1
 
 wUnusedD71F:: ; d71f
@@ -3093,17 +3095,15 @@ wd72c:: ; d72c
 ; bit 1: prevent audio fade out
 	ds 1
 
-wd72d:: ; d72d
-; This variable is used for temporary flags and as the destination map when
-; warping to the Trade Center or Colosseum.
-; bit 0: sprite facing directions have been initialised in the Trade Center
-; bit 3: do scripted warp (used to warp back to Lavender Town from the top of the pokemon tower)
-; bit 4: on a dungeon warp
-; bit 5: don't make NPCs face the player when spoken to
-; Bits 6 and 7 are set by scripts when starting major battles in the storyline,
-; but they do not appear to affect anything. Bit 6 is reset after all battles
-; and bit 7 is reset after trainer battles (but it's only set before trainer
-; battles anyway).
+; d72d  
+; この変数は一時的なフラグの格納に使用されたり、トレードセンターまたはコロシアムにワープするときdestination mapとして使用される  
+; - bit 0: トレードセンターでスプライトの方向が初期化されているときに立つフラグ
+; - bit 3: scripted warpを行うか（ポケモンタワーの上部からシオンタウンにワープするときに使用されます）
+; - bit 4: ダンジョンワープ中か
+; - bit 5: NPCが話しかけられたときにプレイヤーのほうを向かないようにするフラグ
+; - bit 6: ストーリー上で主要なバトルの開始時にセットされるが特になんの効果もないように思われる 任意のバトル終了時にリセットされる
+; - bit 7: トレーナーとのバトルの開始時にセットされるが特になんの効果もないように思われる バトル終了時にリセットされる
+wd72d::
 	ds 1
 
 ; d72e  
@@ -3139,8 +3139,8 @@ wd730::
 ; 	- 2. プレイヤーのゲーム開始地点がプレイヤーの家の2階からではなく[wLastMap]のマップIDになる
 ; 	- 3. Bボタンを押していると野生のポケモンとのエンカウントが発生しなくなる
 ; - bit 2: the target warp is a fly warp (bit 3 set or blacked out) or a dungeon warp (bit 4 set)
-; - bit 3: used warp pad, escape rope, dig, teleport, or fly, so the target warp is a "fly warp"
-; - bit 4: jumped into hole (Pokemon Mansion, Seafoam Islands, Victory Road) or went down waterfall (Seafoam Islands), so the target warp is a "dungeon warp"
+; - bit 3: fly warp中に立つフラグ
+; - bit 4: dungeon warp中に立つフラグ
 ; - bit 5: 自転車に乗ることを強制されているときに立つフラグ
 ; - bit 6: map destination is [wLastBlackoutMap] (usually the last used pokemon center, but could be the player's house)
 wd732::

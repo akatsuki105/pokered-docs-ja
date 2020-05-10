@@ -2839,12 +2839,15 @@ SetSpriteImageIndexAfterSettingFacingDirection::
 	ld [hl], a
 	ret
 
-; tests if the player's coordinates are in a specified array
+; **ArePlayerCoordsInArray**  
+; プレイヤーのcoordsが引数で与えられたcoordsのリストに含まれるかチェックする
+; - - - 
 ; INPUT:
-; hl = address of array
+; hl = coordsのリスト
+; 
 ; OUTPUT:
-; [wCoordIndex] = if there is match, the matching array index
-; sets carry if the coordinates are in the array, clears carry if not
+; [wCoordIndex] = 該当するcoordsがあるならそのインデックス  
+; carry = 該当するcoordsがあるならセットされ、ないならクリアされる
 ArePlayerCoordsInArray::
 	ld a, [wYCoord]
 	ld b, a

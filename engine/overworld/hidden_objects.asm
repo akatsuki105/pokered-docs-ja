@@ -1,43 +1,72 @@
+; **IsPlayerOnDungeonWarp**  
+; プレイヤーがdungeon warpするマスにいるかどうか  
+; - - - 
+; INPUT:  
+; - hl = dungeon mapのcoordsのリスト  
+; 
+; OUTPUT:  
+; - [wWhichDungeonWarp] = 現在利用しているdungeon warpのcoords
 IsPlayerOnDungeonWarp:
+	; [wWhichDungeonWarp] = 0
 	xor a
 	ld [wWhichDungeonWarp], a
+
+	; dungeon warpフラグが立っていないなら返る
 	ld a, [wd72d]
 	bit 4, a
 	ret nz
+	
+	; [wWhichDungeonWarp] = 現在利用しているdungeon mapのcoords
 	call ArePlayerCoordsInArray
 	ret nc
 	ld a, [wCoordIndex]
 	ld [wWhichDungeonWarp], a
+	
+	; dungeon warp中であることを示すフラグを立てる
 	ld hl, wd72d
 	set 4, [hl]
 	ld hl, wd732
 	set 4, [hl]
 	ret
 
-; if a hidden object was found, stores $00 in [$ffee], else stores $ff
+; hidden objectが存在するかチェック  
+; OUTPUT: 
+; - [$ffee] = hidden objectが見つかったなら$00, 見つからなかったら$ff
 CheckForHiddenObject:
+	; ループの前に初期化
 	ld hl, $ffeb
 	xor a
-	ld [hli], a
-	ld [hli], a
-	ld [hli], a
-	ld [hl], a
-	ld de, $0
+	ld [hli], a ; [$ffeb] = 0
+	ld [hli], a ; [$ffec] = 0
+	ld [hli], a	; [$ffed] = 0
+	ld [hl], a	; [$ffee] = 0
+	ld de, $0	; de = 0
 	ld hl, HiddenObjectMaps
+
 .hiddenMapLoop
+	; b = HiddenObjectMapsのエントリ
 	ld a, [hli]
 	ld b, a
+	
+	; HiddenObjectMapsの最後まで来たがどれも該当しない
 	cp $ff
 	jr z, .noMatch
+	
+	; HiddenObjectMapsのエントリに現在のマップがある
 	ld a, [wCurMap]
 	cp b
 	jr z, .foundMatchingMap
+
+	; de += 2して次のエントリ
 	inc de
 	inc de
 	jr .hiddenMapLoop
+
 .foundMatchingMap
+	; hl = 現在のマップのhidden object一覧へのポインタ
 	ld hl, HiddenObjectPointers
 	add hl, de
+
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a

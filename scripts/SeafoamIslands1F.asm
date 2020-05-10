@@ -37,6 +37,7 @@ SeafoamIslands1F_Script:
 	ld hl, Seafoam1HolesCoords
 	jp IsPlayerOnDungeonWarp
 
+; 落下穴のcoordsのリスト
 Seafoam1HolesCoords:
 	db $06,$11
 	db $06,$18

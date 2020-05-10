@@ -1,3 +1,4 @@
+; hidden objectがあるマップIDのリスト
 HiddenObjectMaps:
 	db REDS_HOUSE_2F
 	db BLUES_HOUSE
@@ -86,8 +87,9 @@ HiddenObjectMaps:
 	db ROUTE_4
 	db $FF
 
+; each of these pointers is for the corresponding map in HiddenObjectMaps  
+; テーブル[i] = HiddenObjectMaps[i]のマップに存在するhidden object一覧のポインタ
 HiddenObjectPointers:
-; each of these pointers is for the corresponding map in HiddenObjectMaps
 	dw RedsHouse2FHiddenObjects
 	dw BluesHouseHiddenObjects
 	dw OaksLabHiddenObjects
