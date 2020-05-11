@@ -32,7 +32,7 @@ movement.asm | null
 npc_movement.asm | null
 oaks_aide.asm | null
 oam.asm | null
-pewter_guys.asm | null
+pewter_guys.asm | ニビシティの強制連行イベント処理  
 player_animations.asm | null
 player_state.asm | null
 poison.asm | null

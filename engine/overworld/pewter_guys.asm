@@ -1,5 +1,6 @@
 ; **PewterGuys**  
-; ニビシティのジムに連行するNPCについて
+; ニビシティの強制連行イベントのトリガーとなるマスにプレイヤーがいるか判定し、いるならsimulated joypadのキー入力を与える  
+; pewter guyとsimulated joypadについてはドキュメント参照
 PewterGuys:
 	ld hl, wSimulatedJoypadStatesEnd
 
@@ -49,7 +50,8 @@ PewterGuys:
 	ld h, [hl]
 	ld l, a
 
-	; イベントcoordのmovement data(e.g. .down, .one)
+	; イベントcoordのsimulated joypad(e.g. .down, .one)の入力を(wSimulatedJoypadStatesEnd + [wSimulatedJoypadStatesIndex])にコピーしていく  
+	; simulated joypadについてはドキュメント参照
 .copyMovementDataLoop
 	; a = 現在のループでのmovement data
 	ld a, [hli]
