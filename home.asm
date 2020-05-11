@@ -1448,23 +1448,33 @@ AddItemToInventory::
 ; - - - 
 ; INPUT:  
 ; - [wListMenuID] = list menu ID
-; - [wListPointer] = address of the list (2 bytes)
+; - [wListPointer] = リストのポインタ(2バイト)
 DisplayListMenuID::
+	; 自動的なBG転送を無効化
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a ; disable auto-transfer
+
 	ld a, 1
 	ld [hJoy7], a ; joypad state update flag
+	
+	; トキワシティの老人のポケモン捕獲バトル or サファリゾーンのバトルか
 	ld a, [wBattleType]
 	and a ; is it the Old Man battle?
 	jr nz, .specialBattleType
+
+	; 通常のバトルのときはバンク1にスイッチ
 	ld a, $01 ; hardcoded bank
 	jr .bankswitch
+	; DisplayBattleMenuのあるバンクにスイッチ
 .specialBattleType ; Old Man battle
 	ld a, BANK(DisplayBattleMenu)
 .bankswitch
 	call BankswitchHome
+
+	; テキスト表示時の遅延をoff
 	ld hl, wd730
 	set 6, [hl] ; turn off letter printing delay
+	
 	xor a
 	ld [wMenuItemToSwap], a ; 0 means no item is currently being swapped
 	ld [wListCount], a
@@ -3051,10 +3061,11 @@ HasEnoughCoins::
 	ld c, 2
 	jp StringCmp
 
-
+; **BankswitchHome**  
+; - - - 
+; aレジスタの示すバンクにスイッチ  
+; home bankのときのみこれを使う
 BankswitchHome::
-; switches to bank # in a
-; Only use this when in the home bank!
 	ld [wBankswitchHomeTemp], a
 	ld a, [H_LOADEDROMBANK]
 	ld [wBankswitchHomeSavedROMBank], a
@@ -3063,6 +3074,9 @@ BankswitchHome::
 	ld [MBC1RomBank], a
 	ret
 
+; **BankswitchBack**  
+; - - - 
+; BankswitchHome前にいたバンクに復帰
 BankswitchBack::
 ; returns from BankswitchHome
 	ld a, [wBankswitchHomeSavedROMBank]

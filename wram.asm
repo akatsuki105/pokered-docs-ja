@@ -1714,10 +1714,11 @@ wCurOpponent:: ; d059
 ; in a trainer battle, this is the trainer class + OPP_ID_OFFSET
 	ds 1
 
-wBattleType:: ; d05a
-; in normal battle, this is 0
-; in old man battle, this is 1
-; in safari battle, this is 2
+; d05a  
+; 通常のバトル -> 0  
+; トキワシティの老人によるポケモン捕獲デモ -> 1  
+; サファリゾーンでのバトル -> 2
+wBattleType::
 	ds 1
 
 wDamageMultipliers:: ; d05b
