@@ -63,35 +63,51 @@ CheckForHiddenObject:
 	jr .hiddenMapLoop
 
 .foundMatchingMap
-	; hl = 現在のマップのhidden object一覧へのポインタ
+	; hl = 現在のマップのHiddenObjectPointersテーブルのエントリ
 	ld hl, HiddenObjectPointers
 	add hl, de
 
-	; format: y-coord, x-coord, text id/item id, object routine
-	; h:l = Ycoord/Xcoord
+	; h:l = 現在のマップのhidden object一覧へのポインタ
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	push hl
+
+	; wHiddenObjectFunctionArgumentを0クリア
 	ld hl, wHiddenObjectFunctionArgument
 	xor a
-	ld [hli], a
-	ld [hli], a
-	ld [hl], a
+	ld [hli], a	; [$cd3d] = 0
+	ld [hli], a	; [$cd3e] = 0
+	ld [hl], a	; [$cd3f] = 0
 	pop hl
+	
+	; HiddenObjectPointersの各エントリを検討
 .hiddenObjectLoop
+	; a = 各エントリ
 	ld a, [hli]
+
+	; エントリを全部検討したが見つからなかった  
 	cp $ff
 	jr z, .noMatch
+	
+	; a = 検討中のhidden objectのエントリ (Ycoord, Xcoord, テキストID/アイテムID, object routine)
+	
+	; b = Y座標
 	ld [wHiddenObjectY], a
 	ld b, a
-	ld a, [hli]
+	
+	; c = X座標
+	ld a, [hli] ; Xcoord -> テキストID/アイテムID
 	ld [wHiddenObjectX], a
 	ld c, a
+
+	; hidden objectのcoordsがプレイヤーの1マス前のcoordsと一致するとき -> .foundMatchingObject
 	call CheckIfCoordsInFrontOfPlayerMatch
 	ld a, [hCoordsInFrontOfPlayerMatch]
 	and a
 	jr z, .foundMatchingObject
+	
+	; 次のエントリを検討
 	inc hl
 	inc hl
 	inc hl
@@ -101,11 +117,17 @@ CheckForHiddenObject:
 	inc [hl]
 	pop hl
 	jr .hiddenObjectLoop
+
 .foundMatchingObject
+	; プレイヤーが調べたところにhidden objectがあった場合、object routineの準備をして返る 
+
+	; [wHiddenObjectFunctionArgument] = hidden objectのテキストID/アイテムID
 	ld a, [hli]
 	ld [wHiddenObjectFunctionArgument], a
+	; [wHiddenObjectFunctionArgument] = hidden objectのobject routineのバンク番号
 	ld a, [hli]
 	ld [wHiddenObjectFunctionRomBank], a
+	; hl = object routineのポインタ
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -115,8 +137,9 @@ CheckForHiddenObject:
 	ld [$ffee], a
 	ret
 
-; checks if the coordinates in front of the player's sprite match Y in b and X in c
-; [hCoordsInFrontOfPlayerMatch] = $00 if they match, $ff if they don't match
+; **CheckIfCoordsInFrontOfPlayerMatch**  
+; プレイヤーの1マス前のcoordsが (b, c)=(X, Y) と一致するか判定  
+; [hCoordsInFrontOfPlayerMatch] = $00(一致), $ff(不一致)  
 CheckIfCoordsInFrontOfPlayerMatch:
 	ld a, [wSpriteStateData1 + 9] ; player's sprite facing direction
 	cp SPRITE_FACING_UP

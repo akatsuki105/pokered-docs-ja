@@ -21,7 +21,7 @@ emotion_bubbles.asm | !マークなどの感情を表す吹き出しを表示さ
 field_move_messages.asm | null
 healing_machine.asm | null
 hidden_items.asm | 隠しアイテム取得の処理
-hidden_objects.asm | null
+hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する処理
 is_player_just_outside_map.asm | null
 item.asm | null
 ledges.asm | null

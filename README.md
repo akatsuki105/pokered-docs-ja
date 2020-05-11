@@ -24,6 +24,8 @@
 - [blk](./docs/blk.md)
 - [カートリッジ](./docs/cartridge.md)
 - [文字コード](./docs/charcode.md)
+- [イベント](./docs/event.md)
+- [hidden object](./docs/hidden_object.md)
 - [キー入力](./docs/joypad.md)
 - [マクロ](./docs/macro.md)
 - [マップオブジェクト](./docs/map_object.md)
