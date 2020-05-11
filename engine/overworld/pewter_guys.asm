@@ -1,3 +1,5 @@
+; **PewterGuys**  
+; ニビシティのジムに連行するNPCについて
 PewterGuys:
 	ld hl, wSimulatedJoypadStatesEnd
 	ld a, [wSimulatedJoypadStatesIndex]
