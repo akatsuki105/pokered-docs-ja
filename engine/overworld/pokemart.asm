@@ -1,33 +1,46 @@
 DisplayPokemartDialogue_:
+	; wListScrollOffsetを退避
 	ld a, [wListScrollOffset]
 	ld [wSavedListScrollOffset], a
+
 	call UpdateSprites
 	xor a
 	ld [wBoughtOrSoldItemInMart], a
 .loop
+	; メニュー選択に関する変数を0クリア
 	xor a
 	ld [wListScrollOffset], a
 	ld [wCurrentMenuItem], a
 	ld [wPlayerMonNumber], a
+	
+	; [wPrintItemPrices] = 1
 	inc a
 	ld [wPrintItemPrices], a
+	
+	; 所持金を表示するテキストボックスを表示
 	ld a, MONEY_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID
+	
+	; Buy/Sellの2択メニュー用のテキストボックスを表示
 	ld a, BUY_SELL_QUIT_MENU
 	ld [wTextBoxID], a
 	call DisplayTextBoxID
 
-; This code is useless. It copies the address of the pokemart's inventory to hl,
-; but the address is never used.
+	; pokemartの商品リストのアドレスをhlに格納しているがそのアドレスは結局使われることはない
 	ld hl, wItemListPointer
 	ld a, [hli]
 	ld l, [hl]
 	ld h, a
 
+	; a = メニューで何を押したか
 	ld a, [wMenuExitMethod]
+
+	; quitのときは終了
 	cp CANCELLED_MENU
 	jp z, .done
+
+	; プレイヤーがbuy/sell/quitのどれを選んだかで分岐
 	ld a, [wChosenMenuItem]
 	and a ; buying?
 	jp z, .buyMenu
@@ -35,38 +48,55 @@ DisplayPokemartDialogue_:
 	jp z, .sellMenu
 	dec a ; quitting?
 	jp z, .done
-.sellMenu
 
-; the same variables are set again below, so this code has no effect
+	; sellを選んだ時
+.sellMenu
+	; 同じ変数が下でセットされているのでこの処理は特に効果がない
 	xor a
 	ld [wPrintItemPrices], a
 	ld a, INIT_BAG_ITEM_LIST
 	ld [wInitListType], a
 	callab InitList
 
+	; プレイヤーのかばんの中身が空なら返る
 	ld a, [wNumBagItems]
 	and a
 	jp z, .bagEmpty
+	
+	; 『What would you like to sell?』というテキストを表示
 	ld hl, PokemonSellingGreetingText
 	call PrintText
+
+	; この状態のBGマップをバックアップ
 	call SaveScreenTilesToBuffer1 ; save screen
+
 .sellMenuLoop
 	call LoadScreenTilesFromBuffer1 ; restore saved screen
+	
+	; 所持金を表示するテキストボックスを表示
 	ld a, MONEY_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; draw money text box
+
+	; wListPointerにwNumBagItemsを格納
 	ld hl, wNumBagItems
 	ld a, l
 	ld [wListPointer], a
 	ld a, h
 	ld [wListPointer + 1], a
+
+	; メニュー選択に関する変数を0クリア
 	xor a
 	ld [wPrintItemPrices], a
 	ld [wCurrentMenuItem], a
+
+	; アイテムリストメニューを表示
 	ld a, ITEMLISTMENU
 	ld [wListMenuID], a
 	call DisplayListMenuID
-	jp c, .returnToMainPokemartMenu ; if the player closed the menu
+
+	; プレイヤーがメニューを閉じたとき
+	jp c, .returnToMainPokemartMenu
 .confirmItemSale ; if the player is trying to sell a specific item
 	call IsKeyItem
 	ld a, [wIsKeyItem]

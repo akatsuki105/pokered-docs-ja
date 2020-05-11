@@ -344,11 +344,11 @@ wTileMap::
 wSerialPartyMonsPatchList:: ; c508
 ; list of indexes to patch with SERIAL_NO_DATA_BYTE after transfer
 
-wTileMapBackup:: ; c508
-; buffer for temporarily saving and restoring current screen's tiles
-; (e.g. if menus are drawn on top)
+; c508  
+; 一時的に画面上のタイルを保持しておくバッファ  
+; 例えばメニューをマップの上に上書きして表示する際に下のマップデータを保持しておくのに利用される  
 ;	ds 20 * 18
-
+wTileMapBackup::
 	ds 200
 
 wSerialEnemyMonsPatchList:: ; c5d0
@@ -453,9 +453,10 @@ wMenuItemToSwap:: ; cc35
 ; id of menu item selected for swapping (counts from 1) (0 means that no menu item has been selected for swapping)
 	ds 1
 
-wListScrollOffset:: ; cc36
-; offset of the current top menu item from the beginning of the list
-; keeps track of what section of the list is on screen
+; cc36  
+; 現在画面一番上に表示されているアイテムのメニューでのオフセット  
+; リストのどのセクションが画面上に表示されているかを取得するのに利用される  
+wListScrollOffset::
 	ds 1
 
 wMenuWatchMovingOutOfBounds:: ; cc37
@@ -1387,10 +1388,11 @@ wBankswitchHomeTemp:: ; cf09
 ; used as a temp storage value for the bank to switch to
 	ds 1
 
-wBoughtOrSoldItemInMart:: ; cf0a
-; 0 = nothing bought or sold in pokemart
-; 1 = bought or sold something in pokemart
-; this value is not used for anything
+; cf0a  
+; 0 = pokemartに何も買うものや売るものがない  
+; 1 = pokemartに何か買うものや売るものがある  
+; この値は特に使用されている様子はない
+wBoughtOrSoldItemInMart::
 	ds 1
 
 wBattleResult:: ; cf0b
@@ -1508,7 +1510,8 @@ wGymLeaderName:: ; cf70
 wItemList:: ; cf7b
 	ds 16
 
-wListPointer:: ; cf8b
+; cf8b
+wListPointer::
 	ds 2
 
 wUnusedCF8D:: ; cf8d
@@ -1526,8 +1529,9 @@ wcf91:: ds 1 ; used with a lot of things (too much to list here)
 wWhichPokemon::
 	ds 1
 
-wPrintItemPrices:: ; cf93
-; if non-zero, then print item prices when displaying lists
+; cf93  
+; 0でないときは、表示しているリストのアイテム価格を表示する
+wPrintItemPrices::
 	ds 1
 
 wHPBarType:: ; cf94
@@ -1872,9 +1876,10 @@ wTempTilesetNumTiles:: ; d07d
 ; temporary storage for the number of tiles in a tileset
 	ds 1
 
-wSavedListScrollOffset:: ; d07e
-; used by the pokemart code to save the existing value of wListScrollOffset
-; so that it can be restored when the player is done with the pokemart NPC
+; d07e  
+; pokemartのNPCに話しかけたときに現在のwListScrollOffsetを保存しておく領域   
+; pokemart NPCとの会話が終わった後にwListScrollOffsetに復帰される
+wSavedListScrollOffset::
 	ds 1
 
 	ds 2
@@ -2232,8 +2237,9 @@ wCurrentMapScriptFlags:: ds 1 ; not exactly sure what this is used for, but it s
 wCurEnemyLVL:: ; d127
 	ds 1
 
-wItemListPointer:: ; d128
-; pointer to list of items terminated by $FF
+; d128  
+; $FFを終端記号とするアイテムのリストへのポインタ
+wItemListPointer::
 	ds 2
 
 wListCount::
@@ -2246,21 +2252,25 @@ wLinkState:: ; d12b
 wTwoOptionMenuID:: ; d12c
 	ds 1
 
-wChosenMenuItem:: ; d12d
-; the id of the menu item the player ultimately chose
+; d12d  
+; プレイヤーが最終的に選んだアイテムのID
+wChosenMenuItem::
 
 wOutOfBattleBlackout:: ; d12d
 ; non-zero when the whole party has fainted due to out-of-battle poison damage
 	ds 1
 
-wMenuExitMethod:: ; d12e
-; the way the user exited a menu
-; for list menus and the buy/sell/quit menu:
-; $01 = the user pressed A to choose a menu item
-; $02 = the user pressed B to cancel
-; for two-option menus:
-; $01 = the user pressed A with the first menu item selected
-; $02 = the user pressed B or pressed A with the second menu item selected
+; d12e  
+; ユーザーがメニューからどのように抜けたかを記録している
+; 
+; buy/sell/quitメニューの場合  
+; - $01 = ユーザーがAボタンでアイテムを選択した
+; - $02 = ユーザーがBボタンでキャンセルした
+; 
+; 2択メニューの場合:  
+; - $01 = 上のアイテムでAボタンを押した
+; - $02 = Bボタンを押したか、下のアイテムでAボタンを押した
+wMenuExitMethod::
 	ds 1
 
 wDungeonWarpDataEntrySize:: ; d12f
@@ -2395,8 +2405,8 @@ wPokedexSeen::
 	flag_array NUM_POKEMON
 wPokedexSeenEnd::
 
-
-wNumBagItems:: ; d31d
+; d31d
+wNumBagItems::
 	ds 1
 
 ; d31e  

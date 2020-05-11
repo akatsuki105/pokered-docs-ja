@@ -1444,9 +1444,11 @@ AddItemToInventory::
 	pop bc
 	ret
 
-; INPUT:
-; [wListMenuID] = list menu ID
-; [wListPointer] = address of the list (2 bytes)
+; **DisplayListMenuID**  
+; - - - 
+; INPUT:  
+; - [wListMenuID] = list menu ID
+; - [wListPointer] = address of the list (2 bytes)
 DisplayListMenuID::
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a ; disable auto-transfer
@@ -2230,10 +2232,12 @@ IsKeyItem::
 	pop hl
 	ret
 
-; function to draw various text boxes
-; INPUT:
-; [wTextBoxID] = text box ID
-; b, c = y, x cursor position (TWO_OPTION_MENU only)
+; **DisplayTextBoxID**  
+; 引数で与えたText Box IDに対応するテキストボックスを表示する  
+; - - - 
+; INPUT:  
+; - [wTextBoxID] = Text Box ID
+; - b, c = カーソルのy, x (2択メニューのみで引数として与える)  
 DisplayTextBoxID::
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -3288,12 +3292,14 @@ LoadScreenTilesFromBuffer2DisableBGTransfer::
 	call CopyData
 	ret
 
+; BGマップをwTileMapBackupにバックアップする
 SaveScreenTilesToBuffer1::
 	coord hl, 0, 0
 	ld de, wTileMapBackup
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
 	jp CopyData
 
+; wTileMapBackupにバックアップしたデータをBGマップに戻す
 LoadScreenTilesFromBuffer1::
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
