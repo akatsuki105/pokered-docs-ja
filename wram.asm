@@ -867,7 +867,7 @@ wFilteredBagItemsCount::
 	ds 1
 
 ; cd38  
-; 次に勝手に入力されるキー入力は、wSimulatedJoypadStatesEndに存在しこの値から1を引いたもの  
+; 次に勝手に入力されるキー入力は、wSimulatedJoypadStatesEndにこの値から1を引いた値を足したもの   
 ; 0 ならキー入力はシミュレートされていない(ポケモン赤によって勝手にキー入力されている状態ではない)
 wSimulatedJoypadStatesIndex::
 	ds 1
@@ -2266,9 +2266,10 @@ wMenuExitMethod:: ; d12e
 wDungeonWarpDataEntrySize:: ; d12f
 ; the size is always 6, so they didn't need a variable in RAM for this
 
-wWhichPewterGuy:: ; d12f
-; 0 = museum guy
-; 1 = gym guy
+; d12f  
+; 0 = museum guy  
+; 1 = gym guy  
+wWhichPewterGuy::
 
 wWhichPrizeWindow:: ; d12f
 ; there are 3 windows, from 0 to 2

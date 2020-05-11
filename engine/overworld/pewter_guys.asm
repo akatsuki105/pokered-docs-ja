@@ -2,46 +2,71 @@
 ; ニビシティのジムに連行するNPCについて
 PewterGuys:
 	ld hl, wSimulatedJoypadStatesEnd
+
+	; [wSimulatedJoypadStatesIndex]--
 	ld a, [wSimulatedJoypadStatesIndex]
 	dec a ; this decrement causes it to overwrite the last byte before $FF in the list
 	ld [wSimulatedJoypadStatesIndex], a
+	
+	; de = wSimulatedJoypadStatesEnd + [wSimulatedJoypadStatesIndex]
 	ld d, 0
 	ld e, a
 	add hl, de
 	ld d, h
 	ld e, l
+
+	; hl = PewterMuseumGuyCoords([wWhichPewterGuy] = 0) or PewterGymGuyCoords([wWhichPewterGuy] = 1)
 	ld hl, PointerTable_37ce6
 	ld a, [wWhichPewterGuy]
 	add a
 	ld b, 0
 	ld c, a
 	add hl, bc
+
+	; 最初のエントリのcoord (findMatchingCoordsLoopのinit処理)
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+	
+	; bc = プレイヤーのcoord
 	ld a, [wYCoord]
 	ld b, a
 	ld a, [wXCoord]
 	ld c, a
+
+	; イベントcoordのリストからプレイヤーのcoordと一致するものを探索
 .findMatchingCoordsLoop
+	; 検討中のイベントcoordと一致しないなら次のエントリ
 	ld a, [hli]
 	cp b
 	jr nz, .nextEntry1
 	ld a, [hli]
 	cp c
 	jr nz, .nextEntry2
+
+	; プレイヤーがイベントマスにいる
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; イベントcoordのmovement data(e.g. .down, .one)
 .copyMovementDataLoop
+	; a = 現在のループでのmovement data
 	ld a, [hli]
+	; movement dataが終了(ループが終了)
 	cp $ff
 	ret z
+
+	; wSimulatedJoypadStatesEnd + [wSimulatedJoypadStatesIndex] = movement data
 	ld [de], a
 	inc de
+
+	; [wSimulatedJoypadStatesIndex]++
 	ld a, [wSimulatedJoypadStatesIndex]
 	inc a
 	ld [wSimulatedJoypadStatesIndex], a
+	
+	; 次のループ
 	jr .copyMovementDataLoop
 .nextEntry1
 	inc hl
@@ -57,6 +82,8 @@ PointerTable_37ce6:
 ; these are the four coordinates of the spaces below, above, to the left and
 ; to the right of the museum guy, and pointers to different movements for
 ; the player to make to get positioned before the main movement.
+; 
+; 『ニビ科学博物館』のスプライトの上下左右のcoordsのテーブル  
 PewterMuseumGuyCoords:
 	db 18, 27
 	dw .down
@@ -80,6 +107,7 @@ PewterMuseumGuyCoords:
 ; different movements for the player to make to get positioned before the
 ; main movement
 ; $00 is a pause
+; gym guyによる連行イベントのトリガーとなる5個のcoordsと ???  
 PewterGymGuyCoords:
 	db 16, 34
 	dw .one
