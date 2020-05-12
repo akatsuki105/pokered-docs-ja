@@ -1,4 +1,4 @@
-; TODO
+; 配列やテーブルに関する定数
 
 ; list menu ID's
 PCPOKEMONLISTMENU  EQU $00 ; PC pokemon withdraw/deposit lists

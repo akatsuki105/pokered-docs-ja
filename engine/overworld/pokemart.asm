@@ -93,7 +93,7 @@ DisplayPokemartDialogue_:
 	; アイテムリストメニューを表示
 	ld a, ITEMLISTMENU
 	ld [wListMenuID], a
-	call DisplayListMenuID
+	call DisplayListMenuID ; hl = wNumBagItems = かばんのアイテムエントリ数
 
 	; プレイヤーがメニューを閉じたとき
 	jp c, .returnToMainPokemartMenu

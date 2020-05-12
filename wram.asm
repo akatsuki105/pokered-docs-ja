@@ -449,8 +449,10 @@ wMenuCursorLocation:: ; cc30
 wMenuJoypadPollCount::
 	ds 1
 
-wMenuItemToSwap:: ; cc35
-; id of menu item selected for swapping (counts from 1) (0 means that no menu item has been selected for swapping)
+; cc35  
+; 順番入れ替えのために選択されているメニューアイテムのオフセット(1からカウント)  
+; この値が0の場合はどのアイテムも順番入れ替えのために選択されていない状態であることを意味する  
+wMenuItemToSwap::
 	ds 1
 
 ; cc36  
@@ -459,11 +461,12 @@ wMenuItemToSwap:: ; cc35
 wListScrollOffset::
 	ds 1
 
-wMenuWatchMovingOutOfBounds:: ; cc37
+; cc37  
 ; If non-zero, then when wrapping is disabled and the player tries to go past
 ; the top or bottom of the menu, return from HandleMenuInput. This is useful for
 ; menus that have too many items to display at once on the screen because it
 ; allows the caller to scroll the entire menu up or down when this happens.
+wMenuWatchMovingOutOfBounds::
 	ds 1
 
 wTradeCenterPointerTableIndex:: ; cc38
@@ -2243,8 +2246,9 @@ wCurEnemyLVL:: ; d127
 wItemListPointer::
 	ds 2
 
+; d12a  
+; リストのエントリの数(メニューアイテムのリスト?)  
 wListCount::
-; number of entries in a list
 	ds 1
 
 wLinkState:: ; d12b
@@ -2406,7 +2410,8 @@ wPokedexSeen::
 	flag_array NUM_POKEMON
 wPokedexSeenEnd::
 
-; d31d
+; d31d  
+; バッグのアイテム数 
 wNumBagItems::
 	ds 1
 

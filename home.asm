@@ -1448,7 +1448,7 @@ AddItemToInventory::
 ; - - - 
 ; INPUT:  
 ; - [wListMenuID] = list menu ID
-; - [wListPointer] = リストのポインタ(2バイト)
+; - [wListPointer] = listのポインタ(2バイト)
 DisplayListMenuID::
 	; 自動的なBG転送を無効化
 	xor a
@@ -1465,9 +1465,11 @@ DisplayListMenuID::
 	; 通常のバトルのときはバンク1にスイッチ
 	ld a, $01 ; hardcoded bank
 	jr .bankswitch
+
 	; DisplayBattleMenuのあるバンクにスイッチ
 .specialBattleType ; Old Man battle
 	ld a, BANK(DisplayBattleMenu)
+
 .bankswitch
 	call BankswitchHome
 
@@ -1475,26 +1477,37 @@ DisplayListMenuID::
 	ld hl, wd730
 	set 6, [hl] ; turn off letter printing delay
 	
+	; リストに関する変数を0クリア
 	xor a
-	ld [wMenuItemToSwap], a ; 0 means no item is currently being swapped
-	ld [wListCount], a
+	ld [wMenuItemToSwap], a ; どのアイテムもセレクトで順番入れ替えのために選択されている状態にない
+	ld [wListCount], a		; listの要素数が0
+
+	; hl = リストのポインタ
 	ld a, [wListPointer]
 	ld l, a
 	ld a, [wListPointer + 1]
 	ld h, a ; hl = address of the list
+
+	; listの最初のエントリはlistのエントリの数を表す
 	ld a, [hl] ; the first byte is the number of entries in the list
 	ld [wListCount], a
+
+	; 選択メニューのテキストボックスを表示
 	ld a, LIST_MENU_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; draw the menu text box
-	call UpdateSprites ; disable sprites behind the text box
-; the code up to .skipMovingSprites appears to be useless
+
+	; テキストボックスに隠れたスプライトを無効化する
+	call UpdateSprites
+	
+	; ここから.skipMovingSpritesまでのコードは意味がなさそうに見える
 	coord hl, 4, 2 ; coordinates of upper left corner of menu text box
 	lb de, 9, 14 ; height and width of menu text box
 	ld a, [wListMenuID]
 	and a ; is it a PC pokemon list?
 	jr nz, .skipMovingSprites
 	call UpdateSprites
+
 .skipMovingSprites
 	ld a, 1 ; max menu item ID is 1 if the list has less than 2 entries
 	ld [wMenuWatchMovingOutOfBounds], a
