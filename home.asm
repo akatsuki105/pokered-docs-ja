@@ -1445,6 +1445,7 @@ AddItemToInventory::
 	ret
 
 ; **DisplayListMenuID**  
+; menuのテキストボックスを表示し各種menu変数に適切な値を設定する  
 ; - - - 
 ; INPUT:  
 ; - [wListMenuID] = list menu ID
@@ -1509,12 +1510,19 @@ DisplayListMenuID::
 	call UpdateSprites
 
 .skipMovingSprites
-	ld a, 1 ; max menu item ID is 1 if the list has less than 2 entries
+	; menuのwrappingを無効に
+	ld a, 1	; もしlistのエントリが2個未満ならmenuのアイテムのIDの最大値は1
 	ld [wMenuWatchMovingOutOfBounds], a
+	
+	; listのエントリ数(wListPointerのリストのエントリ数)が2未満 -> .setMenuVariables
 	ld a, [wListCount]
 	cp 2 ; does the list have less than 2 entries?
 	jr c, .setMenuVariables
-	ld a, 2 ; max menu item ID is 2 if the list has at least 2 entries
+
+	ld a, 2 ; もしlistが最低でも2個以上のエントリを持つならmenuのアイテムのIDの最大値は2
+
+	; メニューに関する変数を設定
+	; カーソルの座標、どのボタンに対して反応するかなど
 .setMenuVariables
 	ld [wMaxMenuItem], a
 	ld a, 4
@@ -1527,8 +1535,10 @@ DisplayListMenuID::
 	call DelayFrames
 
 DisplayListMenuIDLoop::
+	; 自動的なBG転送を無効化 
 	xor a
-	ld [H_AUTOBGTRANSFERENABLED], a ; disable transfer
+	ld [H_AUTOBGTRANSFERENABLED], a
+
 	call PrintListMenuEntries
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a ; enable transfer
@@ -1804,27 +1814,39 @@ ExitListMenu::
 	scf
 	ret
 
+; **PrintListMenuEntries**  
+; メニューのアイテムリストを表示する
+; - - -
+; INPUT:  
+; - [wListPointer] = リストのポインタ
 PrintListMenuEntries::
+	; (5, 3)から9*14タイル分だけクリア
 	coord hl, 5, 3
 	ld b, 9
 	ld c, 14
 	call ClearScreenArea
+
+	; de = listの先頭要素
 	ld a, [wListPointer]
 	ld e, a
 	ld a, [wListPointer + 1]
 	ld d, a
-	inc de ; de = beginning of list entries
+	inc de
+
+	; a = [wListScrollOffset] = 現在画面一番上に表示されているアイテムのメニューでのオフセット
+	; [wListMenuID] != ITEMLISTMENU => .skipMultiplying
 	ld a, [wListScrollOffset]
 	ld c, a
 	ld a, [wListMenuID]
 	cp ITEMLISTMENU
 	ld a, c
 	jr nz, .skipMultiplying
-; if it's an item menu
-; item entries are 2 bytes long, so multiply by 2
-	sla a
-	sla c
+	
+	; かばんかshopの売り物はエントリがリストの各エントリが2バイトなので2倍する
+	sla a 	; a *= 2
+	sla c	; c *= 2
 .skipMultiplying
+	; de = 現在画面一番上に表示されているアイテムのポインタ
 	add e
 	ld e, a
 	jr nc, .noCarry

@@ -462,10 +462,8 @@ wListScrollOffset::
 	ds 1
 
 ; cc37  
-; If non-zero, then when wrapping is disabled and the player tries to go past
-; the top or bottom of the menu, return from HandleMenuInput. This is useful for
-; menus that have too many items to display at once on the screen because it
-; allows the caller to scroll the entire menu up or down when this happens.
+; 0でないときには、menu wrappingが無効になり、プレイヤーがメニューの一番上や一番下の先を選択しようとすると HandleMenuInput からリターンする  
+; この設定はmenuのitemが一度に画面に表示しきれないくらい多いときにmenuをスクロールさせるために必要である  
 wMenuWatchMovingOutOfBounds::
 	ds 1
 
@@ -1544,7 +1542,8 @@ wHPBarType:: ; cf94
 ; $02 = party menu
 
 ; cf94  
-; DisplayListMenuIDで使われるID
+; DisplayListMenuIDで使われるID  
+; constants/list_constants.asmのlist menu ID's以下のどれかを格納
 wListMenuID::
 	ds 1
 

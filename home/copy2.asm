@@ -183,7 +183,12 @@ CopyVideoDataDouble::
 	ld c, a
 	jr .loop
 
+; **ClearScreenArea**  
 ; hlを始点としてタイルマップを c*b枚だけクリア(空白タイルで上書き)する
+; - - -  
+; INPUT:  
+; - hl = 始点のタイルアドレス(BGマップアドレス)  
+; - b, c = c*b枚がタイルクリアの対象  
 ClearScreenArea::
 	ld a, " " ; 空白のタイル
 	ld de, 20 ; スクリーンサイズ
