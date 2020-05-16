@@ -1511,7 +1511,7 @@ wGymLeaderName:: ; cf70
 wItemList:: ; cf7b
 	ds 16
 
-; cf8b
+; cf8b  
 wListPointer::
 	ds 2
 
@@ -1523,10 +1523,12 @@ wUnusedCF8D:: ; cf8d
 wItemPrices:: ; cf8f
 	ds 2
 
-wcf91:: ds 1 ; used with a lot of things (too much to list here)
+; cf91  
+; 様々な値を格納するのに使われる  
+wcf91:: ds 1
 
-; cf92
-; which pokemon you selected
+; cf92  
+; どのポケモンがセレクトされているか  
 wWhichPokemon::
 	ds 1
 
@@ -2209,7 +2211,8 @@ wMoveType:: ; d11e
 
 wNumSetBits:: ; d11e
 
-; used as a Pokemon and Item storage value. Also used as an output value for CountSetBits
+; used as a Pokemon and Item storage value. Also used as an output value for CountSetBits  
+; ポケモンやアイテムストレージの値として使われる。またCountSetBitsの結果を格納するのにも利用される
 wd11e:: ds 1
 
 wForcePlayerToChooseMon:: ; d11f
@@ -2389,8 +2392,13 @@ wPartyMon4:: party_struct wPartyMon4 ; d1ef
 wPartyMon5:: party_struct wPartyMon5 ; d21b
 wPartyMon6:: party_struct wPartyMon6 ; d247
 
-wPartyMonOT::    ds NAME_LENGTH * PARTY_LENGTH ; d273
-wPartyMonNicks:: ds NAME_LENGTH * PARTY_LENGTH ; d2b5
+; d273    
+; NAME_LENGTH * PARTY_LENGTH = 11 * 6 = 66バイトの領域  
+wPartyMonOT::    ds NAME_LENGTH * PARTY_LENGTH
+
+; d2b5  
+; NAME_LENGTH * PARTY_LENGTH = 11 * 6 = 66バイトの領域  
+wPartyMonNicks:: ds NAME_LENGTH * PARTY_LENGTH
 
 wPartyDataEnd::
 
@@ -3325,8 +3333,13 @@ wBoxMons::
 wBoxMon1:: box_struct wBoxMon1 ; da96
 wBoxMon2:: ds box_struct_length * (MONS_PER_BOX + -1) ; dab7
 
-wBoxMonOT::    ds NAME_LENGTH * MONS_PER_BOX ; dd2a
-wBoxMonNicks:: ds NAME_LENGTH * MONS_PER_BOX ; de06
+; dd2a  
+; 220バイトの領域  
+wBoxMonOT::    ds NAME_LENGTH * MONS_PER_BOX
+
+; de06  
+; ボックスのポケモンのニックネームのリストを格納する220バイトの領域  
+wBoxMonNicks:: ds NAME_LENGTH * MONS_PER_BOX
 wBoxMonNicksEnd:: ; dee2
 
 wBoxDataEnd::

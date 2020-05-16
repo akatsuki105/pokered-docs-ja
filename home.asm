@@ -617,7 +617,18 @@ GetPartyMonName2::
 	ld a, [wWhichPokemon] ; index within party
 	ld hl, wPartyMonNicks
 
-; this is called more often
+; **GetPartyMonName**  
+; ポケモンの名前を取得する
+; - - - 
+; 種族名でもニックネームでもどちらでもOK 
+; 
+; INPUT: 
+; - a = 対象のポケモンのインデックス
+; - hl = ポケモンの名前リスト e.g. wBoxMonNicks
+; 
+; OUTPUT:
+; - de = ポケモンの名前のポインタ
+; - [wcd6d] = ポケモンの名前の文字列データ
 GetPartyMonName::
 	push hl
 	push bc
@@ -1815,10 +1826,13 @@ ExitListMenu::
 	ret
 
 ; **PrintListMenuEntries**  
-; メニューのアイテムリストを表示する
+; list menuを表示する
 ; - - -
+; list menuについては`docs/menu.md`を参照  
+; 
 ; INPUT:  
-; - [wListPointer] = リストのポインタ
+; - [wListPointer] = listのポインタ
+; TODO
 PrintListMenuEntries::
 	; (5, 3)から9*14タイル分だけクリア
 	coord hl, 5, 3
@@ -1853,48 +1867,74 @@ PrintListMenuEntries::
 	inc d
 .noCarry
 	coord hl, 6, 4 ; coordinates of first list entry name
-	ld b, 4 ; print 4 names
+	ld b, 4 ; list menuに1度に表示できるのは4アイテムまで
 .loop
+	; [wWhichPokemon] = 4
 	ld a, b
 	ld [wWhichPokemon], a
+
+	; [wd11e] = 現在画面一番上に表示されているアイテム
 	ld a, [de]
 	ld [wd11e], a
+
+	; 『現在画面一番上に表示されているアイテム』が『やめる』の場合 => .printCancelMenuItem
 	cp $ff
 	jp z, .printCancelMenuItem
+
 	push bc
 	push de
 	push hl
 	push hl
 	push de
+
+	; list menuがPCBoxのポケモン選択のlist menuの場合
 	ld a, [wListMenuID]
 	and a
 	jr z, .pokemonPCMenu
+
+	; list menuが技選択のlist menu
 	cp MOVESLISTMENU
 	jr z, .movesMenu
+
+	; アイテム選択のlist menuを処理
 .itemMenu
 	call GetItemName
 	jr .placeNameString
+
+	; ポケモン選択のlist menuを処理
 .pokemonPCMenu
 	push hl
+
+	; hl = wPartyMonNicks or wBoxMonNicks
 	ld hl, wPartyCount
 	ld a, [wListPointer]
 	cp l ; is it a list of party pokemon or box pokemon?
 	ld hl, wPartyMonNicks
 	jr z, .getPokemonName
 	ld hl, wBoxMonNicks ; box pokemon names
+
 .getPokemonName
+	; a = 4 - [wWhichPokemon]
 	ld a, [wWhichPokemon]
 	ld b, a
-	ld a, 4
+	ld a, 4	; list menuなのでmax4(パーティ選択ではなくPCBoxのポケモン選択)
 	sub b
+
+	; a = [wListScrollOffset] + 4 - [wWhichPokemon] = ポケモンのlist menuでのオフセット
 	ld b, a
 	ld a, [wListScrollOffset]
 	add b
-	call GetPartyMonName
+	
+	call GetPartyMonName	; hl += NAME_LENGTH * a
 	pop hl
 	jr .placeNameString
+
+	; 技選択のlist menuを処理
 .movesMenu
 	call GetMoveName
+
+	; de => 名前のポインタ
+	; hl => リストの配置先のタイルアドレス
 .placeNameString
 	call PlaceString
 	pop de
@@ -2061,7 +2101,9 @@ GetMonName::
 	pop hl
 	ret
 
+; **GetItemName**  
 ; 入力で渡した どうぐ のアイテムIDに対応するアイテム名を得る  
+; - - -  
 ; INPUT: [wd11e] = アイテムID  
 ; 
 ; OUTPUT: de = アイテム名のポインタ  
@@ -2172,14 +2214,26 @@ HMMoves::
 	db CUT,FLY,SURF,STRENGTH,FLASH
 	db $ff ; terminator
 
+; **GetMoveName**  
+; 技名を取得する  
+; - - -
+; 
+; INPUT:  
+; - [wd11e] = アイテムID
+; 
+; OUTPUT:
+; - de = 技名のポインタ
+; - [wcd6d] = 技名の文字列データ
 GetMoveName::
 	push hl
+	; GetNameの引数をセット
 	ld a, MOVE_NAME
 	ld [wNameListType], a
 	ld a, [wd11e]
 	ld [wd0b5], a
 	ld a, BANK(MoveNames)
 	ld [wPredefBank], a
+
 	call GetName
 	ld de, wcd6d ; pointer to where move name is stored in RAM
 	pop hl
@@ -2260,13 +2314,12 @@ TossItem::
 	ld [MBC1RomBank], a
 	ret
 
-; checks if an item is a key item
-; INPUT:
-; [wcf91] = item ID
-; OUTPUT:
-; [wIsKeyItem] = result
-; 00: item is not key item
-; 01: item is key item
+; 引数で指定したアイテムがたいせつなものかチェックする  
+; INPUT:  
+; - [wcf91] = アイテムID
+; 
+; OUTPUT:  
+; - [wIsKeyItem] = 0: たいせつなものでない 1: たいせつなもの  
 IsKeyItem::
 	push hl
 	push de
@@ -4015,11 +4068,17 @@ MoveMon::
 	ld [MBC1RomBank], a
 	ret
 
-; skips a text entries, each of size NAME_LENGTH (like trainer name, OT name, rival name, ...)
-; hl = base pointer, will be incremented by NAME_LENGTH * a
+; **SkipFixedLengthTextEntries**  
+; hl += NAME_LENGTH * a  
+; - - -  
+; hlで指定したアドレスに対して(NAME_LENGTH * a)つまり11*aを足す  
+; skips a text entries, each of size NAME_LENGTH (like trainer name, OT name, rival name, ...)  
 SkipFixedLengthTextEntries::
+	; a = 0なら返る
 	and a
 	ret z
+
+	; hl += NAME_LENGTH * a
 	ld bc, NAME_LENGTH
 .skipLoop
 	add hl, bc

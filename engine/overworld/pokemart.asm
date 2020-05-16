@@ -97,11 +97,15 @@ DisplayPokemartDialogue_:
 
 	; プレイヤーがメニューを閉じたとき
 	jp c, .returnToMainPokemartMenu
-.confirmItemSale ; if the player is trying to sell a specific item
+
+	; プレイヤーが特定のアイテムを売ろうとしたとき
+.confirmItemSale
+	; 売ろうとしたアイテムがたいせつなものかチェック
 	call IsKeyItem
 	ld a, [wIsKeyItem]
 	and a
 	jr nz, .unsellableItem
+
 	ld a, [wcf91]
 	call IsItemHM
 	jr c, .unsellableItem

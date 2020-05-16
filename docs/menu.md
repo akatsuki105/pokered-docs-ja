@@ -18,14 +18,4 @@
 
 ## list menu
 
-list menuというカテゴリに属するメニューもある
-
-スタートメニューのかばんやショップの売り物のリストなどを表示するメニューのことである
-
-list menuで表示されるlistの一覧は`constants/list_constants.asm`参照
-
-TODO: ウィンドウの描画開始位置が固定されていたりなどlist menuにはいくつか特徴があるがなぜわざわざ特別視しているのかは不明
-
-#### list menuの例
-
-![bag](../docs/image/menu/item_list.jpg) &nbsp; ![sell](../docs/image/menu/sell_list.png)
+[list.md](./list.md) 参照
