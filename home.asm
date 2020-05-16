@@ -2064,7 +2064,8 @@ ListMenuCancelText::
 ; - [wd11e] = 対象のアイテムID
 ; 
 ; OUTPUT:
-; - de = wcd6d = ポケモンの名前を格納したbufferのポインタ
+; - de = ポケモンの名前のポインタ
+; - [wcd6d] = ポケモンの名前の文字列データ
 GetMonName::
 	push hl
 
