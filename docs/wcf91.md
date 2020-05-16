@@ -5,3 +5,4 @@
 ## 用途
 
 - IsKeyItemの引数
+- GetItemPriceの引数 アイテムIDを格納する

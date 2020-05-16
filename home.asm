@@ -1939,9 +1939,13 @@ PrintListMenuEntries::
 	call PlaceString
 	pop de
 	pop hl
+
+	; 価格を表示する必要がない場合 -> .skipPrintingItemPrice
 	ld a, [wPrintItemPrices]
 	and a ; should prices be printed?
 	jr z, .skipPrintingItemPrice
+	
+	; リストのアイテムの価格を表示する
 .printItemPrice
 	push hl
 	ld a, [de]
@@ -3567,31 +3571,50 @@ GetName::
 	ld [MBC1RomBank], a
 	ret
 
+; **GetItemPrice**  
+; [hItemPrice] = アイテム価格(3バイトのBCDフォーマット)
+; - - -  
+; hItemPriceにBCDフォーマットのアイテム価格を格納する
+;   
+; INPUT:  
+; - [wcf91] = アイテムID
 GetItemPrice::
-; Stores item's price as BCD at hItemPrice (3 bytes)
-; Input: [wcf91] = item id
+	; バンクを保存
 	ld a, [H_LOADEDROMBANK]
 	push af
+
+	; 対象のリストが技のリストでない -> aにItemPricesのあるバンクを格納して.okへ
 	ld a, [wListMenuID]
 	cp MOVESLISTMENU
 	ld a, BANK(ItemPrices)
 	jr nz, .ok
+	; a = 0xf(バンク番号)
 	ld a, $f ; hardcoded Bank
 .ok
+	; バンクスイッチ
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+	
+	; hl = [wItemPrices]
 	ld hl, wItemPrices
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+	
+	; アイテムが技マシン -> .getTMPrice
 	ld a, [wcf91] ; a contains item id
 	cp HM_01
 	jr nc, .getTMPrice
+
+	; 通常のアイテム
+	; hl += 3*アイテムID (wItemPricesは各エントリが3バイトなので)
+	; TODO: wip
 	ld bc, $3
 .loop
 	add hl, bc
 	dec a
 	jr nz, .loop
+
 	dec hl
 	ld a, [hld]
 	ld [hItemPrice + 2], a
@@ -3600,11 +3623,13 @@ GetItemPrice::
 	ld a, [hl]
 	ld [hItemPrice], a
 	jr .done
+
 .getTMPrice
 	ld a, Bank(GetMachinePrice)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	call GetMachinePrice
+
 .done
 	ld de, hItemPrice
 	pop af

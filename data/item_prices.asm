@@ -1,3 +1,7 @@
+; **ItemPrices**  
+; アイテムの価格の配列  
+; - - -  
+; ItemPrices[アイテムID] => 価格
 ItemPrices:
 	money 0     ; MASTER_BALL
 	money 1200  ; ULTRA_BALL

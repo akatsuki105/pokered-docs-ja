@@ -1520,7 +1520,8 @@ wUnusedCF8D:: ; cf8d
 ; used to store pointers, but never read
 	ds 2
 
-wItemPrices:: ; cf8f
+; cf8f  
+wItemPrices::
 	ds 2
 
 ; cf91  
@@ -1533,7 +1534,8 @@ wWhichPokemon::
 	ds 1
 
 ; cf93  
-; 0でないときは、表示しているリストのアイテム価格を表示する
+; PrintListMenuEntriesで利用  
+; 0でないときは、表示しているリストのアイテム価格を表示する  
 wPrintItemPrices::
 	ds 1
 
