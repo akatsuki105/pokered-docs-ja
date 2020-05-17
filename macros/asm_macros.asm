@@ -44,6 +44,7 @@ jpba: MACRO
 	jp Bankswitch
 ENDM
 
+; far jump
 jpab: MACRO
 	ld hl, \1
 	ld b, BANK(\1)

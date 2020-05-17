@@ -15,20 +15,24 @@
 ; - [wLoadedMon] = ポケモンのデータ
 ; - [wMonHeader] = ポケモンのbase stats
 LoadMonData_:
+	; 育て屋の場合は wDayCareMonSpecies にポケモンのIDが入っている
 	ld a, [wDayCareMonSpecies]
 	ld [wcf91], a
 	ld a, [wMonDataLocation]
 	cp DAYCARE_DATA
 	jr z, .GetMonHeader
 
+	; それらの場合は専用の関数を使って取得する
 	ld a, [wWhichPokemon]
 	ld e, a
 	callab GetMonSpecies
 
+; INPUT: [wcf91] = ポケモンのID
 .GetMonHeader
 	ld a, [wcf91]
 	ld [wd0b5], a ; input for GetMonHeader
 	call GetMonHeader
+	; TODO: wip
 
 	ld hl, wPartyMons
 	ld bc, wPartyMon2 - wPartyMon1

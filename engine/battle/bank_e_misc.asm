@@ -102,18 +102,31 @@ InitList:
 	ld [wItemPrices + 1], a
 	ret
 
-; get species of mon e in list [wMonDataLocation] for LoadMonData
+; ポケモンのIDの入ったリストから指定したインデックスのポケモンの種族を取得する
+;
+; INPUT: 
+; - [wMonDataLocation] = ポケモンのIDの入ったリストの種類
+; - e = リストのインデックス
+; 
+; OUTPUT: [wcf91] = ポケモンのID
 GetMonSpecies:
 	ld hl, wPartySpecies
+	; 自分のパーティ
 	ld a, [wMonDataLocation]
 	and a
 	jr z, .getSpecies
+	; 敵のパーティ
 	dec a
 	jr z, .enemyParty
+	; ボックス
 	ld hl, wBoxSpecies
 	jr .getSpecies
 .enemyParty
 	ld hl, wEnemyPartyMons
+
+; INPUT: 
+; - hl = ポケモンのIDのリスト
+; - e = リストのインデックス
 .getSpecies
 	ld d, 0
 	add hl, de

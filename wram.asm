@@ -2106,9 +2106,9 @@ wPredefBank:: ; d0b7
 
 wMonHeader:: ; d0b8
 
-wMonHIndex:: ; d0b8
-; In the ROM base stats data structure, this is the dex number, but it is
-; overwritten with the internal index number after the header is copied to WRAM.
+; d0b8  
+; 元は図鑑番号が入っているがポケモンヘッダがWRAMにコピーされたときはポケモンの内部番号(ポケモンID)が入る
+wMonHIndex::
 	ds 1
 
 wMonHBaseStats:: ; d0b9

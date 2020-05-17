@@ -545,22 +545,30 @@ GetwMoves::
 	ld a, [hl]
 	ret
 
-; copies the base stat data of a pokemon to wMonHeader
-; INPUT:
-; [wd0b5] = pokemon ID
+; **GetMonHeader**  
+; ポケモンのbase statを wMonHeader に格納する
+; INPUT: [wd0b5] = ポケモンID
 GetMonHeader::
+	; バンクスイッチ
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, BANK(BaseStats)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
 	push bc
 	push de
 	push hl
+
+	; wd11eを使うので元の値を退避
 	ld a, [wd11e]
 	push af
+
+	; [wd11e] = ポケモンのID
 	ld a, [wd0b5]
 	ld [wd11e], a
+
+	; ゆうれいやカブトプス、プテラの化石、ミュウは特別な処理
 	ld de, FossilKabutopsPic
 	ld b, $66 ; size of Kabutops fossil and Ghost sprites
 	cp FOSSIL_KABUTOPS ; Kabutops fossil
@@ -574,12 +582,18 @@ GetMonHeader::
 	jr z, .specialID
 	cp MEW
 	jr z, .mew
-	predef IndexToPokedex   ; convert pokemon ID in [wd11e] to pokedex number
+
+	; a = ポケモンの図鑑番号 - 1
+	predef IndexToPokedex
 	ld a, [wd11e]
 	dec a
+
+	; hl = ポケモンのbase stat
 	ld bc, MonBaseStatsEnd - MonBaseStats
 	ld hl, BaseStats
 	call AddNTimes
+
+	; wMonHeaderにbase statをコピー
 	ld de, wMonHeader
 	ld bc, MonBaseStatsEnd - MonBaseStats
 	call CopyData
@@ -599,8 +613,11 @@ GetMonHeader::
 	ld a, BANK(MewBaseStats)
 	call FarCopyData
 .done
+	; [wMonHIndex] = ポケモンID
 	ld a, [wd0b5]
 	ld [wMonHIndex], a
+
+	; 退避しておいた値を復帰
 	pop af
 	ld [wd11e], a
 	pop hl
