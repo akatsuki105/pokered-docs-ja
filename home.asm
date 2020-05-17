@@ -235,19 +235,18 @@ DrawHPBar::
 	ret
 
 
-; loads pokemon data from one of multiple sources to wLoadedMon
-; loads base stats to wMonHeader
-; INPUT:
-; [wWhichPokemon] = index of pokemon within party/box
-; [wMonDataLocation] = source
-; 00: player's party
-; 01: enemy's party
-; 02: current box
-; 03: daycare
-; OUTPUT:
-; [wcf91] = pokemon ID
-; wLoadedMon = base address of pokemon data
-; wMonHeader = base address of base stats
+; **LoadMonData**  
+; ポケモンのデータを複数のsourceの1つからwLoadedMonにロードし、ポケモンのbase statsをwMonHeaderにロードする
+; - - -  
+; 
+; INPUT:  
+; - [wWhichPokemon] = パーティやボックスのポケモンのインデックス
+; - [wMonDataLocation] = source (00: プレイヤーのパーティ/01: エネミーのパーティ/02: 現在のbox/03: 育て屋)
+; 
+; OUTPUT:  
+; - [wcf91] = pokemon ID
+; - wLoadedMon = base address of pokemon data
+; - wMonHeader = base address of base stats
 LoadMonData::
 	jpab LoadMonData_
 
@@ -1982,22 +1981,33 @@ PrintListMenuEntries::
 	ld a, BOX_DATA
 .next
 	ld [wMonDataLocation], a
+	
+	; b = 4 - [wWhichPokemon]
 	ld hl, wWhichPokemon
 	ld a, [hl]
 	ld b, a
 	ld a, $04
 	sub b
 	ld b, a
+
+	; [wWhichPokemon] = ポケモンのパーティ/ボックス内のインデックス
 	ld a, [wListScrollOffset]
 	add b
 	ld [hl], a
+
+	; 現在選択中のポケモンのデータを取得
 	call LoadMonData
+
+	; パーティのデータのとき -> .skipCopyingLevel
 	ld a, [wMonDataLocation]
 	and a ; is it a list of party pokemon or box pokemon?
 	jr z, .skipCopyingLevel
+
+	; 
 .copyLevel
 	ld a, [wLoadedMonBoxLevel]
 	ld [wLoadedMonLevel], a
+
 .skipCopyingLevel
 	pop hl
 	ld bc, $001c

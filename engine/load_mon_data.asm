@@ -1,12 +1,20 @@
+; **LoadMonData_**  
+; [wMonDataLocation]から[wWhichPokemon]で指定したポケモンのデータをロードする
+; - - -
+; 
+; INPUT:  
+; wWhichPokemon: wMonDataLocation内のポケモンのインデックス  
+; wMonDataLocation:  
+; - 0: パーティのポケモン
+; - 1: 敵のポケモン
+; - 2: ボックスのポケモン
+; - 3: 育て屋のポケモン
+; 
+; OUTPUT:  
+; - [wcf91] = ポケモンのID
+; - [wLoadedMon] = ポケモンのデータ
+; - [wMonHeader] = ポケモンのbase stats
 LoadMonData_:
-; Load monster [wWhichPokemon] from list [wMonDataLocation]:
-;  0: partymon
-;  1: enemymon
-;  2: boxmon
-;  3: daycaremon
-; Return monster id at wcf91 and its data at wLoadedMon.
-; Also load base stats at wMonHeader for convenience.
-
 	ld a, [wDayCareMonSpecies]
 	ld [wcf91], a
 	ld a, [wMonDataLocation]
