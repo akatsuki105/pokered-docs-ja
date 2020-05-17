@@ -1,6 +1,9 @@
+; **GetMachinePrice**  
+; 技マシンの価格を取得する  
+; - - -
+; INPUT: [wcf91] = 技マシンのアイテムID  
+; OUTPUT: [hItemPrice] = 技マシンの価格
 GetMachinePrice:
-; Input:  [wcf91] = Item Id of a TM
-; Output: Stores the TM price at hItemPrice
 	ld a, [wcf91] ; a contains TM item id
 	sub TM_01
 	ret c

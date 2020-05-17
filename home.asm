@@ -642,19 +642,20 @@ GetPartyMonName::
 	pop hl
 	ret
 
-; function to print a BCD (Binary-coded decimal) number
-; de = address of BCD number
-; hl = destination address
-; c = flags and length
-; bit 7: if set, do not print leading zeroes
-;        if unset, print leading zeroes
-; bit 6: if set, left-align the string (do not pad empty digits with spaces)
-;        if unset, right-align the string
-; bit 5: if set, print currency symbol at the beginning of the string
-;        if unset, do not print the currency symbol
-; bits 0-4: length of BCD number in bytes
+; **PrintBCDNumber**  
+; BCD数値を表示するための関数
+; - - -
+; 
+; INPUT:  
+; - de = BCD数値のアドレス  
+; - hl = 表示先のアドレス  
+; - c[7] = 1: print leading zeroes 0: print leading zeroes
+; - c[6] = 1: left-align the string (do not pad empty digits with spaces) 0: right-align the string 
+; - c[5] = 1: print currency symbol at the beginning of the string 0: do not print the currency symbol
+; - c[0:4] = length of BCD number in bytes
+; 
 ; Note that bits 5 and 7 are modified during execution. The above reflects
-; their meaning at the beginning of the functions's execution.
+; their meaning at the beginning of the functions's execution.  
 PrintBCDNumber::
 	ld b, c ; save flags in b
 	res 7, c
@@ -1873,7 +1874,7 @@ PrintListMenuEntries::
 	ld a, b
 	ld [wWhichPokemon], a
 
-	; [wd11e] = 現在画面一番上に表示されているアイテム
+	; [wd11e] = 現在画面一番上に表示されているアイテムのID
 	ld a, [de]
 	ld [wd11e], a
 
@@ -1944,27 +1945,35 @@ PrintListMenuEntries::
 	ld a, [wPrintItemPrices]
 	and a ; should prices be printed?
 	jr z, .skipPrintingItemPrice
-	
-	; リストのアイテムの価格を表示する
+
 .printItemPrice
+	; アイテム価格を取得
 	push hl
 	ld a, [de]
 	ld de, ItemPrices
 	ld [wcf91], a
 	call GetItemPrice ; get price
 	pop hl
-	ld bc, SCREEN_WIDTH + 5 ; 1 row down and 5 columns right
+	; 取得したアイテム価格を表示
+	ld bc, SCREEN_WIDTH + 5 ; アイテム名の 1行下,5列右 に価格を表示
 	add hl, bc
 	ld c, $a3 ; no leading zeroes, right-aligned, print currency symbol, 3 bytes
 	call PrintBCDNumber
+
 .skipPrintingItemPrice
+	; list menuがポケモン選択でない -> ポケモンのレベル表示処理をスキップ
 	ld a, [wListMenuID]
 	and a
 	jr nz, .skipPrintingPokemonLevel
+
+	; ポケモンのレベル表示処理
 .printPokemonLevel
-	ld a, [wd11e]
+	ld a, [wd11e] ; a = ポケモンのID
 	push af
 	push hl
+
+	; hl = wPartyCount
+	; a = ポケモンのデータが格納されている領域 = PLAYER_PARTY_DATA or BOX_DATA
 	ld hl, wPartyCount
 	ld a, [wListPointer]
 	cp l ; is it a list of party pokemon or box pokemon?
@@ -3576,8 +3585,8 @@ GetName::
 ; - - -  
 ; hItemPriceにBCDフォーマットのアイテム価格を格納する
 ;   
-; INPUT:  
-; - [wcf91] = アイテムID
+; INPUT: [wcf91] = アイテムID  
+; OUTPUT: de = hItemPriceのアドレス
 GetItemPrice::
 	; バンクを保存
 	ld a, [H_LOADEDROMBANK]
@@ -3608,13 +3617,14 @@ GetItemPrice::
 
 	; 通常のアイテム
 	; hl += 3*アイテムID (wItemPricesは各エントリが3バイトなので)
-	; TODO: wip
+	; アイテムIDは1から始まるのでhlはこのループ処理で次の該当アイテムの次のアイテムの価格を指すようになる
 	ld bc, $3
 .loop
 	add hl, bc
 	dec a
 	jr nz, .loop
 
+	; [hItemPrice] = アイテム価格
 	dec hl
 	ld a, [hld]
 	ld [hItemPrice + 2], a
@@ -3624,6 +3634,7 @@ GetItemPrice::
 	ld [hItemPrice], a
 	jr .done
 
+	; [hItemPrice] = 技マシン価格
 .getTMPrice
 	ld a, Bank(GetMachinePrice)
 	ld [H_LOADEDROMBANK], a

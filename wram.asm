@@ -1547,7 +1547,12 @@ wHPBarType:: ; cf94
 
 ; cf94  
 ; DisplayListMenuIDで使われるID  
-; constants/list_constants.asmのlist menu ID's以下のどれかを格納
+; list menu ID's以下のどれかを格納
+; - PCPOKEMONLISTMENU  EQU $00
+; - MOVESLISTMENU      EQU $01
+; - PRICEDITEMLISTMENU EQU $02
+; - ITEMLISTMENU       EQU $03
+; - SPECIALLISTMENU    EQU $04
 wListMenuID::
 	ds 1
 
