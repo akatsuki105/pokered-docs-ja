@@ -1788,50 +1788,63 @@ DisplayChooseQuantityMenu::
 .printPrice
 	ld c, $03
 	ld a, [wItemQuantity]
-	ld b, a
+	ld b, a	; bc = [wItemQuantity] : 03
 	ld hl, hMoney ; total price
 	
-	; initialize total price to 0
+	; [hMoney] = 0
 	xor a
 	ld [hli], a
 	ld [hli], a
 	ld [hl], a
 .addLoop ; loop to multiply the individual price by the quantity to get the total price
+	; hMoney = hMoney + hItemPrice
 	ld de, hMoney + 2
 	ld hl, hItemPrice + 2
 	push bc
-	predef AddBCDPredef ; add the individual price to the current sum
+	predef AddBCDPredef
 	pop bc
 	dec b
 	jr nz, .addLoop
+
+	; アイテムの値段を半分にする必要があるか？(プレイヤーが売るとき)
 	ld a, [hHalveItemPrices]
-	and a ; should the price be halved (for selling items)?
+	and a
 	jr z, .skipHalvingPrice
+
+	; プレイヤーが売るとき、値段を半分にする処理
 	xor a
 	ld [hDivideBCDDivisor], a
 	ld [hDivideBCDDivisor + 1], a
 	ld a, $02
 	ld [hDivideBCDDivisor + 2], a
-	predef DivideBCDPredef3 ; halves the price
-; store the halved price
+	predef DivideBCDPredef3 ; hDivideBCDQuotient = hMoney ÷ hDivideBCDBuffer  	
 	ld a, [hDivideBCDQuotient]
 	ld [hMoney], a
 	ld a, [hDivideBCDQuotient + 1]
 	ld [hMoney + 1], a
 	ld a, [hDivideBCDQuotient + 2]
 	ld [hMoney + 2], a
+
 .skipHalvingPrice
+	; スペーサーを表示(個数はまだ表示してないが、 個数 -> スペーサー -> 価格 となる配置にする)
 	coord hl, 12, 10
 	ld de, SpacesBetweenQuantityAndPriceText
 	call PlaceString
+
+	; 価格を表示
 	ld de, hMoney ; total price
 	ld c, $a3
 	call PrintBCDNumber
+
+	; 個数を表示するためのタイルアドレス
 	coord hl, 9, 10
+
+	; 個数を表示
 .printQuantity
 	ld de, wItemQuantity ; current quantity
 	lb bc, LEADING_ZEROES | 1, 2 ; 1 byte, 2 digits
 	call PrintNumber
+	; キー入力を待つ
 	jp .waitForKeyPressLoop
 .buttonAPressed ; the player chose to make the transaction
 	xor a
@@ -4632,13 +4645,12 @@ PrintText_NoCreatingTextBox::
 	coord bc, 1, 14
 	jp TextCommandProcessor
 
-
+; **PrintNumber**  
+; c桁かつbバイトの数値をdeに表示する
+; - - - 
+; 桁数は2-7桁の範囲で表示される 1桁を指定したときはPrintNumberを呼び出す代わりに先頭に0の文字を付ける  
+; フラグLEADING ZEROSおよびLEFT ALIGNは、それぞれbのビット7および6で指定できる
 PrintNumber::
-; Print the c-digit, b-byte value at de.
-; Allows 2 to 7 digits. For 1-digit numbers, add
-; the value to char "0" instead of calling PrintNumber.
-; Flags LEADING_ZEROES and LEFT_ALIGN can be given
-; in bits 7 and 6 of b respectively.
 	push bc
 	xor a
 	ld [H_PASTLEADINGZEROES], a

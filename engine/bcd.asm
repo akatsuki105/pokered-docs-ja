@@ -1,3 +1,6 @@
+; hDivideBCDQuotient = hMoney ÷ hDivideBCDBuffer  
+; - 『めのまえが まっくらに なった！』ときの所持金を半分にする処理
+; - プレイヤーが物を売るとき、売値を買値の半分にする処理
 DivideBCDPredef::
 DivideBCDPredef2::
 DivideBCDPredef3::
@@ -5,7 +8,8 @@ DivideBCDPredef4::
 	call GetPredefRegisters
 
 ; hDivideBCDQuotient = hMoney ÷ hDivideBCDBuffer  
-; 『めのまえが まっくらに なった！』ときの所持金を半分にする処理でのみ利用
+; - 『めのまえが まっくらに なった！』ときの所持金を半分にする処理
+; - プレイヤーが物を売るとき、売値を買値の半分にする処理
 DivideBCD::
 	xor a
 	ld [hDivideBCDBuffer], a
@@ -167,7 +171,8 @@ DivideBCD_getNextDigit:
 ; INPUT:  
 ; - c = BCD数値のサイズ
 ; - de = 対象のBCD数値のポインタ1 (nバイトある場合はnバイト目を指す)
-; - hl = 対象のBCD数値のポインタ2
+; - hl = 対象のBCD数値のポインタ2  
+; 
 ; OUTPUT: [de] = [de] + [hl] 
 AddBCDPredef::
 	call GetPredefRegisters
