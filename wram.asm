@@ -8,7 +8,7 @@ ENDM
 ; box_structのバイト長
 box_struct_length EQU 25 + NUM_MOVES * 2
 
-; ボックスのポケモン1匹のデータ構造  
+; ボックス内のポケモンが保持しているデータ
 box_struct: MACRO
 \1Species::    db
 \1HP::         dw
@@ -30,6 +30,7 @@ box_struct: MACRO
 \1PP::         ds NUM_MOVES
 ENDM
 
+; パーティ内のポケモンが保持しているデータ
 party_struct: MACRO
 	box_struct \1
 \1Level::      db
@@ -41,6 +42,7 @@ party_struct: MACRO
 \1Special::    dw
 ENDM
 
+; 戦闘中のポケモンが保持しているデータ
 battle_struct: MACRO
 \1Species::    db
 \1HP::         dw
