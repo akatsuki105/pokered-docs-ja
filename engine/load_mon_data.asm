@@ -32,14 +32,16 @@ LoadMonData_:
 	ld a, [wcf91]
 	ld [wd0b5], a ; input for GetMonHeader
 	call GetMonHeader
-	; TODO: wip
 
 	ld hl, wPartyMons
 	ld bc, wPartyMon2 - wPartyMon1
 	ld a, [wMonDataLocation]
+
+	; 自分のパーティのポケモン
 	cp ENEMY_PARTY_DATA
 	jr c, .getMonEntry
 
+	; 相手のパーティのポケモン
 	ld hl, wEnemyMons
 	jr z, .getMonEntry
 
@@ -51,10 +53,15 @@ LoadMonData_:
 	ld hl, wDayCareMon
 	jr .copyMonData
 
+; INPUT:
+; - a = どのポケモンがセレクトされているか
+; - hl = リストの先頭
+; - bc = リストの各エントリのサイズ
 .getMonEntry
 	ld a, [wWhichPokemon]
-	call AddNTimes
+	call AddNTimes	; hl = リストの対象のエントリ
 
+; 
 .copyMonData
 	ld de, wLoadedMon
 	ld bc, wPartyMon2 - wPartyMon1
