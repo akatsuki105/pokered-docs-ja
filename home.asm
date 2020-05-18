@@ -1701,31 +1701,44 @@ DisplayListMenuIDLoop::
 	dec [hl]
 	jp DisplayListMenuIDLoop
 
+; **DisplayChooseQuantityMenu**  
+; 個数を選択するメニューを表示
 DisplayChooseQuantityMenu::
-; text box dimensions/coordinates for just quantity
+	; メニューのテキストボックスの大きさを設定する
+	; PRICEDITEMLISTMENUでないなら個数を表示するメニューでok
 	coord hl, 15, 9
 	ld b, 1 ; height
 	ld c, 3 ; width
 	ld a, [wListMenuID]
 	cp PRICEDITEMLISTMENU
 	jr nz, .drawTextBox
-; text box dimensions/coordinates for quantity and price
+	
+	; PRICEDITEMLISTMENUは個数と価格を表示するメニューを表示する必要があるので大きめにする
 	coord hl, 7, 9
 	ld b, 1  ; height
 	ld c, 11 ; width
+
+	; テキストボックスを描画
 .drawTextBox
 	call TextBoxBorder
-	coord hl, 16, 10
+
+	; テキスト配置先のアドレスを決定
+	coord hl, 16, 10	; PRICEDITEMLISTMENUのとき
 	ld a, [wListMenuID]
 	cp PRICEDITEMLISTMENU
 	jr nz, .printInitialQuantity
-	coord hl, 8, 10
+	coord hl, 8, 10		; それ以外
+
+	; 個数のテキスト(×01)を表示
 .printInitialQuantity
 	ld de, InitialQuantityText
 	call PlaceString
+
+	; [wItemQuantity] = 0
 	xor a
-	ld [wItemQuantity], a ; initialize current quantity to 0
+	ld [wItemQuantity], a
 	jp .incrementQuantity
+
 .waitForKeyPressLoop
 	call JoypadLowSensitivity
 	ld a, [hJoyPressed] ; newly pressed buttons
@@ -1738,37 +1751,47 @@ DisplayChooseQuantityMenu::
 	bit 7, a ; was Down pressed?
 	jr nz, .decrementQuantity
 	jr .waitForKeyPressLoop
+
 .incrementQuantity
 	ld a, [wMaxItemQuantity]
 	inc a
-	ld b, a
-	ld hl, wItemQuantity ; current quantity
+	ld b, a						; b = [wMaxItemQuantity] + 1 = 指定できる最大の数 + 1
+	ld hl, wItemQuantity
 	inc [hl]
-	ld a, [hl]
+	ld a, [hl]					; a = [wItemQuantity] + 1 = 現在指定している個数+1
 	cp b
-	jr nz, .handleNewQuantity
-; wrap to 1 if the player goes above the max quantity
+	jr nz, .handleNewQuantity	; a != b => つまり現在指定している個数+1以上のアイテムを指定できる
+
+	; 現在指定している個数+1以上のアイテムを指定できないときは1に戻す
 	ld a, 1
 	ld [hl], a
 	jr .handleNewQuantity
 .decrementQuantity
 	ld hl, wItemQuantity ; current quantity
 	dec [hl]
-	jr nz, .handleNewQuantity
-; wrap to the max quantity if the player goes below 1
+	jr nz, .handleNewQuantity	; 指定している個数を1減らす
+
+	; 現在している個数-1が-1になるときは指定できる最大の数にする
 	ld a, [wMaxItemQuantity]
 	ld [hl], a
+
+	; INPUT:
+	; - [wItemQuantity] = 新しく指定することになる個数
 .handleNewQuantity
+	; PRICEDITEMLISTMENU でないときは個数のみを表示
 	coord hl, 17, 10
 	ld a, [wListMenuID]
 	cp PRICEDITEMLISTMENU
 	jr nz, .printQuantity
+
+	; PRICEDITEMLISTMENU のとき
 .printPrice
 	ld c, $03
 	ld a, [wItemQuantity]
 	ld b, a
 	ld hl, hMoney ; total price
-; initialize total price to 0
+	
+	; initialize total price to 0
 	xor a
 	ld [hli], a
 	ld [hli], a
@@ -2233,8 +2256,8 @@ TechnicalPrefix::
 HiddenPrefix::
 	db "HM"
 
-; sets carry if item is HM, clears carry if item is not HM
-; Input: a = item ID
+; アイテムがHMならcarryを立てる そうでないならcarryをクリア  
+; Input: a = アイテムID
 IsItemHM::
 	cp HM_01
 	jr c, .notHM

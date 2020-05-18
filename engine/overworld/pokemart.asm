@@ -106,9 +106,11 @@ DisplayPokemartDialogue_:
 	and a
 	jr nz, .unsellableItem
 
+	; アイテムがひでんマシン; 
 	ld a, [wcf91]
 	call IsItemHM
 	jr c, .unsellableItem
+
 	ld a, PRICEDITEMLISTMENU
 	ld [wListMenuID], a
 	ld [hHalveItemPrices], a ; halve prices when selling

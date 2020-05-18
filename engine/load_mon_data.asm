@@ -12,8 +12,8 @@
 ; 
 ; OUTPUT:  
 ; - [wcf91] = ポケモンのID
-; - [wLoadedMon] = ポケモンのデータ
-; - [wMonHeader] = ポケモンのbase stats
+; - [wLoadedMon] = Pokemon Data
+; - [wMonHeader] = Pokemon Header
 LoadMonData_:
 	; 育て屋の場合は wDayCareMonSpecies にポケモンのIDが入っている
 	ld a, [wDayCareMonSpecies]

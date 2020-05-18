@@ -42,7 +42,7 @@ init_player_data.asm | null
 intro.asm | null
 joypad.asm | null
 learn_move.asm | null
-load_mon_data.asm | null
+load_mon_data.asm | ポケモンのデータが必要な時にそれを取得する処理
 load_pokedex_tiles.asm | null
 mon_party_sprites.asm | null
 multiply_divide.asm | null
