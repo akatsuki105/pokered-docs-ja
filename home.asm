@@ -1457,12 +1457,15 @@ RemoveItemFromInventory::
 	ld [MBC1RomBank], a
 	ret
 
-; function to add an item (in varying quantities) to the player's bag or PC box  
+; **AddItemToInventory**  
+; アイテムをプレイヤーのバッグかPCボックスに追加する関数(個数は問わない)  
+; - - - 
+; 内部で AddItemToInventory_ を呼び出しているだけ  
+; 成功したときにはcarryをセット、失敗したときにはcarryをクリアする  
 ; INPUT:  
-; HL = address of inventory (either wNumBagItems or wNumBoxItems)  
-; [wcf91] = item ID  
-; [wItemQuantity] = item quantity  
-; sets carry flag if successful, unsets carry flag if unsuccessful  
+; - HL = インベントリのアドレス (wNumBagItems  or wNumBoxItems)  
+; - [wcf91] = アイテムID  
+; - [wItemQuantity] = アイテムの個数  
 AddItemToInventory::
 	push bc
 	ld a, [H_LOADEDROMBANK]

@@ -1,9 +1,12 @@
-; function to add an item (in varying quantities) to the player's bag or PC box
-; INPUT:
-; hl = address of inventory (either wNumBagItems or wNumBoxItems)
-; [wcf91] = item ID
-; [wItemQuantity] = item quantity
-; sets carry flag if successful, unsets carry flag if unsuccessful
+; **AddItemToInventory_**  
+; アイテムをプレイヤーのインベントリに追加する関数(個数は問わない)  
+; - - - 
+; AddItemToInventory の内部でのみ呼び出される処理
+; 成功したときにはcarryをセット、失敗したときにはcarryをクリアする  
+; INPUT:  
+; - hl = インベントリのアドレス (wNumBagItems  or wNumBoxItems)  
+; - [wcf91] = アイテムID  
+; - [wItemQuantity] = アイテムの個数  
 AddItemToInventory_:
 	ld a, [wItemQuantity] ; a = item quantity
 	push af
@@ -12,91 +15,138 @@ AddItemToInventory_:
 	push hl
 	push hl
 	ld d, PC_ITEM_CAPACITY ; how many items the PC can hold
+	
+	; PCbox ->  .checkIfInventoryFull
 	ld a, wNumBagItems & $FF
 	cp l
 	jr nz, .checkIfInventoryFull
 	ld a, wNumBagItems >> 8
 	cp h
 	jr nz, .checkIfInventoryFull
-; if the destination is the bag
+
+	; かばん
 	ld d, BAG_ITEM_CAPACITY ; how many items the bag can hold
+
+; インベントリが満タンか調べる  
+; INPUT:  
+; - a = アイテムの個数
+; - d = インベントリが持てるアイテムの最大種類数
+; - hl = wNumBagItems
 .checkIfInventoryFull
+	; d = [wNumBagItems] - (インベントリが持てるアイテムの最大種類数)
 	ld a, [hl]
 	sub d
 	ld d, a
-	ld a, [hli]
+	; [wNumBagItems] = 0 = インベントリが空 -> .addNewItem
+	ld a, [hli]	; a = wNumBagItems hl = wBagItems
 	and a
 	jr z, .addNewItem
+
+	; 同じアイテムがすでにインベントリにあるかチェック
 .loop
+	; インベントリに同じアイテムがすでにある -> .increaseItemQuantity
 	ld a, [hli]
-	ld b, a ; b = ID of current item in table
-	ld a, [wcf91] ; a = ID of item being added
-	cp b ; does the current item in the table match the item being added?
-	jp z, .increaseItemQuantity ; if so, increase the item's quantity
+	ld b, a			; b = インベントリで現在探索中のアイテムのID
+	ld a, [wcf91] 	; a = 追加したいアイテムのID
+	cp b
+	jp z, .increaseItemQuantity
+	; 次のエントリ
 	inc hl
 	ld a, [hl]
 	cp $ff ; is it the end of the table?
 	jr nz, .loop
-.addNewItem ; add an item not yet in the inventory
-	pop hl
+
+	; インベントリに同じ名前のアイテムがないとき  
+	; INPUT:  
+	; - a = wNumBagItems
+.addNewItem
+	pop hl ; hl = wNumBagItems
+
+	; インベントリが満タン -> .done
 	ld a, d
 	and a ; is there room for a new item slot?
 	jr z, .done
-; if there is room
-	inc [hl] ; increment the number of items in the inventory
-	ld a, [hl] ; the number of items will be the index of the new item
+
+	; インベントリに空きがある
+
+	; [wNumBagItems]++
+	inc [hl]
+	
+	; a = [wBagItems]の空きエントリのインデックス
+	ld a, [hl]
 	add a
 	dec a
+
+	; hl = [wBagItems]の空きエントリのアドレス
 	ld c, a
 	ld b, 0
-	add hl, bc ; hl = address to store the item
+	add hl, bc
+	
+	; インベントリにアイテムを追加(アイテムID, 個数, $ff)
 	ld a, [wcf91]
 	ld [hli], a ; store item ID
 	ld a, [wItemQuantity]
 	ld [hli], a ; store item quantity
 	ld [hl], $ff ; store terminator
+
 	jp .success
-.increaseItemQuantity ; increase the quantity of an item already in the inventory
+
+	; インベントリに同じ名前のアイテムが既にあるときはその個数を増やす  
+	; INPUT:  
+	; [hl] = 対象のアイテムのインベントリでの個数 
+	; d = [wNumBagItems] - (インベントリが持てるアイテムの最大種類数)
+.increaseItemQuantity
+	; a = インベントリの個数 + 新たに追加するアイテム数
 	ld a, [wItemQuantity]
 	ld b, a ; b = quantity to add
 	ld a, [hl] ; a = existing item quantity
 	add b ; a = new item quantity
+
+	; 追加後の個数が100未満 -> .storeNewQuantity
 	cp 100
-	jp c, .storeNewQuantity ; if the new quantity is less than 100, store it
-; if the new quantity is greater than or equal to 100,
-; try to max out the current slot and add the rest in a new slot
+	jp c, .storeNewQuantity
+
+	; 追加後の個数が100個以上になる場合
+	; 現在のアイテムスロットには99個入れ、新しいスロットに残りの個数を入れる
+
+	; [wItemQuantity] = a - 99 = 新しいアイテムスロットに入るアイテムの数
 	sub 99
-	ld [wItemQuantity], a ; a = amount left over (to put in the new slot)
+	ld [wItemQuantity], a
+
+	; アイテムスロットに空きがないなら失敗 -> .increaseItemQuantityFailed
 	ld a, d
-	and a ; is there room for a new item slot?
+	and a
 	jr z, .increaseItemQuantityFailed
-; if so, store 99 in the current slot and store the rest in a new slot
+
+	; 現在のアイテムスロットの個数を99個として、loopでアイテムスロットを探索する処理を次のアイテムスロットから再開する(新しい空きスロットに残りが入ることになる)
 	ld a, 99
 	ld [hli], a
 	jp .loop
+
 .increaseItemQuantityFailed
 	pop hl
-	and a
+	and a	; キャリーをクリア
 	jr .done
+	
 .storeNewQuantity
-	ld [hl], a
+	ld [hl], a ; アイテムの個数 = 新しいアイテムの個数
 	pop hl
 .success
-	scf
+	scf ; キャリーをセット
 .done
 	pop hl
 	pop de
 	pop bc
 	pop bc
 	ld a, b
-	ld [wItemQuantity], a ; restore the initial value from when the function was called
+	ld [wItemQuantity], a ; [wItemQuantity]を関数が呼ばれたときの値に戻す
 	ret
 
-; function to remove an item (in varying quantities) from the player's bag or PC box
-; INPUT:
-; hl = address of inventory (either wNumBagItems or wNumBoxItems)
-; [wWhichPokemon] = index (within the inventory) of the item to remove
-; [wItemQuantity] = quantity to remove
+; function to remove an item (in varying quantities) from the player's bag or PC box  
+; INPUT:  
+; - hl = address of inventory (either wNumBagItems or wNumBoxItems)  
+; - [wWhichPokemon] = index (within the inventory) of the item to remove  
+; - [wItemQuantity] = quantity to remove  
 RemoveItemFromInventory_:
 	push hl
 	inc hl
