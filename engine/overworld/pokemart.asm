@@ -98,7 +98,7 @@ DisplayPokemartDialogue_:
 	; プレイヤーがメニューを閉じたとき
 	jp c, .returnToMainPokemartMenu
 
-	; プレイヤーが特定のアイテムを売ろうとしたとき
+	; プレイヤーがかばんの特定のアイテムを売ろうとしたとき
 .confirmItemSale
 	; 売ろうとしたアイテムがたいせつなものかチェック
 	call IsKeyItem
@@ -111,30 +111,40 @@ DisplayPokemartDialogue_:
 	call IsItemHM
 	jr c, .unsellableItem
 
+	; 個数選択画面をプレイヤーに表示し入力(A/B)を待つ
 	ld a, PRICEDITEMLISTMENU
 	ld [wListMenuID], a
 	ld [hHalveItemPrices], a ; halve prices when selling
 	call DisplayChooseQuantityMenu
+
+	; Bボタン -> .sellMenuLoop
 	inc a
 	jr z, .sellMenuLoop ; if the player closed the choose quantity menu with the B button
+
+	; Aボタン -> アイテム売却を本当に行っていいか『はい/いいえ』の2択を表示
+	; 店員の買取テキストを表示
 	ld hl, PokemartTellSellPriceText
 	lb bc, 14, 1 ; location that PrintText always prints to, this is useless
 	call PrintText
+	; 『はい/いいえ』の2択を表示
 	coord hl, 14, 7
 	lb bc, 8, 15
 	ld a, TWO_OPTION_MENU
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; yes/no menu
+
 	ld a, [wMenuExitMethod]
+
+	; いいえ -> .sellMenuLoop
 	cp CHOSE_SECOND_ITEM
 	jr z, .sellMenuLoop ; if the player chose No or pressed the B button
-
-; The following code is supposed to check if the player chose No, but the above
-; check already catches it.
+	; 無駄なコード
 	ld a, [wChosenMenuItem]
 	dec a
 	jr z, .sellMenuLoop
 
+	; TODO: wip
+	; はい -> 
 .sellItem
 	ld a, [wBoughtOrSoldItemInMart]
 	and a

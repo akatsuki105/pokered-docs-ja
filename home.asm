@@ -1703,6 +1703,8 @@ DisplayListMenuIDLoop::
 
 ; **DisplayChooseQuantityMenu**  
 ; 個数を選択するメニューを表示
+; - - - 
+; OUTPUT: a = $00(Aボタン) or $ff(Bボタン)
 DisplayChooseQuantityMenu::
 	; メニューのテキストボックスの大きさを設定する
 	; PRICEDITEMLISTMENUでないなら個数を表示するメニューでok
@@ -1742,14 +1744,23 @@ DisplayChooseQuantityMenu::
 .waitForKeyPressLoop
 	call JoypadLowSensitivity
 	ld a, [hJoyPressed] ; newly pressed buttons
-	bit 0, a ; was the A button pressed?
+	
+	; Aボタン
+	bit 0, a
 	jp nz, .buttonAPressed
-	bit 1, a ; was the B button pressed?
+	
+	; Bボタン
+	bit 1, a
 	jp nz, .buttonBPressed
-	bit 6, a ; was Up pressed?
+	
+	; 上ボタン
+	bit 6, a
 	jr nz, .incrementQuantity
-	bit 7, a ; was Down pressed?
+	
+	; 下ボタン
+	bit 7, a
 	jr nz, .decrementQuantity
+	
 	jr .waitForKeyPressLoop
 
 .incrementQuantity
@@ -3725,55 +3736,74 @@ CopyString::
 	jr nz, CopyString
 	ret
 
-; this function is used when lower button sensitivity is wanted (e.g. menus)  
-; OUTPUT: [hJoy5] = pressed buttons in usual format  
-; there are two flags that control its functionality, [hJoy6] and [hJoy7]  
-; there are essentially three modes of operation  
-; 1. Get newly pressed buttons only
-;    ([hJoy7] == 0, [hJoy6] == any)
-;    Just copies [hJoyPressed] to [hJoy5].
-; 2. Get currently pressed buttons at low sample rate with delay
-;    ([hJoy7] == 1, [hJoy6] != 0)
-;    If the user holds down buttons for more than half a second,
-;    report buttons as being pressed up to 12 times per second thereafter.
-;    If the user holds down buttons for less than half a second,
-;    report only one button press.
-; 3. Same as 2, but report no buttons as pressed if A or B is held down.
-;    ([hJoy7] == 1, [hJoy6] == 0)
+; lower button sensitivityが必要なときに利用される関数(メニューなど)  
+; OUTPUT: [hJoy5] = 押されたボタン(いつものフォーマット)  
+; [hJoy6], [hJoy7]によってこの関数の挙動を制御することができる  
+; 
+; この関数には3種類の挙動が存在する  
+; 1. ([hJoy7] == 0, [hJoy6] == any) -> 新たに押されたボタンだけを取得する。
+;    [hJoyPressed]を[hJoy5]に単純にコピー
+; 2. ([hJoy7] == 1, [hJoy6] != 0) -> 現在押されているボタンを低いサンプルレートで遅延して取得する
+;    ユーザーがボタンを0.5秒以上押し続けた場合、その後ボタンが1秒あたり最大12回押されたと報告する
+;    ユーザーがボタンを0.5秒より短い時間押し続けた場合、ボタンが1度だけ押されたと報告する
+; 3. ([hJoy7] == 1, [hJoy6] == 0) -> 2と同じだが、A,Bボタンが押されている場合はどのボタンも押されていないと報告する
 JoypadLowSensitivity::
 	call Joypad
+
+	; [hJoy7] == 1 -> a = [hJoyHeld]
+	; [hJoy7] == 0 -> a = [hJoyPressed]
 	ld a, [hJoy7] ; flag
 	and a ; get all currently pressed buttons or only newly pressed buttons?
 	ld a, [hJoyPressed] ; newly pressed buttons
 	jr z, .storeButtonState
 	ld a, [hJoyHeld] ; all currently pressed buttons
 .storeButtonState
+	; [hJoy5] = [hJoyPressed] or [hJoyHeld]
 	ld [hJoy5], a
+
+	; 新たに押されたボタンがない -> .noNewlyPressedButtons
 	ld a, [hJoyPressed] ; newly pressed buttons
 	and a ; have any buttons been newly pressed since last check?
 	jr z, .noNewlyPressedButtons
+
+	; 新たに押されたボタンがある -> 0.5秒だけ遅延するようにしてリターン
 .newlyPressedButtons
 	ld a, 30 ; half a second delay
 	ld [H_FRAMECOUNTER], a
 	ret
+
+	; 新たに押されたボタンがない
 .noNewlyPressedButtons
+	; 遅延状態が終わっている -> .delayOver
 	ld a, [H_FRAMECOUNTER]
 	and a ; is the delay over?
 	jr z, .delayOver
+	
+	; 遅延中のときはキー入力(hJoy5)を0クリアしてリターン
 .delayNotOver
 	xor a
 	ld [hJoy5], a ; report no buttons as pressed
 	ret
+
+	; 遅延中でない
 .delayOver
-; if [hJoy6] = 0 and A or B is pressed, report no buttons as pressed
+	; [hJoy6] == 0 && A/Bが押されている => どのボタンも押されていないことにする
+	
+	; A/Bが押されていない -> .setShortDelay
 	ld a, [hJoyHeld]
 	and A_BUTTON | B_BUTTON
 	jr z, .setShortDelay
+
+	; [hJoy6] == 1 -> .setShortDelay
 	ld a, [hJoy6] ; flag
 	and a
 	jr nz, .setShortDelay
+	
+	; キー入力をリセット
 	xor a
 	ld [hJoy5], a
+
+	; 5フレーム(1/12秒)遅延するように
 .setShortDelay
 	ld a, 5 ; 1/12 of a second delay
 	ld [H_FRAMECOUNTER], a
