@@ -143,9 +143,9 @@ DisplayPokemartDialogue_:
 	dec a
 	jr z, .sellMenuLoop
 
-	; TODO: wip
-	; はい -> 
+	; はい
 .sellItem
+	; [wBoughtOrSoldItemInMart] = 1
 	ld a, [wBoughtOrSoldItemInMart]
 	and a
 	jr nz, .skipSettingFlag1

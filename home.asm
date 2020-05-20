@@ -1421,10 +1421,10 @@ CountSetBits::
 SubtractAmountPaidFromMoney::
 	jpba SubtractAmountPaidFromMoney_
 
-; adds the amount the player sold to their money
+; プレイヤーがアイテムを売却して得たお金を自分の所持金に加える処理
 AddAmountSoldToMoney::
 	ld de, wPlayerMoney + 2
-	ld hl, $ffa1 ; total price of items
+	ld hl, $ffa1 ; ffa1 = hMoney + 2
 	ld c, 3 ; length of money in bytes
 	predef AddBCDPredef ; add total price to money
 	ld a, MONEY_BOX
