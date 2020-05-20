@@ -70,6 +70,7 @@ DisplayPokemartDialogue_:
 	; この状態のBGマップをバックアップ
 	call SaveScreenTilesToBuffer1 ; save screen
 
+	; 売るアイテムを選択させる画面
 .sellMenuLoop
 	call LoadScreenTilesFromBuffer1 ; restore saved screen
 	
@@ -152,10 +153,11 @@ DisplayPokemartDialogue_:
 	inc a
 	ld [wBoughtOrSoldItemInMart], a
 .skipSettingFlag1
+	; 売却処理(売却額だけ所持金を増やして、アイテムを減らす)
 	call AddAmountSoldToMoney
 	ld hl, wNumBagItems
 	call RemoveItemFromInventory
-	jp .sellMenuLoop
+	jp .sellMenuLoop	; 売り物選択に戻る
 .unsellableItem
 	ld hl, PokemartUnsellableItemText
 	call PrintText
@@ -165,67 +167,92 @@ DisplayPokemartDialogue_:
 	call PrintText
 	call SaveScreenTilesToBuffer1
 	jp .returnToMainPokemartMenu
-.buyMenu
 
-; the same variables are set again below, so this code has no effect
+	; buyを選んだ時
+.buyMenu
+	; 変数を初期化しているが下で初期化の有無にかかわらずこれらの変数に値が設定されるのでこれは無駄な処理
 	ld a, 1
 	ld [wPrintItemPrices], a
 	ld a, INIT_OTHER_ITEM_LIST
 	ld [wInitListType], a
 	callab InitList
 
+	; buy選択時のテキストを表示
 	ld hl, PokemartBuyingGreetingText
 	call PrintText
+	; .buyMenuLoopが処理の起点なのでスクリーン情報を退避
 	call SaveScreenTilesToBuffer1
 .buyMenuLoop
 	call LoadScreenTilesFromBuffer1
+	
+	; 所持金を表示 
 	ld a, MONEY_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID
+
+	; wListPointerがwItemListを指すようにする
 	ld hl, wItemList
 	ld a, l
 	ld [wListPointer], a
 	ld a, h
 	ld [wListPointer + 1], a
+
+	; [wCurrentMenuItem] = 0
 	xor a
 	ld [wCurrentMenuItem], a
+	; [wPrintItemPrices] = 1
 	inc a
 	ld [wPrintItemPrices], a
+
+	; 店の売り物一覧メニューを表示する
 	inc a ; a = 2 (PRICEDITEMLISTMENU)
 	ld [wListMenuID], a
 	call DisplayListMenuID
-	jr c, .returnToMainPokemartMenu ; if the player closed the menu
+
+	jr c, .returnToMainPokemartMenu ; プレイヤーがメニューを閉じた
+
+	; プレイヤーに個数選択メニューを表示して入力を待つ
 	ld a, 99
 	ld [wMaxItemQuantity], a
 	xor a
 	ld [hHalveItemPrices], a ; don't halve item prices when buying
 	call DisplayChooseQuantityMenu
+
+	; Bボタン -> .buyMenuLoop
 	inc a
 	jr z, .buyMenuLoop ; if the player closed the choose quantity menu with the B button
+
+	; Aボタン
+	
+	; 購入確認のテキスト
 	ld a, [wcf91] ; item ID
 	ld [wd11e], a ; store item ID for GetItemName
 	call GetItemName
-	call CopyStringToCF4B ; copy name to wcf4b
+	call CopyStringToCF4B ; [wcf4b] = アイテム名
 	ld hl, PokemartTellBuyPriceText
 	call PrintText
+
+	; 『はい/いいえ』の2択を表示
 	coord hl, 14, 7
 	lb bc, 8, 15
 	ld a, TWO_OPTION_MENU
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; yes/no menu
+	; いいえ ->  .buyMenuLoop
 	ld a, [wMenuExitMethod]
 	cp CHOSE_SECOND_ITEM
-	jp z, .buyMenuLoop ; if the player chose No or pressed the B button
-
-; The following code is supposed to check if the player chose No, but the above
-; check already catches it.
+	jp z, .buyMenuLoop
+	; 無駄なコード
 	ld a, [wChosenMenuItem]
 	dec a
 	jr z, .buyMenuLoop
 
+	; はい -> アイテムの購入処理
 .buyItem
+	; 所持金が足りない
 	call .isThereEnoughMoney
 	jr c, .notEnoughMoney
+
 	ld hl, wNumBagItems
 	call AddItemToInventory
 	jr nc, .bagFull
@@ -242,6 +269,8 @@ DisplayPokemartDialogue_:
 	ld hl, PokemartBoughtItemText
 	call PrintText
 	jp .buyMenuLoop
+	
+	; かいにきた/うりにきた/べつにいいです のメニューに戻る
 .returnToMainPokemartMenu
 	call LoadScreenTilesFromBuffer1
 	ld a, MONEY_BOX
@@ -250,6 +279,7 @@ DisplayPokemartDialogue_:
 	ld hl, PokemartAnythingElseText
 	call PrintText
 	jp .loop
+
 .isThereEnoughMoney
 	ld de, wPlayerMoney
 	ld hl, hMoney
@@ -273,6 +303,7 @@ DisplayPokemartDialogue_:
 	ld [wListScrollOffset], a
 	ret
 
+; 『ゆっくり ごらんになって ください』
 PokemartBuyingGreetingText:
 	TX_FAR _PokemartBuyingGreetingText
 	db "@"
@@ -313,6 +344,7 @@ PokemartThankYouText:
 	TX_FAR _PokemartThankYouText
 	db "@"
 
+; 『そのほかに わたくしどもで おちからに なれることは？』
 PokemartAnythingElseText:
 	TX_FAR _PokemartAnythingElseText
 	db "@"

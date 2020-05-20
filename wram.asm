@@ -1510,7 +1510,8 @@ wGymCityName:: ; cf5f
 wGymLeaderName:: ; cf70
 	ds NAME_LENGTH
 
-wItemList:: ; cf7b
+; cf7b
+wItemList::
 	ds 16
 
 ; cf8b  
@@ -2427,7 +2428,8 @@ wPokedexSeen::
 wPokedexSeenEnd::
 
 ; d31d  
-; バッグのアイテム数 
+; バッグのアイテム数  
+; バッグのインベントリのポインタとしても使われる
 wNumBagItems::
 	ds 1
 

@@ -1421,15 +1421,21 @@ CountSetBits::
 SubtractAmountPaidFromMoney::
 	jpba SubtractAmountPaidFromMoney_
 
-; プレイヤーがアイテムを売却して得たお金を自分の所持金に加える処理
+; プレイヤーがアイテムを売却して得たお金を自分の所持金に加える処理  
+; INPUT: [hMoney] = 売却額
 AddAmountSoldToMoney::
+	; 所持金 += 売却額
 	ld de, wPlayerMoney + 2
-	ld hl, $ffa1 ; ffa1 = hMoney + 2
-	ld c, 3 ; length of money in bytes
-	predef AddBCDPredef ; add total price to money
+	ld hl, hMoney + 2 ;  売却するアイテム額
+	ld c, 3 ; 所持金は3バイトのBCD数値
+	predef AddBCDPredef
+
+	; 所持金額が変わったので所持金を表示するテキストボックスを再描画
 	ld a, MONEY_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; redraw money text box
+
+	; 売却時のサウンド(チャリン音)
 	ld a, SFX_PURCHASE
 	call PlaySoundWaitForCurrent
 	jp WaitForSoundToFinish
@@ -1451,12 +1457,12 @@ RemoveItemFromInventory::
 	ld [MBC1RomBank], a
 	ret
 
-; function to add an item (in varying quantities) to the player's bag or PC box
-; INPUT:
-; HL = address of inventory (either wNumBagItems or wNumBoxItems)
-; [wcf91] = item ID
-; [wItemQuantity] = item quantity
-; sets carry flag if successful, unsets carry flag if unsuccessful
+; function to add an item (in varying quantities) to the player's bag or PC box  
+; INPUT:  
+; HL = address of inventory (either wNumBagItems or wNumBoxItems)  
+; [wcf91] = item ID  
+; [wItemQuantity] = item quantity  
+; sets carry flag if successful, unsets carry flag if unsuccessful  
 AddItemToInventory::
 	push bc
 	ld a, [H_LOADEDROMBANK]
@@ -1704,7 +1710,10 @@ DisplayListMenuIDLoop::
 ; **DisplayChooseQuantityMenu**  
 ; 個数を選択するメニューを表示
 ; - - - 
-; OUTPUT: a = $00(Aボタン) or $ff(Bボタン)
+; 
+; OUTPUT:
+; - a = $00(Aボタン) or $ff(Bボタン)
+; - [wItemQuantity] = 売却個数
 DisplayChooseQuantityMenu::
 	; メニューのテキストボックスの大きさを設定する
 	; PRICEDITEMLISTMENUでないなら個数を表示するメニューでok
