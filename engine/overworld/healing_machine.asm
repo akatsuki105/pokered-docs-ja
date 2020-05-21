@@ -1,20 +1,28 @@
 AnimateHealingMachine:
+	; 回復マシンの稼働アニメーションを流す
 	ld de, PokeCenterFlashingMonitorAndHealBall
 	ld hl, vChars0 + $7c0
 	lb bc, BANK(PokeCenterFlashingMonitorAndHealBall), $03 ; loads one too many tiles
 	call CopyVideoData
+
+	; スプライトを無効化
 	ld hl, wUpdateSpritesEnabled
 	ld a, [hl]
 	push af
 	ld [hl], $ff
 	push hl
+
+	; [rOBP1] = $e0 = 11 10 00 00
 	ld a, [rOBP1]
 	push af
 	ld a, $e0
 	ld [rOBP1], a
+
+	; 回復時のスプライト(モニターとモンスターボール)を表示する
 	ld hl, wOAMBuffer + $84
 	ld de, PokeCenterOAMData
 	call CopyHealingMachineOAM
+
 	ld a, 4
 	ld [wAudioFadeOutControl], a
 	ld a, $ff
