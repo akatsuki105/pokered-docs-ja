@@ -1,5 +1,5 @@
 ; **IncrementDayCareMonExp**  
-; 
+; - - -  
 ; 育て屋のポケモンの経験値をインクリメントする処理
 IncrementDayCareMonExp:
 	; 育て屋にポケモンがいないなら何もしない

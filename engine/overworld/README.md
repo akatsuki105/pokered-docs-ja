@@ -18,7 +18,7 @@ daycare_exp.asm | 育て屋のポケモンの経験値をインクリメント�
 doors.asm | ドアタイルから強制的に下に歩かせる処理
 elevator.asm | エレベータを揺らす処理       
 emotion_bubbles.asm | !マークなどの感情を表す吹き出しを表示させる処理
-field_move_messages.asm | null
+field_move_messages.asm | かいりきのテキストや、波乗りができない水辺のテキスト
 healing_machine.asm | null
 hidden_items.asm | 隠しアイテム取得の処理
 hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する処理
