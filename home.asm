@@ -947,6 +947,7 @@ INCLUDE "home/timer.asm"
 INCLUDE "home/audio.asm"
 
 
+; **UpdateSprites**  
 ; マップに表示されているスプライトの状態を更新する
 UpdateSprites::
 	; wUpdateSpritesEnabledが$00か$ffのときは何もしない

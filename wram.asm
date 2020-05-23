@@ -1597,16 +1597,13 @@ wTileInFrontOfPlayer:: ; cfc6
 ; background tile number in front of the player (either 1 or 2 steps ahead)
 	ds 1
 
-wAudioFadeOutControl:: ; cfc7
-; The desired fade counter reload value is stored here prior to calling
-; PlaySound in order to cause the current music to fade out before the new
-; music begins playing. Storing 0 causes no fade out to occur and the new music
-; to begin immediately.
-; This variable has another use related to fade-out, as well. PlaySound stores
-; the sound ID of the music that should be played after the fade-out is finished
-; in this variable. FadeOutAudio checks if it's non-zero every V-Blank and
-; fades out the current audio if it is. Once it has finished fading out the
-; audio, it zeroes this variable and starts playing the sound ID stored in it.
+; cfc7  
+; PlaySoundを呼び出す前に`desired fade counter reload value`をここに格納する(新しいBGMを流すため現在のBGMをfade-outさせる目的)  
+; ここに0を格納するとfade-outせず、すぐに次のBGMの再生が始まる  
+; この変数はfade-outが起きた後に再生されるBGMのSound IDを格納するという利用法もある  
+; `FadeOutAudio`はVBlankが来るたびにこの値が0でないかチェックし、0でないなら現在のBGMをfade-outさせる  
+; BGMのfade-outが終了すると、この変数を0クリアして格納されたSound IDに対応するBGMの再生を始める  
+wAudioFadeOutControl::
 	ds 1
 
 wAudioFadeOutCounterReloadValue:: ; cfc8
