@@ -1,14 +1,22 @@
 ApplyOutOfBattlePoisonDamage:
+	; a[7] = 1 -> .noBlackOut
 	ld a, [wd730]
 	add a
 	jp c, .noBlackOut ; no black out if joypad states are being simulated
+
+	; パーティのポケモン数が0(オーキドからポケモンをもらっていない) -> .noBlackOut
 	ld a, [wPartyCount]
 	and a
 	jp z, .noBlackOut
+
 	call IncrementDayCareMonExp
+
+	; [wStepCounter]が0より大きい -> .noBlackOut
 	ld a, [wStepCounter]
-	and $3 ; is the counter a multiple of 4?
-	jp nz, .noBlackOut ; only apply poison damage every fourth step
+	and $3
+	jp nz, .noBlackOut
+
+	; ここ以降の処理は[wStepCounter]が0のとき、つまり4歩ごとにしか毒ダメージの処理は実行されない
 	ld [wWhichPokemon], a
 	ld hl, wPartyMon1Status
 	ld de, wPartySpecies
