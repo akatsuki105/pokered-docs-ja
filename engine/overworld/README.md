@@ -19,7 +19,7 @@ doors.asm | ドアタイルから強制的に下に歩かせる処理
 elevator.asm | エレベータを揺らす処理       
 emotion_bubbles.asm | !マークなどの感情を表す吹き出しを表示させる処理
 field_move_messages.asm | かいりきのテキストや、波乗りができない水辺のテキスト
-healing_machine.asm | null
+healing_machine.asm | 回復マシンの稼働時のアニメーション+サウンド処理
 hidden_items.asm | 隠しアイテム取得の処理
 hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する処理
 is_player_just_outside_map.asm | null
@@ -30,7 +30,7 @@ map_sprite_functions1.asm | null
 missable_objects.asm | null
 movement.asm | null
 npc_movement.asm | null
-oaks_aide.asm | null
+oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を行う
 oam.asm | null
 pewter_guys.asm | ニビシティの強制連行イベント処理  
 player_animations.asm | null

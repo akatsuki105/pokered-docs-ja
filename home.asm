@@ -1379,14 +1379,15 @@ RepelWoreOffText::
 
 INCLUDE "engine/menu/start_menu.asm"
 
-; function to count how many bits are set in a string of bytes
+; **CountSetBits**  
 ; 文字列の各バイトのうち何ビットがセットされているかカウントする関数
+; - - -  
+; INPUT:  
+; hl = 文字列の先頭アドレス  
+; b = 文字列の長さ  
 ; 
-; INPUT:
-; hl = 文字列の先頭アドレス
-; b = 文字列の長さ
-; OUTPUT:
-; [wNumSetBits] = セットされたビットの数
+; OUTPUT:  
+; [wNumSetBits] = セットされたビットの数  
 CountSetBits::
 	ld c, 0
 ; 文字列の各文字に対するループ
@@ -5044,11 +5045,10 @@ ReloadMapSpriteTilePatterns::
 	call LoadFontTilePatterns
 	jp UpdateSprites
 
-
+; **GiveItem**  
+; bで指定したアイテムをC個プレイヤーに渡し、渡したアイテムの名前をwcf4bに格納する  
+; 成功時にはキャリーを立てる  
 GiveItem::
-; Give player quantity c of item b,
-; and copy the item's name to wcf4b.
-; Return carry on success.
 	ld a, b
 	ld [wd11e], a
 	ld [wcf91], a

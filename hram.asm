@@ -287,7 +287,7 @@ hDexRatingNumMonsOwned EQU $FFDC
 ; $FF = player cancelled
 hOaksAideResult       EQU $FFDB
 
-hOaksAideRequirement  EQU $FFDB ; required number of owned mons
+hOaksAideRequirement  EQU $FFDB ; つかまえた数として要求されている数
 hOaksAideRewardItem   EQU $FFDC
 hOaksAideNumMonsOwned EQU $FFDD
 
