@@ -1347,11 +1347,13 @@ DisplaySafariGameOverText::
 	callab PrintSafariGameOverText
 	jp AfterDisplayingTextID
 
+; "<POKEMON> fainted!"というテキストを表示する
 DisplayPokemonFaintedText::
 	ld hl, PokemonFaintedText
 	call PrintText
 	jp AfterDisplayingTextID
 
+; "<POKEMON> fainted!"
 PokemonFaintedText::
 	TX_FAR _PokemonFaintedText
 	db "@"
@@ -4656,17 +4658,19 @@ HandleDownArrowBlinkTiming::
 ; for a button press after displaying text (unless [wEnteringCableClub] is set).
 ; 以下のコードは`DisplayTextID`によるテキストボックスの自動的な描画を有効化/無効化をする処理
 
+; `DisplayTextID`によるテキストボックスの自動的な描画を有効化
 EnableAutoTextBoxDrawing::
 	xor a
 	jr AutoTextBoxDrawingCommon
 
+; `DisplayTextID`によるテキストボックスの自動的な描画を無効化
 DisableAutoTextBoxDrawing::
 	ld a, $01
 
 ; **AutoTextBoxDrawingCommon**  
 ; - - -  
 ; 自動で会話が進むテキスト
-; INPUT: a = 
+; INPUT: a = 0(無効化) or 1(有効化)
 AutoTextBoxDrawingCommon::
 	ld [wAutoTextBoxDrawingControl], a
 	xor a

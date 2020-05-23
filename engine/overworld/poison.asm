@@ -20,65 +20,100 @@ ApplyOutOfBattlePoisonDamage:
 	ld [wWhichPokemon], a
 	ld hl, wPartyMon1Status
 	ld de, wPartySpecies
+
+	; パーティのポケモンを1匹ずつ見ていって処理をする
 .applyDamageLoop
+	; 毒状態じゃない -> .nextMon2
 	ld a, [hl]
 	and (1 << PSN)
-	jr z, .nextMon2 ; not poisoned
+	jr z, .nextMon2
+
+	; hl = wPartyMon1HP
 	dec hl
 	dec hl
+
+	; HP=0 つまり ひん死 -> .nextMon
 	ld a, [hld]
 	ld b, a
-	ld a, [hli]
+	ld a, [hli]	; hl = HPの下位バイト
 	or b
-	jr z, .nextMon ; already fainted
-; subtract 1 from HP
+	jr z, .nextMon
+
+	; HPから1引く処理
+	; HPの下位バイトから1引く
 	ld a, [hl]
 	dec a
+	; 1引く前のHPの下位バイトが0より大きい -> .noBorrow
 	ld [hld], a
 	inc a
 	jr nz, .noBorrow
-; borrow 1 from upper byte of HP
+	; 1引く前のHPの下位バイトが0だったときは上位バイトを1減らして -> .nextMon
 	dec [hl]
-	inc hl
+	inc hl ; hl = wPartyMon1HP[1]
 	jr .nextMon
+
 .noBorrow
+	; 毒ダメージを食らったがひん死になってはいない -> .nextMon
 	ld a, [hli]
 	or [hl]
-	jr nz, .nextMon ; didn't faint from damage
-; the mon fainted from the damage
-	push hl
+	jr nz, .nextMon
+
+	; 毒ダメージでひん死になった(a = 0) 
+	
+	push hl ; hl = wPartyMon1HP[1]
+
+	; [wPartyMon1Status] = 0
 	inc hl
 	inc hl
 	ld [hl], a
+
+	; [wd11e] = [wPartySpecies]
 	ld a, [de]
 	ld [wd11e], a
-	push de
+
+	push de ; de = wPartySpecies
+	
+	; [wcd6d] = ひん死になったポケモンのニックネーム
 	ld a, [wWhichPokemon]
 	ld hl, wPartyMonNicks
 	call GetPartyMonName
+
+	; すべてのキー入力を無効に
 	xor a
 	ld [wJoyIgnore], a
+
 	call EnableAutoTextBoxDrawing
+	
+	; "<POKEMON> fainted!"というテキストを表示する
 	ld a, TEXT_MON_FAINTED
 	ld [hSpriteIndexOrTextID], a
 	call DisplayTextID
+
 	pop de
 	pop hl
 .nextMon
 	inc hl
-	inc hl
+	inc hl ; hl = wPartyMon${N}Status
 .nextMon2
+	; [wPartySpecies+1] == 0xff -> パーティを全部見た -> .applyDamageLoopDone
 	inc de
 	ld a, [de]
 	inc a
 	jr z, .applyDamageLoopDone
+
+	; hl = wPartyMon${N+1}Status
 	ld bc, wPartyMon2 - wPartyMon1
 	add hl, bc
 	push hl
+
+	; [wWhichPokemon]++
 	ld hl, wWhichPokemon
 	inc [hl]
+
 	pop hl
-	jr .applyDamageLoop
+
+	jr .applyDamageLoop ; 次のポケモンへ
+	
 .applyDamageLoopDone
 	ld hl, wPartyMon1Status
 	ld a, [wPartyCount]
