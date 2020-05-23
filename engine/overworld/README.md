@@ -35,7 +35,7 @@ oam.asm | null
 pewter_guys.asm | ニビシティの強制連行イベント処理  
 player_animations.asm | null
 player_state.asm | null
-poison.asm | null
+poison.asm | マップ上で歩いているときに毒ダメージを与える処理 
 pokecenter.asm | null
 pokemart.asm | null
 push_boulder.asm | null

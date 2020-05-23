@@ -1,3 +1,5 @@
+; **ApplyOutOfBattlePoisonDamage**  
+; マップ上で歩いているときに毒ダメージを与える処理  
 ApplyOutOfBattlePoisonDamage:
 	; a[7] = 1 -> .noBlackOut
 	ld a, [wd730]
