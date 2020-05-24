@@ -308,10 +308,13 @@ PokemartBuyingGreetingText:
 	TX_FAR _PokemartBuyingGreetingText
 	db "@"
 
+; 『<ITEM>ですね <PRICE>円に なりますが？』
 PokemartTellBuyPriceText:
 	TX_FAR _PokemartTellBuyPriceText
 	db "@"
 
+; 『はい どうぞ まいど ありがとう ございます』
+; "Here you are! Thank you!"
 PokemartBoughtItemText:
 	TX_FAR _PokemartBoughtItemText
 	db "@"
@@ -340,6 +343,7 @@ PokemartUnsellableItemText:
 	TX_FAR _PokemartUnsellableItemText
 	db "@"
 
+; 『ありがとう ございました』
 PokemartThankYouText:
 	TX_FAR _PokemartThankYouText
 	db "@"
