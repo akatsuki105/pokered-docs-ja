@@ -3140,14 +3140,14 @@ wd72d::
 
 ; d72e  
 ; 様々なフラグ管理のためのメモリ  
-; bit 0: シルフコーポレーションでラプラス受け取りイベントを済ませているか  
-; bit 1: 様々な場所で立っているフラグだが、用途は不明  
-; bit 2: 一度でもポケモンセンターを利用したか  
-; bit 3: オーキド博士からポケモンを受け取ったか  
-; bit 4: disable battles
-; bit 5: set when a battle ends and when the player blacks out in the overworld due to poison
-; bit 6: using the link feature
-; bit 7: NPCのプログラム動作が初期化されているときに立つ  
+; - bit 0: シルフコーポレーションでラプラス受け取りイベントを済ませているか  
+; - bit 1: 様々な場所で立っているフラグだが、用途は不明  
+; - bit 2: 一度でもポケモンセンターを利用したか  
+; - bit 3: オーキド博士からポケモンを受け取ったか  
+; - bit 4: disable battles
+; - bit 5: 戦闘終了時またはマップ上で毒によってパーティが全滅したときにセットされる
+; - bit 6: using the link feature
+; - bit 7: NPCのプログラム動作が初期化されているときに立つ  
 wd72e::
 	ds 1
 

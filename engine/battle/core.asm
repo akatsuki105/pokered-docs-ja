@@ -1539,8 +1539,10 @@ TrainerSentOutText:
 	TX_FAR _TrainerSentOutText
 	db "@"
 
-; tests if the player has any pokemon that are not fainted
-; sets d = 0 if all fainted, d != 0 if some mons are still alive
+; **AnyPartyAlive**  
+; プレイヤーのポケモンの内、ひん死でないポケモンがいるかチェックする関数  
+; - - -  
+; OUTPUT: d = 0(全員ひん死) or n(n != 0 ひん死でないポケモンがいる)  
 AnyPartyAlive:
 	ld a, [wPartyCount]
 	ld e, a

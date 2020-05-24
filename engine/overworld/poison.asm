@@ -1,5 +1,7 @@
 ; **ApplyOutOfBattlePoisonDamage**  
 ; マップ上で歩いているときに毒ダメージを与える処理  
+; - - -  
+; OUTPUT: a = 0xff(毒ダメージでパーティが全滅) or 0x00(何もなし)
 ApplyOutOfBattlePoisonDamage:
 	; a[7] = 1 -> .noBlackOut
 	ld a, [wd730]
@@ -119,39 +121,56 @@ ApplyOutOfBattlePoisonDamage:
 .applyDamageLoopDone
 	ld hl, wPartyMon1Status
 	ld a, [wPartyCount]
-	ld d, a
+	ld d, a ; d = [wPartyCount]
 	ld e, 0
 .countPoisonedLoop
+	; e = パーティのだれかが毒状態なら e > 0
 	ld a, [hl]
 	and (1 << PSN)
 	or e
 	ld e, a
+
+	; hl = wPartyMon${N}Status -> wPartyMon${N+1}Status
 	ld bc, wPartyMon2 - wPartyMon1
 	add hl, bc
+
+	; パーティを全部見た
 	dec d
 	jr nz, .countPoisonedLoop
+
+	; だれも毒状態になっていない -> .skipPoisonEffectAndSound
 	ld a, e
 	and a ; are any party members poisoned?
 	jr z, .skipPoisonEffectAndSound
+
+	; だれかが毒状態のとき
+	; 毒のエフェクト(画面フラッシュ&サウンド)を出す
 	ld b, $2
 	predef ChangeBGPalColor0_4Frames ; change BG white to dark grey for 4 frames
 	ld a, SFX_POISONED
 	call PlaySound
+
 .skipPoisonEffectAndSound
+	; パーティにひん死でないポケモンがいる -> .noBlackOut 
 	predef AnyPartyAlive
 	ld a, d
 	and a
 	jr nz, .noBlackOut
+
+	; パーティが全員ひん死 なので『めのまえが まっくらに なった！』処理をする
 	call EnableAutoTextBoxDrawing
 	ld a, TEXT_BLACKED_OUT
 	ld [hSpriteIndexOrTextID], a
 	call DisplayTextID
+
+	; wd72e[5] = 1
 	ld hl, wd72e
 	set 5, [hl]
+
 	ld a, $ff
 	jr .done
 .noBlackOut
 	xor a
 .done
-	ld [wOutOfBattleBlackout], a
+	ld [wOutOfBattleBlackout], a ; a = 0xff(全滅) or 0x00(生存)
 	ret

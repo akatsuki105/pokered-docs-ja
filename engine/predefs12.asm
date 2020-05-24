@@ -1,4 +1,7 @@
-; b = new colour for BG colour 0 (usually white) for 4 frames
+; **ChangeBGPalColor0_4Frames**  
+; - - -  
+; 4フレームの間、背景パレットのパレット番号0をレジスタbで指定した色に変更する  
+; 毒状態のマップエフェクトで利用  
 ChangeBGPalColor0_4Frames:
 	call GetPredefRegisters
 	ld a, [rBGP]
