@@ -546,8 +546,10 @@ GetwMoves::
 	ret
 
 ; **GetMonHeader**  
-; ポケモンのbase statを wMonHeader に格納する
-; INPUT: [wd0b5] = ポケモンID
+; ポケモンの Pokemon Header を wMonHeader に格納する  
+; - - -  
+; Pokemon Headerについてはドキュメント参照  
+; INPUT: [wd0b5] = ポケモンID  
 GetMonHeader::
 	; バンクスイッチ
 	ld a, [H_LOADEDROMBANK]
@@ -5066,8 +5068,14 @@ GiveItem::
 	scf
 	ret
 
+; **GivePokemon**  
+; プレイヤーにレベルcのポケモンbを与える  
+; - - -  
+; 
+; OUTPUT:  
+; - carry = 0(失敗) or 1(成功)
+; - [wAddedToParty] = ポケモンがBoxではなく手持ちに入ったかどうか
 GivePokemon::
-; Give the player monster b at level c.
 	ld a, b
 	ld [wcf91], a
 	ld a, c

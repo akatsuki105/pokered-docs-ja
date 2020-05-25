@@ -1,21 +1,40 @@
+; **_GivePokemon**  
+; プレイヤーにレベルcのポケモンbを与える  
+; - - -  
+; 
+; OUTPUT:  
+; - carry = 0(失敗) or 1(成功)
+; - [wAddedToParty] = ポケモンがBoxではなく手持ちに入ったかどうか
 _GivePokemon:
-; returns success in carry
-; and whether the mon was added to the party in [wAddedToParty]
 	call EnableAutoTextBoxDrawing
+	
+	; [wAddedToParty] = 0
 	xor a
 	ld [wAddedToParty], a
+
+	; 手持ちに空きスロットがある -> .addToParty
 	ld a, [wPartyCount]
 	cp PARTY_LENGTH
 	jr c, .addToParty
+	
+	; PCBoxも満杯 -> .boxFull
 	ld a, [wNumInBox]
 	cp MONS_PER_BOX
 	jr nc, .boxFull
-; add to box
+
+	; PCBoxに空きがあるのでPCBoxにポケモンを加える
+	
+	; [wEnemyBattleStatus3] = 0
 	xor a
 	ld [wEnemyBattleStatus3], a
+
+	; [wEnemyMonSpecies2] = [wcf91]
 	ld a, [wcf91]
 	ld [wEnemyMonSpecies2], a
+
+	; TODO
 	callab LoadEnemyMonData
+
 	call SetPokedexOwnedFlag
 	callab SendNewMonToBox
 	ld hl, wcf4b
@@ -40,7 +59,7 @@ _GivePokemon:
 .boxFull
 	ld hl, BoxIsFullText
 	call PrintText
-	and a
+	and a ; キャリーをクリア
 	ret
 .addToParty
 	call SetPokedexOwnedFlag
@@ -68,15 +87,18 @@ SetPokedexOwnedFlag:
 	ld hl, GotMonText
 	jp PrintText
 
+; "<PLAYER> got <POKEMON>!"
 GotMonText:
 	TX_FAR _GotMonText
 	TX_SFX_ITEM_1
 	db "@"
 
+; "There's no more room for #MON! <POKEMON> was sent to #MON BOX N on PC!"
 SetToBoxText:
 	TX_FAR _SetToBoxText
 	db "@"
 
+; "There's no more room for #MON! The #MON BOX is full and can't accept any more! Change the BOX at a #MON CENTER!"
 BoxIsFullText:
 	TX_FAR _BoxIsFullText
 	db "@"

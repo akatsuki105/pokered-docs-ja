@@ -2692,28 +2692,43 @@ IsKeyItem_:
 INCLUDE "data/key_items.asm"
 
 SendNewMonToBox:
+	; [wNumInBox]++
 	ld de, wNumInBox
 	ld a, [de]
 	inc a
 	ld [de], a
+	
+	; [wd0b5] = [wcf91]
 	ld a, [wcf91]
 	ld [wd0b5], a
-	ld c, a
+	ld c, a ; c = [wcf91]
+
+; INPUT: c = wBoxSpecies[N] 
 .asm_e7b1
+	; a = wBoxSpecies[N+1] 
 	inc de
 	ld a, [de]
+
+	; a = wBoxSpecies[N]
+	; c = wBoxSpecies[N+1]
 	ld b, a
-	ld a, c
+	ld a, c 
 	ld c, b
-	ld [de], a
+	ld [de], a ; wBoxSpecies[N] = wBoxSpecies[N] 
+
+	; wBoxSpecies[N] != $ff -> .asm_e7b1
 	cp $ff
 	jr nz, .asm_e7b1
+	
 	call GetMonHeader
+
 	ld hl, wBoxMonOT
 	ld bc, NAME_LENGTH
+	
 	ld a, [wNumInBox]
 	dec a
 	jr z, .asm_e7ee
+
 	dec a
 	call AddNTimes
 	push hl
