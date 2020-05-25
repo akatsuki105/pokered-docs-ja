@@ -1,22 +1,24 @@
+; **HealParty**  
+; HPとPPを回復する  
 HealParty:
-; Restore HP and PP.
-
 	ld hl, wPartySpecies
 	ld de, wPartyMon1HP
 .healmon
+	; パーティ全部の回復が終わった -> .done
 	ld a, [hli]
 	cp $ff
 	jr z, .done
 
-	push hl
-	push de
+	push hl ; hl = wPartyMon${N}HP
+	push de ; de = 
 
+	; [hl] =  [wPartyMon1Status] = 0
 	ld hl, wPartyMon1Status - wPartyMon1HP
 	add hl, de
 	xor a
 	ld [hl], a
 
-	push de
+	push de	; de = 
 	ld b, NUM_MOVES ; A Pokémon has 4 moves
 .pp
 	ld hl, wPartyMon1Moves - wPartyMon1HP
