@@ -36,11 +36,14 @@ DisplayPokemonCenterDialogue_:
 	ld hl, NeedYourPokemonText
 	call PrintText
 
+	; 稼働アニメーションを流してポケモンの回復処理を行う
 	ld a, $18
 	ld [wSpriteStateData1 + $12], a ; make the nurse turn to face the machine
 	call Delay3
 	predef HealParty
 	callba AnimateHealingMachine ; do the healing machine animation
+
+	; ポケモンセンターのBGMに戻す(回復アニメーションでBGMが変わるので)
 	xor a
 	ld [wAudioFadeOutControl], a
 	ld a, [wAudioSavedROMBank]
@@ -49,16 +52,22 @@ DisplayPokemonCenterDialogue_:
 	ld [wLastMusicSoundID], a
 	ld [wNewSoundID], a
 	call PlaySound
+
+	; 『おまちどうさまでした！ おあずかりした ポケモンは みんな げんきに なりましたよ！』
 	ld hl, PokemonFightingFitText
 	call PrintText
+	
+	; ジョーイさんにお辞儀をさせる
 	ld a, $14
 	ld [wSpriteStateData1 + $12], a ; make the nurse bow
 	ld c, a
 	call DelayFrames
+
 	jr .done
 .declinedHealing
 	call LoadScreenTilesFromBuffer1 ; restore screen
 .done
+	; 『またの ごりようを おまちしてます！』
 	ld hl, PokemonCenterFarewellText
 	call PrintText
 	jp UpdateSprites
@@ -81,11 +90,13 @@ NeedYourPokemonText:
 	TX_FAR _NeedYourPokemonText
 	db "@"
 
+; 『おまちどうさまでした！ おあずかりした ポケモンは みんな げんきに なりましたよ！』  
 ; "Thank you! Your #MON are fighting fit!"
 PokemonFightingFitText:
 	TX_FAR _PokemonFightingFitText
 	db "@"
 
+; 『またの ごりようを おまちしてます！』  
 ; "We hope to see you again!"
 PokemonCenterFarewellText:
 	TX_DELAY
