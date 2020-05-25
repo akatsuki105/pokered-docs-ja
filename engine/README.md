@@ -29,7 +29,7 @@ gamefreak.asm | null
 get_bag_item_quantity.asm | null
 give_pokemon.asm | null
 hall_of_fame.asm | null
-heal_party.asm | null
+heal_party.asm | ポケモンのHPとPPを回復させる
 hidden_object_functions3.asm | null
 hidden_object_functions7.asm | null
 hidden_object_functions14.asm | null

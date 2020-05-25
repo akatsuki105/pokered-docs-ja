@@ -2413,11 +2413,14 @@ GotOffBicycleText:
 	TX_FAR _GotOffBicycleText2
 	db "@"
 
-; restores bonus PP (from PP Ups) when healing at a pokemon center
-; also, when a PP Up is used, it increases the current PP by one PP Up bonus
-; INPUT:
-; [wWhichPokemon] = index of pokemon in party
-; [wCurrentMenuItem] = index of move (when using a PP Up)
+; **RestoreBonusPP**  
+; ポケモンセンターでの回復時にPPにPPアップで増やしたPPを追加する処理  
+; - - -  
+; PPアップが使われたときに現在のPPをPPアップで増加するPP分増やす処理を行うときにも利用される  
+; 
+; INPUT:  
+; [wWhichPokemon] = index of pokemon in party  
+; [wCurrentMenuItem] = index of move (when using a PP Up)  
 RestoreBonusPP:
 	ld hl, wPartyMon1Moves
 	ld bc, wPartyMon2 - wPartyMon1

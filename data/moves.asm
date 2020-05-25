@@ -1,5 +1,17 @@
+; **Moves**  
+; 各技のデータのテーブル
+; - - - 
+; テーブルのエントリのインデックス = constants/move_constants.asmで定義された技のID  
+; 各エントリは次のマクロで定義される(つまり1エントリ6バイト)  
+; move: macro  
+; 	db \1 ; アニメーションID  
+; 	db \2 ; エフェクトID  
+; 	db \3 ; 威力  
+; 	db \4 ; タイプ  
+; 	db \5 ; 命中率  
+; 	db \6 ; PP  
+; endm  
 Moves:
-; Characteristics of each move.
 
 move: macro
 	db \1 ; animation (interchangeable with move id)
