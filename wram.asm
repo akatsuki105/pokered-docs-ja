@@ -3332,9 +3332,12 @@ wDayCareMon:: box_struct wDayCareMon ; da5f
 wMainDataEnd::
 
 
+; wNumInBoxとwBoxSpeciesでlistを形成している
 wBoxDataStart::
 
-wNumInBox::  ds 1 ; da80
+; da80  
+; ボックスに入っているポケモンの数 e.g. 2匹- > 2
+wNumInBox::  ds 1
 wBoxSpecies:: ds MONS_PER_BOX + 1
 
 wBoxMons::

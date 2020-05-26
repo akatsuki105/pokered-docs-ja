@@ -2724,35 +2724,57 @@ SendNewMonToBox:
 
 	ld hl, wBoxMonOT
 	ld bc, NAME_LENGTH
-	
 	ld a, [wNumInBox]
-	dec a
+	dec a ; a = [wNumInBox]-1
 	jr z, .asm_e7ee
 
-	dec a
+	; hl = ボックスの最後から2番目のポケモンの名前のポインタ(.asm_e7dbの準備)
+	dec a ; a = [wNumInBox]-2
 	call AddNTimes
+
 	push hl
+
+	; de = ボックスの最後のポケモンの名前のポインタ(.asm_e7dbの準備)
 	ld bc, NAME_LENGTH
 	add hl, bc
 	ld d, h
 	ld e, l
+
 	pop hl
+
+	; b = [wNumInBox]-1
 	ld a, [wNumInBox]
 	dec a
 	ld b, a
+
+	; ボックスの名前スロットの名前を1つ下のスロットにずらす  
+	; ループはスロットの最後から先頭に向かっていく
+	; INPUT:  
+	; hl = ずらし元(現在処理中のスロット)
+	; de = ずらし先(1つ下のスロット)
 .asm_e7db
 	push bc
 	push hl
+
+	; ボックスの最後のポケモンの名前スロット に ボックスの最後から2番目のポケモンの名前 をコピー
 	ld bc, NAME_LENGTH
 	call CopyData
+	
 	pop hl
+
+	; de = 次のループでのずらし先(=今のスロット)
 	ld d, h
 	ld e, l
+	
+	; hl = 1つ上のスロットへ
 	ld bc, -NAME_LENGTH
 	add hl, bc
+
+	; 次のループへ
 	pop bc
 	dec b
 	jr nz, .asm_e7db
+
 .asm_e7ee
 	ld hl, wPlayerName
 	ld de, wBoxMonOT
