@@ -1559,9 +1559,10 @@ wHPBarType:: ; cf94
 wListMenuID::
 	ds 1
 
-wRemoveMonFromBox:: ; cf95
+; cf95  
 ; if non-zero, RemovePokemon will remove the mon from the current box,
 ; else it will remove the mon from the party
+wRemoveMonFromBox::
 
 wMoveMonType:: ; cf95
 ; 0 = move from box to party
@@ -2387,10 +2388,14 @@ wPlayerName:: ; d158
 
 wPartyDataStart::
 
+; d163  
+; 現在の手持ちの数  
+; 直下のwPartySpeciesと合わせてlist(各エントリ1バイト)を形成している  
 wPartyCount::   ds 1 ; d163
 wPartySpecies:: ds PARTY_LENGTH ; d164
 wPartyEnd::     ds 1 ; d16a
 
+; 手持ちのポケモンのPokemon Dataのリスト(要素数6)
 wPartyMons::
 wPartyMon1:: party_struct wPartyMon1 ; d16b
 wPartyMon2:: party_struct wPartyMon2 ; d197
@@ -3331,12 +3336,13 @@ wDayCareMon:: box_struct wDayCareMon ; da5f
 
 wMainDataEnd::
 
-
+; da80  
 ; wNumInBoxとwBoxSpeciesでlistを形成している
 wBoxDataStart::
 
 ; da80  
-; ボックスに入っているポケモンの数 e.g. 2匹- > 2
+; ボックスに入っているポケモンの数 e.g. 2匹- > 2  
+; 直下のwBoxSpeciesと合わせてlist(各エントリ1バイト)を形成している
 wNumInBox::  ds 1
 wBoxSpecies:: ds MONS_PER_BOX + 1
 

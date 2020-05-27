@@ -3958,13 +3958,17 @@ PrintLetterDelay::
 	pop hl
 	ret
 
-; Copies [hl, bc) to [de, bc - hl).
-; In other words, the source data is from hl up to but not including bc,
-; and the destination is de.
+; **CopyDataUntil**  
+; [hl, bc) -> [de, de+(bc - hl) )にコピーする  
+; - - -  
+; hlからbc-1までをdeにコピーする
 CopyDataUntil::
+	; [de] = [hl] && hl++,de++
 	ld a, [hli]
 	ld [de], a
 	inc de
+	
+	; hl+1 == bcになるまで続ける
 	ld a, h
 	cp b
 	jr nz, CopyDataUntil
@@ -3973,10 +3977,14 @@ CopyDataUntil::
 	jr nz, CopyDataUntil
 	ret
 
-; Function to remove a pokemon from the party or the current box.
-; wWhichPokemon determines the pokemon.
-; [wRemoveMonFromBox] == 0 specifies the party.
-; [wRemoveMonFromBox] != 0 specifies the current box.
+; **RemovePokemon**  
+; 手持ちか、現在のPCBoxから指定したポケモンを逃がす(削除する)関数  
+; - - -  
+; INPUT:  
+; wWhichPokemon = どのポケモンが対象か  
+; 
+; OUTPUT:  
+; [wRemoveMonFromBox] = 0(手持ちから逃がす) or 1(PCBoxから逃がす)
 RemovePokemon::
 	jpab _RemovePokemon
 
