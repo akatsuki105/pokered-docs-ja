@@ -1,15 +1,27 @@
+; **UsedCut**  
+; いあいぎりを使用したときの処理
 UsedCut:
+	; 失敗したときの値で結果を入れる変数(wActionResultOrTookBattleTurn)を初期化
 	xor a
-	ld [wActionResultOrTookBattleTurn], a ; initialise to failure value
+	ld [wActionResultOrTookBattleTurn], a
+
+	; タイルセットが OVERWORLD -> .overworld
 	ld a, [wCurMapTileset]
 	and a ; OVERWORLD
 	jr z, .overworld
+
+	; タイルセットが GYM でない -> .nothingToCut
 	cp GYM
 	jr nz, .nothingToCut
+
+	; タイルセットが GYM のときに 目の前のタイルが居合切りできるタイルではない -> .nothingToCut
 	ld a, [wTileInFrontOfPlayer]
 	cp $50 ; gym cut tree
 	jr nz, .nothingToCut
+
 	jr .canCut
+
+; タイルセットが OVERWORLD のときに目の前のタイルが居合切り可能なタイルなら -> .canCut
 .overworld
 	dec a
 	ld a, [wTileInFrontOfPlayer]
@@ -17,23 +29,33 @@ UsedCut:
 	jr z, .canCut
 	cp $52 ; grass
 	jr z, .canCut
+
+; 目の前のタイルが居合切り可能なタイルでないときは、その旨のテキストを表示して処理を終える
 .nothingToCut
 	ld hl, .NothingToCutText
 	jp PrintText
 
+; "There isn't anything to CUT!"
 .NothingToCutText
 	TX_FAR _NothingToCutText
 	db "@"
 
 .canCut
-	ld [wCutTile], a
+	ld [wCutTile], a ; [wCutTile] = [wTileInFrontOfPlayer]
+
+	; [wActionResultOrTookBattleTurn] = 1
 	ld a, 1
 	ld [wActionResultOrTookBattleTurn], a ; used cut
+
+	; 居合切りの際に、ポケモンの名前をテキストとして出すので名前(ニックネーム)を取得する
 	ld a, [wWhichPokemon]
 	ld hl, wPartyMonNicks
 	call GetPartyMonName
+
+	; テキスト遅延フラグをセット
 	ld hl, wd730
 	set 6, [hl]
+
 	call GBPalWhiteOutWithDelay3
 	call ClearSprites
 	call RestoreScreenTilesAndReloadTilePatterns

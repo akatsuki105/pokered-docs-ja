@@ -57,6 +57,7 @@ EnableLCD::
 	ld [rLCDC], a
 	ret
 
+; wOAMBufferを全部0でクリアする
 ClearSprites::
 	xor a
 	ld hl, wOAMBuffer
@@ -4980,6 +4981,7 @@ IsInRestOfArray::
 
 RestoreScreenTilesAndReloadTilePatterns::
 	call ClearSprites
+	; スプライトの表示を有効化
 	ld a, $1
 	ld [wUpdateSpritesEnabled], a
 	call ReloadMapSpriteTilePatterns
@@ -4989,6 +4991,7 @@ RestoreScreenTilesAndReloadTilePatterns::
 	jr Delay3
 
 
+; GBPalWhiteOut -> 3フレーム待機 -> GBPalNormal
 GBPalWhiteOutWithDelay3::
 	call GBPalWhiteOut
 
@@ -4999,16 +5002,18 @@ Delay3::
 	ld c, 3
 	jp DelayFrames
 
+; BGPとOBP0を通常のパレットデータに戻す  
+; [rBGP] = %11100100  
+; [rOBP0] = %11010000  
 GBPalNormal::
-; Reset BGP and OBP0.
 	ld a, %11100100 ; 3210
 	ld [rBGP], a
 	ld a, %11010000 ; 3100
 	ld [rOBP0], a
 	ret
 
+; すべてのパレットを白一色にする
 GBPalWhiteOut::
-; White out all palettes.
 	xor a
 	ld [rBGP], a
 	ld [rOBP0], a
@@ -5039,8 +5044,7 @@ GetHealthBarColor::
 	ld [hl], d
 	ret
 
-; Copy the current map's sprites' tile patterns to VRAM again after they have
-; been overwritten by other tile patterns.
+; 何かしらの処理で別のタイルパターンで上書きされたVRAMに対して現在のマップのスプライトデータを再びコピーするための関数
 ReloadMapSpriteTilePatterns::
 	ld hl, wFontLoaded
 	ld a, [hl]
