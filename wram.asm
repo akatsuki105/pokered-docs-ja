@@ -2395,7 +2395,7 @@ wPartyCount::   ds 1 ; d163
 wPartySpecies:: ds PARTY_LENGTH ; d164
 wPartyEnd::     ds 1 ; d16a
 
-; 手持ちのポケモンのPokemon Dataのリスト(要素数6)
+; 手持ちのポケモンのPokemon Dataのテーブル(要素数6)
 wPartyMons::
 wPartyMon1:: party_struct wPartyMon1 ; d16b
 wPartyMon2:: party_struct wPartyMon2 ; d197

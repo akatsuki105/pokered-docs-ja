@@ -6,6 +6,9 @@ _RemovePokemon:
 	and a
 	jr z, .asm_7b74
 	ld hl, wNumInBox
+
+; まずはポケモンIDのリストを上に1つずつずらす
+
 .asm_7b74
 	; hl(wPartyCount or wNumInBox)を1減らす
 	ld a, [hl]
@@ -58,6 +61,8 @@ _RemovePokemon:
 	ld [hl], $ff
 	ret
 
+; 次はニックネームを格納している配列を上にずらす
+
 .asm_7ba6
 	; de = 削除対象のポケモンの名前文字列のポインタ
 	ld d, h
@@ -76,7 +81,9 @@ _RemovePokemon:
 .asm_7bb8
 	call CopyDataUntil
 
-	; (hl, bc) = (wPartyMons, wPartyMon2 - wPartyMon1) or (wBoxMons, wBoxMon2 - wBoxMon1) = (Pokemon Dataの配列, 配列の各エントリのサイズ)
+; 次はPokemon Dataを格納しているlistを上にずらす
+
+	; (hl, bc) = (wPartyMons, wPartyMon2 - wPartyMon1) or (wBoxMons, wBoxMon2 - wBoxMon1) = (Pokemon Dataのテーブルの先頭エントリ, 配列の各エントリのサイズ)
 	ld hl, wPartyMons
 	ld bc, wPartyMon2 - wPartyMon1
 	ld a, [wRemoveMonFromBox]
@@ -92,10 +99,10 @@ _RemovePokemon:
 	ld d, h
 	ld e, l
 
+; (hl, bc) = (deの次のエントリ, 名前の文字列データを保持する配列の先頭のポインタ)
 	ld a, [wRemoveMonFromBox]
 	and a
 	jr z, .asm_7be4
-
 	ld bc, wBoxMon2 - wBoxMon1
 	add hl, bc
 	ld bc, wBoxMonOT
@@ -104,25 +111,43 @@ _RemovePokemon:
 	ld bc, wPartyMon2 - wPartyMon1
 	add hl, bc
 	ld bc, wPartyMonOT
+
+; Pokemon Dataのテーブルの内容を1つ上にずらす
+; INPUT:  
+; hl = Pokemon Dataのテーブルの1つ下のエントリ  
+; de = Pokemon Dataのテーブルのエントリ 
+; bc = 名前の文字列データを保持する配列の先頭のポインタ  
 .asm_7beb
 	call CopyDataUntil
+
+; 次はニックネームのエントリを上にずらす
+
+	; hl = wPartyMonNicks or wBoxMonNicks
 	ld hl, wPartyMonNicks
 	ld a, [wRemoveMonFromBox]
 	and a
 	jr z, .asm_7bfa
 	ld hl, wBoxMonNicks
+
 .asm_7bfa
+	; de = 削除対象のポケモンの名前エントリ
 	ld bc, NAME_LENGTH
 	ld a, [wWhichPokemon]
 	call AddNTimes
 	ld d, h
 	ld e, l
+
+	; hl = 削除対象のポケモンの次の名前エントリ 
 	ld bc, NAME_LENGTH
 	add hl, bc
-	ld bc, wPokedexOwned
+
+	; bc = wPokedexOwned or wBoxMonNicksEnd
+	ld bc, wPokedexOwned 
 	ld a, [wRemoveMonFromBox]
 	and a
 	jr z, .asm_7c15
 	ld bc, wBoxMonNicksEnd
+
+	; 名前エントリをずらす
 .asm_7c15
 	jp CopyDataUntil
