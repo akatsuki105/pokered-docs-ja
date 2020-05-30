@@ -1188,9 +1188,11 @@ wSlotMachineFlags:: ; cd4c
 wSlotMachineWheel1SlipCounter:: ; cd4d
 ; wheel 1 can "slip" while this is non-zero
 
-wCutTile:: ; cd4d
-; $3d = tree tile
-; $52 = grass tile
+; cd4d  
+; いあいぎりで切る対象を格納する  
+; $3d = 木のタイル  
+; $52 = 草のタイル  
+wCutTile::
 	ds 1
 
 wSlotMachineWheel2SlipCounter:: ; cd4e
@@ -1218,8 +1220,10 @@ wSlotMachineBet:: ; cd50
 
 wSavedPlayerFacingDirection:: ; cd50
 
-wWhichAnimationOffsets:: ; cd50
-; 0 = cut animation, 1 = boulder dust animation
+; cd50  
+; 0 = いあいぎりアニメーション時に設定  
+; 1 = かいりきの土埃アニメーション時に設定  
+wWhichAnimationOffsets::
 	ds 9
 
 wTradedEnemyMonOTID:: ; cd59

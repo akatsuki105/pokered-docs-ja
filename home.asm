@@ -3483,6 +3483,9 @@ UncompressSpriteFromDE::
 	ld [hl], d
 	jp UncompressSpriteData
 
+; **SaveScreenTilesToBuffer2**  
+; - - -  
+; wTileMap の画面データを wTileMapBackup2 に移す  
 SaveScreenTilesToBuffer2::
 	coord hl, 0, 0
 	ld de, wTileMapBackup2

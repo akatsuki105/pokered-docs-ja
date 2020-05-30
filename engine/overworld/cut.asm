@@ -66,19 +66,33 @@ UsedCut:
 	ld [hWY], a
 	
 	call Delay3
+
+	; overworldのタイルデータを wTileMapBackup2 に退避
 	call LoadGBPal
 	call LoadCurrentMapView
 	call SaveScreenTilesToBuffer2
+	
 	call Delay3
+
+	; ウィンドウ表示を有効化 
 	xor a
 	ld [hWY], a
+
+	; "<POKEMON> hacked away with CUT!"
 	ld hl, UsedCutText
 	call PrintText
+
+	; 退避したoverworldのタイルデータを復帰
 	call LoadScreenTilesFromBuffer2
+
+	; テキスト遅延を無効化
 	ld hl, wd730
 	res 6, [hl]
+	
+	; スプライトの更新を無効化
 	ld a, $ff
 	ld [wUpdateSpritesEnabled], a
+
 	call InitCutAnimOAM
 	ld de, CutTreeBlockSwaps
 	call ReplaceTreeTileBlock
@@ -93,19 +107,27 @@ UsedCut:
 	call UpdateSprites
 	jp RedrawMapView
 
+; "<POKEMON> hacked away with CUT!"
 UsedCutText:
 	TX_FAR _UsedCutText
 	db "@"
 
 InitCutAnimOAM:
+	; [wWhichAnimationOffsets] = 0
 	xor a
 	ld [wWhichAnimationOffsets], a
+
+	; 
 	ld a, %11100100
 	ld [rOBP1], a
+
+	; 切る対象のタイルID = $52 -> .grass
 	ld a, [wCutTile]
 	cp $52
 	jr z, .grass
-; tree
+
+	; tree
+	; 木のタイルデータをVRAMに読み込む
 	ld de, Overworld_GFX + $2d0 ; cuttable tree sprite top row
 	ld hl, vChars1 + $7c0
 	lb bc, BANK(Overworld_GFX), $02
@@ -114,8 +136,11 @@ InitCutAnimOAM:
 	ld hl, vChars1 + $7e0
 	lb bc, BANK(Overworld_GFX), $02
 	call CopyVideoData
+
 	jr WriteCutOrBoulderDustAnimationOAMBlock
+
 .grass
+	; 草のグラフィックデータをVRAMに読み込む
 	ld hl, vChars1 + $7c0
 	call LoadCutGrassAnimationTilePattern
 	ld hl, vChars1 + $7d0
@@ -124,6 +149,7 @@ InitCutAnimOAM:
 	call LoadCutGrassAnimationTilePattern
 	ld hl, vChars1 + $7f0
 	call LoadCutGrassAnimationTilePattern
+
 	call WriteCutOrBoulderDustAnimationOAMBlock
 	ld hl, wOAMBuffer + $93
 	ld de, 4
@@ -152,51 +178,67 @@ CutOrBoulderDustAnimationTilesAndAttributes:
 	db $FC,$10,$FD,$10
 	db $FE,$10,$FF,$10
 
+; アニメーションを表示するXY座標を得る関数  
+; OUTPUT:  
+; b = アニメのX座標  
+; c = アニメのY座標
 GetCutOrBoulderDustAnimationOffsets:
+	; bc = 主人公のXY座標
 	ld hl, wSpriteStateData1 + 4
-	ld a, [hli] ; player's sprite screen Y position
-	ld b, a
+	ld a, [hli]
+	ld b, a ; b = 主人公のY座標
 	inc hl
-	ld a, [hli] ; player's sprite screen X position
-	ld c, a ; bc holds ypos/xpos of player's sprite
+	ld a, [hli]
+	ld c, a ; c = 主人公のX座標
+	
+	; de = 主人公の方向 = 0(下) or 2(上) or 4(左) or 6(右)
 	inc hl
 	inc hl
 	ld a, [hl] ; a holds direction of player (00: down, 04: up, 08: left, 0C: right)
 	srl a
 	ld e, a
 	ld d, $0 ; de holds direction (00: down, 02: up, 04: left, 06: right)
+
+	; hl = CutAnimationOffsets or BoulderDustAnimationOffsets
 	ld a, [wWhichAnimationOffsets]
 	and a
 	ld hl, CutAnimationOffsets
 	jr z, .next
 	ld hl, BoulderDustAnimationOffsets
+
 .next
+	; d = アニメの相対X座標,  e = アニメの相対Y座標
 	add hl, de
 	ld e, [hl]
 	inc hl
 	ld d, [hl]
+
+	; b = アニメの画面上でのX座標
 	ld a, b
 	add d
 	ld b, a
+	; c = アニメの画面上でのY座標
 	ld a, c
 	add e
 	ld c, a
 	ret
 
+; プレイヤーを基準とした木のオフセットのテーブル  
+; プレイヤーの位置は (8, 20)  
 CutAnimationOffsets:
-; Each pair represents the x and y pixels offsets from the player of where the cut tree animation should be drawn
-	db  8, 36 ; player is facing down
-	db  8,  4 ; player is facing up
-	db -8, 20 ; player is facing left
-	db 24, 20 ; player is facing right
+	db  8, 36 ; 下 y += 16
+	db  8,  4 ; 上 y -= 16
+	db -8, 20 ; 左 x -= 16
+	db 24, 20 ; 右 x += 16
 
-BoulderDustAnimationOffsets:
 ; Each pair represents the x and y pixels offsets from the player of where the cut tree animation should be drawn
-; These offsets represent 2 blocks away from the player
-	db  8,  52 ; player is facing down
-	db  8, -12 ; player is facing up
-	db -24, 20 ; player is facing left
-	db 40,  20 ; player is facing right
+; These offsets represent 2 blocks away from the player  
+; プレイヤーの位置は (8, 20)  
+BoulderDustAnimationOffsets:
+	db  8,  52 ; 下 y += 32
+	db  8, -12 ; 上 y -= 32
+	db -24, 20 ; 左 x -= 32
+	db 40,  20 ; 右 x += 32
 
 ReplaceTreeTileBlock:
 ; Determine the address of the tile block that contains the tile in front of the
@@ -274,9 +316,10 @@ ReplaceTreeTileBlock:
 	ld [hl], a
 	ret
 
+; 居合切り時に使う1エントリ2バイトのテーブル  
+; 1バイト目 = 木を含む tileset block  
+; 2バイト目 = 木を切った後の tileset block  
 CutTreeBlockSwaps:
-; first byte = tileset block containing the cut tree
-; second byte = corresponding tileset block after the cut animation happens
 	db $32, $6D
 	db $33, $6C
 	db $34, $6F
