@@ -56,11 +56,15 @@ UsedCut:
 	ld hl, wd730
 	set 6, [hl]
 
+	; overworld描画に必要なアセットを復帰する
 	call GBPalWhiteOutWithDelay3
 	call ClearSprites
 	call RestoreScreenTilesAndReloadTilePatterns
+
+	; ウィンドウ表示を無効化
 	ld a, SCREEN_HEIGHT_PIXELS
 	ld [hWY], a
+	
 	call Delay3
 	call LoadGBPal
 	call LoadCurrentMapView

@@ -1371,14 +1371,20 @@ TilePairCollisionsWater::
 	db CAVERN, $14, $05
 	db $FF
 
-; this builds a tile map from the tile block map based on the current X/Y coordinates of the player's character
+; **LoadCurrentMapView**  
+; プレイヤーのスプライトのXY座標に応じてマップのタイルブロックデータからタイルマップを構築する関数  
+; - - -  
 LoadCurrentMapView::
+	; タイルデータのあるバンクにスイッチ
 	ld a, [H_LOADEDROMBANK]
 	push af
-	ld a, [wTilesetBank] ; tile data ROM bank
+	ld a, [wTilesetBank]
 	ld [H_LOADEDROMBANK], a
-	ld [MBC1RomBank], a ; switch to ROM bank that contains tile data
-	ld a, [wCurrentTileBlockMapViewPointer] ; address of upper left corner of current map view
+	ld [MBC1RomBank], a
+
+	; TODO: WIP
+	; de = [wCurrentTileBlockMapViewPointer]
+	ld a, [wCurrentTileBlockMapViewPointer]
 	ld e, a
 	ld a, [wCurrentTileBlockMapViewPointer + 1]
 	ld d, a

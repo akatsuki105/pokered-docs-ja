@@ -2505,8 +2505,9 @@ wMapPalOffset::
 wCurMap::
 	ds 1
 
-wCurrentTileBlockMapViewPointer:: ; d35f
-; pointer to the upper left corner of the current view in the tile block map
+; d35f  
+; 現在のブロックデータ(マップ全体のグラフィックデータ)で現在見えている範囲の左上を表すポインタ
+wCurrentTileBlockMapViewPointer::
 	ds 2
 
 ; d361  

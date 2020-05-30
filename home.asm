@@ -4992,10 +4992,11 @@ RestoreScreenTilesAndReloadTilePatterns::
 	; スプライトの表示を有効化
 	ld a, $1
 	ld [wUpdateSpritesEnabled], a
+	; スプライトデータ、タイルデータ、その他をoverworld状態に戻す
 	call ReloadMapSpriteTilePatterns
 	call LoadScreenTilesFromBuffer2
 	call LoadTextBoxTilePatterns
-	call RunDefaultPaletteCommand
+	call RunDefaultPaletteCommand ; SGBのみ
 	jr Delay3
 
 
