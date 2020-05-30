@@ -1454,11 +1454,14 @@ wScriptedNPCWalkCounter::
 wGBC:: ; cf1a
 	ds 1
 
-wOnSGB:: ; cf1b
-; if running on SGB, it's 1, else it's 0
+; cf1b  
+; SGB上でプレイされているとき1、それ以外は0
+wOnSGB::
 	ds 1
 
-wDefaultPaletteCommand:: ; cf1c
+; cf1c  
+; SGBのときに利用するパレットを識別するためのIDを格納する  
+wDefaultPaletteCommand:: 
 	ds 1
 
 wPlayerHPBarColor:: ; cf1d
@@ -1470,10 +1473,12 @@ wWholeScreenPaletteMonSpecies:: ; cf1d
 wEnemyHPBarColor:: ; cf1e
 	ds 1
 
+; cf1f  
+; パーティの各ポケモンのHPゲージの色を格納しておく6バイトの領域(6匹なので6バイト)  
 ; 0: green
 ; 1: yellow
 ; 2: red
-wPartyMenuHPBarColors:: ; cf1f
+wPartyMenuHPBarColors::
 	ds 6
 
 wStatusScreenHPBarColor:: ; cf25
@@ -1483,18 +1488,23 @@ wStatusScreenHPBarColor:: ; cf25
 
 wCopyingSGBTileData:: ; cf2d
 
-wWhichPartyMenuHPBar:: ; cf2d
+; cf2d  
+; 手持ちのどのポケモンのHPゲージを処理しているか
+wWhichPartyMenuHPBar::
 
-wPalPacket:: ; cf2d
+; cf2d
+wPalPacket::
 	ds 1
 
-wPartyMenuBlkPacket:: ; cf2e
-; $30 bytes
+; cf2e
+; wPalPacketと合わせて合計30バイト
+wPartyMenuBlkPacket::
 	ds 29
 
-wExpAmountGained:: ; cf4b
+; cf4b
 ; 2-byte big-endian number
 ; the total amount of exp a mon gained
+wExpAmountGained::
 
 ; 2バイトの様々な文字を格納しておくバッファ
 wcf4b:: ds 2

@@ -1,20 +1,27 @@
 _RunPaletteCommand:
 	call GetPredefRegisters
+	; a = $ff or [wDefaultPaletteCommand]
 	ld a, b
 	cp $ff
 	jr nz, .next
-	ld a, [wDefaultPaletteCommand] ; use default command if command ID is $ff
+	ld a, [wDefaultPaletteCommand]
 .next
+	; a == UPDATE_PARTY_MENU_BLK_PACKET -> パーティのHPゲージのパレットデータを更新
 	cp UPDATE_PARTY_MENU_BLK_PACKET
 	jp z, UpdatePartyMenuBlkPacket
+
+	; hl = [wDefaultPaletteCommand]*2(SetPalFunctionsはエントリが2バイトのテーブルなので)
 	ld l, a
 	ld h, 0
 	add hl, hl
+
+	; hl = 実行すべきパレットデータ変更関数
 	ld de, SetPalFunctions
 	add hl, de
 	ld a, [hli]
 	ld h, [hl]
-	ld l, a
+	ld l, a	; 上位,下位バイトをスワップ
+
 	ld de, SendSGBPackets
 	push de
 	jp hl
@@ -240,6 +247,8 @@ SetPal_TrainerCard:
 	ld de, wTrainerCardBlkPacket
 	ret
 
+; パレットデータを変更する関数へのポインタをまとめたテーブル  
+; SGBのときのみ利用  
 SetPalFunctions:
 	dw SetPal_BattleBlack
 	dw SetPal_Battle
@@ -295,9 +304,10 @@ InitPartyMenuBlkPacket:
 	ld bc, $30
 	jp CopyData
 
+; **UpdatePartyMenuBlkPacket**  
+; [wWhichPartyMenuHPBar]で指定したポケモンのHPゲージのパレットで blk packet を更新する
 UpdatePartyMenuBlkPacket:
-; Update the blk packet with the palette of the HP bar that is
-; specified in [wWhichPartyMenuHPBar].
+	; a = 処理対象のポケモンのHPゲージの色
 	ld hl, wPartyMenuHPBarColors
 	ld a, [wWhichPartyMenuHPBar]
 	ld e, a
@@ -306,6 +316,11 @@ UpdatePartyMenuBlkPacket:
 	ld e, l
 	ld d, h
 	ld a, [de]
+
+	; e = パレットデータ
+	; green =>  e = %00000101
+	; orange => e = %00001010
+	; red =>    e = %00001111
 	and a
 	ld e, (1 << 2) | 1 ; green
 	jr z, .next
@@ -315,11 +330,15 @@ UpdatePartyMenuBlkPacket:
 	ld e, (3 << 2) | 3 ; red
 .next
 	push de
+	
+	; hl = 処理対象のHPゲージの色を表すパレットデータを格納するアドレス
 	ld hl, wPartyMenuBlkPacket + 8 + 1
 	ld bc, 6
 	ld a, [wWhichPartyMenuHPBar]
 	call AddNTimes
+	
 	pop de
+	; パレットデータを格納
 	ld [hl], e
 	ret
 
@@ -561,15 +580,19 @@ Wait7000:
 	ret
 
 SendSGBPackets:
+	; GBCでない -> .notGBC
 	ld a, [wGBC]
 	and a
 	jr z, .notGBC
+
+	; GBCのとき
 	push de
 	call InitGBCPalettes
 	pop hl
 	call EmptyFunc5
 	ret
 .notGBC
+	; SGBのとき
 	push de
 	call SendSGBPacket
 	pop hl

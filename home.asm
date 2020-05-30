@@ -3422,21 +3422,26 @@ LoadFontTilePatterns::
 	lb bc, BANK(FontGraphics), (FontGraphicsEnd - FontGraphics) / $8
 	jp CopyVideoDataDouble ; if LCD is on, transfer during V-blank
 
+; **LoadTextBoxTilePatterns**  
+; VRAMにテキストボックスのグラフィックデータをコピーする関数
 LoadTextBoxTilePatterns::
+	; LCDが有効 -> .on 無効 -> .off
 	ld a, [rLCDC]
-	bit 7, a ; is the LCD enabled?
+	bit 7, a
 	jr nz, .on
 .off
+	; LCDが無効のときはすぐにすべて転送する
 	ld hl, TextBoxGraphics
 	ld de, vChars2 + $600
 	ld bc, TextBoxGraphicsEnd - TextBoxGraphics
 	ld a, BANK(TextBoxGraphics)
-	jp FarCopyData2 ; if LCD is off, transfer all at once
+	jp FarCopyData2
 .on
+	; LCDが有効のときはVBlank中に転送する
 	ld de, TextBoxGraphics
 	ld hl, vChars2 + $600
 	lb bc, BANK(TextBoxGraphics), (TextBoxGraphicsEnd - TextBoxGraphics) / $10
-	jp CopyVideoData ; if LCD is on, transfer during V-blank
+	jp CopyVideoData
 
 LoadHpBarAndStatusTilePatterns::
 	ld a, [rLCDC]
@@ -3485,16 +3490,19 @@ SaveScreenTilesToBuffer2::
 	call CopyData
 	ret
 
+; wTileMapBackup2に退避された画面のタイルデータをwTileMapに戻し、H_AUTOBGTRANSFERENABLED を1にする
 LoadScreenTilesFromBuffer2::
 	call LoadScreenTilesFromBuffer2DisableBGTransfer
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
-; loads screen tiles stored in wTileMapBackup2 but leaves H_AUTOBGTRANSFERENABLED disabled
+; wTileMapBackup2に退避された画面のタイルデータをwTileMapに戻す  
+; ただし H_AUTOBGTRANSFERENABLED は 0にする
 LoadScreenTilesFromBuffer2DisableBGTransfer::
 	xor a
-	ld [H_AUTOBGTRANSFERENABLED], a
+	ld [H_AUTOBGTRANSFERENABLED], a ; [H_AUTOBGTRANSFERENABLED] = 0
+	; wTileMapBackup2 のデータを wTileMap にコピー
 	ld hl, wTileMapBackup2
 	coord de, 0, 0
 	ld bc, SCREEN_WIDTH * SCREEN_HEIGHT
@@ -5024,14 +5032,19 @@ GBPalWhiteOut::
 RunDefaultPaletteCommand::
 	ld b, $ff
 RunPaletteCommand::
+	; SGBのときに _RunPaletteCommand (ポケモンのHPバーに色(緑,橙,赤)をつける必要があるので)
 	ld a, [wOnSGB]
 	and a
 	ret z
 	predef_jump _RunPaletteCommand
 
+; **GetHealthBarColor**  
+; e で与えられたHPゲージのピクセルの長さに応じたHPゲージの色番号を [hl] に入れて返す  
+; OUTPUT:  
+; - [hl] -> 0: green (pixel >= 27)
+; - [hl] -> 1: orange (pixel >= 10)
+; - [hl] -> 2: red (pixel < 10)
 GetHealthBarColor::
-; Return at hl the palette of
-; an HP bar e pixels long.
 	ld a, e
 	cp 27
 	ld d, 0 ; green

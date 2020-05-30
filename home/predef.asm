@@ -34,6 +34,7 @@ Predef::
 	ld [MBC1RomBank], a
 	ret
 
+; **GetPredefRegisters**  
 ; GetPredefPointerで退避されたレジスタを復帰させる
 GetPredefRegisters::
 	ld a, [wPredefRegisters + 0]

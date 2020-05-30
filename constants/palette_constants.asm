@@ -5,6 +5,7 @@
 	const DARK_GRAY
 	const BLACK
 
+; SGBのときに利用するパレットを識別するためのID  
 SET_PAL_BATTLE_BLACK         EQU $00
 SET_PAL_BATTLE               EQU $01
 SET_PAL_TOWN_MAP             EQU $02
