@@ -2538,12 +2538,14 @@ wUnusedD366:: ; d366
 wCurMapTileset::
 	ds 1
 
-wCurMapHeight:: ; d368
+; d368  
 ; blocks
+wCurMapHeight::
 	ds 1
 
-wCurMapWidth:: ; d369
+; d369  
 ; blocks
+wCurMapWidth::
 	ds 1
 
 wMapDataPtr:: ; d36a
@@ -2755,8 +2757,9 @@ wPlayerDirection:: ; d52a
 wTilesetBank:: ; d52b
 	ds 1
 
-wTilesetBlocksPtr:: ; d52c
-; maps blocks (4x4 tiles) to tiles
+; d52c  
+; タイルブロック(4*4のタイル=32*32px)からタイルへのマッピング
+wTilesetBlocksPtr::
 	ds 2
 
 wTilesetGfxPtr:: ; d52e

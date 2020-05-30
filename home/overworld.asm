@@ -1372,8 +1372,10 @@ TilePairCollisionsWater::
 	db $FF
 
 ; **LoadCurrentMapView**  
-; プレイヤーのスプライトのXY座標に応じてマップのタイルブロックデータからタイルマップを構築する関数  
+; プレイヤーのスプライトのXY座標に応じてマップのブロックデータ(blk参照)からタイルマップを構築する関数  
 ; - - -  
+; [wTileMapBackup] -> [wCurrentTileBlockMapViewPointer]  
+; [wTileMapBackup] -> [wTileMap]
 LoadCurrentMapView::
 	; タイルデータのあるバンクにスイッチ
 	ld a, [H_LOADEDROMBANK]
@@ -1382,87 +1384,122 @@ LoadCurrentMapView::
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
-	; TODO: WIP
 	; de = [wCurrentTileBlockMapViewPointer]
 	ld a, [wCurrentTileBlockMapViewPointer]
 	ld e, a
 	ld a, [wCurrentTileBlockMapViewPointer + 1]
 	ld d, a
 	ld hl, wTileMapBackup
-	ld b, $05
-.rowLoop ; each loop iteration fills in one row of tile blocks
+
+	ld b, $05 ; 5回 .rowLoop 
+
+	; .rowLoopのループごとに画面1行分のブロックを書き込む
+	; row_index = 何行目か
+	; INPUT: 
+	; de = [wCurrentTileBlockMapViewPointer] + ([wCurMapWidth] + MAP_BORDER*2)*row_index
+	; hl = wTileMapBackup + $60*row_index
+.rowLoop
 	push hl
 	push de
-	ld c, $06
-.rowInnerLoop ; loop to draw each tile block of the current row
+	ld c, $06 ; 6回ループ(.rowInnerLoop)する(32*6=192??)
+.rowInnerLoop ; 現在処理中の行に1枚のブロックを書き込む
 	push bc
 	push de
 	push hl
+
+	; c = block ID = [wCurrentTileBlockMapViewPointer]
 	ld a, [de]
-	ld c, a ; tile block number
-	call DrawTileBlock
+	ld c, a
+
+	call DrawTileBlock ; hl = wTileMapBackup + 4*(ループ回数)
+	
 	pop hl
 	pop de
 	pop bc
+
+	; hl += 4 (次のブロックへ ブロック(32*32px)は16px*16pxのタイルブロック4枚で構成される)
 	inc hl
 	inc hl
 	inc hl
 	inc hl
-	inc de
+	
+	inc de ; 次のブロックID
 	dec c
 	jr nz, .rowInnerLoop
-; update tile block map pointer to next row's address
+
+	; 1行描画した => wCurrentTileBlockMapViewPointerを次の行に設定する
 	pop de
+	; de += [wCurMapWidth] + MAP_BORDER*2
 	ld a, [wCurMapWidth]
 	add MAP_BORDER * 2
 	add e
 	ld e, a
 	jr nc, .noCarry
 	inc d
+
 .noCarry
-; update tile map pointer to next row's address
+	; wTileMapBackupを次の行に設定する
 	pop hl
+	; hl += $60
 	ld a, $60
 	add l
 	ld l, a
 	jr nc, .noCarry2
 	inc h
+
 .noCarry2
 	dec b
 	jr nz, .rowLoop
+
+	; 画面全部にブロックデータを敷き詰めた
+
 	ld hl, wTileMapBackup
 	ld bc, $0000
+
+	; [wYBlockCoord] != 0のとき hl +=  30
 .adjustForYCoordWithinTileBlock
 	ld a, [wYBlockCoord]
 	and a
 	jr z, .adjustForXCoordWithinTileBlock
 	ld bc, $0030
 	add hl, bc
+
+	; [wXBlockCoord] != 0のとき hl += 2
 .adjustForXCoordWithinTileBlock
 	ld a, [wXBlockCoord]
 	and a
 	jr z, .copyToVisibleAreaBuffer
 	ld bc, $0002
 	add hl, bc
+
 .copyToVisibleAreaBuffer
 	coord de, 0, 0 ; base address for the tiles that are directly transferred to VRAM during V-blank
 	ld b, SCREEN_HEIGHT
-.rowLoop2
+.rowLoop2 ; 画面全体を処理するループ
 	ld c, SCREEN_WIDTH
-.rowInnerLoop2
+.rowInnerLoop2 ; 各行を処理するループ
+	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
 	inc de
+
+	; 次のタイル?
 	dec c
 	jr nz, .rowInnerLoop2
+
+	; 1行終えた -> hl += 4
 	ld a, $04
 	add l
 	ld l, a
 	jr nc, .noCarry3
 	inc h
 .noCarry3
+
+	; 次の行
 	dec b
 	jr nz, .rowLoop2
+
+	; 画面全体を終えたら終了
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a ; restore previous ROM bank
@@ -1807,43 +1844,65 @@ ScheduleWestColumnRedraw::
 	ld [hRedrawRowOrColumnMode], a
 	ret
 
-; function to write the tiles that make up a tile block to memory
-; Input: c = tile block ID, hl = destination address
+; ----------------------------------------------------------------
+; **DrawTileBlock()**
+; - - -  
+; ROMにあるブロック(32*32px)を構成するタイルをRAMに書き込む関数  
+; ブロックについては ドキュメント`blk` 参照  
+; 
+; INPUT:  
+; c = ブロックID  
+; hl = 書き込み先のRAMアドレス  
+; ----------------------------------------------------------------
 DrawTileBlock::
 	push hl
-	ld a, [wTilesetBlocksPtr] ; pointer to tiles
+	; hl = [wTilesetBlocksPtr] = ブロックのポインタ
+	ld a, [wTilesetBlocksPtr]
 	ld l, a
 	ld a, [wTilesetBlocksPtr + 1]
 	ld h, a
+
+	; 1. c *= 0x10
+	; 2. c &= 0xf0
 	ld a, c
 	swap a
 	ld b, a
 	and $f0
 	ld c, a
+
+	; bc = ブロックID * 0x10
 	ld a, b
 	and $0f
-	ld b, a ; bc = tile block ID * 0x10
+	ld b, a
+
+	; de = ブロックIDに対応するブロックのアドレス
 	add hl, bc
 	ld d, h
 	ld e, l ; de = address of the tile block's tiles
+
 	pop hl
-	ld c, $04 ; 4 loop iterations
-.loop ; each loop iteration, write 4 tile numbers
+	ld c, $04 ; 4回ループする
+.loop
+	; 各ループでは、4つのタイル番号を書き込む
 	push bc
+	
+	; 最初の3タイル [hl++] = [de++]
+	rept 3
 	ld a, [de]
 	ld [hli], a
 	inc de
-	ld a, [de]
-	ld [hli], a
-	inc de
-	ld a, [de]
-	ld [hli], a
-	inc de
+	endr
+
+	; 最後のタイル [hl] = [de++]
 	ld a, [de]
 	ld [hl], a
 	inc de
+
+	; TODO: ???
+	; hl += 0x0015 = 37
 	ld bc, $0015
 	add hl, bc
+
 	pop bc
 	dec c
 	jr nz, .loop
