@@ -21,23 +21,26 @@ LoadTilesetHeader:
 	ld hl, Tilesets
 	add hl, de
 
-	; [wCurMapTileset]から tilesetのバンク番号 + tileset headerにコピーする
+	; [wCurMapTileset]に tilesetのバンク番号 + tileset headerをコピーする
 	ld de, wTilesetBank
 	ld c, $b ; 11 = tileset headerのサイズ
 .copyTilesetHeaderLoop
-	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
-	inc de
-
+	inc de		; [de++] = [hl++]
 	dec c
 	jr nz, .copyTilesetHeaderLoop
 
+	; [hTilesetType] = [hl]
 	ld a, [hl]
 	ld [hTilesetType], a
+
+	; [$ffd8] = 0
 	xor a
 	ld [$ffd8], a
+
 	pop hl
+	
 	ld a, [wCurMapTileset]
 	push hl
 	push de
