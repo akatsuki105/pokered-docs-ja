@@ -11,22 +11,28 @@ LoadTilesetHeader:
 	add a
 	ld b, a
 	add a
-	add b ; a = tilesetのオフセット * 12
+	add b ; a = tilesetのオフセット * 12 = Tilesetsのエントリサイズ + 1
 	jr nc, .noCarry
 	inc d
 .noCarry
 	ld e, a
-	
+
+	; hl = Tilesetsのエントリのポインタ
 	ld hl, Tilesets
 	add hl, de
+
+	; [wCurMapTileset]から tilesetのバンク番号 + tileset headerにコピーする
 	ld de, wTilesetBank
-	ld c, $b
+	ld c, $b ; 11 = tileset headerのサイズ
 .copyTilesetHeaderLoop
+	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
 	inc de
+
 	dec c
 	jr nz, .copyTilesetHeaderLoop
+
 	ld a, [hl]
 	ld [hTilesetType], a
 	xor a

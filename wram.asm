@@ -2765,10 +2765,13 @@ wPlayerDirection:: ; d52a
 ; if the player is not moving, the last the direction in which the player moved
 	ds 1
 
-wTilesetBank:: ; d52b
+; d52b  
+; 現在のタイルセットの格納されているバンク  
+wTilesetBank::
 	ds 1
 
 ; d52c  
+; ここから12バイトほどtileset headerを格納する領域が続く  
 ; タイルブロック(4*4のタイル=32*32px)からタイルへのマッピング
 wTilesetBlocksPtr::
 	ds 2
