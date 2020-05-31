@@ -68,7 +68,16 @@ IMAP: MACRO ; imap mapid_less_than,x-coordinate,y-coordinate,textpointer
 	dw \4
 ENDM
 
-; tilesets' headers macro
+; tilesets' headers macro  
+; INPUT:  
+; - \1 = Block(bst)
+; - \2 = GFX(2bpp)
+; - \3 = Coll(tilecoll)
+; - \4, \5, \6 = counter tiles
+; - \7 = grass tile
+; - \8 = permission (indoor, cave, outdoor)
+; 
+; e.g. `tileset Overworld_Block,   Overworld_GFX,   Overworld_Coll,   $FF,$FF,$FF, $52, OUTDOOR`
 tileset: MACRO
 	db BANK(\2)   ; BANK(GFX)
 	dw \1, \2, \3 ; Block, GFX, Coll
@@ -94,15 +103,15 @@ LEFT  EQU $D2
 RIGHT EQU $D3
 NONE  EQU $FF
 
-;\1 sprite id  
-;\2 x position  
-;\3 y position  
-;\4 movement (WALK/STAY)  
-;\5 range or direction  
-;\6 text id  
-;\7 items only: item id  
-;\7 trainers only: trainer class/pokemon id  
-;\8 trainers only: trainer number/pokemon level  
+; \1 sprite id  
+; \2 x position  
+; \3 y position  
+; \4 movement (WALK/STAY)  
+; \5 range or direction  
+; \6 text id  
+; \7 items only: item id  
+; \7 trainers only: trainer class/pokemon id  
+; \8 trainers only: trainer number/pokemon level  
 object: MACRO
 	db \1
 	db \3 + 4
@@ -123,33 +132,33 @@ object: MACRO
 	ENDC
 ENDM
 
-;\1 x position  
-;\2 y position  
-;\3 destination warp id  
-;\4 destination map (-1 = wLastMap)  
+; \1 x position  
+; \2 y position  
+; \3 destination warp id  
+; \4 destination map (-1 = wLastMap)  
 warp: MACRO
 	db \2, \1, \3, \4
 ENDM
 
-;\1 x position  
-;\2 y position  
-;\3 sign id  
+; \1 x position  
+; \2 y position  
+; \3 sign id  
 sign: MACRO
 	db \2, \1, \3
 ENDM
 
-;\1 x position  
-;\2 y position  
-;\3 map width  
+; \1 x position  
+; \2 y position  
+; \3 map width  
 warp_to: MACRO
 	EVENT_DISP \3, \2, \1
 ENDM
 
-;\1 (byte) = current map id
-;\2 (byte) = connected map id
-;\3 (byte) = x movement of connection strip
-;\4 (byte) = connection strip offset
-;\5 (word) = connected map blocks pointer
+; \1 (byte) = current map id
+; \2 (byte) = connected map id
+; \3 (byte) = x movement of connection strip
+; \4 (byte) = connection strip offset
+; \5 (word) = connected map blocks pointer
 NORTH_MAP_CONNECTION: MACRO
 	db \2 ; map id
 	dw \5 + (\2_WIDTH * (\2_HEIGHT - 3)) + \4; "Connection Strip" location

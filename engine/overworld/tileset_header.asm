@@ -1,17 +1,22 @@
+; **LoadTilesetHeader**  
+; - - -  
 LoadTilesetHeader:
 	call GetPredefRegisters
-	push hl
+	push hl ; stack_depth = 0
+
+	; de = [wCurMapTileset] * 12
 	ld d, 0
 	ld a, [wCurMapTileset]
 	add a
 	add a
 	ld b, a
 	add a
-	add b ; a = tileset * 12
+	add b ; a = tilesetのオフセット * 12
 	jr nc, .noCarry
 	inc d
 .noCarry
 	ld e, a
+	
 	ld hl, Tilesets
 	add hl, de
 	ld de, wTilesetBank

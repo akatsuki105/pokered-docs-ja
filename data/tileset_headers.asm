@@ -1,3 +1,12 @@
+; **Tilesets**  
+; tilesets' headers table
+; Entry:  
+; - \1 = Block(bst)
+; - \2 = GFX(2bpp)
+; - \3 = Coll(tilecoll)
+; - \4, \5, \6 = counter tiles
+; - \7 = grass tile
+; - \8 = permission (indoor, cave, outdoor)
 Tilesets:
 	tileset Overworld_Block,   Overworld_GFX,   Overworld_Coll,   $FF,$FF,$FF, $52, OUTDOOR
 	tileset RedsHouse1_Block,  RedsHouse1_GFX,  RedsHouse1_Coll,  $FF,$FF,$FF, $FF, INDOOR

@@ -1432,7 +1432,8 @@ wNPCMovementScriptFunctionNum:: ; cf10
 wTextPredefFlag::
 	ds 1
 
-wPredefParentBank:: ; cf12
+; cf12  
+wPredefParentBank::
 	ds 1
 
 wSpriteIndex:: ds 1
@@ -2510,7 +2511,7 @@ wCurMap::
 	ds 1
 
 ; d35f  
-; 現在のブロックデータ(マップ全体のグラフィックデータ)で現在見えている範囲の左上を表すポインタ
+; ブロックマップで現在の見えている範囲の左上隅へのポインタ
 wCurrentTileBlockMapViewPointer::
 	ds 2
 
@@ -2524,11 +2525,16 @@ wYCoord::
 wXCoord::
 	ds 1
 
-wYBlockCoord:: ; d363
-; player's y position (by block)
+; d363  
+; 現在のマップでのプレイヤーのY座標(ブロック単位)  
+; マップ全体のブロックの一番上のブロックにいるとき0
+wYBlockCoord::
 	ds 1
 
-wXBlockCoord:: ; d364
+; d364  
+; 現在のマップでのプレイヤーのX座標(ブロック単位)  
+; マップ全体のブロックの一番左のブロックにいるとき0
+wXBlockCoord::
 	ds 1
 
 wLastMap:: ; d365
@@ -2538,7 +2544,8 @@ wUnusedD366:: ; d366
 	ds 1
 
 ; d367  
-; 現在のタイルセットオフセット
+; 現在のタイルセットのオフセット  
+; タイルセットのオフセットは constants/tilesets.asm で定義されている
 wCurMapTileset::
 	ds 1
 

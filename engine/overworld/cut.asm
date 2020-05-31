@@ -112,6 +112,8 @@ UsedCutText:
 	TX_FAR _UsedCutText
 	db "@"
 
+; **InitCutAnimOAM**  
+; いあいぎり、かいりきのアニメーションに必要なOAMを準備する
 InitCutAnimOAM:
 	; [wWhichAnimationOffsets] = 0
 	xor a
@@ -240,43 +242,52 @@ BoulderDustAnimationOffsets:
 	db -24, 20 ; 左 x -= 32
 	db 40,  20 ; 右 x += 32
 
+; プレイヤーの目の前のタイルブロックのタイルアドレスを計算し(そこに木がある)、木のないタイルブロックで置換する
 ReplaceTreeTileBlock:
-; Determine the address of the tile block that contains the tile in front of the
-; player (i.e. where the tree is) and replace it with the corresponding tile
-; block that doesn't have the tree.
 	push de
+	; bc = [wCurMapWidth] + 6(MAP_BORDER*2?) = 現在のマップの1行分のブロックの枚数 + ボーダーの枚数
 	ld a, [wCurMapWidth]
 	add 6
 	ld c, a
 	ld b, 0
+
 	ld d, 0
+
+	; hl = [wCurrentTileBlockMapViewPointer]
 	ld hl, wCurrentTileBlockMapViewPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
 	add hl, bc
-	ld a, [wSpriteStateData1 + 9] ; player sprite's facing direction
+
+	; プレイヤーの向いている方向で場合分け
+	ld a, [wSpriteStateData1 + 9]
 	and a
 	jr z, .down
 	cp SPRITE_FACING_UP
 	jr z, .up
 	cp SPRITE_FACING_LEFT
 	jr z, .left
-; right
+
+; .right
 	ld a, [wXBlockCoord]
 	and a
 	jr z, .centerTileBlock
 	jr .rightOfCenter
+
 .down
 	ld a, [wYBlockCoord]
 	and a
 	jr z, .centerTileBlock
 	jr .belowCenter
+
 .up
 	ld a, [wYBlockCoord]
 	and a
 	jr z, .aboveCenter
 	jr .centerTileBlock
+
 .left
 	ld a, [wXBlockCoord]
 	and a
@@ -287,16 +298,16 @@ ReplaceTreeTileBlock:
 .centerTileBlock
 	add hl, bc
 .aboveCenter
-	ld e, $2
+	ld e, $2	; de = 02
 	add hl, de
 	jr .next
 .leftOfCenter
-	ld e, $1
+	ld e, $1	; de = 01
 	add hl, bc
 	add hl, de
 	jr .next
 .rightOfCenter
-	ld e, $3
+	ld e, $3 	; de = 03
 	add hl, bc
 	add hl, de
 .next

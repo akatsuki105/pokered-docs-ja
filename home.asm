@@ -142,21 +142,27 @@ CheckForUserInterruption::
 	scf
 	ret
 
-; function to load position data for destination warp when switching maps
-; INPUT:
-; a = ID of destination warp within destination map
+; **LoadDestinationWarpPosition**  
+; マップを切り替えたときに出現先の位置データを取得する関数  
+; - - -  
+; INPUT: a = ワープ先の出現地点のwarp-toのID
 LoadDestinationWarpPosition::
-	ld b, a
+	ld b, a ; b = a
+	
+	; バンクを [wPredefParentBank] に切り替え
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, [wPredefParentBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	; bc = (warp-to ID) * 3 warp-toエントリは3バイトなので
 	ld a, b
 	add a
 	add a
 	ld c, a
 	ld b, 0
+	
 	add hl, bc
 	ld bc, 4
 	ld de, wCurrentTileBlockMapViewPointer
