@@ -145,7 +145,9 @@ CheckForUserInterruption::
 ; **LoadDestinationWarpPosition**  
 ; マップを切り替えたときに出現先の位置データを取得する関数  
 ; - - -  
-; INPUT: a = ワープ先の出現地点のwarp-toのID
+; INPUT:  
+; a = ワープ先の出現地点のwarp-to ID  
+; hl = ???  
 LoadDestinationWarpPosition::
 	ld b, a ; b = a
 	
@@ -156,17 +158,20 @@ LoadDestinationWarpPosition::
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
-	; bc = (warp-to ID) * 3 warp-toエントリは3バイトなので
+	; bc = (warp-to ID) * 3   warp-toエントリは3バイトなので
 	ld a, b
 	add a
 	add a
 	ld c, a
 	ld b, 0
-	
+
+	; wCurrentTileBlockMapViewPointer, wYCoord, wXCoordを更新
 	add hl, bc
 	ld bc, 4
 	ld de, wCurrentTileBlockMapViewPointer
 	call CopyData
+
+	; バンクを元に戻して終了
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
@@ -4963,8 +4968,10 @@ CallFunctionInTable::
 	ret
 
 
+; **DungeonTilesets**  
 ; 配列hlからaの値を探す 配列は終端が必ず$ff  
 ; 配列の各要素のサイズはdeで表される  
+; 
 ; 見つかれば、bに対象のインデックスを入れてキャリーをセットして返る  
 ; このときhlは対象の要素を指している
 IsInArray::

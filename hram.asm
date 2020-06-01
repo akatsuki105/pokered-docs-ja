@@ -260,10 +260,11 @@ H_FRAMECOUNTER EQU $FFD5 ; VBlankごとにデクリメントされる(遅延処�
 ; you can detect that the V-blank handler has run since then.
 H_VBLANKOCCURRED EQU $FFD6
 
-; 00 = indoor
-; 01 = cave
-; 02 = outdoor
-; this is often set to 00 in order to turn off water and flower BG tile animations
+; 現在のタイルセットの種類  
+; 00 = indoor  
+; 01 = cave  
+; 02 = outdoor  
+; 00にセットすることで水や花が定期的に動く処理をoffにすることがよくある  
 hTilesetType EQU $FFD7
 
 hMovingBGTilesCounter1 EQU $FFD8
