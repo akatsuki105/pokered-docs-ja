@@ -1,6 +1,9 @@
 ; **LoadTilesetHeader**  
+; タイルセットを新しいタイルセットにする  
 ; - - -  
-; INPUT: hl = ???
+; メモリ上のtileset header値を更新する  
+; マップをワープするときに呼び出される  
+; INPUT: hl = ???  
 LoadTilesetHeader:
 	call GetPredefRegisters
 	push hl ; stack_depth = 0
