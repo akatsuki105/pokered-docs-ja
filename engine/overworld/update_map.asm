@@ -1,7 +1,11 @@
-; replaces a tile block with the one specified in [wNewTileBlockID]
-; and redraws the map view if necessary
-; b = Y
-; c = X
+; **ReplaceTileBlock**  
+; 1つのタイルブロックを [wNewTileBlockID] で指定したものに置き換えて、必要があればマップを再描画する  
+; - - -  
+; タイルブロック = 32*32pxのブロック  
+; INPUT:  
+; - b = Y
+; - c = X
+; - [wNewTileBlockID] = 新たなタイルブロックID
 ReplaceTileBlock:
 	call GetPredefRegisters
 	ld hl, wOverworldMap

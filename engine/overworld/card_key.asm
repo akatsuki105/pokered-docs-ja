@@ -91,6 +91,7 @@ CardKeySuccessText:
 	TX_FAR _CardKeySuccessText2
 	db "@"
 
+; "Darn! It needs a CARD KEY!"
 CardKeyFailText:
 	TX_FAR _CardKeyFailText
 	db "@"

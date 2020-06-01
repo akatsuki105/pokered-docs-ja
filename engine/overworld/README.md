@@ -42,7 +42,7 @@ push_boulder.asm | null
 saffron_guards.asm | ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す処理
 set_blackout_map.asm | null
 ssanne.asm | null
-tileset_header.asm | null
+tileset_header.asm | マップ切り替わり時にタイルセットを更新する処理
 trainers.asm | null
 update_map.asm | null
 wild_mons.asm | null
