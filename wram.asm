@@ -2511,7 +2511,7 @@ wCurMap::
 	ds 1
 
 ; d35f  
-; ブロックマップで現在の見えている範囲の左上隅へのポインタ
+; ブロックマップで現在の見えている範囲の左上隅のブロックIDを格納している場所へのポインタ
 wCurrentTileBlockMapViewPointer::
 	ds 2
 

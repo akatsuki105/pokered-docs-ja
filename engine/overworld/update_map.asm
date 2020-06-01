@@ -38,15 +38,22 @@ ReplaceTileBlock:
 	jr nz, .addWidthYTimesLoop
 
 .addX
-	add hl, bc ; add X
+	add hl, bc ; hl += X (この時点でYは0なので)
+
+	; [hl] = [wNewTileBlockID]
 	ld a, [wNewTileBlockID]
 	ld [hl], a
+
+	; bc = [wCurrentTileBlockMapViewPointer]
 	ld a, [wCurrentTileBlockMapViewPointer]
 	ld c, a
 	ld a, [wCurrentTileBlockMapViewPointer + 1]
 	ld b, a
+
+	; return if the replaced tile block is below the map view in memory
 	call CompareHLWithBC
-	ret c ; return if the replaced tile block is below the map view in memory
+	ret c ; hl < bc -> return
+
 	push hl
 	ld l, e
 	ld h, $0
