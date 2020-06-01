@@ -37,4 +37,7 @@ CeruleanCity_TextPointers:
 
 ## どのように使われるか
 
-TODO
+`home.asm` の `DisplayTextID` で表示したいテキストを識別するIDとして利用される
+
+[テキスト](./text.md)も参照
+
