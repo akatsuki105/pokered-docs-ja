@@ -7,7 +7,7 @@
  ファイル名  |  内容
 ---- | ----
 baseStats/ | ポケモンのデータ情報
-mapHeaders/ | null
+mapHeaders/ | Map Headerを定義 <br/> Map Headerについては[Map Header](./map_header.md)参照
 mapObjects/ | マップ上のオブジェクト(スプライトやマップ移動パネル)を定義
 wildPokemon/ | マップで出てくる野生のポケモンのデータを定義
 animations.asm | null

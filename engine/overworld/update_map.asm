@@ -9,19 +9,28 @@
 ReplaceTileBlock:
 	call GetPredefRegisters
 	ld hl, wOverworldMap
+
+	; de = [wCurMapWidth] + $6
 	ld a, [wCurMapWidth]
 	add $6
 	ld e, a
 	ld d, $0
+
+	; hl = wOverworldMap + 3de + 3
 	add hl, de
 	add hl, de
 	add hl, de
 	ld e, $3
 	add hl, de
+
+	; e = $3
 	ld e, a
+
+	; Y == 0 -> .addX
 	ld a, b
 	and a
 	jr z, .addX
+
 ; add width * Y
 .addWidthYTimesLoop
 	add hl, de

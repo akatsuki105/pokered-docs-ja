@@ -1,4 +1,4 @@
-# マップオブジェクト
+# Map Object
 
 文字通り、マップ上に配置されたオブジェクトのこと
 
@@ -10,7 +10,7 @@
 - objects 人などのオブジェクト
 - warp-to ここで定義した場所にワープが可能
 
-主人公の家の1Fを例にmapObjectを解説する
+主人公の家の1Fを例に Map Object を解説する
 
 ```asm
 RedsHouse1F_Object:
