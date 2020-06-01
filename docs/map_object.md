@@ -1,6 +1,8 @@
 # Map Object
 
-文字通り、マップ上に配置されたオブジェクトのこと
+マップに配置されるオブジェクトを定義している場所
+
+ここで定義したデータはMap Headerによってマップに紐づけられる
 
 #### オブジェクトの種類
 
@@ -133,3 +135,4 @@ warp_to 7, 1, REDS_HOUSE_1F_WIDTH       ; dest_warp_id = 2
 ## 参考
 
 - [マップ](map.md)
+- [Map Header](./map_header.md)

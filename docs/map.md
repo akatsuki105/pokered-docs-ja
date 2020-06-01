@@ -4,7 +4,9 @@
 
 ## Map Header
 
-[Map Header](./map_header.md)参照
+Map Header はタイルセットの情報やテキストデータのテーブルなど、マップを構成する様々な情報を持っている
+
+詳しくは[Map Header](./map_header.md)参照
 
 ## タイルデータ
 
@@ -14,7 +16,9 @@
 
 ## オブジェクト
 
-マップにオブジェクト(人や看板やワープ)がどのように配置されているかについては [mapObjects](../data/mapObjects/README.md)を参照
+マップにオブジェクト(人や看板やワープ)がどのように配置されているかを定義している
+
+詳細は [Map Object](../data/mapObjects/README.md)を参照
 
 ## 単位
 

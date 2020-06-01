@@ -31,11 +31,12 @@ ReplaceTileBlock:
 	and a
 	jr z, .addX
 
-; add width * Y
+	; hl += width * Y
 .addWidthYTimesLoop
 	add hl, de
 	dec b
 	jr nz, .addWidthYTimesLoop
+
 .addX
 	add hl, bc ; add X
 	ld a, [wNewTileBlockID]
