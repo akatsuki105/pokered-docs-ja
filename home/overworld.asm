@@ -1391,17 +1391,17 @@ LoadCurrentMapView::
 	ld d, a
 	ld hl, wTileMapBackup
 
-	ld b, $05 ; 5回 .rowLoop 
+	ld b, $05 ; 5回 .rowLoop (32*5=160)
 
 	; .rowLoopのループごとに画面1行分のブロックを書き込む
 	; row_index = 何行目か
 	; INPUT: 
-	; de = [wCurrentTileBlockMapViewPointer] + ([wCurMapWidth] + MAP_BORDER*2)*row_index
+	; de = [wCurrentTileBlockMapViewPointer] + ([wCurMapWidth] + 6)*row_index
 	; hl = wTileMapBackup + $60*row_index
 .rowLoop
 	push hl
 	push de
-	ld c, $06 ; 6回ループ(.rowInnerLoop)する(32*6=192??)
+	ld c, $06 ; 6回ループ(.rowInnerLoop)する(32*6=192=144+48)
 .rowInnerLoop ; 現在処理中の行に1枚のブロックを書き込む
 	push bc
 	push de

@@ -63,27 +63,36 @@ ReplaceTileBlock:
 	ld e, $6
 	ld d, h
 	
-	; hl = 3e + 6 + [wCurrentTileBlockMapViewPointer]
+	; hl = 画面の横幅(タイルブロック単位)*3 + 6 + [wCurrentTileBlockMapViewPointer]
 	add hl, hl
 	add hl, hl
 	add hl, de
 	add hl, bc
 
+	; hl(対象のXY座標のポインタ) - bc(画面右下?のポインタ) < 0 つまり 対象が画面外 なら終了?
+	; そうでないなら RedrawMapView に突入
 	pop bc	; bc = 対象のXY座標のポインタ
 	call CompareHLWithBC
-	ret c ; return if the replaced tile block is above the map view in memory
+	ret c 	; bc > hl -> return
 
 RedrawMapView:
+	; wIsInBattle == -1 -> return
 	ld a, [wIsInBattle]
 	inc a
 	ret z
+
+	; [H_AUTOBGTRANSFERENABLED] と [hTilesetType] を退避
 	ld a, [H_AUTOBGTRANSFERENABLED]
 	push af
 	ld a, [hTilesetType]
 	push af
+
+	; [H_AUTOBGTRANSFERENABLED] = 0
+	; [hTilesetType] = 0 (アニメーションを無効化)
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
-	ld [hTilesetType], a ; no flower/water BG tile animations
+	ld [hTilesetType], a
+
 	call LoadCurrentMapView
 	call RunDefaultPaletteCommand
 	ld hl, wMapViewVRAMPointer

@@ -5045,7 +5045,8 @@ GBPalWhiteOut::
 	ld [rOBP1], a
 	ret
 
-
+; **RunDefaultPaletteCommand**  
+; SGBでないなら何もせずに終了  
 RunDefaultPaletteCommand::
 	ld b, $ff
 RunPaletteCommand::
