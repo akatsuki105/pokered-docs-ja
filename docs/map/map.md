@@ -18,7 +18,7 @@ Map Header はタイルセットの情報やテキストデータのテーブル
 
 マップにオブジェクト(人や看板やワープ)がどのように配置されているかを定義している
 
-詳細は [Map Object](../data/mapObjects/README.md)を参照
+詳細は [Map Object](./map_object.md)を参照
 
 ## 単位
 

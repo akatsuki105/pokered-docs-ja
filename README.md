@@ -42,7 +42,7 @@ fork時に文字のエンコードに失敗してビルドしたROMのチェッ�
 - [キー入力](./docs/joypad.md)
 - [list](./docs/list.md)
 - [マクロ](./docs/macro.md)
-- [Map](./docs/map.md)
+- [Map](./docs/map/map.md)
 - [メニュー](./docs/menu.md)
 - [movement byte](./docs/movement_byte.md)
 - [OAM](./docs/oam.md)
