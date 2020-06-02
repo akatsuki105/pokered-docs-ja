@@ -3,14 +3,14 @@
 ; - - -  
 ; タイルブロック = 32*32pxのブロック  
 ; INPUT:  
-; - b = Y
+; - b = Y(画面上ではなくマップ全体のY座標)
 ; - c = X
-; - [wNewTileBlockID] = 新たなタイルブロックID
+; - [wNewTileBlockID] = 新たなブロックID
 ReplaceTileBlock:
 	call GetPredefRegisters
 	ld hl, wOverworldMap
 
-	; de = [wCurMapWidth] + $6
+	; de = [wCurMapWidth] + $6 = 画面の横幅(タイルブロック単位)
 	ld a, [wCurMapWidth]
 	add $6
 	ld e, a
@@ -23,7 +23,7 @@ ReplaceTileBlock:
 	ld e, $3
 	add hl, de
 
-	; e = $3
+	; e = 画面の横幅(タイルブロック単位)
 	ld e, a
 
 	; Y == 0 -> .addX
@@ -50,20 +50,26 @@ ReplaceTileBlock:
 	ld a, [wCurrentTileBlockMapViewPointer + 1]
 	ld b, a
 
-	; return if the replaced tile block is below the map view in memory
+	; hl(対象のXY座標のポインタ) - bc(画面左上のポインタ) < 0 つまり 対象が画面外 なら終了
 	call CompareHLWithBC
 	ret c ; hl < bc -> return
 
-	push hl
+	push hl ; hl = 対象のXY座標のポインタ
+
+	; hl = 画面の横幅(タイルブロック単位)
 	ld l, e
 	ld h, $0
+	; de = $06
 	ld e, $6
 	ld d, h
+	
+	; hl = 3e + 6 + [wCurrentTileBlockMapViewPointer]
 	add hl, hl
 	add hl, hl
 	add hl, de
 	add hl, bc
-	pop bc
+
+	pop bc	; bc = 対象のXY座標のポインタ
 	call CompareHLWithBC
 	ret c ; return if the replaced tile block is above the map view in memory
 
@@ -138,6 +144,8 @@ RedrawMapView:
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
+; hl-bc  
+; hlもbcも不変  
 CompareHLWithBC:
 	ld a, h
 	sub b
