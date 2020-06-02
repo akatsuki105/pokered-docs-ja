@@ -11,10 +11,10 @@
 ポケモン赤では、タイルはマップのカテゴリごと(町、森、洞窟など)にまとめられてタイルセットになっている
 
 森のタイルセット  
-![forest](image/tileset.png)  
+![forest](../image/tileset.png)  
 
 洞窟のタイルセット  
-![cavern](image/tileset2.png) 
+![cavern](../image/tileset2.png) 
 
 ## タイルセットのデータ定義
 
