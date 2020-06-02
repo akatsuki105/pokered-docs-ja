@@ -1396,7 +1396,7 @@ LoadCurrentMapView::
 	; .rowLoopのループごとに画面1行分のブロックを書き込む
 	; row_index = 何行目か
 	; INPUT: 
-	; de = [wCurrentTileBlockMapViewPointer] + ([wCurMapWidth] + 6)*row_index
+	; de = [wCurrentTileBlockMapViewPointer] + ([wCurMapWidth] + MAP_BORDER*2)*row_index
 	; hl = wTileMapBackup + $60*row_index
 .rowLoop
 	push hl
