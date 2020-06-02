@@ -74,11 +74,14 @@ HandleLedges:
 	set 6, [hl] ; jumping down ledge
 
 	call StartSimulatingJoypadStates
+
+	; 段差飛び降りの入力を simulated joypad として扱うようにする
 	ld a, e
 	ld [wSimulatedJoypadStatesEnd], a
 	ld [wSimulatedJoypadStatesEnd + 1], a
 	ld a, $2
 	ld [wSimulatedJoypadStatesIndex], a
+
 	call LoadHoppingShadowOAM
 	ld a, SFX_LEDGE
 	call PlaySound

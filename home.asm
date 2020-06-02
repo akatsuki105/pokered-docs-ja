@@ -3013,6 +3013,8 @@ FuncTX_PokemonCenterPC::
 	ld hl, ActivatePC
 	jr bankswitchAndContinue
 
+**StartSimulatingJoypadStates**  
+; ユーザーが勝手に動けないようにする  
 StartSimulatingJoypadStates::
 	; ユーザーが勝手に動けないようにする
 	xor a
