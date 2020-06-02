@@ -30,7 +30,6 @@ fork時に文字のエンコードに失敗してビルドしたROMのチェッ�
 
 ## ドキュメント一覧
 
-- [1bpp](./docs/1bpp.md)
 - [2bpp](./docs/2bpp.md)
 - [バンク](./docs/bank.md)
 - [BCD](./docs/bcd.md)
