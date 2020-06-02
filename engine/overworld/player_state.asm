@@ -277,7 +277,7 @@ SafariBallText:
 ; OUTPUT:  
 ; - d: 目の前のY座標(16*16単位)
 ; - e: 目の前のX座標(16*16単位)
-; - [wTileInFrontOfPlayer]: プレイヤーの目の前の背景マップのタイルアドレス
+; - [wTileInFrontOfPlayer]: プレイヤーの目の前のBGマップのタイルアドレス
 GetTileAndCoordsInFrontOfPlayer:
 	call GetPredefRegisters
 

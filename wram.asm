@@ -1609,8 +1609,10 @@ wFontLoaded::
 wWalkCounter::
 	ds 1
 
-wTileInFrontOfPlayer:: ; cfc6
+; cfc6  
+; プレイヤーの1歩 or 2歩前の座標のBGタイル番号
 ; background tile number in front of the player (either 1 or 2 steps ahead)
+wTileInFrontOfPlayer::
 	ds 1
 
 ; cfc7  

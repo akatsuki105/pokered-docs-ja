@@ -177,7 +177,7 @@ hWY  EQU $FFB0      ; VBlank中、WYにコピーされるアドレス
 hJoyLast     EQU $FFB1
 hJoyReleased EQU $FFB2
 hJoyPressed  EQU $FFB3
-hJoyHeld     EQU $FFB4
+hJoyHeld     EQU $FFB4 ; 押されている状態のキー入力を格納
 hJoy5        EQU $FFB5
 hJoy6        EQU $FFB6
 hJoy7        EQU $FFB7
