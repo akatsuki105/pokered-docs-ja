@@ -1393,9 +1393,9 @@ LoadCurrentMapView::
 
 	ld b, $05 ; 5回 .rowLoop (32*5=160)
 
-	; .rowLoopのループごとに画面1行分のブロックを書き込む
-	; row_index = 何行目か
-	; INPUT: 
+	; .rowLoopのループごとに画面1行分のブロックを書き込む(計5ループ)  
+	; row_index = 何行目か  
+	; INPUT:  
 	; de = [wCurrentTileBlockMapViewPointer] + ([wCurMapWidth] + MAP_BORDER*2)*row_index
 	; hl = wTileMapBackup + $60*row_index
 .rowLoop
@@ -1407,8 +1407,8 @@ LoadCurrentMapView::
 	push de
 	push hl
 
-	; c = block ID = [wCurrentTileBlockMapViewPointer]
-	ld a, [de]
+	; c = 描画するブロックID
+	ld a, [de] ; de = 行の先頭のポインタ + col_index
 	ld c, a
 
 	call DrawTileBlock ; hl = wTileMapBackup + 4*(ループ回数)
@@ -1423,7 +1423,7 @@ LoadCurrentMapView::
 	inc hl
 	inc hl
 	
-	inc de ; 次のブロックID
+	inc de ; 次のcol_index
 	dec c
 	jr nz, .rowInnerLoop
 

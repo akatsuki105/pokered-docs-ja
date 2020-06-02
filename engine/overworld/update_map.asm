@@ -95,22 +95,33 @@ RedrawMapView:
 
 	call LoadCurrentMapView
 	call RunDefaultPaletteCommand
+
+	; hl = [wMapViewVRAMPointer]
 	ld hl, wMapViewVRAMPointer
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+	
+	; hl = 
 	ld de, -2 * 32
 	add hl, de
+
+	; h = $98XX
 	ld a, h
-	and $3
-	or $98
+	and $3	; %0000 0011
+	or $98	; %1001 1000
+
+	; [wBuffer:wBuffer + 1] = hl 特に意味はない模様
 	ld a, l
 	ld [wBuffer], a
 	ld a, h
-	ld [wBuffer + 1], a ; this copy of the address is not used
+	ld [wBuffer + 1], a
+
+	; [$ffbe] = 2
 	ld a, 2
 	ld [$ffbe], a
-	ld c, 9 ; number of rows of 2x2 tiles (this covers the whole screen)
+
+	ld c, 9 ; 1行 = 2*2タイル = 16*16pxとしたとき 9行分ループする
 .redrawRowLoop
 	push bc
 	push hl

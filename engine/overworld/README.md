@@ -44,5 +44,5 @@ set_blackout_map.asm | null
 ssanne.asm | null
 tileset_header.asm | マップ切り替わり時にタイルセットを更新する処理
 trainers.asm | null
-update_map.asm | null
+update_map.asm | ブロックを書き換えたりマップの更新を行う処理
 wild_mons.asm | null
