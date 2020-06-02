@@ -24,7 +24,7 @@ hidden_items.asm | 隠しアイテム取得の処理
 hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する処理
 is_player_just_outside_map.asm | null
 item.asm | null
-ledges.asm | null
+ledges.asm | 段差飛び降り処理を行う
 map_sprites.asm | null
 map_sprite_functions1.asm | null
 missable_objects.asm | null

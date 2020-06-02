@@ -1,3 +1,7 @@
+; **HandleLedges**  
+; 段差飛び降り処理を行う  
+; - - -  
+; 段差飛び降りできるかチェックして、飛び降りれるなら飛び降りる処理(キー入力の強制や飛び降りモーションアニメの再生)を行う
 HandleLedges:
 	; すでに段差から飛び降り終えたなら終了
 	ld a, [wd736]
@@ -82,6 +86,7 @@ HandleLedges:
 	ld a, $2
 	ld [wSimulatedJoypadStatesIndex], a
 
+	; 段差飛び降りアニメーションを流す
 	call LoadHoppingShadowOAM
 	ld a, SFX_LEDGE
 	call PlaySound
@@ -100,6 +105,7 @@ LedgeTiles:
 	db SPRITE_FACING_RIGHT,$39,$0D,D_RIGHT
 	db $FF
 
+; 段差飛び降り時の影のスプライトをOAMにロードする
 LoadHoppingShadowOAM:
 	ld hl, vChars1 + $7f0
 	ld de, LedgeHoppingShadow
