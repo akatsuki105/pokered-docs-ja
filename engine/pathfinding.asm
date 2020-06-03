@@ -1,6 +1,10 @@
 ; **FindPathToPlayer**  
+; NPCがプレイヤーのところに歩いてくるときに道順(Path)を決定するための関数  
 ; - - -  
-; NPCがプレイヤーのところに歩いてくるときに道順を決定するために利用?  
+; 
+; INPUT:  
+; [hNPCPlayerXDistance] = NPCとPlayerのX距離(歩数単位)  
+; [hNPCPlayerYDistance] = NPCとPlayerのY距離(歩数単位)  
 FindPathToPlayer:
 	xor a
 	
@@ -48,13 +52,17 @@ FindPathToPlayer:
 	ld a, [hFindPathFlags]
 	cp $3
 	jr z, .done
-	
-; Compare whether the X distance between the player and the current of the path
-; is greater or if the Y distance is. Then, try to reduce whichever is greater.
+
+; プレーヤーと現在のPath間のX距離が大きいか、Y距離が大きいかを比較し、どちらか大きい方を減らす
+
+	; Y距離の方がおおきい -> .yDistanceGreater
 	ld a, e
 	cp d
 	jr c, .yDistanceGreater
-; x distance is greater
+	
+	; X距離の方がおおきい(このとき少なくともプレイヤーとNPCはX座標が異なる)
+	
+	; d = NPC_MOVEMENT_LEFT(プレイヤーがNPCより左にいるとき) or NPC_MOVEMENT_RIGHT(プレイヤーがNPCより右にいるとき)
 	ld a, [hNPCPlayerRelativePosFlags]
 	bit 1, a
 	jr nz, .playerIsLeftOfNPC
@@ -62,12 +70,17 @@ FindPathToPlayer:
 	jr .next1
 .playerIsLeftOfNPC
 	ld d, NPC_MOVEMENT_LEFT
+
 .next1
+	; [hFindPathXProgress]++
 	ld a, [hFindPathXProgress]
 	add 1
 	ld [hFindPathXProgress], a
 	jr .storeDirection
+
+	; Y距離の方がおおきい(このとき少なくともプレイヤーとNPCはY座標が異なる)
 .yDistanceGreater
+	; d = NPC_MOVEMENT_UP(プレイヤーがNPCより上) or NPC_MOVEMENT_DOWN(プレイヤーがNPCより下)
 	ld a, [hNPCPlayerRelativePosFlags]
 	bit 0, a
 	jr nz, .playerIsAboveNPC
@@ -75,17 +88,27 @@ FindPathToPlayer:
 	jr .next2
 .playerIsAboveNPC
 	ld d, NPC_MOVEMENT_UP
+
 .next2
+	; [hFindPathYProgress]++
 	ld a, [hFindPathYProgress]
 	add 1
 	ld [hFindPathYProgress], a
+
+; この時点でNPCの次の進行方向が d に入っている その進行をPathに加えて次のループに
 .storeDirection
+	; a = [wNPCMovementDirections2] = NPCの次の進行方向
 	ld a, d
 	ld [hli], a
+
+	; [hFindPathNumSteps]++
 	ld a, [hFindPathNumSteps]
 	inc a
 	ld [hFindPathNumSteps], a
+
 	jp .loop
+
+	; このとき、NPC-Playerの道筋が形成されている
 .done
 	ld [hl], $ff
 	ret

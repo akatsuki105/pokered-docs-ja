@@ -127,7 +127,7 @@ hFindPathNumSteps EQU $FF97
 ; bit 0: pathの終端のYcoordがtargetのYcoordと一致したときにセット  
 ; bit 1: pathの終端のXcoordがtargetのXcoordと一致したときにセット  
 ; 
-; 両方のbitがセットされている場合、pathのendがtargetの座標と一致していることを意味する(pathが見つかっているときなど)  
+; 両方のbitがセットされている場合、pathのendがtargetの座標と一致していることを意味する(Pathが見つかっているときなど)  
 hFindPathFlags EQU $FF98
 
 hFindPathYProgress EQU $FF99
@@ -137,12 +137,13 @@ hFindPathXProgress EQU $FF9A
 ; 1 = from NPC to player
 hNPCPlayerRelativePosPerspective EQU $FF9B
 
-; bit 0:
-; 0 = target is to the south or aligned
-; 1 = target is to the north
-; bit 1:
-; 0 = target is to the east or aligned
-; 1 = target is to the west
+; bit 0:  
+; 0 = target is to the south or aligned  
+; 1 = target is to the north  
+; 
+; bit 1:  
+; 0 = target is to the east or aligned  
+; 1 = target is to the west  
 hNPCPlayerRelativePosFlags EQU $FF9D
 
 ; いくつかのコードがこのフラグを0にしているが特に理由はなさそう  

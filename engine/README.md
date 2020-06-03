@@ -50,7 +50,7 @@ oak_speech.asm | null
 oak_speech2.asm | null
 oam_dma.asm | OAM DMA転送を行う処理
 palettes.asm | null
-pathfinding.asm | null
+pathfinding.asm | NPCがプレイヤーのところに歩いてくるときに道順(Path)を決定する処理
 play_time.asm | プレイ時間をフレーム単位でインクリメントする処理
 pokedex_rating.asm | ポケモン図鑑の評価テキストを表示する処理
 predefs.asm | predefに関するスクリプト <br/>predefについては[ドキュメント](../docs/predef.md)を参照
