@@ -133,20 +133,20 @@ hFindPathFlags EQU $FF98
 hFindPathYProgress EQU $FF99
 hFindPathXProgress EQU $FF9A
 
-; 0 = プレイヤーから見たNPC(観測者:プレイヤー target:NPC)  
-; 1 = NPCから見たプレイヤー(観測者:NPC target: プレイヤー)  
+; 0 = プレイヤーから見たNPC(base:プレイヤー target:NPC)  
+; 1 = NPCから見たプレイヤー(base:NPC target:プレイヤー)  
 hNPCPlayerRelativePosPerspective EQU $FF9B
 
 ; bit 0:  
-; 0 = target が 観測者 と同じY座標 か 観測者 より下 にいる 
-; 1 = target が 観測者 より 上 にいる
+; 0 = target が base と同じY座標 か base より下 にいる 
+; 1 = target が base より 上 にいる
 ; 
 ; bit 1:  
-; 0 = target が 観測者 と同じX座標か 観測者 より左にいる 
-; 1 = target が 観測者 より右にいる  
+; 0 = target が base と同じX座標か base より左にいる 
+; 1 = target が base より右にいる  
 ; 
-; hNPCPlayerRelativePosPerspective == 0 -> 観測者:プレイヤー, target:NPC  
-; hNPCPlayerRelativePosPerspective == 1 -> 観測者:NPC, target:プレイヤー
+; hNPCPlayerRelativePosPerspective == 0 -> base:プレイヤー, target:NPC  
+; hNPCPlayerRelativePosPerspective == 1 -> base:NPC, target:プレイヤー
 hNPCPlayerRelativePosFlags EQU $FF9D
 
 ; いくつかのコードがこのフラグを0にしているが特に理由はなさそう  
