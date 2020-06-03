@@ -3405,7 +3405,8 @@ MoveSprite_::
 	ld [wWastedByteCD3A], a
 	ret
 
-; divides [hDividend2] by [hDivisor2] and stores the quotient in [hQuotient2]
+; [hQuotient2] = [hDividend2] // [hDivisor2]  
+; Pathの処理でスプライトとプレイヤーの距離を計算する際に使用
 DivideBytes::
 	push hl
 	ld hl, hQuotient2

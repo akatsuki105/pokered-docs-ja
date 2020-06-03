@@ -113,13 +113,24 @@ FindPathToPlayer:
 	ld [hl], $ff
 	ret
 
+; **CalcPositionOfPlayerRelativeToNPC**  
+; プレイヤーが特定のNPCに対してどこにいるかを計算する
+; - - -  
+; OUTPUT: 
+; - [hNPCPlayerXDistance], [hNPCPlayerYDistance] = プレイヤーとスプライトの距離(歩数単位)
+; - [hNPCPlayerRelativePosFlags] = プレイヤーとNPCの位置関係 (hNPCPlayerRelativePosPerspective に注意)
 CalcPositionOfPlayerRelativeToNPC:
+	; [hNPCPlayerRelativePosFlags] = 0
 	xor a
 	ld [hNPCPlayerRelativePosFlags], a
+
+	; de = プレイヤーの座標(ピクセル単位)
 	ld a, [wSpriteStateData1 + 4] ; player's sprite screen Y position in pixels
 	ld d, a
 	ld a, [wSpriteStateData1 + 6] ; player's sprite screen X position in pixels
 	ld e, a
+
+	; hl = $c1x4 (x: 対象のスプライトオフセット)
 	ld hl, wSpriteStateData1
 	ld a, [hNPCSpriteOffset]
 	add l
@@ -127,63 +138,104 @@ CalcPositionOfPlayerRelativeToNPC:
 	ld l, a
 	jr nc, .noCarry
 	inc h
+
 .noCarry
+	; a = スプライトのY座標
+	; b = プレイヤーのY座標
 	ld a, d
 	ld b, a
-	ld a, [hli] ; NPC sprite screen Y position in pixels
-	call CalcDifference
+	ld a, [hli] ; hl = $c1x5
+
+	; スプライトのY座標 <= プレイヤーのY座標 -> .NPCSouthOfOrAlignedWithPlayer
+	call CalcDifference ; a = スプライトとプレイヤーのY距離
 	jr nc, .NPCSouthOfOrAlignedWithPlayer
+
+	; スプライトがプレイヤーより上にいるとき
 .NPCNorthOfPlayer
 	push hl
+
+	; hNPCPlayerRelativePosFlags の bit0 = 1
 	ld hl, hNPCPlayerRelativePosFlags
 	bit 0, [hl]
 	set 0, [hl]
+
 	pop hl
 	jr .divideYDistance
+
+	; スプライトがプレイヤーと同じY座標かプレイヤーより下にいるとき
 .NPCSouthOfOrAlignedWithPlayer
 	push hl
+	
+	; hNPCPlayerRelativePosFlags の bit0 = 0
 	ld hl, hNPCPlayerRelativePosFlags
 	bit 0, [hl]
 	res 0, [hl]
+
 	pop hl
+
+	; INPUT:  
+	; a = プレイヤーとスプライトのY距離(ピクセル単位)
 .divideYDistance
 	push hl
+
+	; [hNPCPlayerYDistance] = プレイヤーとスプライトのY距離(歩数単位)
 	ld hl, hDividend2
-	ld [hli], a
+	ld [hli], a ; [hDividend2] = プレイヤーとスプライトのY距離(ピクセル単位), hl = hDivisor2
 	ld a, 16
-	ld [hli], a
-	call DivideBytes ; divide Y absolute distance by 16
-	ld a, [hl] ; quotient
+	ld [hli], a ; [hDivisor2] = 16, hl = hQuotient2
+	call DivideBytes
+	ld a, [hl]
 	ld [hNPCPlayerYDistance], a
+
 	pop hl
+	
+	; a = スプライトのX座標
+	; b = プレイヤーのX座標
 	inc hl
 	ld b, e
-	ld a, [hl] ; NPC sprite screen X position in pixels
+	ld a, [hl]
+
+	; スプライトのX座標 <= プレイヤーのX座標 -> .NPCEastOfOrAlignedWithPlayer
 	call CalcDifference
 	jr nc, .NPCEastOfOrAlignedWithPlayer
+
+	; スプライトがプレイヤーより右にいるとき
 .NPCWestOfPlayer
 	push hl
+
+	; hNPCPlayerRelativePosFlags の bit1 = 1
 	ld hl, hNPCPlayerRelativePosFlags
 	bit 1, [hl]
 	set 1, [hl]
 	pop hl
 	jr .divideXDistance
+
+	; スプライトがプレイヤーと同じX座標かプレイヤーより左にいるとき
 .NPCEastOfOrAlignedWithPlayer
 	push hl
+
+	; hNPCPlayerRelativePosFlags の bit1 = 0
 	ld hl, hNPCPlayerRelativePosFlags
 	bit 1, [hl]
 	res 1, [hl]
+
 	pop hl
+
 .divideXDistance
+	; [hNPCPlayerXDistance] = プレイヤーとスプライトのX距離(歩数単位)
 	ld [hDividend2], a
 	ld a, 16
 	ld [hDivisor2], a
-	call DivideBytes ; divide X absolute distance by 16
+	call DivideBytes
 	ld a, [hQuotient2]
 	ld [hNPCPlayerXDistance], a
+
+	; プレイヤーから見たNPCの位置が欲しいときはそのまま終了
 	ld a, [hNPCPlayerRelativePosPerspective]
 	and a
 	ret z
+
+	; NPCから見たプレイヤーの位置が欲しいときは位置関係を反転させて終了
 	ld a, [hNPCPlayerRelativePosFlags]
 	cpl
 	and $3

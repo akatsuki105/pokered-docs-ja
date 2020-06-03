@@ -89,7 +89,7 @@ hSignCoordPointer EQU $FF95
 
 hNPCMovementDirections2Index EQU $FF95
 
-; CalcPositionOfPlayerRelativeToNPC
+; CalcPositionOfPlayerRelativeToNPC の処理対象のスプライトのオフセット
 hNPCSpriteOffset EQU $FF95
 
 ; temp value used when swapping bytes
@@ -133,17 +133,20 @@ hFindPathFlags EQU $FF98
 hFindPathYProgress EQU $FF99
 hFindPathXProgress EQU $FF9A
 
-; 0 = from player to NPC
-; 1 = from NPC to player
+; 0 = プレイヤーから見たNPC(観測者:プレイヤー target:NPC)  
+; 1 = NPCから見たプレイヤー(観測者:NPC target: プレイヤー)  
 hNPCPlayerRelativePosPerspective EQU $FF9B
 
 ; bit 0:  
-; 0 = target is to the south or aligned  
-; 1 = target is to the north  
+; 0 = target が 観測者 と同じY座標 か 観測者 より下 にいる 
+; 1 = target が 観測者 より 上 にいる
 ; 
 ; bit 1:  
-; 0 = target is to the east or aligned  
-; 1 = target is to the west  
+; 0 = target が 観測者 と同じX座標か 観測者 より左にいる 
+; 1 = target が 観測者 より右にいる  
+; 
+; hNPCPlayerRelativePosPerspective == 0 -> 観測者:プレイヤー, target:NPC  
+; hNPCPlayerRelativePosPerspective == 1 -> 観測者:NPC, target:プレイヤー
 hNPCPlayerRelativePosFlags EQU $FF9D
 
 ; いくつかのコードがこのフラグを0にしているが特に理由はなさそう  
