@@ -2,7 +2,9 @@
 ; プレイヤーがマップの外側の1タイルにいるかどうかをZフラグにいれて返す  
 ; - - -  
 ; 建物から外にでるときに使う？  
-; original: returns whether the player is one tile outside the map in Z  
+; 
+; OUTPUT:  
+; z = 0(外側にいる) or 1(いない)  
 IsPlayerJustOutsideMap:
 	; a = [wCurMapHeight] (32*32単位のマップの高さ)
 	; b = [wYCoord] (16*16単位のY座標)
