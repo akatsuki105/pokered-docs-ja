@@ -636,12 +636,14 @@ wAnimPalette:: ; cc79
 ; cc97
 wNPCMovementDirections2::
 
-wSwitchPartyMonTempBuffer:: ; cc97
+; cc97  
 ; temporary buffer when swapping party mon data
+wSwitchPartyMonTempBuffer::
 	ds 10
 
-wNumStepsToTake:: ; cca1
-; used in Pallet Town scripted movement
+; cca1  
+; used in Pallet Town scripted movement  
+wNumStepsToTake::
 	ds 49
 
 wRLEByteCount:: ; ccd2

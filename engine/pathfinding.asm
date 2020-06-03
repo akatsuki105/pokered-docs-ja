@@ -1,38 +1,54 @@
+; **FindPathToPlayer**  
+; - - -  
+; NPCがプレイヤーのところに歩いてくるときに道順を決定するために利用?  
 FindPathToPlayer:
 	xor a
+	
+	; Pathに関する変数をクリア
 	ld hl, hFindPathNumSteps
 	ld [hli], a ; hFindPathNumSteps
 	ld [hli], a ; hFindPathFlags
 	ld [hli], a ; hFindPathYProgress
 	ld [hl], a  ; hFindPathXProgress
+
 	ld hl, wNPCMovementDirections2
 	ld de, $0
 .loop
+	; a,d = abs([hNPCPlayerYDistance] - [hFindPathYProgress])
 	ld a, [hFindPathYProgress]
 	ld b, a
 	ld a, [hNPCPlayerYDistance] ; Y distance in steps
 	call CalcDifference
 	ld d, a
+
+	; a == 0 => hFindPathFlagsのbit0をセット
 	and a
 	jr nz, .asm_f8da
 	ld a, [hFindPathFlags]
 	set 0, a ; current end of path matches the player's Y coordinate
 	ld [hFindPathFlags], a
+
 .asm_f8da
+	; a,e = abs([hNPCPlayerXDistance] - [hFindPathXProgress])
 	ld a, [hFindPathXProgress]
 	ld b, a
 	ld a, [hNPCPlayerXDistance] ; X distance in steps
 	call CalcDifference
 	ld e, a
+
+	; a == 0 => hFindPathFlagsのbit1をセット
 	and a
 	jr nz, .asm_f8ec
 	ld a, [hFindPathFlags]
 	set 1, a ; current end of path matches the player's X coordinate
 	ld [hFindPathFlags], a
+
 .asm_f8ec
+	; hFindPathFlagsの bit0と bit1 がセットされている つまり Pathが見つかった -> .done
 	ld a, [hFindPathFlags]
-	cp $3 ; has the end of the path reached the player's position?
+	cp $3
 	jr z, .done
+	
 ; Compare whether the X distance between the player and the current of the path
 ; is greater or if the Y distance is. Then, try to reduce whichever is greater.
 	ld a, e

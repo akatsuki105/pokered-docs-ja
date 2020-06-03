@@ -119,16 +119,15 @@ H_NUMTOPRINT        EQU $FF96 ; 3 bytes
 H_POWEROFTEN        EQU $FF99 ; 3 bytes
 H_SAVEDNUMTOPRINT   EQU $FF9C ; 3 bytes
 
-; distance in steps between NPC and player
-hNPCPlayerYDistance EQU $FF95
-hNPCPlayerXDistance EQU $FF96
+hNPCPlayerYDistance EQU $FF95 ; NPCと主人公の間のY距離(歩数単位)
+hNPCPlayerXDistance EQU $FF96 ; NPCと主人公の間のX距離(歩数単位)
 
 hFindPathNumSteps EQU $FF97
 
-; bit 0: set when the end of the path's Y coordinate matches the target's
-; bit 1: set when the end of the path's X coordinate matches the target's
-; When both bits are set, the end of the path is at the target's position
-; (i.e. the path has been found).
+; bit 0: pathの終端のYcoordがtargetのYcoordと一致したときにセット  
+; bit 1: pathの終端のXcoordがtargetのXcoordと一致したときにセット  
+; 
+; 両方のbitがセットされている場合、pathのendがtargetの座標と一致していることを意味する(pathが見つかっているときなど)  
 hFindPathFlags EQU $FF98
 
 hFindPathYProgress EQU $FF99

@@ -3352,10 +3352,18 @@ DisplayYesNoChoice::
 	call DisplayTextBoxID
 	jp LoadScreenTilesFromBuffer1
 
-; calculates the difference |a-b|, setting carry flag if a<b
+; **CalcDifference**
+; abs(a-b)を計算する a < b のときはcarryを立てる  
+; - - -  
+; OUTPUT:  
+; - a = abs(a-b)
+; - carry = 0(a>b) or 1(a<b)
 CalcDifference::
+	; a > b なら引くだけで問題ない
 	sub b
 	ret nc
+	; a < b のとき
+	; 2の補数で絶対値にしてキャリーを立てて終了
 	cpl
 	add $1
 	scf
