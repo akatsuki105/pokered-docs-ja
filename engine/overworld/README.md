@@ -22,7 +22,7 @@ field_move_messages.asm | かいりきのテキストや、波乗りができな
 healing_machine.asm | 回復マシンの稼働時のアニメーション+サウンド処理
 hidden_items.asm | 隠しアイテム取得の処理
 hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する処理
-is_player_just_outside_map.asm | null
+is_player_just_outside_map.asm | プレイヤーがマップの外側の1タイルにいるかどうかを判定する処理
 item.asm | null
 ledges.asm | 段差飛び降り処理を行う
 map_sprites.asm | null

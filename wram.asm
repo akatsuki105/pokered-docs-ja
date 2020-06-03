@@ -2552,12 +2552,12 @@ wCurMapTileset::
 	ds 1
 
 ; d368  
-; blocks
+; マップの高さ (32*32pxのブロック単位)
 wCurMapHeight::
 	ds 1
 
 ; d369  
-; blocks
+; マップの長さ (32*32pxのブロック単位)
 wCurMapWidth::
 	ds 1
 
