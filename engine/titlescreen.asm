@@ -123,7 +123,7 @@ DisplayTitleScreen:
 	dec b
 	jr nz, .pokemonLogoLastTileRowLoop
 
-	; 
+	; 主人公のスプライトをタイトル画面に配置する
 	call DrawPlayerCharacter
 
 ; put a pokeball in the player's hand
