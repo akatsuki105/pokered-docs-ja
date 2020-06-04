@@ -242,19 +242,23 @@ CalcPositionOfPlayerRelativeToNPC:
 	ld [hNPCPlayerRelativePosFlags], a
 	ret
 
-; 
+; wNPCMovementDirections2の方向フォーマット -> JoypadのMaskフォーマット  
 ConvertNPCMovementDirectionsToJoypadMasks:
 	; [wNPCMovementDirections2Index] = [hNPCMovementDirections2Index]
 	ld a, [hNPCMovementDirections2Index]
 	ld [wNPCMovementDirections2Index], a
-	
-	dec a
+	dec a	; a = [hNPCMovementDirections2Index]-1
+
+	; de = wSimulatedJoypadStatesEnd
+	; hl = wNPCMovementDirections2
+	; a = wNPCMovementDirections2[ [hNPCMovementDirections2Index]-1 ]
 	ld de, wSimulatedJoypadStatesEnd
 	ld hl, wNPCMovementDirections2
 	add l
 	ld l, a
 	jr nc, .loop
 	inc h
+
 .loop
 	ld a, [hld]
 	call ConvertNPCMovementDirectionToJoypadMask
@@ -266,20 +270,35 @@ ConvertNPCMovementDirectionsToJoypadMasks:
 	jr nz, .loop
 	ret
 
+; **ConvertNPCMovementDirectionToJoypadMask**    
+; wNPCMovementDirections2の方向フォーマット -> JoypadのMaskフォーマット  
+; 
+; INPUT:  
+; a = wNPCMovementDirections2[ [hNPCMovementDirections2Index]-1 ]  
+; hl = wNPCMovementDirections2  
 ConvertNPCMovementDirectionToJoypadMask:
 	push hl
 	ld b, a
 	ld hl, NPCMovementDirectionsToJoypadMasksTable
 .loop
+	; NPCMovementDirectionsToJoypadMasksTableを順に見ていく
+
+	; a = NPCMovementDirectionsToJoypadMasksTableのエントリ
 	ld a, [hli]
+	
+	; 対応するのが見つからない -> .done
 	cp $ff
 	jr z, .done
+
+	; NPCMovementDirectionsToJoypadMasksTableのエントリに一致するものがある
 	cp b
 	jr z, .loadJoypadMask
+
+	; 次のループ(エントリ)へ
 	inc hl
 	jr .loop
 .loadJoypadMask
-	ld a, [hl]
+	ld a, [hl] ; D_UP or D_DOWN or D_LEFT or D_RIGHT
 .done
 	pop hl
 	ret

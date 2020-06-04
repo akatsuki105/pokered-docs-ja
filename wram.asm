@@ -633,7 +633,8 @@ wAnimPalette:: ; cc79
 
 	ds 29
 
-; cc97
+; cc97  
+; wSimulatedJoypadStatesEnd に対応する配列の先頭  
 wNPCMovementDirections2::
 
 ; cc97  
@@ -654,9 +655,9 @@ wAddedToParty:: ; ccd3
 ; 1 = added
 
 ; ccd3  
-; this is the end of the joypad states  
-; the list starts above this address and extends downwards in memory until here  
-; overloaded with below labels
+; wNPCMovementDirections2(cc97) から始まるキー入力の状態を表すリストの終端となるアドレス  
+; ccd3 - cc97 = 61バイト?  
+; このアドレスは他の用途でも使用される  
 wSimulatedJoypadStatesEnd::
 
 wParentMenuItem:: ; ccd3
