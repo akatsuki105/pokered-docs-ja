@@ -65,7 +65,7 @@ save.asm | null
 slot_machine.asm | null
 special_warps.asm | null
 status_ailments.asm | null
-subtract_paid_money.asm | null
+subtract_paid_money.asm | プレイヤーの支払った額をプレイヤーの所持金から引く処理
 test_battle.asm | null
 titlescreen.asm | null
 titlescreen2.asm | null
