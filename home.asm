@@ -31,22 +31,35 @@ SECTION "joypad", ROM0
 
 SECTION "Home", ROM0
 
+; **DisableLCD**  
+; LCDを無効化する  
+; - - -  
+; VBlank期間までまってからLCDCフラグを変更してLCDを無効化する
 DisableLCD::
+	; 割り込みフラグが立っているときはクリア
 	xor a
 	ld [rIF], a
+	; IEのVBlankフラグをクリアする (VBlankを無効化)
 	ld a, [rIE]
-	ld b, a
+	ld b, a ; bにクリア前のIEを退避
 	res 0, a
 	ld [rIE], a
 
+	; VBlankが始まるタイミングまで待機(VBlankは起きない)
 .wait
 	ld a, [rLY]
 	cp LY_VBLANK
 	jr nz, .wait
 
+	; VBlankのタイミング開始
+	; LCDCはVBlank期間内に変更しないといけない
+
+	; a &= %1111_0001 つまり スプライトの無効化?
 	ld a, [rLCDC]
-	and $ff ^ rLCDC_ENABLE_MASK
+	and $ff ^ rLCDC_ENABLE_MASK ; a &= %1111_0001
 	ld [rLCDC], a
+
+	; bに退避した元のIEを復帰して終了
 	ld a, b
 	ld [rIE], a
 	ret
@@ -3428,16 +3441,23 @@ DivideBytes::
 	ret
 
 
+; **LoadFontTilePatterns**  
+; フォントデータをVRAMに転送する関数 
 LoadFontTilePatterns::
+	; LCDが有効 -> .on
 	ld a, [rLCDC]
-	bit 7, a ; is the LCD enabled?
+	bit 7, a
 	jr nz, .on
+
+	; LCDが無効なとき、フォントデータをすぐに全てVRAMに転送する
 .off
 	ld hl, FontGraphics
 	ld de, vFont
-	ld bc, FontGraphicsEnd - FontGraphics
+	ld bc, FontGraphicsEnd - FontGraphics ; フォントデータ全体のサイズ
 	ld a, BANK(FontGraphics)
-	jp FarCopyDataDouble ; if LCD is off, transfer all at once
+	jp FarCopyDataDouble ; FontGraphics -> vFontにフォントデータを転送
+
+	; LCDが有効なとき、VBlank中にフォントデータを少しずつVRAMに転送する
 .on
 	ld de, FontGraphics
 	ld hl, vFont

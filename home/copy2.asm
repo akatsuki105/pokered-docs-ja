@@ -36,7 +36,7 @@ FarCopyData3::
 	ld [MBC1RomBank], a
 	ret
 
-; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー 
+; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー  
 ; その際に[hl]の1bppフォーマットのデータを2bppのデータに変換している
 FarCopyDataDouble::
 	; ROMバンクの保存と切り替え

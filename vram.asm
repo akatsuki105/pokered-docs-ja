@@ -5,9 +5,9 @@ vBGMap0 EQU $9800   ; BGマップ1
 vBGMap1 EQU $9c00   ; BGマップ2
 
 ; Battle/Menu
-vSprites  EQU vChars0
-vFont     EQU vChars1
-vFrontPic EQU vChars2
+vSprites  EQU vChars0 ; $8000
+vFont     EQU vChars1 ; $8800
+vFrontPic EQU vChars2 ; $9000
 vBackPic  EQU vFrontPic + 7 * 7 * $10
 
 ; Overworld

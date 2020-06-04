@@ -1,50 +1,73 @@
-; copy text of fixed length NAME_LENGTH (like player name, rival name, mon names, ...)
+; hlが示すアドレスからdeが示すアドレスに NAME_LENGTHバイト だけコピー
 CopyFixedLengthText:
 	ld bc, NAME_LENGTH
 	jp CopyData
 
 SetDefaultNamesBeforeTitlescreen:
+	; [wPlayerName] = "NINTEN@"
 	ld hl, NintenText
 	ld de, wPlayerName
 	call CopyFixedLengthText
+	; [wRivalName] = "SONY@"
 	ld hl, SonyText
 	ld de, wRivalName
 	call CopyFixedLengthText
+
+	; 各種変数を0クリア
 	xor a
-	ld [hWY], a
-	ld [wLetterPrintingDelayFlags], a
+	ld [hWY], a	; [hWY] = 0
+	ld [wLetterPrintingDelayFlags], a ; 遅延を無効化
 	ld hl, wd732
-	ld [hli], a
-	ld [hli], a
-	ld [hl], a
+	ld [hli], a ; [wd732] = 0
+	ld [hli], a ; [wFlags_D733] = 0
+	ld [hl], a	; [wBeatLorelei] = 0
+
 	ld a, BANK(Music_TitleScreen)
 	ld [wAudioROMBank], a
 	ld [wAudioSavedROMBank], a
 
 DisplayTitleScreen:
 	call GBPalWhiteOut
+
+	; 自動的なBG転送を有効化
 	ld a, $1
 	ld [H_AUTOBGTRANSFERENABLED], a
+
+	; 花、水のアニメーションをoff
 	xor a
 	ld [hTilesetType], a
+
+	; scroll = ($0, $40) = (0, 64)
 	ld [hSCX], a
 	ld a, $40
 	ld [hSCY], a
+
+	; ウィンドウを無効化
 	ld a, $90
 	ld [hWY], a
+
+	; タイトル画面表示の準備
 	call ClearScreen
 	call DisableLCD
 	call LoadFontTilePatterns
+
+	; 以後VRAMのタイルデータ格納場所にタイトル画面のグラフィックデータをコピーしていく
+	
+	; Nintendo のコピーライト
 	ld hl, NintendoCopyrightLogoGraphics
 	ld de, vTitleLogo2 + $100
 	ld bc, $50
 	ld a, BANK(NintendoCopyrightLogoGraphics)
 	call FarCopyData2
+
+	; Gamefreak のロゴ
 	ld hl, GamefreakLogoGraphics
 	ld de, vTitleLogo2 + $100 + $50
 	ld bc, $90
 	ld a, BANK(GamefreakLogoGraphics)
 	call FarCopyData2
+
+	; ポケモンのロゴ
 	ld hl, PokemonLogoGraphics
 	ld de, vTitleLogo
 	ld bc, $600
@@ -55,12 +78,19 @@ DisplayTitleScreen:
 	ld bc, $100
 	ld a, BANK(PokemonLogoGraphics)
 	call FarCopyData2          ; second chunk
+
+	; 赤版/青版のグラフィックデータ
 	ld hl, Version_GFX
 	ld de, vChars2 + $600 - (Version_GFXEnd - Version_GFX - $50)
 	ld bc, Version_GFXEnd - Version_GFX
 	ld a, BANK(Version_GFX)
 	call FarCopyDataDouble
+
+	; BGMapをクリアする
 	call ClearBothBGMaps
+
+	; ここまででVRAMのtile Data領域に必要なアセットをロードし、BGMapはクリアした
+	; これからBGMapにタイトル画面のアセットを配置してタイトル画面を描画していく
 
 ; place tiles for pokemon logo (except for the last row)
 	coord hl, 2, 1
@@ -344,6 +374,10 @@ DrawPlayerCharacter:
 	jr nz, .loop
 	ret
 
+; **ClearBothBGMaps**  
+; BGMap全体をクリアする  
+; - - -  
+; BGMap全体($9800-$9fff)を空白のタイル番号で埋め尽くしてクリアする
 ClearBothBGMaps:
 	ld hl, vBGMap0
 	ld bc, $400 * 2
@@ -399,5 +433,7 @@ IF DEF(_BLUE)
 	db $61,$62,$63,$64,$65,$66,$67,$68,"@" ; "Blue Version"
 ENDC
 
+; "NINTEN@"
 NintenText: db "NINTEN@"
+; "SONY@"
 SonyText:   db "SONY@"
