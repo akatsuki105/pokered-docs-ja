@@ -92,25 +92,28 @@ DisplayTitleScreen:
 	; ここまででVRAMのtile Data領域に必要なアセットをロードし、BGMapはクリアした
 	; これからBGMapにタイトル画面のアセットを配置してタイトル画面を描画していく
 
-; place tiles for pokemon logo (except for the last row)
+	; タイトルロゴを配置する(タイトルロゴの最後の行は除く)
 	coord hl, 2, 1
-	ld a, $80
+	ld a, $80 ; $80+x -> タイトルロゴのタイル番号
 	ld de, SCREEN_WIDTH
-	ld c, 6
+	ld c, 6 ; タイル6行分
+	; タイトルロゴを1行ずつ配置するループ
 .pokemonLogoTileLoop
-	ld b, $10
+	ld b, $10 ; タイル16枚分(16px -> 144pxまで配置)
 	push hl
-.pokemonLogoTileRowLoop ; place tiles for one row
+	; タイトルロゴを現在処理中の行に1タイルずつ配置する
+.pokemonLogoTileRowLoop
 	ld [hli], a
 	inc a
 	dec b
 	jr nz, .pokemonLogoTileRowLoop
+	; 次の行へ
 	pop hl
 	add hl, de
 	dec c
 	jr nz, .pokemonLogoTileLoop
 
-; place tiles for the last row of the pokemon logo
+; タイトルロゴの最後の行を配置する
 	coord hl, 2, 7
 	ld a, $31
 	ld b, $10
@@ -120,6 +123,7 @@ DisplayTitleScreen:
 	dec b
 	jr nz, .pokemonLogoLastTileRowLoop
 
+	; 
 	call DrawPlayerCharacter
 
 ; put a pokeball in the player's hand
