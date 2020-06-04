@@ -242,9 +242,12 @@ CalcPositionOfPlayerRelativeToNPC:
 	ld [hNPCPlayerRelativePosFlags], a
 	ret
 
+; 
 ConvertNPCMovementDirectionsToJoypadMasks:
+	; [wNPCMovementDirections2Index] = [hNPCMovementDirections2Index]
 	ld a, [hNPCMovementDirections2Index]
 	ld [wNPCMovementDirections2Index], a
+	
 	dec a
 	ld de, wSimulatedJoypadStatesEnd
 	ld hl, wNPCMovementDirections2
