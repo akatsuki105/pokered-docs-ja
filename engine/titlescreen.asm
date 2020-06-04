@@ -341,35 +341,45 @@ ScrollTitleScreenGameVersion:
 	jr z, .wait2
 	ret
 
+; プレイヤーのグラフィックデータをOAMに配置する
 DrawPlayerCharacter:
+	; プレイヤーのグラフィックデータをVRAMのタイルデータ領域に配置する
 	ld hl, PlayerCharacterTitleGraphics
 	ld de, vSprites
 	ld bc, PlayerCharacterTitleGraphicsEnd - PlayerCharacterTitleGraphics
 	ld a, BANK(PlayerCharacterTitleGraphics)
 	call FarCopyData2
+
 	call ClearSprites
 	xor a
 	ld [wPlayerCharacterOAMTile], a
 	ld hl, wOAMBuffer
-	ld de, $605a
-	ld b, 7
+	ld de, $605a ; Y=$60 X=$5a
+	ld b, 7 ; loopのループ回数 = 7
+	; 主人公のスプライトを1行ずつ配置するループ
 .loop
 	push de
-	ld c, 5
+	ld c, 5 ; innerLoopのループ回数 = 5
+	; 現在処理中の行に主人公のスプライトを1タイルずつ配置するループ
 .innerLoop
+	; OAMにYを配置
 	ld a, d
-	ld [hli], a ; Y
+	ld [hli], a
+	; OAMにXを配置して 次のループのために+8
 	ld a, e
-	ld [hli], a ; X
+	ld [hli], a
 	add 8
 	ld e, a
+	; OAMにタイル番号を配置して [wPlayerCharacterOAMTile]++ する
 	ld a, [wPlayerCharacterOAMTile]
-	ld [hli], a ; tile
+	ld [hli], a
 	inc a
 	ld [wPlayerCharacterOAMTile], a
+	; 次のループ(OAM)
 	inc hl
 	dec c
 	jr nz, .innerLoop
+	; 次の行
 	pop de
 	ld a, 8
 	add d

@@ -946,7 +946,10 @@ wPriceTemp:: ; cd3d
 
 wTitleMonSpecies:: ; cd3d
 
-wPlayerCharacterOAMTile:: ; cd3d
+; cd3d  
+; タイトル画面で主人公を表示するとき、タイルをOAMにループ処理で配置していく  
+; その際、ループで配置するタイル番号を格納する
+wPlayerCharacterOAMTile::
 
 wMoveDownSmallStarsOAMCount:: ; cd3d
 ; the number of small stars OAM entries to move down
