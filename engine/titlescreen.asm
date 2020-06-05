@@ -79,7 +79,7 @@ DisplayTitleScreen:
 	ld a, BANK(PokemonLogoGraphics)
 	call FarCopyData2          ; second chunk
 
-	; 赤版/青版のグラフィックデータ
+	; バージョンデータ(赤版/青版)
 	ld hl, Version_GFX
 	ld de, vChars2 + $600 - (Version_GFXEnd - Version_GFX - $50)
 	ld bc, Version_GFXEnd - Version_GFX
@@ -131,7 +131,7 @@ DisplayTitleScreen:
 	ld a, $74
 	ld [hl], a
 
-	; タイトル画面のコピーライトのタイルを配置する
+	; タイトル画面の最下部にコピーライトのタイルを配置する
 	coord hl, 2, 17
 	ld de, .tileScreenCopyrightTiles
 	ld b, $10
@@ -145,17 +145,20 @@ DisplayTitleScreen:
 	jr .next
 
 .tileScreenCopyrightTiles
-	db $41,$42,$43,$42,$44,$42,$45,$46,$47,$48,$49,$4A,$4B,$4C,$4D,$4E ; Â©'95.'96.'98 GAME FREAK inc.
+	db $41,$42,$43,$42,$44,$42,$45,$46,$47,$48,$49,$4A,$4B,$4C,$4D,$4E ; ©'95.'96.'98 GAME FREAK inc.
 
 .next
+	; 配置した画面データをLCDに反映させる
 	call SaveScreenTilesToBuffer2
 	call LoadScreenTilesFromBuffer2
 	call EnableLCD
+
+	; a = CHARMANDER or SQUIRTLE = タイトル画面で最初に表示されるポケモン
 IF DEF(_RED)
-	ld a, CHARMANDER ; which Pokemon to show first on the title screen
+	ld a, CHARMANDER
 ENDC
 IF DEF(_BLUE)
-	ld a, SQUIRTLE ; which Pokemon to show first on the title screen
+	ld a, SQUIRTLE
 ENDC
 
 	ld [wTitleMonSpecies], a
@@ -398,6 +401,7 @@ ClearBothBGMaps:
 	ld a, " "
 	jp FillMemory
 
+; INPUT: a = 表示するポケモンのID
 LoadTitleMonSprite:
 	ld [wcf91], a
 	ld [wd0b5], a

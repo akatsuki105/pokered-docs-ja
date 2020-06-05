@@ -289,31 +289,51 @@ LoadFlippedFrontSpriteByMonIndex::
 	ld a, 1
 	ld [wSpriteFlipped], a
 
+; **LoadFrontSpriteByMonIndex**  
+; ポケモンの正面グラフィックデータを取得する  
+; - - -  
+; INPUT:  
+; - [wcf91] = ポケモンID
 LoadFrontSpriteByMonIndex::
-	push hl
+	push hl ; stack_depth = 0
+	
+	; a = [wd11e] = ポケモンID
 	ld a, [wd11e]
-	push af
+	push af ; stack_depth = 1
 	ld a, [wcf91]
 	ld [wd11e], a
+	
+	; a = 図鑑番号
 	predef IndexToPokedex
 	ld hl, wd11e
 	ld a, [hl]
-	pop bc
+
+	; [wd11e] = ポケモンID
+	pop bc ; stack_depth = 1
 	ld [hl], b
+
+	; 151 >= 図鑑番号 >= 0 -> .validDexNumber
+	; 図鑑番号 == 0 or 図鑑番号 > 151 -> .invalidDexNumber
 	and a
 	pop hl
-	jr z, .invalidDexNumber ; dex #0 invalid
+	jr z, .invalidDexNumber
 	cp NUM_POKEMON + 1
-	jr c, .validDexNumber   ; dex >#151 invalid
+	jr c, .validDexNumber
+
 .invalidDexNumber
+	; 図鑑番号が不正のときはサイドンになる
 	ld a, RHYDON ; $1
 	ld [wcf91], a
 	ret
+
 .validDexNumber
+	; ポケモンのグラフィックデータをVRAMに配置
 	push hl
 	ld de, vFrontPic
 	call LoadMonFrontSprite
 	pop hl
+
+	; 
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, Bank(CopyUncompressedPicToHL)
@@ -764,16 +784,25 @@ PrintBCDDigit::
 	inc hl ; if right-aligned, "print" a space by advancing the pointer
 	ret
 
-; uncompresses the front or back sprite of the specified mon
-; assumes the corresponding mon header is already loaded
-; hl contains offset to sprite pointer ($b for front or $d for back)
+; **UncompressMonSprite**  
+; 圧縮されたポケモンのグラフィックデータを解凍する  
+; - - -  
+; 対象は正面グラでも背面グラでも可  
+; 前提として対象のPokemon Headerがロード済みである必要がある  
+; 
+; INPUT:  
+; [wMonHeader] = 対象のポケモンのPokemon Header  
+; hl = $b(正面グラ) or $d(背面グラ)
 UncompressMonSprite::
+	; hl = wMonHFrontSprite or wMonHBackSprite
 	ld bc, wMonHeader
 	add hl, bc
+	; a = スプライトのグラのアドレス
 	ld a, [hli]
 	ld [wSpriteInputPtr], a    ; fetch sprite input pointer
 	ld a, [hl]
 	ld [wSpriteInputPtr+1], a
+
 ; define (by index number) the bank that a pokemon's image is in
 ; index = Mew, bank 1
 ; index = Kabutops fossil, bank $B
@@ -811,10 +840,11 @@ UncompressMonSprite::
 .GotBank
 	jp UncompressSpriteData
 
-; de: destination location
+; **LoadMonFrontSprite**
+; ポケモンの正面のグラフィックデータをdeにロードする
 LoadMonFrontSprite::
 	push de
-	ld hl, wMonHFrontSprite - wMonHeader
+	ld hl, wMonHFrontSprite - wMonHeader ; hl = b => 正面グラ
 	call UncompressMonSprite
 	ld hl, wMonHSpriteDim
 	ld a, [hli]

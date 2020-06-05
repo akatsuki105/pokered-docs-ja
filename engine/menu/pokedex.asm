@@ -646,7 +646,8 @@ PokedexToIndex:
 	pop bc
 	ret
 
-; ポケモンIDを図鑑番号に変換する
+; **IndexToPokedex**  
+; [wd11e]に入ったポケモンIDを図鑑番号に変換して[wd11e]に入れて返す  
 IndexToPokedex:
 	push bc
 	push hl

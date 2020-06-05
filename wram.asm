@@ -944,7 +944,9 @@ wWhichBadge:: ; cd3d
 wPriceTemp:: ; cd3d
 ; 3-byte BCD number
 
-wTitleMonSpecies:: ; cd3d
+; cd3d  
+; タイトル画面で表示されているポケモンのIDを保持  
+wTitleMonSpecies::
 
 ; cd3d  
 ; タイトル画面で主人公を表示するとき、タイルをOAMにループ処理で配置していく  
@@ -2119,7 +2121,9 @@ wSpriteDecodeTable1Ptr:: ; d0b3
 ; pointer to differential decoding table (assuming initial value 1)
 	ds 2
 
-wd0b5:: ds 1 ; used as a temp storage area for Pokemon Species, and other Pokemon/Battle related things
+; d0b5  
+; ポケモンの種類(ID)を一時的に格納する場所として使われる他、戦闘に関するデータを保持したりする  
+wd0b5:: ds 1
 
 ; d0b6
 wNameListType::
