@@ -26,6 +26,10 @@ SetDefaultNamesBeforeTitlescreen:
 	ld [wAudioROMBank], a
 	ld [wAudioSavedROMBank], a
 
+; **DisplayTitleScreen**  
+; タイトル画面を表示する処理  
+; - - -  
+; ポケモンのロゴが上から降りてきてバウンドが終わるまでを描画する
 DisplayTitleScreen:
 	call GBPalWhiteOut
 
@@ -190,23 +194,32 @@ ENDC
 	ld bc, hSCY ; background scroll Y
 	ld hl, .TitleScreenPokemonLogoYScrolls
 .bouncePokemonLogoLoop
-	ld a, [hli]
+	ld a, [hli] ; a = yスクロール量
+	
+	; .TitleScreenPokemonLogoYScrollsの終わりに来たら終了
 	and a
 	jr z, .finishedBouncingPokemonLogo
+	
+	; d = yスクロール量
 	ld d, a
+	; yスクロール量 == -3のとき、SFX_INTRO_CRASHを鳴らす
 	cp -3
 	jr nz, .skipPlayingSound
 	ld a, SFX_INTRO_CRASH
 	call PlaySound
+
 .skipPlayingSound
 	ld a, [hli]
-	ld e, a
+	ld e, a ; e = スクロール回数
 	call .ScrollTitleScreenPokemonLogo
+	; 次のバウンス処理へ
 	jr .bouncePokemonLogoLoop
+	; バウンス処理が終わったなら.finishedBouncingPokemonLogo へジャンプされる
 
+; ポケモンのロゴがタイトル画面で上下にバウンドする処理を制御するテーブル  
+; 各エントリ = yスクロール量, スクロールする回数  
 .TitleScreenPokemonLogoYScrolls:
-; Controls the bouncing effect of the Pokemon logo on the title screen
-	db -4,16  ; y scroll amount, number of times to scroll
+	db -4,16 ; 最初のロゴが降りてくる処理
 	db 3,4
 	db -3,4
 	db 2,2
@@ -215,9 +228,9 @@ ENDC
 	db -1,2
 	db 0      ; terminate list with 0
 
+; 上下にバウンドするエフェクトのためにポケモンのロゴをスクロールさせる  
+; dピクセルのスクロールをe回する(つまり合計でd*eピクセル動く)  
 .ScrollTitleScreenPokemonLogo:
-; Scrolls the Pokemon logo on the title screen to create the bouncing effect
-; Scrolls d pixels e times
 	call DelayFrame
 	ld a, [bc] ; background scroll Y
 	add d
@@ -226,6 +239,7 @@ ENDC
 	jr nz, .ScrollTitleScreenPokemonLogo
 	ret
 
+; タイトル画面でポケモンのロゴのバウンド処理が終わった後にここに来る  
 .finishedBouncingPokemonLogo
 	call LoadScreenTilesFromBuffer1
 	ld c, 36
