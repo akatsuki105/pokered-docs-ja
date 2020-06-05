@@ -126,12 +126,12 @@ DisplayTitleScreen:
 	; 主人公のスプライトをタイトル画面に配置する
 	call DrawPlayerCharacter
 
-; put a pokeball in the player's hand
+	; 主人公の手とモンスターボールを配置
 	ld hl, wOAMBuffer + $28
 	ld a, $74
 	ld [hl], a
 
-; place tiles for title screen copyright
+	; タイトル画面のコピーライトのタイルを配置する
 	coord hl, 2, 17
 	ld de, .tileScreenCopyrightTiles
 	ld b, $10
