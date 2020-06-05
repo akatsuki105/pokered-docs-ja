@@ -7046,43 +7046,63 @@ AnimateSendingOutMon:
 	add $31
 	jr CopyUncompressedPicToHL
 
+; **CopyUncompressedPicToTilemap**
+; GetPredefPointer で退避した値をhlに格納して CopyUncompressedPicToHL
 CopyUncompressedPicToTilemap:
 	ld a, [wPredefRegisters]
 	ld h, a
-	ld a, [wPredefRegisters + 1]
+	ld a, [wPredefRegisters + 1] ; hl = [wPredefRegisters]
 	ld l, a
-	ld a, [hStartTileID]
+	ld a, [hStartTileID] ; a = [hStartTileID]
+; Uncompressedされたグラフィックデータ(7行7列)を hl のアドレスにコピー
 CopyUncompressedPicToHL:
 	lb bc, 7, 7
 	ld de, SCREEN_WIDTH
 	push af
+	
+	; [wSpriteFlipped] != 0 -> .flipped
 	ld a, [wSpriteFlipped]
 	and a
 	jr nz, .flipped
-	pop af
+
+	; [wSpriteFlipped] == 0
+	pop af ; a = [hStartTileID]
+
+	; 7行7列のグラフィックデータを hl を始点としてコピーしていく
+	; 1行ずつではなく1列ずつコピーしていく
 .loop
-	push bc
-	push hl
+	push bc ; bc = 7 << 4 | 7 (7行7列)
+	push hl ; 0行i列 (i = .loopのループインデックス)
+	
+	; n列目(.loop)について1行ずつ処理していくループ
 .innerLoop
+	; [hl] = a++ (hlにグラフィックデータをコピー)
+	; hl += de (次の行)
 	ld [hl], a
 	add hl, de
 	inc a
 	dec c
 	jr nz, .innerLoop
+
+	; 次の列へ
 	pop hl
 	inc hl
 	pop bc
 	dec b
 	jr nz, .loop
+	; 全部コピーしたら終了
 	ret
 
 .flipped
+	; [wSpriteFlipped] != 0のとき
+	; hl += 6 して 7行7列分コピー
 	push bc
 	ld b, 0
 	dec c
-	add hl, bc
+	add hl, bc ; hl += 6
 	pop bc
 	pop af
+	; .loop, .innerLoopと同じように7行7列コピー
 .flippedLoop
 	push bc
 	push hl

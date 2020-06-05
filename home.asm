@@ -293,6 +293,7 @@ LoadFlippedFrontSpriteByMonIndex::
 ; ポケモンの正面グラフィックデータを取得する  
 ; - - -  
 ; INPUT:  
+; - hl = グラフィックデータをロードする先(BGMapアドレスなど)  
 ; - [wcf91] = ポケモンID
 LoadFrontSpriteByMonIndex::
 	push hl ; stack_depth = 0
@@ -321,7 +322,7 @@ LoadFrontSpriteByMonIndex::
 	jr c, .validDexNumber
 
 .invalidDexNumber
-	; 図鑑番号が不正のときはサイドンになる
+	; 図鑑番号が不正のときはサイドンのIDを入れて終了
 	ld a, RHYDON ; $1
 	ld [wcf91], a
 	ret
@@ -333,17 +334,21 @@ LoadFrontSpriteByMonIndex::
 	call LoadMonFrontSprite
 	pop hl
 
-	; 
+	; CopyUncompressedPicToHL のあるバンクに切り替え
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, Bank(CopyUncompressedPicToHL)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	; a = [hStartTileID] = 0
 	xor a
 	ld [hStartTileID], a
-	call CopyUncompressedPicToHL
+	call CopyUncompressedPicToHL ; hl = 関数呼び出し時の hl
+
 	xor a
-	ld [wSpriteFlipped], a
+	ld [wSpriteFlipped], a ; [wSpriteFlipped] = 0
+	; タイルを復帰
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

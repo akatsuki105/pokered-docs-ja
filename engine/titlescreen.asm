@@ -407,7 +407,7 @@ LoadTitleMonSprite:
 	ld [wd0b5], a
 	coord hl, 5, 10
 	call GetMonHeader
-	jp LoadFrontSpriteByMonIndex
+	jp LoadFrontSpriteByMonIndex ; hl = (5, 10)のBGMapアドレス
 
 TitleScreenCopyTileMapToVRAM:
 	ld [H_AUTOBGTRANSFERDEST + 1], a
