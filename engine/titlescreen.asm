@@ -148,8 +148,8 @@ DisplayTitleScreen:
 	db $41,$42,$43,$42,$44,$42,$45,$46,$47,$48,$49,$4A,$4B,$4C,$4D,$4E ; ©'95.'96.'98 GAME FREAK inc.
 
 .next
-	; 配置した画面データをLCDに反映させる
-	call SaveScreenTilesToBuffer2
+	; 配置したタイトル画面のデータを wTileMapBackup2 を保存する
+	call SaveScreenTilesToBuffer2 ; 
 	call LoadScreenTilesFromBuffer2
 	call EnableLCD
 
@@ -160,24 +160,33 @@ ENDC
 IF DEF(_BLUE)
 	ld a, SQUIRTLE
 ENDC
-
+	; ポケモンのグラフィックを(5, 10)に配置
 	ld [wTitleMonSpecies], a
 	call LoadTitleMonSprite
+
+	; wTileMapに配置したグラフィックデータをVRAM($9b00~)に転送する
 	ld a, (vBGMap0 + $300) / $100
 	call TitleScreenCopyTileMapToVRAM
-	call SaveScreenTilesToBuffer1
+
+	call SaveScreenTilesToBuffer1 ; ポケモン有りのタイトル画面を保存
+
+	; WY = 64
 	ld a, $40
 	ld [hWY], a
+	
+	; ポケモン無しのタイトル画面を$9800に配置する
 	call LoadScreenTilesFromBuffer2
 	ld a, vBGMap0 / $100
 	call TitleScreenCopyTileMapToVRAM
+
+	; パレットを通常のパレットにする
 	ld b, SET_PAL_TITLE_SCREEN
 	call RunPaletteCommand
 	call GBPalNormal
 	ld a, %11100100
 	ld [rOBP0], a
 
-; make pokemon logo bounce up and down
+	; ポケモンのロゴを上下にバウンドさせる
 	ld bc, hSCY ; background scroll Y
 	ld hl, .TitleScreenPokemonLogoYScrolls
 .bouncePokemonLogoLoop
@@ -401,37 +410,64 @@ ClearBothBGMaps:
 	ld a, " "
 	jp FillMemory
 
-; INPUT: a = 表示するポケモンのID
+; **LoadTitleMonSprite**  
+; (5, 10)のBGMapにポケモンのグラを配置する  
+; - - -  
+; INPUT: a = 表示するポケモンのID  
 LoadTitleMonSprite:
 	ld [wcf91], a
 	ld [wd0b5], a
 	coord hl, 5, 10
 	call GetMonHeader
 	jp LoadFrontSpriteByMonIndex ; hl = (5, 10)のBGMapアドレス
+	; LoadFrontSpriteByMonIndexでretされる
 
+; **TitleScreenCopyTileMapToVRAM**  
+; コピーライトをVRAMに配置する  
+; - - -  
+; 転送先にaをセットして終了(Delay3の中で)  
+; INPUT: a = 転送先のVRAMアドレス  
 TitleScreenCopyTileMapToVRAM:
 	ld [H_AUTOBGTRANSFERDEST + 1], a
 	jp Delay3
 
+; **LoadCopyrightAndTextBoxTiles**  
+; コピーライトとテキストボックスのタイルをVRAMに転送する関数  
+; - - -  
+; テキストボックスは後の LoadCopyrightTiles で使う  
 LoadCopyrightAndTextBoxTiles:
 	xor a
 	ld [hWY], a
 	call ClearScreen
 	call LoadTextBoxTilePatterns
 
+; **LoadCopyrightTiles**  
+; コピーライトのタイルをVRAMにロードした後、  
+; 
+; ©'95.'96.'98 Nintendo  
+; ©'95.'96.'98 Creatures inc.  
+; ©'95.'96.'98 GAME FREAK inc.  
+; 
+; を画面に描画する  
 LoadCopyrightTiles:
+	; コピーライトのタイルをVRAMにロード
 	ld de, NintendoCopyrightLogoGraphics
 	ld hl, vChars2 + $600
 	lb bc, BANK(NintendoCopyrightLogoGraphics), (GamefreakLogoGraphicsEnd - NintendoCopyrightLogoGraphics) / $10
 	call CopyVideoData
+
+	; CopyrightTextString を描画
 	coord hl, 2, 7
 	ld de, CopyrightTextString
 	jp PlaceString
 
+; ©'95.'96.'98 Nintendo  
+; ©'95.'96.'98 Creatures inc.  
+; ©'95.'96.'98 GAME FREAK inc.  
 CopyrightTextString:
-	db   $60,$61,$62,$61,$63,$61,$64,$7F,$65,$66,$67,$68,$69,$6A             ; Â©'95.'96.'98 Nintendo
-	next $60,$61,$62,$61,$63,$61,$64,$7F,$6B,$6C,$6D,$6E,$6F,$70,$71,$72     ; Â©'95.'96.'98 Creatures inc.
-	next $60,$61,$62,$61,$63,$61,$64,$7F,$73,$74,$75,$76,$77,$78,$79,$7A,$7B ; Â©'95.'96.'98 GAME FREAK inc.
+	db   $60,$61,$62,$61,$63,$61,$64,$7F,$65,$66,$67,$68,$69,$6A             ; ©'95.'96.'98 Nintendo
+	next $60,$61,$62,$61,$63,$61,$64,$7F,$6B,$6C,$6D,$6E,$6F,$70,$71,$72     ; ©'95.'96.'98 Creatures inc.
+	next $60,$61,$62,$61,$63,$61,$64,$7F,$73,$74,$75,$76,$77,$78,$79,$7A,$7B ; ©'95.'96.'98 GAME FREAK inc.
 	db   "@"
 
 INCLUDE "data/title_mons.asm"

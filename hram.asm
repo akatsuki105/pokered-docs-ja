@@ -204,7 +204,7 @@ TRANSFERBOTTOM EQU 2
 ; 02 = bottom third of background
 H_AUTOBGTRANSFERPORTION EQU $FFBB
 
-; the destination address of the automatic background transfer
+; 自動的なBG転送の転送先のアドレス
 H_AUTOBGTRANSFERDEST EQU $FFBC ; 2 bytes
 
 ; temporary storage for stack pointer during memory transfers that use pop

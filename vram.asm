@@ -8,7 +8,7 @@ vBGMap1 EQU $9c00   ; BGマップ2
 vSprites  EQU vChars0 ; $8000
 vFont     EQU vChars1 ; $8800
 vFrontPic EQU vChars2 ; $9000
-vBackPic  EQU vFrontPic + 7 * 7 * $10
+vBackPic  EQU vFrontPic + 7 * 7 * $10 ; $9490
 
 ; Overworld
 vNPCSprites  EQU vChars0
@@ -16,6 +16,6 @@ vNPCSprites2 EQU vChars1
 vTileset     EQU vChars2
 
 ; Title
-vTitleLogo  EQU vChars1
-vTitleLogo2 EQU vFrontPic + 7 * 7 * $10
+vTitleLogo  EQU vChars1 ; $8800 
+vTitleLogo2 EQU vFrontPic + 7 * 7 * $10 ; $9490
 

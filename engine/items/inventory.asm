@@ -1,7 +1,7 @@
 ; **AddItemToInventory_**  
 ; アイテムをプレイヤーのインベントリに追加する関数(個数は問わない)  
 ; - - - 
-; AddItemToInventory の内部でのみ呼び出される処理
+; AddItemToInventory の内部でのみ呼び出される処理  
 ; 成功したときにはcarryをセット、失敗したときにはcarryをクリアする  
 ; INPUT:  
 ; - hl = インベントリのアドレス (wNumBagItems  or wNumBoxItems)  

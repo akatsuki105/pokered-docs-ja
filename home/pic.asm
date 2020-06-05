@@ -1,17 +1,21 @@
-; bankswitches and runs _UncompressSpriteData
-; bank is given in a, sprite input stream is pointed to in wSpriteInputPtr
+; **UncompressSpriteData**  
+; 対象のグラフィックがあるバンクにスイッチして _UncompressSpriteData を呼び出す  
+; スイッチしたバンクのどのアドレスからグラフィックデータがあるかは wSpriteInputPtr に格納されている  
 UncompressSpriteData::
+	; グラフィックデータのあるバンクにスイッチ
 	ld b, a
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, b
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+	; SRAMの変数を設定
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
 	xor a
 	ld [MBC1SRamBank], a
 	call _UncompressSpriteData
+	; バンクを戻す
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

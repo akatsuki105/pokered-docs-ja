@@ -797,7 +797,8 @@ PrintBCDDigit::
 ; 
 ; INPUT:  
 ; [wMonHeader] = 対象のポケモンのPokemon Header  
-; hl = $b(正面グラ) or $d(背面グラ)
+; hl = $b(正面グラ) or $d(背面グラ)  
+; [wcf91] = ポケモンID  
 UncompressMonSprite::
 	; hl = wMonHFrontSprite or wMonHBackSprite
 	ld bc, wMonHeader
@@ -808,14 +809,14 @@ UncompressMonSprite::
 	ld a, [hl]
 	ld [wSpriteInputPtr+1], a
 
-; define (by index number) the bank that a pokemon's image is in
-; index = Mew, bank 1
-; index = Kabutops fossil, bank $B
-; index < $1F, bank 9
-; $1F ≤ index < $4A, bank $A
-; $4A ≤ index < $74, bank $B
-; $74 ≤ index < $99, bank $C
-; $99 ≤ index,       bank $D
+; [wcf91]に格納されているポケモンIDを使ってポケモンのグラがあるバンクを決定する  
+; Mew -> bank 1
+; Kabutops fossil -> bank $B
+; PokemonID < $1F -> bank 9
+; $1F ≤ PokemonID < $4A -> bank $A
+; $4A ≤ PokemonID < $74 -> bank $B
+; $74 ≤ PokemonID < $99 -> bank $C
+; $99 ≤ PokemonID ->       bank $D
 	ld a, [wcf91] ; XXX name for this ram location
 	ld b, a
 	cp MEW
@@ -843,10 +844,13 @@ UncompressMonSprite::
 	jr c, .GotBank
 	ld a, BANK(VictreebelPicFront)
 .GotBank
-	jp UncompressSpriteData
+	; このとき a: ポケモンのグラがあるバンク番号
+	jp UncompressSpriteData 
 
 ; **LoadMonFrontSprite**
 ; ポケモンの正面のグラフィックデータをdeにロードする
+; - - -  
+; INPUT: [wcf91] = ポケモンID
 LoadMonFrontSprite::
 	push de
 	ld hl, wMonHFrontSprite - wMonHeader ; hl = b => 正面グラ
