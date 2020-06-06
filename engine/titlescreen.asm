@@ -286,15 +286,20 @@ ENDC
 	xor a
 	ld [wUnusedCC5B], a
 
-; Keep scrolling in new mons indefinitely until the user performs input.
+; ユーザーのキー入力があるまでポケモンを横スクロールで切り替える処理を行う
 .awaitUserInterruptionLoop
+	;  200フレームの間、キー入力をチェック -> キー入力があった場合は .finishedWaiting
 	ld c, 200
 	call CheckForUserInterruption
 	jr c, .finishedWaiting
-	call TitleScreenScrollInMon
+
+	; キー入力がなかった場合 
+	call TitleScreenScrollInMon ; TODO: ???
+	;  一瞬キー入力をチェック -> キー入力があった場合は .finishedWaiting
 	ld c, 1
 	call CheckForUserInterruption
 	jr c, .finishedWaiting
+
 	callba TitleScreenAnimateBallIfStarterOut
 	call TitleScreenPickNewMon
 	jr .awaitUserInterruptionLoop
@@ -354,6 +359,7 @@ TitleScreenPickNewMon:
 	callba TitleScroll
 	ret
 
+; ポケモンをスクロールinさせる処理???
 TitleScreenScrollInMon:
 	ld d, 0 ; scroll in
 	callba TitleScroll

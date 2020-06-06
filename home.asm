@@ -128,9 +128,12 @@ INCLUDE "home/joypad.asm"
 INCLUDE "data/map_header_pointers.asm"
 INCLUDE "home/overworld.asm"
 
+; **CheckForUserInterruption**  
+; cフレームの間に ↑+Select+B or Start or A が 押されたときキャリーを立てて返す  
+; 押されなければキャリーをクリアして返す  
+; - - -  
+; イントロとタイトル画面でのみ利用される関数  
 CheckForUserInterruption::
-; Return carry if Up+Select+B, Start or A are pressed in c frames.
-; Used only in the intro and title screen.
 	call DelayFrame
 
 	push bc
