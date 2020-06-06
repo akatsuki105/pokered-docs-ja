@@ -153,7 +153,12 @@ DisplayTitleScreen:
 
 .next
 	; 配置したタイトル画面のデータを wTileMapBackup2 を保存する
-	call SaveScreenTilesToBuffer2 ; 
+	; このときタイトル画面には  
+	; - ポケモンのロゴ
+	; - 主人公
+	; - コピーライト
+	; が表示されている
+	call SaveScreenTilesToBuffer2
 	call LoadScreenTilesFromBuffer2
 	call EnableLCD
 
@@ -241,34 +246,40 @@ ENDC
 
 ; タイトル画面でポケモンのロゴのバウンド処理が終わった後にここに来る  
 .finishedBouncingPokemonLogo
-	call LoadScreenTilesFromBuffer1
+	call LoadScreenTilesFromBuffer1 ; ポケモン有りのタイトル画面を復帰
+	; 36フレーム遅延させた後、SFX_INTRO_WHOOSH を流す
 	ld c, 36
 	call DelayFrames
 	ld a, SFX_INTRO_WHOOSH
 	call PlaySound
 
-; scroll game version in from the right
+; 右からバージョン情報(Red Version)をスクロールさせる
 	call PrintGameVersionOnTitleScreen
 	ld a, SCREEN_HEIGHT_PIXELS
-	ld [hWY], a
+	ld [hWY], a ; ウィンドウを無効化
 	ld d, 144
 .scrollTitleScreenGameVersionLoop
+	; Yが64~80までのSCXをdに変更
 	ld h, d
 	ld l, 64
 	call ScrollTitleScreenGameVersion
 	ld h, 0
 	ld l, 80
 	call ScrollTitleScreenGameVersion
+	; バージョン情報を徐々に左にスクロールさせる
 	ld a, d
 	add 4
 	ld d, a
 	and a
 	jr nz, .scrollTitleScreenGameVersionLoop
 
+	; タイトル画面のinit処理を終えた (ポケモンのロゴを降らせる処理やバージョン情報をスクロールさせる処理)
+	; これからは通常のタイトルスクリーンの処理を始める
 	ld a, vBGMap1 / $100
 	call TitleScreenCopyTileMapToVRAM
-	call LoadScreenTilesFromBuffer2
-	call PrintGameVersionOnTitleScreen
+	call LoadScreenTilesFromBuffer2 ; ポケモンロゴ、主人公、コピーライトが配置されたタイトル画面
+	call PrintGameVersionOnTitleScreen ; バージョン情報を描画
+	; タイトルのBGMを再生する
 	call Delay3
 	call WaitForSoundToFinish
 	ld a, MUSIC_TITLE_SCREEN
@@ -352,15 +363,22 @@ TitleScreenScrollInMon:
 	ld [hWY], a
 	ret
 
+; バージョン情報をスクロールさせる  
+; INPUT:  
+; - h = SCXにセットする値
+; - l = スクロールさせるY座標(pixel)
 ScrollTitleScreenGameVersion:
+	; LY == l になるまで待機
 .wait
 	ld a, [rLY]
 	cp l
 	jr nz, .wait
 
+	; SCX = h
 	ld a, h
 	ld [rSCX], a
 
+	; LY != h ならリターン
 .wait2
 	ld a, [rLY]
 	cp h
@@ -439,7 +457,7 @@ LoadTitleMonSprite:
 ; **TitleScreenCopyTileMapToVRAM**  
 ; コピーライトをVRAMに配置する  
 ; - - -  
-; 転送先にaをセットして終了(Delay3の中で)  
+; 転送先にaをセットして終了(Delay3の中でreturn)  
 ; INPUT: a = 転送先のVRAMアドレス  
 TitleScreenCopyTileMapToVRAM:
 	ld [H_AUTOBGTRANSFERDEST + 1], a
@@ -486,13 +504,14 @@ CopyrightTextString:
 
 INCLUDE "data/title_mons.asm"
 
-; prints version text (red, blue)
+; wTileMap の (7, 8) にバージョン情報(Red, Blue)を配置する  
 PrintGameVersionOnTitleScreen:
 	coord hl, 7, 8
 	ld de, VersionOnTitleScreenText
 	jp PlaceString
 
-; these point to special tiles specifically loaded for that purpose and are not usual text
+; これらのテキストはバージョン情報を表示する目的でしか使われない特別なタイルデータを指す  
+; "Red Version" or "Blue Version"  
 VersionOnTitleScreenText:
 IF DEF(_RED)
 	db $60,$61,$7F,$65,$66,$67,$68,$69,"@" ; "Red Version"
