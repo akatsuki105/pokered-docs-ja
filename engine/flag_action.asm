@@ -1,3 +1,6 @@
+; **FlagActionPredef**  
+; フラグアクションを実行する  
+; hlのビットフィールドのビットcにおいてアクションbを実行する  
 FlagActionPredef:
 	call GetPredefRegisters
 

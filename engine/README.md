@@ -22,7 +22,7 @@ evolution.asm | null
 evolve_trade.asm | null
 evos_moves.asm | null
 experience.asm | null
-flag_action.asm | null
+flag_action.asm | フラグアクションに関する処理
 game_corner_slots.asm | null
 game_corner_slots2.asm | null
 gamefreak.asm | null
