@@ -28,8 +28,6 @@ SetDefaultNamesBeforeTitlescreen:
 
 ; **DisplayTitleScreen**  
 ; タイトル画面を表示する処理  
-; - - -  
-; ポケモンのロゴが上から降りてきてバウンドが終わるまでを描画する
 DisplayTitleScreen:
 	call GBPalWhiteOut
 
@@ -277,7 +275,7 @@ ENDC
 	; これからは通常のタイトルスクリーンの処理を始める
 	ld a, vBGMap1 / $100
 	call TitleScreenCopyTileMapToVRAM
-	call LoadScreenTilesFromBuffer2 ; ポケモンロゴ、主人公、コピーライトが配置されたタイトル画面
+	call LoadScreenTilesFromBuffer2 ; ポケモンロゴ、主人公、コピーライトが配置されたタイトル画面(VRAMではなくwTileMapなので画面には反映されない？)
 	call PrintGameVersionOnTitleScreen ; バージョン情報を描画
 	; タイトルのBGMを再生する
 	call Delay3
