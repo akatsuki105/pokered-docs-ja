@@ -1,6 +1,6 @@
-; Wait around for the TitleBall animation to play out.  
-; hi: speed  
-; lo: duration  
+; モンスターボールが跳ねるのを待つ処理を定義したテーブル  
+; 各エントリ = high:low = スクロール速度:スクロール期間  
+; スクロール速度が0なので、このテーブルの処理は待機処理を表している  
 TitleScroll_WaitBall:
 	db $05, $05, 0
 
@@ -34,6 +34,9 @@ TitleScroll:
 	ld e, 0 ; don't animate titleball
 .ok ; そのまま_TitleScrollへ続く
 
+; INPUT:  
+; - [bc] = スクロール速度:スクロール期間  
+; - e = 0(モンスターボールを跳ねさせる) or 1(跳ねさせない)
 _TitleScroll:
 	; TitleScroll_In or TitleScroll_Out の終わりに来た -> 終了
 	ld a, [bc] ; a = スクロール速度:スクロール期間 
@@ -73,7 +76,7 @@ _TitleScroll:
 	jr nz, .loop ;　スクロール期間が残っているとき -> .loop
 
 	pop bc
-	jr _TitleScroll ; TitleScroll_In or TitleScroll_Out の次のエントリに
+	jr _TitleScroll ; テーブル TitleScroll_In or TitleScroll_Out を次のエントリに
 
 ; Y座標(pixel)が l より下の画面をを h だけスクロールさせる
 .ScrollBetween:
@@ -96,8 +99,10 @@ _TitleScroll:
 TitleBallYTable:
 	db 0, $71, $6f, $6e, $6d, $6c, $6d, $6e, $6f, $71, $74, 0
 
-; Animate the TitleBall if a starter just got scrolled out.
+; starterが画面外にスクロールしたときモンスターボールを跳ねさせる処理を行う  
+; starter = タイトル画面に最初にでるポケモン(ヒトカゲ or ゼニガメ or フシギダネ)
 TitleScreenAnimateBallIfStarterOut:
+	; [wTitleMonSpecies] が ヒトカゲ or ゼニガメ or フシギダネ => .ok
 	ld a, [wTitleMonSpecies]
 	cp STARTER1
 	jr z, .ok

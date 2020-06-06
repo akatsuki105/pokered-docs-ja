@@ -67,8 +67,8 @@ special_warps.asm | null
 status_ailments.asm | null
 subtract_paid_money.asm | プレイヤーの支払った額をプレイヤーの所持金から引く処理
 test_battle.asm | null
-titlescreen.asm | null
-titlescreen2.asm | null
+titlescreen.asm | タイトル画面に関する処理
+titlescreen2.asm | タイトル画面に関する処理2
 town_map.asm | null
 trade.asm | null
 trade2.asm | null

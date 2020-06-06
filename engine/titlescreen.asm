@@ -294,20 +294,23 @@ ENDC
 	jr c, .finishedWaiting
 
 	; キー入力がなかった場合 
-	call TitleScreenScrollInMon ; TODO: ???
+	call TitleScreenScrollInMon ; 最初のポケモンをスクロールout
 	;  一瞬キー入力をチェック -> キー入力があった場合は .finishedWaiting
 	ld c, 1
 	call CheckForUserInterruption
 	jr c, .finishedWaiting
 
 	callba TitleScreenAnimateBallIfStarterOut
-	call TitleScreenPickNewMon
+	call TitleScreenPickNewMon ; 新しいポケモンをスクロールin
 	jr .awaitUserInterruptionLoop
 
+; キー入力があったとき
 .finishedWaiting
+	; 現在タイトル画面のポケモンの鳴き声を鳴らす
 	ld a, [wTitleMonSpecies]
 	call PlayCry
 	call WaitForSoundToFinish
+	; 画面を真っ白に
 	call GBPalWhiteOutWithDelay3
 	call ClearSprites
 	xor a
@@ -321,11 +324,14 @@ ENDC
 	call TitleScreenCopyTileMapToVRAM
 	call Delay3
 	call LoadGBPal
+	; キー入力を受け取る
 	ld a, [hJoyHeld]
 	ld b, a
+	; 押されたボタンが↑+Select+B ならセーブデータを削除するダイアログ表示
 	and D_UP | SELECT | B_BUTTON
 	cp D_UP | SELECT | B_BUTTON
 	jp z, .doClearSaveDialogue
+	; それ以外のボタン(Start or A) ならメインメニューへ
 	jp MainMenu
 
 .doClearSaveDialogue
@@ -335,28 +341,33 @@ TitleScreenPickNewMon:
 	ld a, vBGMap0 / $100
 	call TitleScreenCopyTileMapToVRAM
 
+; 現在のポケモンと違うポケモンが見つかるまでループを続ける
 .loop
-; Keep looping until a mon different from the current one is picked.
+	; bc = ランダム値($00~$f)
 	call Random
 	and $f
 	ld c, a
 	ld b, 0
+
+	; a = ランダムに選んだポケモンID
+	; hl = 現在のポケモンIDのポインタ
 	ld hl, TitleMons
 	add hl, bc
 	ld a, [hl]
 	ld hl, wTitleMonSpecies
 
-; Can't be the same as before.
+	; 次のポケモンが現在のポケモンと同じなら .loop
 	cp [hl]
 	jr z, .loop
 
+	; 新しいポケモンを画面に配置
 	ld [hl], a
 	call LoadTitleMonSprite
 
 	ld a, $90
 	ld [hWY], a
 	ld d, 1 ; scroll out
-	callba TitleScroll
+	callba TitleScroll ; 新しいポケモンをスクロールin?
 	ret
 
 ; ポケモンをスクロールinさせる処理???
