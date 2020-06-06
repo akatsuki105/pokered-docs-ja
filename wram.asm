@@ -522,20 +522,22 @@ wEnteringCableClub:: ; cc47
 
 	ds 1
 
-wWhichTradeMonSelectionMenu:: ; cc49
+; cc49
 ; $00 = player mons
 ; $01 = enemy mons
+wWhichTradeMonSelectionMenu::
 
-wMonDataLocation:: ; cc49
-; 0 = player's party
-; 1 = enemy party
-; 2 = current box
-; 3 = daycare
-; 4 = in-battle mon
-;
+; cc49  
+; 0 = 主人公の手持ち  
+; 1 = 相手の手持ち  
+; 2 = 現在のPCBox  
+; 3 = 育て屋  
+; 4 = 戦闘中のポケモン  
+; 
 ; AddPartyMon uses it slightly differently.
 ; If the lower nybble is 0, the mon is added to the player's party, else the enemy's.
 ; If the entire value is 0, then the player is allowed to name the mon.
+wMonDataLocation::
 	ds 1
 
 ; cc4a  
@@ -2502,7 +2504,9 @@ wObtainedBadges:: ; d356
 wLetterPrintingDelayFlags:: 
 	ds 1
 
-wPlayerID:: ; d359
+; d359  
+; プレイヤーのID  
+wPlayerID::
 	ds 2
 
 wMapMusicSoundID:: ; d35b
@@ -2847,8 +2851,9 @@ wd5cd:: ds 1 ; temp copy of c1x2 (sprite facing/anim)
 wMissableObjectList::
 	ds 17 * 2
 
-wGameProgressFlags:: ; d5f0
-; $c8 bytes
+; d5f0  
+; ここから $c8 Byte ゲームを管理するフラグが続く
+wGameProgressFlags::
 wOaksLabCurScript:: ; d5f0
 	ds 1
 wPalletTownCurScript:: ; d5f1

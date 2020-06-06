@@ -38,7 +38,7 @@ hidden_object_functions18.asm | null
 HoF_room_pc.asm | null
 hp_bar.asm | null
 in_game_trades.asm | null
-init_player_data.asm | null
+init_player_data.asm | ゲームを『はじめから』始めたときにプレイヤーデータを初期化する
 intro.asm | null
 joypad.asm | null
 learn_move.asm | null
