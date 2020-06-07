@@ -3228,7 +3228,7 @@ wd730::
 ; - bit 3: fly warp中に立つフラグ
 ; - bit 4: dungeon warp中に立つフラグ
 ; - bit 5: 自転車に乗ることを強制されているときに立つフラグ
-; - bit 6: map destination is [wLastBlackoutMap] (usually the last used pokemon center, but could be the player's house)
+; - bit 6: このbitがセットされているならwarp先を [wLastBlackoutMap]\(最後に利用したポケモンセンターか主人公の家\) とする  
 wd732::
 	ds 1
 

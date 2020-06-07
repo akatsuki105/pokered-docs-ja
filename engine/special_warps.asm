@@ -65,6 +65,7 @@ LoadSpecialWarpData:
 .notColosseum
 	; [wd732]の bit1 か bit2 が 0 でないなら .notFirstMapへ 
 	; special warp時にデバッグモードのときや、fly warpやdungeon warpの時点で、FirstMapSpecでないことが確定する
+	; 上で トレードセンターやコロシアムでないことも確定しているので、.notFirstMapの時点でfly warpやdungeon warpなどのワープとわかる
 	ld a, [wd732]
 	bit 1, a
 	jr nz, .notFirstMap
@@ -92,28 +93,43 @@ LoadSpecialWarpData:
 	; Special warpのタイルセットIDをwCurMapTilesetに格納
 	ld a, [hli]
 	ld [wCurMapTileset], a
-	
+
 	xor a
 	jr .done
+
+	; 
 .notFirstMap
 	ld a, [wLastMap] ; this value is overwritten before it's ever read
 	ld hl, wd732
-	bit 4, [hl] ; used dungeon warp (jumped down hole/waterfall)?
+
+	; dungeon warp のとき -> .usedDunegonWarp
+	bit 4, [hl]
 	jr nz, .usedDunegonWarp
+
+	; wd732のbit6が立っていない -> .otherDestination
 	bit 6, [hl] ; return to last pokemon center (or player's house)?
 	res 6, [hl]
 	jr z, .otherDestination
-; return to last pokemon center or player's house
+
+	; このとき warp先は[wLastBlackoutMap](最後に利用したポケモンセンターか主人公の家)
 	ld a, [wLastBlackoutMap]
 	jr .usedFlyWarp
+
+	; dungeon warp(『ポケモンやしき』や『ふたごじま』、『チャンピオンロード』での穴によるマップ移動や『ふたごじま』の水流によるマップ移動)のとき
 .usedDunegonWarp
+	; dungeon warp中のフラグをクリア
 	ld hl, wd72d
 	res 4, [hl]
+
+	; [wCurMap] = [wDungeonWarpDestinationMap]
 	ld a, [wDungeonWarpDestinationMap]
 	ld b, a
 	ld [wCurMap], a
+
+	; c = [wWhichDungeonWarp]
 	ld a, [wWhichDungeonWarp]
 	ld c, a
+	
 	ld hl, DungeonWarpList
 	ld de, 0
 	ld a, 6
