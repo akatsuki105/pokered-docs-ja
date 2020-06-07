@@ -4,7 +4,7 @@
 
 ## テキストデータの扱いについて
 
-[テキスト](../docs/text.md)を参照
+[テキスト](../docs/text/README.md)を参照
 
 ## アイテム名の取得
 
@@ -28,4 +28,4 @@ TODO
  type_names.asm  |  タイプ名
  unused_names.asm  |  没データ
 
-単語の後の@マークについては[文字コード](../docs/charcode.md)を参照
+単語の後の@マークについては[文字コード](../docs/text/charcode.md)を参照

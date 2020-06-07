@@ -4,9 +4,9 @@
 
 このデータ構造は`ポケモンヘッダ`とも呼ばれる
 
-[data/base_stats.asm](./../data/base_stats.asm)で定義されている
+[data/base_stats.asm](./../../data/base_stats.asm)で定義されている
 
-各ポケモンのデータは[data/base_stats/](./../data/base_stats/)でファイルごとに定義されている
+各ポケモンのデータは[data/base_stats/](./../../data/base_stats/)でファイルごとに定義されている
 
 ## description
 

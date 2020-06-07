@@ -134,5 +134,5 @@ warp_to 7, 1, REDS_HOUSE_1F_WIDTH       ; dest_warp_id = 2
 
 ## 参考
 
-- [マップ](./map/map.md)
+- [マップ](./map/README.md)
 - [Map Header](./map/map_header.md)

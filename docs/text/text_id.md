@@ -8,7 +8,7 @@
 
 ## 例
 
-[CeruleanCity.asm](../scripts/CeruleanCity.asm)を例にすると
+[CeruleanCity.asm](../../scripts/CeruleanCity.asm)を例にすると
 
 ```asm
 CeruleanCity_TextPointers:
@@ -39,5 +39,5 @@ CeruleanCity_TextPointers:
 
 `home.asm` の `DisplayTextID` で表示したいテキストを識別するIDとして利用される
 
-[テキスト](./text.md)も参照
+[テキスト](./README.md)も参照
 

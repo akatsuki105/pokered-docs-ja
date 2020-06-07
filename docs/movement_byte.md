@@ -14,4 +14,4 @@ TODO
 
 ## 関連
 
-- [スプライトデータ](./sprite_data.md)
+- [スプライトデータ](./sprite/sprite_data.md)

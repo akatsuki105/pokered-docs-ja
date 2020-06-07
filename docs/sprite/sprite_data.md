@@ -4,7 +4,7 @@
 
 ## 概要
 
-現在のマップ上に存在するスプライトのデータは[wram.asm](../wram.asm)の`wSpriteDataStart`で保持されている
+現在のマップ上に存在するスプライトのデータは[wram.asm](../../wram.asm)の`wSpriteDataStart`で保持されている
 
 16スプライト分の大きさのデータ領域が2種類存在している
 
@@ -37,7 +37,7 @@
 
 #### sprite image index(\$C1x2)
 
-sprite image indexは次の式で算出される [参考: .calcImageIndex](./../engine/overworld/movement.asm)
+sprite image indexは次の式で算出される [参考: .calcImageIndex](./../../engine/overworld/movement.asm)
 
 ```
 [$C1x2] = [$C1x8] + [$C1x9] = (animation frame counter) + (facing direction)
@@ -61,7 +61,7 @@ sprite image indexは次の式で算出される [参考: .calcImageIndex](./../
  $C2x3  | X displacement  |  8で初期化 スプライトが初期座標から離れすぎないために設定されていると考えられるがバグがある
  $C2x4  | Y position  |  Y 座標 <br/>16\*16のマスのどこにいるかを表している <br/>一番上のマスにいるときは4となるようになっている <br/>例: 一番上のマスから1マス下にいるときは5になる
  $C2x5  | X position  |  X 座標 <br/>16\*16のマスのどこにいるかを表している <br/>一番左のマスにいるときは4となるようになっている
- $C2x6  | movement byte 1  |  スプライトの動きを決めるデータその1 [movement byte](./movement_byte.md)参照
+ $C2x6  | movement byte 1  |  スプライトの動きを決めるデータその1 [movement byte](./../movement_byte.md)参照
  $C2x7  | ???  |  草むらにスプライトがいるとき$80になってそれ以外では$0になっている<br/>おそらくスプライトの上に草むらを描画するのに利用
  $C2x8  | delay until next movement  |  次の動きまでのクールタイム <br/>どんどん減って行って, 0になるとC1x1が1にセットされる
  $C2x9  | undefined  |  ???
