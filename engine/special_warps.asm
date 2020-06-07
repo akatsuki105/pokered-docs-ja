@@ -1,36 +1,46 @@
+; **SpecialWarpIn**  
+; special warpを行う  
+; - - -  
+; OUTPUT: [wLastMap] = special warp先のマップID  
 SpecialWarpIn:
 	call LoadSpecialWarpData
-	predef LoadTilesetHeader
+	predef LoadTilesetHeader ; LoadSpecialWarpData で取得したワープ先のタイルセットを読み込む
+
+	; dungeon warp, fly warpでない -> .next
 	ld hl, wd732
 	bit 2, [hl] ; dungeon warp or fly warp?
 	res 2, [hl]
 	jr z, .next
-; if dungeon warp or fly warp
+	; dungeon warp か fly warp のとき -> a = [wDestinationMap]して .next2
 	ld a, [wDestinationMap]
 	jr .next2
+
 .next
 	bit 1, [hl]
 	jr z, .next3
-	call EmptyFunc
+	call EmptyFunc ; デバッグモードのとき
 .next3
 	ld a, 0
+
+	; INPUT: a = 0 or [wDestinationMap]
 .next2
 	ld b, a
+	; a = [wd72d]([wd72d] != 0) or b([wd72d] == 0)
 	ld a, [wd72d]
 	and a
 	jr nz, .next4
 	ld a, b
 .next4
+	; dungeon warpなら終了
 	ld hl, wd732
 	bit 4, [hl] ; dungeon warp?
 	ret nz
-; if not dungeon warp
+	; dungeon warpじゃないとき
 	ld [wLastMap], a
 	ret
 
 ; **LoadSpecialWarpData**  
-; gets the map ID, tile block map view pointer, tileset, and coordinates  
-; マップID、tile block map view pointer, タイルセット、座標を取得する  
+; マップID、tile block map view pointer, タイルセット、座標を取得する   
 LoadSpecialWarpData:
 	; [wd72d] != TRADE_CENTER -> .notTradeCenter
 	ld a, [wd72d]
@@ -97,7 +107,6 @@ LoadSpecialWarpData:
 	xor a
 	jr .done
 
-	; 
 .notFirstMap
 	ld a, [wLastMap] ; this value is overwritten before it's ever read
 	ld hl, wd732
@@ -172,37 +181,52 @@ LoadSpecialWarpData:
 	ld a, [wDestinationMap]
 	; .usedFlyWarp へ続く
 
+	; INPUT: a = [wLastBlackoutMap] or [wDestinationMap]
 .usedFlyWarp
+	; b と wCurMap にワープ先のマップを格納
 	ld b, a
 	ld [wCurMap], a
+
 	ld hl, FlyWarpDataPtr
 .flyWarpDataPtrLoop
-	ld a, [hli]
+	ld a, [hli] ; a = ワープ先
 	inc hl
+	; FlyWarpDataPtr の現在のエントリにワープ先が一致する -> .foundFlyWarpMatch
 	cp b
 	jr z, .foundFlyWarpMatch
+	; 次のエントリ
 	inc hl
 	inc hl
 	jr .flyWarpDataPtrLoop
+
 .foundFlyWarpMatch
+	; hl = PalletTownFlyWarp
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; INPUT: hl = XXXWarpDataのアドレス
 .copyWarpData2
 	ld de, wCurrentTileBlockMapViewPointer
 	ld c, $6
+	; wCurrentTileBlockMapViewPointerにWarpDataをコピーする
 .copyWarpDataLoop2
+	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec c
 	jr nz, .copyWarpDataLoop2
+	; [wCurMapTileset] = OVERWORLD
 	xor a ; OVERWORLD
 	ld [wCurMapTileset], a
+	; INPUT: a = 0
 .done
+	; [wXOffsetSinceLastSpecialWarp] = 0 [wYOffsetSinceLastSpecialWarp] = 0
 	ld [wYOffsetSinceLastSpecialWarp], a
 	ld [wXOffsetSinceLastSpecialWarp], a
-	ld a, $ff ; the player's coordinates have already been updated using a special warp, so don't use any of the normal warps
+	; [wDestinationWarpID] = $ff
+	ld a, $ff ; プレイヤーの座標はspecial warpでは既に更新されているため通常のワープは使用しない ??
 	ld [wDestinationWarpID], a
 	ret
 

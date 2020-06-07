@@ -55,6 +55,7 @@ fork時に文字のエンコードに失敗してビルドしたROMのチェッ�
 - [テキスト](./docs/text/README.md)
 - [タイトル画面](./docs/titlescreen.md)
 - [タイル](./docs/map/tile.md)
+- [ワープ](./docs/warp/README.md)
 - [野生のポケモン](./docs/wild_pokemon.md)
 
 ## ファイル一覧

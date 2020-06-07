@@ -64,6 +64,8 @@ ColosseumSpec2:
 
 ; fly warp
 
+; Format  
+; 4 byte(2行にわたることに注意)  
 FlyWarpDataPtr:
 	db PALLET_TOWN, 0
 	dw PalletTownFlyWarp
