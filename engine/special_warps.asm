@@ -123,7 +123,7 @@ LoadSpecialWarpData:
 
 	; [wCurMap] = [wDungeonWarpDestinationMap]
 	ld a, [wDungeonWarpDestinationMap]
-	ld b, a
+	ld b, a	; b = [wDungeonWarpDestinationMap]
 	ld [wCurMap], a
 
 	; c = [wWhichDungeonWarp]
@@ -132,29 +132,46 @@ LoadSpecialWarpData:
 	
 	ld hl, DungeonWarpList
 	ld de, 0
+
+	; [wDungeonWarpDataEntrySize] = 6
 	ld a, 6
 	ld [wDungeonWarpDataEntrySize], a
+
 .dungeonWarpListLoop
 	ld a, [hli]
-	cp b
+	; dungeon warpのlistにワープ先のマップが[wDungeonWarpDestinationMap]と一致するものがあった -> .matchedDungeonWarpDestinationMap
+	cp b	; b = [wDungeonWarpDestinationMap]
 	jr z, .matchedDungeonWarpDestinationMap
+	; 一致しない場合は次のエントリへ
 	inc hl
 	jr .nextDungeonWarp
+
+	; ここに来たときは dungeon warp のlistのエントリの1バイト目はOKなので2バイト目も一致するか確認する
 .matchedDungeonWarpDestinationMap
 	ld a, [hli]
-	cp c
+	; dungeon warpIDも一致する -> .matchedDungeonWarpID
+	cp c ; c = [wWhichDungeonWarp]
 	jr z, .matchedDungeonWarpID
+	; 一致しないならそのまま .nextDungeonWarpへ続く
+	
+	; e += 6　して 次のエントリへ
 .nextDungeonWarp
 	ld a, [wDungeonWarpDataEntrySize]
 	add e
 	ld e, a
 	jr .dungeonWarpListLoop
+
+	; ここに来たときは対象のdungeon warpをlistから見つけたとき
+	; このとき e = 6*(DungeonWarpListオフセット)
 .matchedDungeonWarpID
 	ld hl, DungeonWarpData
 	add hl, de
-	jr .copyWarpData2
+	jr .copyWarpData2 ; hl = DungeonWarpDataのエントリのアドレス
+
 .otherDestination
 	ld a, [wDestinationMap]
+	; .usedFlyWarp へ続く
+
 .usedFlyWarp
 	ld b, a
 	ld [wCurMap], a

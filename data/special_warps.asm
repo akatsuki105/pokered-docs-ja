@@ -1,6 +1,6 @@
-; Format: (size 2 bytes)
-; 00: target map ID
-; 01: which dungeon warp in the source map was used
+; Format: (size 2 bytes)  
+; 00: ワープ先のMap ID  
+; 01: どのマップ内のどのdungeon warpが使われたか(マップ内のdungeon warpを識別するID)  
 DungeonWarpList:
 	db SEAFOAM_ISLANDS_B1F,$01
 	db SEAFOAM_ISLANDS_B1F,$02
@@ -16,6 +16,7 @@ DungeonWarpList:
 	db POKEMON_MANSION_2F,$03
 	db $FF
 
+; 6 bytes
 DungeonWarpData:
 	FLYWARP_DATA SEAFOAM_ISLANDS_B1F_WIDTH,7,18
 	FLYWARP_DATA SEAFOAM_ISLANDS_B1F_WIDTH,7,23
