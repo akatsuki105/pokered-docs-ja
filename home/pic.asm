@@ -1,5 +1,7 @@
 ; **UncompressSpriteData**  
-; 対象のグラフィックがあるバンクにスイッチして _UncompressSpriteData を呼び出す  
+; spriteのグラフィックデータを解凍する関数  
+; - - -  
+; aレジスタで指定した対象のグラフィックがあるバンクにスイッチして _UncompressSpriteData を呼び出す  
 ; スイッチしたバンクのどのアドレスからグラフィックデータがあるかは wSpriteInputPtr に格納されている  
 UncompressSpriteData::
 	; グラフィックデータのあるバンクにスイッチ
@@ -14,6 +16,7 @@ UncompressSpriteData::
 	ld [MBC1SRamEnable], a
 	xor a
 	ld [MBC1SRamBank], a
+	; _UncompressSpriteDataを呼び出してスプライトを解凍する
 	call _UncompressSpriteData
 	; バンクを戻す
 	pop af

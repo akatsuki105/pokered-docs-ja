@@ -42,7 +42,7 @@ prize_mon_levels.asm | null
 sgb_border.asm | null
 sgb_packets.asm | null
 slot_machine_wheels.asm | null
-special_warps.asm | special warpを行う処理
+special_warps.asm | special warpのwarp情報を定義しているテーブル
 sprite_sets.asm | null
 super_palettes.asm | null
 super_rod.asm | null

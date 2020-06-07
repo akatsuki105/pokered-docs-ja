@@ -2108,12 +2108,16 @@ wSpriteUnpackMode:: ; d0a9
 wSpriteFlipped:: ; d0aa
 	ds 1
 
-wSpriteInputPtr:: ; d0ab
-; pointer to next input byte
+; d0ab  
+; pointer to next input byte  
+wSpriteInputPtr::
 	ds 2
-wSpriteOutputPtr:: ; d0ad
+
+; d0ad  
 ; pointer to current output byte
+wSpriteOutputPtr::
 	ds 2
+
 wSpriteOutputPtrCached:: ; d0af
 ; used to revert pointer for different bit offsets
 	ds 2

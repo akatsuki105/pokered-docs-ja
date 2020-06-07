@@ -11,7 +11,7 @@ items/ | [items](./items/README.md)
 menu/ | [menu](./menu/README.md)
 overworld/ | [overworld](./overworld/README.md)
 add_mon.asm | null
-bcd.asm | null
+bcd.asm | BCDフォーマットの数値計算を行う処理
 black_out.asm | 『めのまえが まっくらに なった！』ときのゲームの状態を更新する処理
 cable_club.asm | null
 clear_save.asm | null
@@ -63,7 +63,7 @@ random.asm | 乱数生成処理
 remove_pokemon.asm | ポケモンを削除する処理
 save.asm | null
 slot_machine.asm | null
-special_warps.asm | null
+special_warps.asm | special warpを行う処理
 status_ailments.asm | null
 subtract_paid_money.asm | プレイヤーの支払った額をプレイヤーの所持金から引く処理
 test_battle.asm | null

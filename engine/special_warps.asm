@@ -82,7 +82,7 @@ LoadSpecialWarpData:
 	bit 2, a
 	jr nz, .notFirstMap
 	
-	; 消去法的にspecial warpの種類が FirstMapSpec(主人公の2階へのワープ) だと確定する
+	; 消去法的にspecial warpの種類が FirstMapSpec(主人公の家の2階へのワープ) だと確定する
 	ld hl, FirstMapSpec
 
 	; INPUT: hl = 対象のwarpのspec e.g. FirstMapSpec, ColosseumSpec2

@@ -70,14 +70,20 @@ OakSpeech:
 	ld [wItemQuantity], a
 	call AddItemToInventory  ; give one potion
 
+	; [wDefaultMap](FirstMapSpec, 主人公の家の2階)へ主人公をwarpさせておく
 	ld a, [wDefaultMap]
 	ld [wDestinationMap], a
 	call SpecialWarpIn
 	xor a
 	ld [hTilesetType], a
+
+	; デバッグモード -> .skipChoosingNames
 	ld a, [wd732]
 	bit 1, a ; possibly a debug mode bit
 	jp nz, .skipChoosingNames
+
+	; ここからオーキド博士のスピーチが始まり、主人公とライバルの名前を入力してもらう処理を行う  
+
 	ld de, ProfOakPic
 	lb bc, Bank(ProfOakPic), $00
 	call IntroDisplayPicCenteredOrUpperRight
@@ -113,6 +119,7 @@ OakSpeech:
 	ld hl, IntroduceRivalText
 	call PrintText
 	call ChooseRivalName
+
 .skipChoosingNames
 	call GBFadeOutToWhite
 	call ClearScreen
@@ -228,12 +235,22 @@ MovePicLeft:
 	ld [rWX], a
 	jr .next
 
+; **DisplayPicCenteredOrUpperRight**  
+; 引数で指定したpicを画面の真ん中か右上に配置する  
+; - - -  
+; IntroDisplayPicCenteredOrUpperRightをfarcallで呼び出したい場合にこれをpredefで呼び出す
+; b = バンク番号  
+; c = 0 (真ん中) or 0以外(右上)  
+; de = 圧縮されたpicのアドレス  
 DisplayPicCenteredOrUpperRight:
 	call GetPredefRegisters
+; **IntroDisplayPicCenteredOrUpperRight**  
+; 引数で指定したpicを画面の真ん中か右上に配置する  
+; - - -  
+; b = バンク番号  
+; c = 0 (真ん中) or 0以外(右上)  
+; de = 圧縮されたpicのアドレス  
 IntroDisplayPicCenteredOrUpperRight:
-; b = bank
-; de = address of compressed pic
-; c: 0 = centred, non-zero = upper-right
 	push bc
 	ld a, b
 	call UncompressSpriteFromDE

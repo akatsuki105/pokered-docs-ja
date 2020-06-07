@@ -3559,8 +3559,10 @@ FillMemory::
 	ret
 
 
+; **UncompressSpriteFromDE**  
+; aバンクのdeにある圧縮されたpicを解凍する  
 UncompressSpriteFromDE::
-; Decompress pic at a:de.
+	; wSpriteInputPtr にdeを格納して UncompressSpriteData を呼び出す
 	ld hl, wSpriteInputPtr
 	ld [hl], e
 	inc hl
