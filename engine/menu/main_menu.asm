@@ -124,11 +124,14 @@ MainMenu:
 	call SpecialWarpIn
 	jp SpecialEnterMap
 
+; **InitOptions**  
+; ゲームの『せってい』を初期化する  
 InitOptions:
-	ld a, 1 ; no delay
+	ld a, 1 ; 遅延無し
 	ld [wLetterPrintingDelayFlags], a
-	ld a, 3 ; medium speed
-	ld [wOptions], a
+	; 文字の速さを『ふつう』に
+	ld a, 3
+	ld [wOptions], a ; 
 	ret
 
 LinkMenu:

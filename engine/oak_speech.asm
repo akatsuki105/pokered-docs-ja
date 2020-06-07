@@ -1,31 +1,44 @@
+; ゲームに関する変数を初期化した後で、プレイヤーとライバルの名前にデフォルトネーム(NINTEN, SONY)を設定する
 SetDefaultNames:
+	; [wLetterPrintingDelayFlags], [wOptions], [wd732]を退避
 	ld a, [wLetterPrintingDelayFlags]
 	push af
 	ld a, [wOptions]
 	push af
 	ld a, [wd732]
 	push af
+
+	; wPlayerName から wBoxDataEnd までを0クリア
 	ld hl, wPlayerName
 	ld bc, wBoxDataEnd - wPlayerName
 	xor a
 	call FillMemory
+
+	; スプライトデータをクリア
 	ld hl, wSpriteStateData1
-	ld bc, $200
+	ld bc, $200 ; wSpriteStateData1の始まりからwSpriteStateData2の終わりまで
 	xor a
 	call FillMemory
+
+	; 関数の最初で退避した[wLetterPrintingDelayFlags], [wOptions], [wd732]を復帰
 	pop af
 	ld [wd732], a
 	pop af
 	ld [wOptions], a
 	pop af
 	ld [wLetterPrintingDelayFlags], a
+
+	; [wOptionsInitialized] == 0 -> InitOptions
 	ld a, [wOptionsInitialized]
 	and a
 	call z, InitOptions
+
+	; 自分の名前を NINTEN にする
 	ld hl, NintenText
 	ld de, wPlayerName
 	ld bc, NAME_LENGTH
 	call CopyData
+	; ライバルの名前を SONY にする
 	ld hl, SonyText
 	ld de, wRivalName
 	ld bc, NAME_LENGTH
@@ -33,21 +46,30 @@ SetDefaultNames:
 
 OakSpeech:
 	ld a, $FF
-	call PlaySound ; stop music
+	call PlaySound ; BGMを止める
+
+	; オーキドのスピーチのBGMを再生
 	ld a, BANK(Music_Routes2)
 	ld c, a
 	ld a, MUSIC_ROUTES2
 	call PlayMusic
+
+	; 画面描画の準備
 	call ClearScreen
 	call LoadTextBoxTilePatterns
+	
+	; プレイヤーデータを初期化 
 	call SetDefaultNames
 	predef InitPlayerData2
+
+	; プレイヤーのPCBoxに『キズぐすり』を1つ入れておく
 	ld hl, wNumBoxItems
 	ld a, POTION
 	ld [wcf91], a
 	ld a, 1
 	ld [wItemQuantity], a
 	call AddItemToInventory  ; give one potion
+
 	ld a, [wDefaultMap]
 	ld [wDestinationMap], a
 	call SpecialWarpIn

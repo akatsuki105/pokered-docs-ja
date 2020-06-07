@@ -29,44 +29,70 @@ SpecialWarpIn:
 	ret
 
 ; **LoadSpecialWarpData**  
-; gets the map ID, tile block map view pointer, tileset, and coordinates
+; gets the map ID, tile block map view pointer, tileset, and coordinates  
+; マップID、tile block map view pointer, タイルセット、座標を取得する  
 LoadSpecialWarpData:
+	; [wd72d] != TRADE_CENTER -> .notTradeCenter
 	ld a, [wd72d]
 	cp TRADE_CENTER
 	jr nz, .notTradeCenter
+
+	; トレードセンター(通信交換部屋)でスプライトの方向が初期化されているときにここにくる
+
+	; hl = TradeCenterSpec1(masterとして通信) or TradeCenterSpec2(slaveとして通信) -> .copyWarpData
 	ld hl, TradeCenterSpec1
 	ld a, [hSerialConnectionStatus]
-	cp USING_INTERNAL_CLOCK ; which gameboy is clocking determines who is on the left and who is on the right
+	cp USING_INTERNAL_CLOCK ; ゲームボーイのシリアルのクロックによって通信ルームの立ち位置(右か左か)が決まる
 	jr z, .copyWarpData
 	ld hl, TradeCenterSpec2
 	jr .copyWarpData
+
 .notTradeCenter
+	; [wd72d] != COLOSSEUM -> .notColosseum
 	cp COLOSSEUM
 	jr nz, .notColosseum
+	
+	; コロシアム(通信対戦部屋)のときここにくる
+
+	; hl = ColosseumSpec1(master) or ColosseumSpec2(slave) -> .copyWarpData
 	ld hl, ColosseumSpec1
 	ld a, [hSerialConnectionStatus]
 	cp USING_INTERNAL_CLOCK
 	jr z, .copyWarpData
 	ld hl, ColosseumSpec2
 	jr .copyWarpData
+
 .notColosseum
+	; [wd732]の bit1 か bit2 が 0 でないなら .notFirstMapへ 
+	; special warp時にデバッグモードのときや、fly warpやdungeon warpの時点で、FirstMapSpecでないことが確定する
 	ld a, [wd732]
 	bit 1, a
 	jr nz, .notFirstMap
 	bit 2, a
 	jr nz, .notFirstMap
+	
+	; 消去法的にspecial warpの種類が FirstMapSpec(主人公の2階へのワープ) だと確定する
 	ld hl, FirstMapSpec
+
+	; INPUT: hl = 対象のwarpのspec e.g. FirstMapSpec, ColosseumSpec2
 .copyWarpData
 	ld de, wCurMap
-	ld c, $7
+	ld c, $7 ; .copyWarpDataLoop のループ回数 
+
+	; Special warpの情報をwCurMapに格納
+	; [wCurMap:wCurMap+7] = [XXXSpec:XXXSpec+7]
 .copyWarpDataLoop
+	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec c
 	jr nz, .copyWarpDataLoop
+
+	; Special warpのタイルセットIDをwCurMapTilesetに格納
 	ld a, [hli]
 	ld [wCurMapTileset], a
+	
 	xor a
 	jr .done
 .notFirstMap

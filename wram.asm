@@ -1970,7 +1970,8 @@ wNumShootingBalls:: ; d08a
 wTradedMonMovingRight:: ; d08a
 ; $01 if mon is moving from left gameboy to right gameboy; $00 if vice versa
 
-wOptionsInitialized:: ; d08a
+; d08a
+wOptionsInitialized::
 
 wNewSlotMachineBallTile:: ; d08a
 
@@ -2480,17 +2481,20 @@ wPlayerMoney::
 wRivalName:: ; d34a
 	ds NAME_LENGTH
 
-wOptions:: ; d355
-; bit 7 = battle animation
-; 0: On
-; 1: Off
-; bit 6 = battle style
-; 0: Shift
-; 1: Set
-; bits 0-3 = text speed (number of frames to delay after printing a letter)
-; 1: Fast
-; 3: Medium
-; 5: Slow
+; d355  
+; bit 7 = バトルアニメーション  
+; 	0: On  
+; 	1: Off  
+; 
+; bit 6 = せんとうスタイル  
+; 	0: いれかえ  
+; 	1: かちぬき  
+; 
+; bits 0-3 = 文字の速さ(一文字描画するごとに何フレーム遅延するか)  
+; 	1: はやい  
+; 	3: ふつう  
+; 	5: おそい  
+wOptions::
 	ds 1
 
 wObtainedBadges:: ; d356
@@ -2499,7 +2503,7 @@ wObtainedBadges:: ; d356
 	ds 1
 
 ; d358  
-; bit 0: 0なら1フレームの遅延 1は?  
+; bit 0: 0なら1フレームの遅延 1は遅延無し  
 ; bit 1: 0なら遅延なし
 wLetterPrintingDelayFlags:: 
 	ds 1
@@ -3220,7 +3224,7 @@ wd730::
 ;	- 1. オーキド博士の話がスキップされ、プレイヤーとライバルの名前にNINTENとSONYが入る
 ; 	- 2. プレイヤーのゲーム開始地点がプレイヤーの家の2階からではなく[wLastMap]のマップIDになる
 ; 	- 3. Bボタンを押していると野生のポケモンとのエンカウントが発生しなくなる
-; - bit 2: the target warp is a fly warp (bit 3 set or blacked out) or a dungeon warp (bit 4 set)
+; - bit 2: 対象のワープが fly warp(blacked outじゃないならbit3も立つ) or dungeon warp(bit4も立つ)  
 ; - bit 3: fly warp中に立つフラグ
 ; - bit 4: dungeon warp中に立つフラグ
 ; - bit 5: 自転車に乗ることを強制されているときに立つフラグ
@@ -3404,6 +3408,7 @@ wBoxMonOT::    ds NAME_LENGTH * MONS_PER_BOX
 wBoxMonNicks:: ds NAME_LENGTH * MONS_PER_BOX
 wBoxMonNicksEnd:: ; dee2
 
+; dee2
 wBoxDataEnd::
 
 ; dee2

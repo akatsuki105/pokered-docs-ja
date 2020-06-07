@@ -30,10 +30,12 @@ DungeonWarpData:
 	FLYWARP_DATA POKEMON_MANSION_1F_WIDTH,14,16
 	FLYWARP_DATA POKEMON_MANSION_2F_WIDTH,14,18
 
-;Format:
-;	db Map_id
-;	FLYWARP_DATA [Map Width][Y-pos][X-pos]
-;	db Tileset_id
+; 特殊なワープ(special warp)一覧  
+
+; Format:
+;	db マップID  
+;	FLYWARP_DATA [Map Width][Y-pos][X-pos]  
+;	db タイルセットID  
 FirstMapSpec:
 	db REDS_HOUSE_2F
 	FLYWARP_DATA REDS_HOUSE_2F_WIDTH,6,3
@@ -58,6 +60,8 @@ ColosseumSpec2:
 	db COLOSSEUM
 	FLYWARP_DATA COLOSSEUM_WIDTH,4,6
 	db CLUB
+
+; fly warp
 
 FlyWarpDataPtr:
 	db PALLET_TOWN, 0

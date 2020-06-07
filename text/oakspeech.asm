@@ -26,11 +26,15 @@ _OakSpeechText2B::
 	line "as a profession."
 	prompt
 
+; "First, what is your name?"
 _IntroducePlayerText::
 	text "First, what is"
 	line "your name?"
 	prompt
 
+; "This is my grand-son."  
+; "He's been your rival since you were a baby."  
+; "...Erm, what is his name again?"  
 _IntroduceRivalText::
 	text "This is my grand-"
 	line "son. He's been"
@@ -41,6 +45,10 @@ _IntroduceRivalText::
 	line "his name again?"
 	prompt
 
+; "<PLAYER>!"  
+; "Your very own #MON legend is about to unfold!"  
+; "A world of dreams and adventures with #MON awaits!"  
+; "Let's go!"  
 _OakSpeechText3::
 	text "<PLAYER>!"
 

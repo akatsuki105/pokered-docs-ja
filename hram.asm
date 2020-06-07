@@ -161,9 +161,9 @@ hDivideBCDBuffer   EQU $FFA5 ; 3-byte BCD number
 
 hSerialReceivedNewData EQU $FFA9
 
-; $01 = using external clock
-; $02 = using internal clock
-; $ff = establishing connection
+; $01 = シリアル通信でslave側  
+; $02 = シリアル通信でmaster側  
+; $ff = コネクション確立中  
 hSerialConnectionStatus EQU $FFAA
 
 hSerialIgnoringInitialData EQU $FFAB
