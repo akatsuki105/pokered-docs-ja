@@ -2096,11 +2096,13 @@ wSpriteInputCurByte:: ; d0a5
 wSpriteInputBitCounter::
 	ds 1
 
-wSpriteOutputBitOffset:: ; d0a7; determines where in the output byte the two bits are placed. Each byte contains four columns (2bpp data)
-; 3 -> XX000000   1st column
-; 2 -> 00XX0000   2nd column
-; 1 -> 0000XX00   3rd column
-; 0 -> 000000XX   4th column
+; d0a7  
+; determines where in the output byte the two bits are placed. Each byte contains four columns (2bpp data)  
+; 3 -> XX000000   1st column  
+; 2 -> 00XX0000   2nd column  
+; 1 -> 0000XX00   3rd column  
+; 0 -> 000000XX   4th column  
+wSpriteOutputBitOffset::
 	ds 1
 
 ; d0a8  

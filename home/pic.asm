@@ -101,20 +101,27 @@ UncompressSpriteDataLoop::
 	ld [wSpriteUnpackMode], a
 
 .startDecompression
+	; 最初の1bit目が 0 -> .readRLEncodedZeros
 	call ReadNextInputBit
 	and a
 	jr z, .readRLEncodedZeros ; if first bit is 0, the input starts with zeroes, otherwise with (non-zero) input
+
 .readNextInput
-	call ReadNextInputBit
+	; a = 読み取った2bit (1bit目 << 1 | 2bit目)
+	call ReadNextInputBit		; read1
 	ld c, a
-	call ReadNextInputBit
+	call ReadNextInputBit		; read2
 	sla c
-	or c                       ; read next two bits into c
+	or c                       	; a = read1 << 1 | read2
+	
+	; a == 0 つまり read1もread2も 0 -> .readRLEncodedZeros 
 	and a
-	jr z, .readRLEncodedZeros ; 00 -> RLEncoded zeroes following
+	jr z, .readRLEncodedZeros
+
 	call WriteSpriteBitsToBuffer  ; otherwise write input to output and repeat
 	call MoveToNextBufferPosition
 	jr .readNextInput
+
 .readRLEncodedZeros
 	ld c, $0                   ; number of zeroes it length encoded, the number
 .countConsecutiveOnesLoop      ; of consecutive ones determines the number of bits the number has
@@ -232,16 +239,22 @@ MoveToNextBufferPosition::
 .done
 	jp UnpackSprite
 
-; writes 2 bits (from a) to the output buffer (pointed to from wSpriteOutputPtr)
+; aに格納されている 2bitの値 を wSpriteOutputPtr が示す output buffer に書き込む
 WriteSpriteBitsToBuffer::
 	ld e, a
+
+	; [wSpriteOutputBitOffset] == 0 -> .offset0
+	; [wSpriteOutputBitOffset] == 1 -> .offset1
+	; [wSpriteOutputBitOffset] == 2 -> .offset2
 	ld a, [wSpriteOutputBitOffset]
 	and a
 	jr z, .offset0
 	cp $2
 	jr c, .offset1
 	jr z, .offset2
-	rrc e ; offset 3
+
+	; [wSpriteOutputBitOffset] == 3 -> 2bit読み進めて .offset0
+	rrc e		; シフトでクリアする == 読み進める
 	rrc e
 	jr .offset0
 .offset1
@@ -251,12 +264,13 @@ WriteSpriteBitsToBuffer::
 .offset2
 	swap e
 .offset0
+	; output buffer |= e
 	ld a, [wSpriteOutputPtr]
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
 	ld h, a
 	ld a, [hl]
-	or e
+	or e	; a = output buffer | e
 	ld [hl], a
 	ret
 
