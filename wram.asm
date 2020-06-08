@@ -2109,9 +2109,15 @@ wSpriteOutputBitOffset:: ; d0a7; determines where in the output byte the two bit
 wSpriteLoadFlags::
 	ds 1
 
-wSpriteUnpackMode:: ; d0a9
+; d0a9  
+; 0   -> mode 0  
+; 1 0 -> mode 1  
+; 1 1 -> mode 2  
+wSpriteUnpackMode::
 	ds 1
-wSpriteFlipped:: ; d0aa
+
+; d0aa
+wSpriteFlipped::
 	ds 1
 
 ; d0ab  

@@ -71,26 +71,35 @@ _UncompressSpriteData::
 	; 下に続く
 
 ; uncompresses a chunk from the sprite input data stream (pointed to at wd0da) into sSpriteBuffer1 or sSpriteBuffer2
-; each chunk is a 1bpp sprite. A 2bpp sprite consist of two chunks which are merged afterwards
+; 各チャンクは1bppでスプライトのグラフィックデータを保持している 2つのチャンクを組み合わせることで2bppのスプライトのグラを復元する
 ; note that this is an endless loop which is terminated during a call to MoveToNextBufferPosition by manipulating the stack
 UncompressSpriteDataLoop::
+	; hl = sSpriteBuffer1(wSpriteLoadFlagsの bit0 == 0) or sSpriteBuffer2(wSpriteLoadFlagsの bit0 == 1)
 	ld hl, sSpriteBuffer1
 	ld a, [wSpriteLoadFlags]
 	bit 0, a
-	jr z, .useSpriteBuffer1    ; check which buffer to use
+	jr z, .useSpriteBuffer1
 	ld hl, sSpriteBuffer2
+
 .useSpriteBuffer1
 	call StoreSpriteOutputPointer
+
+	; wSpriteLoadFlagsの bit1 == 0 -> .startDecompression  
 	ld a, [wSpriteLoadFlags]
 	bit 1, a
 	jr z, .startDecompression  ; check if last iteration
-	call ReadNextInputBit      ; if last chunk, read 1-2 bit unpacking mode
+
+	; 2チャンク目も読み取る場合は, 1-2bitさらに読み進めて unpacking modeを決定する
+	call ReadNextInputBit
 	and a
-	jr z, .unpackingMode0      ; 0   -> mode 0
-	call ReadNextInputBit      ; 1 0 -> mode 1
-	inc a                      ; 1 1 -> mode 2
+	jr z, .unpackingMode0      
+	call ReadNextInputBit      
+	inc a					   ; ここにきている時点で1bit目は1なのでインクリメント
+
+	; INPUT: a = unpacking mode
 .unpackingMode0
 	ld [wSpriteUnpackMode], a
+
 .startDecompression
 	call ReadNextInputBit
 	and a
@@ -612,7 +621,11 @@ UnpackSpriteMode2::
 	ld [wSpriteFlipped], a
 	jp XorSpriteChunks
 
-; stores hl into the output pointers
+; **StoreSpriteOutputPointer**  
+; hl を wSpriteOutputPtr と wSpriteOutputPtrCachedに格納する  
+; - - -  
+; [wSpriteOutputPtr] = [wSpriteOutputPtrCached] = l  
+; [wSpriteOutputPtr+1] = [wSpriteOutputPtrCached+1] = h  
 StoreSpriteOutputPointer::
 	ld a, l
 	ld [wSpriteOutputPtr], a
