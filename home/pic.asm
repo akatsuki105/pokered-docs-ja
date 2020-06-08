@@ -181,7 +181,7 @@ UncompressSpriteDataLoop::
 ; スプライトのグラフィックデータを読み進める  
 ; - - -  
 ; 現在解凍中のスプライトのoutput pointer を次の position に進めてreturnする  
-; グラフィックデータをすべて読み終えたとき、returnせず UnpackSprite にジャンプする
+; グラフィックデータをすべて読み終えたとき、returnせず UnpackSprite にジャンプする  
 ; 
 ; ![flow](../docs/image/pic/uncompress.png)
 MoveToNextBufferPosition::
@@ -377,7 +377,8 @@ LengthEncodingOffsetList::
 	dw %0111111111111111
 	dw %1111111111111111
 
-; unpacks the sprite data depending on the unpack mode
+; **UnpackSprite**  
+; unpack modeに応じてスプライトのグラフィックデータを解凍する  
 UnpackSprite::
 	ld a, [wSpriteUnpackMode]
 	cp $2
