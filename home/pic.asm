@@ -24,22 +24,30 @@ UncompressSpriteData::
 	ld [MBC1RomBank], a
 	ret
 
-; initializes necessary data to load a sprite and runs UncompressSpriteDataLoop
+; スプライトをロードするのに必要なデータを初期化し、UncompressSpriteDataLoop を呼び出す
 _UncompressSpriteData::
+	; sSpriteBuffer1 と sSpriteBuffer2 を0クリア
 	ld hl, sSpriteBuffer1
 	ld c, (2*SPRITEBUFFERSIZE) % $100
 	ld b, (2*SPRITEBUFFERSIZE) / $100
 	xor a
-	call FillMemory           ; clear sprite buffer 1 and 2
+	call FillMemory
+
 	ld a, $1
 	ld [wSpriteInputBitCounter], a
 	ld a, $3
 	ld [wSpriteOutputBitOffset], a
+	
+	; 
 	xor a
 	ld [wSpriteCurPosX], a
 	ld [wSpriteCurPosY], a
 	ld [wSpriteLoadFlags], a
-	call ReadNextInputByte    ; first byte of input determines sprite width (high nybble) and height (low nybble) in tiles (8x8 pixels)
+
+	; 入力の最初のバイトから、タイル（8x8ピクセル）のスプライトの幅（7-4bit）と高さ（3-0bit）がわかるので読み取る
+	call ReadNextInputByte
+
+	; 読み取った最初のバイトから得たタイルの高さと幅とをそれぞれ [wSpriteHeight], [wSpriteWidth]に格納する
 	ld b, a
 	and $f
 	add a
@@ -53,11 +61,14 @@ _UncompressSpriteData::
 	add a
 	add a
 	ld [wSpriteWidth], a
+
+	; 次に 1bit 読み取って [wSpriteLoadFlags] に格納
+	; 結果として [wSpriteLoadFlags]の bit1 は 0, bit0 は読み取ったデータになる
+	; これにより sSpriteBuffer1 とsSpriteBuffer2 に2つのデータチャンクが読み込まれる
+	; bit0 は最初のチャンクが配置される buffer が sSpriteBuffer1ととsSpriteBuffer2 のどちらなのかを示している
 	call ReadNextInputBit
-	ld [wSpriteLoadFlags], a ; initialite bit1 to 0 and bit0 to the first input bit
-                             ; this will load two chunks of data to sSpriteBuffer1 and sSpriteBuffer2
-                             ; bit 0 decides in which one the first chunk is placed
-	; fall through
+	ld [wSpriteLoadFlags], a 
+	; 下に続く
 
 ; uncompresses a chunk from the sprite input data stream (pointed to at wd0da) into sSpriteBuffer1 or sSpriteBuffer2
 ; each chunk is a 1bpp sprite. A 2bpp sprite consist of two chunks which are merged afterwards
@@ -240,35 +251,49 @@ WriteSpriteBitsToBuffer::
 	ld [hl], a
 	ret
 
-; reads next bit from input stream and returns it in a
+; **ReadNextInputBit**  
+; wSpriteInputPtr から値を 1bit 読み進めて読み取ったbitを a に入れて返す  
 ReadNextInputBit::
+	; offset != 1 -> .curByteHasMoreBitsToRead
 	ld a, [wSpriteInputBitCounter]
 	dec a
 	jr nz, .curByteHasMoreBitsToRead
+
+	; offset == 1 つまり これが今のバイトの最後のbit
 	call ReadNextInputByte
 	ld [wSpriteInputCurByte], a
 	ld a, $8
+
+	; INPUT: a = [wSpriteInputBitCounter] - 1(今のバイトの次のbit) or 8(次のバイトに移った)
 .curByteHasMoreBitsToRead
-	ld [wSpriteInputBitCounter], a
+	ld [wSpriteInputBitCounter], a ; wSpriteInputBitCounterを進める
+	; バイトデータを読み進めた分消滅させる([wSpriteInputCurByte] <<= 1)
 	ld a, [wSpriteInputCurByte]
 	rlca
 	ld [wSpriteInputCurByte], a
-	and $1
+	and $1 ; a = 読み取り結果
 	ret
 
-; reads next byte from input stream and returns it in a
+; **ReadNextInputByte**  
+; wSpriteInputPtr から値を1つ読み進めて読み取った結果を a に入れて返す  
+; - - -  
+; a = read([wSpriteInputPtr]), [wSpriteInputPtr]++  
 ReadNextInputByte::
+	; wSpriteInputPtrの指すアドレスの内容をbに読み込む
 	ld a, [wSpriteInputPtr]
 	ld l, a
 	ld a, [wSpriteInputPtr+1]
-	ld h, a
-	ld a, [hli]
+	ld h, a		; hl = [wSpriteInputPtr] << 8 | [wSpriteInputPtr+1]
+	ld a, [hli] ; a = [hl++]
 	ld b, a
+
+	; wSpriteInputPtrの指すアドレス値をインクリメント
 	ld a, l
 	ld [wSpriteInputPtr], a
 	ld a, h
 	ld [wSpriteInputPtr+1], a
-	ld a, b
+	
+	ld a, b ; a = b = 読み取った内容
 	ret
 
 ; the nth item is 2^n - 1

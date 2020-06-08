@@ -2088,8 +2088,12 @@ wSpriteHeight:: ; d0a4
 wSpriteInputCurByte:: ; d0a5
 ; current input byte
 	ds 1
-wSpriteInputBitCounter:: ; d0a6
-; bit offset of last read input bit
+
+; d0a6  
+; wSpriteInputPtrのバイトデータを 1bit読み進める ReadNextInputBit関数 で最後に呼んだbitのoffset  
+; - - -  
+; offsetが0のときに ReadNextInputBit関数 を呼ぶと次のバイトのbitを読む  
+wSpriteInputBitCounter::
 	ds 1
 
 wSpriteOutputBitOffset:: ; d0a7; determines where in the output byte the two bits are placed. Each byte contains four columns (2bpp data)
@@ -2099,10 +2103,12 @@ wSpriteOutputBitOffset:: ; d0a7; determines where in the output byte the two bit
 ; 0 -> 000000XX   4th column
 	ds 1
 
-wSpriteLoadFlags:: ; d0a8
-; bit 0 determines used buffer (0 -> $a188, 1 -> $a310)
-; bit 1 loading last sprite chunk? (there are at most 2 chunks per load operation)
+; d0a8  
+; bit 0: 使用するbufferを選択する (0 -> sSpriteBuffer1, 1 -> sSpriteBuffer2)  
+; bit 1: 最後のスプライトの最後のチャンクをロードするかを決めるフラグ(各ロード操作では最大2チャンクしかロードしない)
+wSpriteLoadFlags::
 	ds 1
+
 wSpriteUnpackMode:: ; d0a9
 	ds 1
 wSpriteFlipped:: ; d0aa
