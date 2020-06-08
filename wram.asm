@@ -2099,6 +2099,7 @@ wSpriteInputBitCounter::
 ; d0a7  
 ; WriteSpriteBitsToBuffer で 読み取った 2bit の値を output buffer にどのように書き込むかを決定する  
 ; output buffer の各byteは 2bppフォーマットのためのものであり、4つの列に分けられる  
+; MoveToNextBufferPosition で 読み進めるとデクリメントされる  
 ; 
 ; 3 -> XX000000   1st column  
 ; 2 -> 00XX0000   2nd column  
@@ -2109,7 +2110,7 @@ wSpriteOutputBitOffset::
 
 ; d0a8  
 ; bit 0: 使用するbufferを選択する (0 -> sSpriteBuffer1, 1 -> sSpriteBuffer2)  
-; bit 1: 最後のスプライトの最後のチャンクをロードするかを決めるフラグ(各ロード操作では最大2チャンクしかロードしない)
+; bit 1: 最後のスプライトの最後のチャンクをロードするかを決めるフラグ(0:ロードする 1:しない)(各ロード操作では最大2チャンクしかロードしない)
 wSpriteLoadFlags::
 	ds 1
 
