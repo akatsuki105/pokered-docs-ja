@@ -226,6 +226,7 @@ MoveToNextBufferPosition::
 	ld a, [hl]
 	ld [wSpriteOutputPtr+1], a
 	ret
+	
 .bitOffsetsDone
 	ld a, $3
 	ld [wSpriteOutputBitOffset], a
