@@ -44,7 +44,7 @@ fork時に文字のエンコードに失敗してビルドしたROMのチェッ�
 - [movement byte](./docs/movement_byte.md)
 - [OAM](./docs/oam.md)
 - [pewter guys](./docs/pewter_guys.md)
-- [picファイル](./docs/pic_format.md)
+- [pic](./docs/pic/README.md)
 - [ポケモン図鑑](./docs/pokedex.md)
 - [Pokemon](./docs/pokemon/README.md)
 - [predef](./docs/predef.md)
