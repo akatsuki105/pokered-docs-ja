@@ -177,22 +177,13 @@ UncompressSpriteDataLoop::
 	jr nz, .writeZerosLoop
 	jr .readNextInput
 
-; output pointer を次の position に進める  
-; また出力を全て終えたとき、スタックからreturn pointerを取り除くことで 次の関数呼び出しをキャンセルする  
-; また unpack modeに応じて後に続く関数を呼び出す役割を持つ  
+; **MoveToNextBufferPosition**  
+; スプライトのグラフィックデータを読み進める  
+; - - -  
+; 現在解凍中のスプライトのoutput pointer を次の position に進めてreturnする  
+; グラフィックデータをすべて読み終えたとき、returnせず UnpackSprite にジャンプする
 ; 
-; タイル列 0
-; 0行目 [wSpriteOutputPtr]   -> %aabbccdd  
-; 1行目 [wSpriteOutputPtr]+1 -> %eeffgghh  
-; 2行目 [wSpriteOutputPtr]+2 -> %iijjkkll  
-; ...
-; 8行目 [wSpriteOutputPtr]+8 -> %wwxxyyzz
-; タイル列 1
-; 9行目 [wSpriteOutputPtr]   -> %aabbccdd 
-; 
-; wSpriteOutputBitOffset = 0(読み取るのはdd, hh, ll, ..) or 1(読み取るのはcc, gg, kk, ..) or 2 or 3  
-; 
-; 列ごとに処理していくので aa -> ee -> iiみたいに処理していく  
+; ![flow](../docs/image/pic/uncompress.png)
 MoveToNextBufferPosition::
 	; wSpriteCurPosY + 1 == wSpriteHeight つまり処理が最後の行にいったとき -> .curColumnDone(列ごとに処理するので)
 	ld a, [wSpriteHeight]
@@ -202,11 +193,8 @@ MoveToNextBufferPosition::
 	cp b
 	jr z, .curColumnDone
 
-	; 現在の列が終わっていない(最後の行まで終えていない)ときは次の行に進める
-
-	; [wSpriteCurPosY] を次の行に
-	ld [wSpriteCurPosY], a
-
+	; 現在の列が終わっていない(最後の行まで終えていない)ときは次の行に進める(通常の処理)
+	ld [wSpriteCurPosY], a ; [wSpriteCurPosY] を次の行に
 	; wSpriteOutputPtrを進める(指すアドレスを1バイト増やす)
 	ld a, [wSpriteOutputPtr]	; [wSpriteOutputPtr]++
 	inc a						

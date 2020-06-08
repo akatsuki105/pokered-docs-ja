@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "donaldhays.rgbds-z80"
+        "donaldhays.rgbds-z80",
+        "kisstkondoros.vscode-gutter-preview"
     ]
 }
