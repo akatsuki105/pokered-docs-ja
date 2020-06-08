@@ -383,15 +383,20 @@ UnpackSprite::
 	ld a, [wSpriteUnpackMode]
 	cp $2
 	jp z, UnpackSpriteMode2
+
 	and a
 	jp nz, XorSpriteChunks
+
+	; buffer1　と buffer2 を decode
 	ld hl, sSpriteBuffer1
 	call SpriteDifferentialDecode
 	ld hl, sSpriteBuffer2
-	; fall through
+	; buffer2のデコードは下にそのまま続く
 
-; decodes differential encoded sprite data
-; input bit value 0 preserves the current bit value and input bit value 1 toggles it (starting from initial value 0).
+; **SpriteDifferentialDecode**  
+; diffrential encodingされたスプライトデータをdecodeする  
+; - - -  
+; diffrential encoding については ドキュメント参照  
 SpriteDifferentialDecode::
 	xor a
 	ld [wSpriteCurPosX], a
@@ -556,7 +561,9 @@ DecodeNybble1TableFlipped::
 	dn $e, $6
 	dn $2, $a
 
-; combines the two loaded chunks with xor (the chunk loaded second is the destination). The source chunk is differeintial decoded beforehand.
+; **XorSpriteChunks**  
+; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところに入る)  
+; 合体前の2つの chunk はあらかじめ differntial decode されている
 XorSpriteChunks::
 	xor a
 	ld [wSpriteCurPosX], a
