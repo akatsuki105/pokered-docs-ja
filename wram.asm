@@ -2097,7 +2097,9 @@ wSpriteInputBitCounter::
 	ds 1
 
 ; d0a7  
-; determines where in the output byte the two bits are placed. Each byte contains four columns (2bpp data)  
+; WriteSpriteBitsToBuffer で 読み取った 2bit の値を output buffer にどのように書き込むかを決定する  
+; output buffer の各byteは 2bppフォーマットのためのものであり、4つの列に分けられる  
+; 
 ; 3 -> XX000000   1st column  
 ; 2 -> 00XX0000   2nd column  
 ; 1 -> 0000XX00   3rd column  
@@ -2132,14 +2134,19 @@ wSpriteInputPtr::
 wSpriteOutputPtr::
 	ds 2
 
-wSpriteOutputPtrCached:: ; d0af
-; used to revert pointer for different bit offsets
+; d0af  
+; used to revert pointer for different bit offsets  
+wSpriteOutputPtrCached::
 	ds 2
-wSpriteDecodeTable0Ptr:: ; d0b1
+
+; d0b1  
 ; pointer to differential decoding table (assuming initial value 0)
+wSpriteDecodeTable0Ptr::
 	ds 2
-wSpriteDecodeTable1Ptr:: ; d0b3
+
+; d0b3  
 ; pointer to differential decoding table (assuming initial value 1)
+wSpriteDecodeTable1Ptr::
 	ds 2
 
 ; d0b5  

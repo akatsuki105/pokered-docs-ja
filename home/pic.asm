@@ -118,7 +118,8 @@ UncompressSpriteDataLoop::
 	and a
 	jr z, .readRLEncodedZeros
 
-	call WriteSpriteBitsToBuffer  ; otherwise write input to output and repeat
+	; 読み取った2bit(read1, read2)が0でないときは output bufferに反映
+	call WriteSpriteBitsToBuffer
 	call MoveToNextBufferPosition
 	jr .readNextInput
 
@@ -176,33 +177,49 @@ UncompressSpriteDataLoop::
 	jr nz, .writeZerosLoop
 	jr .readNextInput
 
-; moves output pointer to next position
-; also cancels the calling function if the all output is done (by removing the return pointer from stack)
-; and calls postprocessing functions according to the unpack mode
+; output pointer を次の position に進める  
+; また出力を全て終えたとき、スタックからreturn pointerを取り除くことで 次の関数呼び出しをキャンセルする  
+; また unpack modeに応じて後に続く関数を呼び出す役割を持つ  
 MoveToNextBufferPosition::
+	; wSpriteCurPosY + 1 == wSpriteHeight つまり処理が最後の行にいったとき -> .curColumnDone
 	ld a, [wSpriteHeight]
 	ld b, a
 	ld a, [wSpriteCurPosY]
-	inc a
+	inc a ; a = [wSpriteCurPosY]+1 = 次の行
 	cp b
 	jr z, .curColumnDone
+
+	; [wSpriteCurPosY] を次の行に
 	ld [wSpriteCurPosY], a
+
+	; [wSpriteOutputPtr]++
 	ld a, [wSpriteOutputPtr]
 	inc a
 	ld [wSpriteOutputPtr], a
 	ret nz
+	; wSpriteOutputPtrは wSpriteOutputPtr+1と合わせて2バイトの値であるため、wSpriteOutputPtrがオーバーフローしたらwSpriteOutputPtr+1をインクリメントする(キャリーみたいに)
 	ld a, [wSpriteOutputPtr+1]
 	inc a
 	ld [wSpriteOutputPtr+1], a
 	ret
+	
+	; 現在の行を終えたとき、次の行へ行く
 .curColumnDone
+	; [wSpriteCurPosY]をリセット
 	xor a
 	ld [wSpriteCurPosY], a
+
+	; [wSpriteOutputBitOffset] == 0 -> .bitOffsetsDone
 	ld a, [wSpriteOutputBitOffset]
 	and a
 	jr z, .bitOffsetsDone
+
+	; [wSpriteOutputBitOffset] > 0 -> [wSpriteOutputBitOffset]--
 	dec a
 	ld [wSpriteOutputBitOffset], a
+
+	; [wSpriteOutputPtr] = [wSpriteOutputPtrCached]
+	; [wSpriteOutputPtr+1] = [wSpriteOutputPtrCached+1]
 	ld hl, wSpriteOutputPtrCached
 	ld a, [hli]
 	ld [wSpriteOutputPtr], a
@@ -243,6 +260,7 @@ MoveToNextBufferPosition::
 WriteSpriteBitsToBuffer::
 	ld e, a
 
+	; a = 000000XX の形で入ってくるので wSpriteOutputBitOffset の値を見て適切な形にシフトする
 	; [wSpriteOutputBitOffset] == 0 -> .offset0
 	; [wSpriteOutputBitOffset] == 1 -> .offset1
 	; [wSpriteOutputBitOffset] == 2 -> .offset2
@@ -253,24 +271,31 @@ WriteSpriteBitsToBuffer::
 	jr c, .offset1
 	jr z, .offset2
 
-	; [wSpriteOutputBitOffset] == 3 -> 2bit読み進めて .offset0
-	rrc e		; シフトでクリアする == 読み進める
+	; [wSpriteOutputBitOffset] == 3
+	; e = XX000000 -> .offset0
+	rrc e
 	rrc e
 	jr .offset0
+
+	; e = 0000XX00 -> .offset1
 .offset1
 	sla e
 	sla e
 	jr .offset0
+
+	; e = 00XX0000 -> .offset2
 .offset2
 	swap e
+
+	; INPUT: e = wSpriteOutputBitOffset に合わせて整形した2bit
 .offset0
-	; output buffer |= e
+	; wSpriteOutputPtrの指す場所(output buffer)に2bitを書き込む
 	ld a, [wSpriteOutputPtr]
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
 	ld h, a
 	ld a, [hl]
-	or e	; a = output buffer | e
+	or e	; output buffer |= e
 	ld [hl], a
 	ret
 
