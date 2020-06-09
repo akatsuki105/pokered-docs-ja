@@ -437,6 +437,8 @@ SpriteDifferentialDecode::
 	ld a, d
 	ld [wSpriteDecodeTable1Ptr+1], a
 	ld e, $0                          ; last decoded nybble, initialized to 0
+
+	; スプライトのを1行(タイル1枚ではなく、グラフィックデータ全体の行)ずつデコードしていく
 .decodeNextByteLoop
 	; a = differental encodingされたスプライトのグラフィックデータ
 	ld a, [wSpriteOutputPtr]
@@ -447,53 +449,70 @@ SpriteDifferentialDecode::
 
 	ld b, a
 
-	; a = XXXXYYYY -> 0000XXXX
+	; d = aの上位nybble の decode結果 << 4 | 0000
 	swap a
 	and $f
 	call DifferentialDecodeNybble     ; decode high nybble
-	
 	swap a
 	ld d, a
 
-	; a = XXXXYYYY -> 0000YYYY
+	; a = aの下位nybble の decode結果
 	ld a, b
 	and $f
 	call DifferentialDecodeNybble     ; decode low nybble
 
+	; b = decode結果
 	or d
-
 	ld b, a
+
+	; hl = output bufferのアドレス
 	ld a, [wSpriteOutputPtr]
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
 	ld h, a
+
+	; decode結果を書き戻す
 	ld a, b
-	ld [hl], a                        ; write back decoded data
+	ld [hl], a
+
+	; [wSpriteOutputPtr] = [wSpriteHeight] + [wSpriteOutputPtr] = 次のタイル列へ移動する
 	ld a, [wSpriteHeight]
-	add l                             ; move on to next column
+	add l
 	jr nc, .noCarry
 	inc h
 .noCarry
 	ld [wSpriteOutputPtr], a
 	ld a, h
 	ld [wSpriteOutputPtr+1], a
+
+	; [wSpriteCurPosX] += 8
 	ld a, [wSpriteCurPosX]
 	add $8
 	ld [wSpriteCurPosX], a
+
+	; [wSpriteCurPosX] != [wSpriteWidth] つまり 現在の行が終了したか -> .decodeNextByteLoop
 	ld b, a
 	ld a, [wSpriteWidth]
 	cp b
-	jr nz, .decodeNextByteLoop        ; test if current row is done
+	jr nz, .decodeNextByteLoop
+
+	; 1つの行が終わったとき  
 	xor a
-	ld e, a
-	ld [wSpriteCurPosX], a
-	ld a, [wSpriteCurPosY]           ; move on to next row
+	ld e, a ; initial valueをリセット
+	ld [wSpriteCurPosX], a	; 列をリセット
+	
+	; 行をインクリメント 
+	ld a, [wSpriteCurPosY]
 	inc a
 	ld [wSpriteCurPosY], a
+
+	; 全部の行を処理し終えた -> .done
 	ld b, a
 	ld a, [wSpriteHeight]
 	cp b
-	jr z, .done                       ; test if all rows finished
+	jr z, .done
+
+	; wSpriteOutputPtrCached をインクリメントしたものを反映して次の行へ
 	ld a, [wSpriteOutputPtrCached]
 	ld l, a
 	ld a, [wSpriteOutputPtrCached+1]
@@ -501,6 +520,8 @@ SpriteDifferentialDecode::
 	inc hl
 	call StoreSpriteOutputPointer
 	jr .decodeNextByteLoop
+
+	; ここに来た時、スプライトのグラフィックデータをすべてデコードし終えた
 .done
 	xor a
 	ld [wSpriteCurPosY], a
