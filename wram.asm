@@ -2142,12 +2142,14 @@ wSpriteOutputPtrCached::
 	ds 2
 
 ; d0b1  
-; pointer to differential decoding table (assuming initial value 0)
+; pointer to differential decoding table (assuming initial value 0)  
+; differential decoding の デコード方法を格納するテーブル(最初の値は0)  
 wSpriteDecodeTable0Ptr::
 	ds 2
 
 ; d0b3  
-; pointer to differential decoding table (assuming initial value 1)
+; pointer to differential decoding table (assuming initial value 1)  
+; differential decoding の デコード方法を格納するテーブルその2(最初の値は1)  
 wSpriteDecodeTable1Ptr::
 	ds 2
 

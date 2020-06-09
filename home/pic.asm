@@ -427,6 +427,7 @@ SpriteDifferentialDecode::
 
 	; 上で読み込んだデコードテーブルにしたがってデコードを開始する
 .storeDecodeTablesPointers
+	; デコードテーブルのアドレスをptrに書き込む
 	ld a, l
 	ld [wSpriteDecodeTable0Ptr], a
 	ld a, h
@@ -437,21 +438,30 @@ SpriteDifferentialDecode::
 	ld [wSpriteDecodeTable1Ptr+1], a
 	ld e, $0                          ; last decoded nybble, initialized to 0
 .decodeNextByteLoop
+	; a = differental encodingされたスプライトのグラフィックデータ
 	ld a, [wSpriteOutputPtr]
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
 	ld h, a
 	ld a, [hl]
+
 	ld b, a
+
+	; a = XXXXYYYY -> 0000XXXX
 	swap a
 	and $f
 	call DifferentialDecodeNybble     ; decode high nybble
+	
 	swap a
 	ld d, a
+
+	; a = XXXXYYYY -> 0000YYYY
 	ld a, b
 	and $f
 	call DifferentialDecodeNybble     ; decode low nybble
+
 	or d
+
 	ld b, a
 	ld a, [wSpriteOutputPtr]
 	ld l, a
@@ -496,24 +506,38 @@ SpriteDifferentialDecode::
 	ld [wSpriteCurPosY], a
 	ret
 
-; decodes the nybble stored in a. Last decoded data is assumed to be in e (needed to determine if initial value is 0 or 1)
+; Nybbleを differental decodeする関数  
+; - - -  
+; INPUT:  
+; - a = differential decode対象の nybble(0000XXXX)  
+; - e = DifferentialDecodeNybble が　実行されたことがあるのなら 最後の結果 そうでないなら 0(最初のbitが 0 か 1かを決定するのに必要)  
 DifferentialDecodeNybble::
-	srl a               ; c=a%2, a/=2
+	; c = a%2, a /= 2
+	srl a               
 	ld c, $0
 	jr nc, .evenNumber
 	ld c, $1
+
 .evenNumber
-	ld l, a
+	ld l, a	; l = デコード対象のNybble >> 1
+
+	; eの bit0(flipしていたら bit3) をチェックして zフラグに格納
 	ld a, [wSpriteFlipped]
 	and a
 	jr z, .notFlipped     ; determine if initial value is 0 or one
-	bit 3, e              ; if flipped, consider MSB of last data
+	bit 3, e              ; MSB
 	jr .selectLookupTable
 .notFlipped
-	bit 0, e              ; else consider LSB
+	bit 0, e              ; LSB
+
 .selectLookupTable
-	ld e, l
-	jr nz, .initialValue1 ; load the appropriate table
+	ld e, l	; e = デコード対象のNybble >> 1
+
+	; bit0 (bit3) が
+	; 0のとき h = [wSpriteDecodeTable0Ptr+1]	l = [wSpriteDecodeTable0Ptr] つまり DecodeNybble0Table(Flipped)を利用
+	; or 
+	; 1のとき h = [wSpriteDecodeTable1Ptr+1]	l = [wSpriteDecodeTable1Ptr] つまり　DecodeNybble1Table(Flipped)を利用
+	jr nz, .initialValue1
 	ld a, [wSpriteDecodeTable0Ptr]
 	ld l, a
 	ld a, [wSpriteDecodeTable0Ptr+1]
@@ -524,6 +548,8 @@ DifferentialDecodeNybble::
 	ld a, [wSpriteDecodeTable1Ptr+1]
 .tableLookup
 	ld h, a
+
+	; hl += デコード対象のNybble >> 1 (デコードテーブルのインデックス)
 	ld a, e
 	add l
 	ld l, a
@@ -531,6 +557,7 @@ DifferentialDecodeNybble::
 	inc h
 .noCarry
 	ld a, [hl]
+
 	bit 0, c
 	jr nz, .selectLowNybble
 	swap a  ; select high nybble
@@ -539,15 +566,36 @@ DifferentialDecodeNybble::
 	ld e, a ; update last decoded data
 	ret
 
+; **DecodeNybble0Table**  
+; - - -  
+; 0: %0000_0001  
+; 1: %0011_0010  
+; 2: %0111_0110  
+; 3: %0100_0101  
+; 4: %1111_1110  
+; 5: %1100_1101  
+; 6: %1000_1001  
+; 7: %1011_1010  
 DecodeNybble0Table::
-	dn $0, $1
-	dn $3, $2
-	dn $7, $6
-	dn $4, $5
-	dn $f, $e
-	dn $c, $d
-	dn $8, $9
-	dn $b, $a
+	dn $0, $1	; %0000_0001
+	dn $3, $2	; %0011_0010
+	dn $7, $6	; %0111_0110
+	dn $4, $5	; %0100_0101
+	dn $f, $e	; %1111_1110
+	dn $c, $d	; %1100_1101
+	dn $8, $9	; %1000_1001
+	dn $b, $a	; %1011_1010
+
+; **DecodeNybble1Table**  
+; - - -  
+; 0: %1111_1110  
+; 1: %1100_1101  
+; 2: %1000_1001  
+; 3: %1011_1010  
+; 4: %0000_0001  
+; 5: %0011_0010  
+; 6: %0111_0110  
+; 7: %0100_0101 
 DecodeNybble1Table::
 	dn $f, $e
 	dn $c, $d
@@ -557,6 +605,7 @@ DecodeNybble1Table::
 	dn $3, $2
 	dn $7, $6
 	dn $4, $5
+
 DecodeNybble0TableFlipped::
 	dn $0, $8
 	dn $c, $4
