@@ -183,7 +183,7 @@ UncompressSpriteDataLoop::
 ; **MoveToNextBufferPosition**  
 ; スプライトのグラフィックデータを読み進める  
 ; - - -  
-; 現在解凍中のスプライトのoutput pointer を次の position に進めてreturnする  
+; 現在解凍中のスプライトの output pointer を次の position に進めてreturnする  
 ; グラフィックデータをすべて読み終えたとき、returnせず UnpackSprite にジャンプする  
 ; 
 ; ![flow](https://imgur.com/qxoHjcR.png)
@@ -662,17 +662,21 @@ DecodeNybble1TableFlipped::
 
 ; **XorSpriteChunks**  
 ; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところに入る)  
-; 合体前の2つの chunk はあらかじめ differntial decode されている
+; 合体前の2つの chunk は 関数の前のほうで differntial decode する
 XorSpriteChunks::
+	; decode に 関する変数をクリアする
 	xor a
 	ld [wSpriteCurPosX], a
 	ld [wSpriteCurPosY], a
 	call ResetSpriteBufferPointers
+
 	ld a, [wSpriteOutputPtr]          ; points to buffer 1 or 2, depending on flags
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
 	ld h, a
 	call SpriteDifferentialDecode      ; decode buffer 1 or 2, depending on flags
+
+	; decode に 関する変数をクリアする
 	call ResetSpriteBufferPointers
 	ld a, [wSpriteOutputPtr]          ; source buffer, points to buffer 1 or 2, depending on flags
 	ld l, a
@@ -738,8 +742,11 @@ ReverseNybble::
 	ld a, [de]
 	ret
 
-; resets sprite buffer pointers to buffer 1 and 2, depending on wSpriteLoadFlags
+; wSpriteLoadFlags に 応じて output buffer のポインタを初期位置(sSpriteBuffer1 と sSpriteBuffer2)に戻す
 ResetSpriteBufferPointers::
+	; wSpriteLoadFlags の bit0 が
+	; 0 -> de = sSpriteBuffer1	hl = sSpriteBuffer2
+	; 1 -> de = sSpriteBuffer2	hl = sSpriteBuffer1
 	ld a, [wSpriteLoadFlags]
 	bit 0, a
 	jr nz, .buffer2Selected
@@ -749,6 +756,8 @@ ResetSpriteBufferPointers::
 .buffer2Selected
 	ld de, sSpriteBuffer2
 	ld hl, sSpriteBuffer1
+
+	; output buffer のポインタを初期位置に戻す
 .storeBufferPointers
 	ld a, l
 	ld [wSpriteOutputPtr], a
