@@ -506,11 +506,23 @@ SpriteDifferentialDecode::
 	ld [wSpriteCurPosY], a
 	ret
 
+; **DifferentialDecodeNybble**  
 ; Nybbleを differental decodeする関数  
 ; - - -  
 ; INPUT:  
 ; - a = differential decode対象の nybble(0000XXXX)  
-; - e = DifferentialDecodeNybble が　実行されたことがあるのなら 最後の結果 そうでないなら 0(最初のbitが 0 か 1かを決定するのに必要)  
+; - e = 最後に実行した DifferentialDecodeNybble の結果 そうでないなら 0(最初のbitが 0 か 1かを決定するのに必要)  
+; 
+; aについて  
+; aを AAAB (A, B = 0 or 1) と表したとき、  
+; AAA は デコードテーブルのインデックス Bはデコードテーブルの上位、下位のnybbleのどちらを結果とするかを決定する  
+; 
+; e の bit0(bit3)の値によって  
+; DecodeNybble0Table(Flipped) と DecodeNybble1Table(Flipped)  
+; のどちらを使うか決める  
+; 
+; OUPUT:  
+; - a = e = diffrential decodeの結果の nybble(0000XXXX)  
 DifferentialDecodeNybble::
 	; c = a%2, a /= 2
 	srl a               
@@ -521,7 +533,7 @@ DifferentialDecodeNybble::
 .evenNumber
 	ld l, a	; l = デコード対象のNybble >> 1
 
-	; eの bit0(flipしていたら bit3) をチェックして zフラグに格納
+	; e の bit0(flipしていたら bit3) をチェックして zフラグに格納
 	ld a, [wSpriteFlipped]
 	and a
 	jr z, .notFlipped     ; determine if initial value is 0 or one
@@ -533,10 +545,10 @@ DifferentialDecodeNybble::
 .selectLookupTable
 	ld e, l	; e = デコード対象のNybble >> 1
 
-	; bit0 (bit3) が
-	; 0のとき h = [wSpriteDecodeTable0Ptr+1]	l = [wSpriteDecodeTable0Ptr] つまり DecodeNybble0Table(Flipped)を利用
-	; or 
-	; 1のとき h = [wSpriteDecodeTable1Ptr+1]	l = [wSpriteDecodeTable1Ptr] つまり　DecodeNybble1Table(Flipped)を利用
+	; e の bit0 (bit3) が
+	;  0のとき h = [wSpriteDecodeTable0Ptr+1]	l = [wSpriteDecodeTable0Ptr] つまり DecodeNybble0Table(Flipped)を利用
+	;   or 
+	;  1のとき h = [wSpriteDecodeTable1Ptr+1]	l = [wSpriteDecodeTable1Ptr] つまり　DecodeNybble1Table(Flipped)を利用
 	jr nz, .initialValue1
 	ld a, [wSpriteDecodeTable0Ptr]
 	ld l, a
@@ -556,11 +568,13 @@ DifferentialDecodeNybble::
 	jr nc, .noCarry
 	inc h
 .noCarry
-	ld a, [hl]
+	ld a, [hl] ; a = decode byte(デコードテーブルの対象のインデックスのバイトデータ)
 
+	; c == 0 -> a = e = 0000XXXX (XXXXYYYY(decode byte)) 
+	; c == 1 -> a = e = 0000YYYY (XXXXYYYY(decode byte)) 
 	bit 0, c
 	jr nz, .selectLowNybble
-	swap a  ; select high nybble
+	swap a
 .selectLowNybble
 	and $f
 	ld e, a ; update last decoded data
