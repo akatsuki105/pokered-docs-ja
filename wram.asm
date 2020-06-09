@@ -2121,7 +2121,8 @@ wSpriteLoadFlags::
 wSpriteUnpackMode::
 	ds 1
 
-; d0aa
+; d0aa  
+; 対象のスプライトが左右反転しているかのフラグ
 wSpriteFlipped::
 	ds 1
 

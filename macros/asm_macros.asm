@@ -119,7 +119,8 @@ overworldMapCoord: MACRO
 	ld \1, wOverworldMap + ((\2) + 3) + (((\3) + 3) * ((\4) + (3 * 2)))
 ENDM
 
-; macro for two nibbles
+; macro for two nibbles  
+; dn nibble0 nibble1 -> db nibble0 << 4 | nibble1  
 dn: MACRO
 	db (\1 << 4 | \2)
 ENDM

@@ -7060,7 +7060,7 @@ CopyUncompressedPicToHL:
 	ld de, SCREEN_WIDTH
 	push af
 	
-	; [wSpriteFlipped] != 0 -> .flipped
+	; スプライトが左右反転 -> .flipped
 	ld a, [wSpriteFlipped]
 	and a
 	jr nz, .flipped

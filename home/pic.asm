@@ -33,12 +33,11 @@ _UncompressSpriteData::
 	xor a
 	call FillMemory
 
+	; スプライトの 解凍 に使う変数を初期化
 	ld a, $1
 	ld [wSpriteInputBitCounter], a
 	ld a, $3
 	ld [wSpriteOutputBitOffset], a
-	
-	; 
 	xor a
 	ld [wSpriteCurPosX], a
 	ld [wSpriteCurPosY], a
@@ -74,7 +73,7 @@ _UncompressSpriteData::
 ; 各チャンクは1bppでスプライトのグラフィックデータを保持している 2つのチャンクを組み合わせることで2bppのスプライトのグラを復元する
 ; note that this is an endless loop which is terminated during a call to MoveToNextBufferPosition by manipulating the stack
 UncompressSpriteDataLoop::
-	; hl = sSpriteBuffer1(wSpriteLoadFlagsの bit0 == 0) or sSpriteBuffer2(wSpriteLoadFlagsの bit0 == 1)
+	; hl = (wSpriteLoadFlagsの bit0 == 0) ? sSpriteBuffer1 : sSpriteBuffer2
 	ld hl, sSpriteBuffer1
 	ld a, [wSpriteLoadFlags]
 	bit 0, a
@@ -82,6 +81,7 @@ UncompressSpriteDataLoop::
 	ld hl, sSpriteBuffer2
 
 .useSpriteBuffer1
+	; output buffer として sSpriteBufferX を設定する
 	call StoreSpriteOutputPointer
 
 	; wSpriteLoadFlagsの bit1 == 0 -> .startDecompression  
@@ -90,11 +90,12 @@ UncompressSpriteDataLoop::
 	jr z, .startDecompression  ; check if last iteration
 
 	; 2チャンク目も読み取る場合は, 1-2bitさらに読み進めて unpacking modeを決定する
-	call ReadNextInputBit
+	call ReadNextInputBit	; 1bit目
 	and a
 	jr z, .unpackingMode0      
-	call ReadNextInputBit      
-	inc a					   ; ここにきている時点で1bit目は1なのでインクリメント
+	; 1bit目が1のとき
+	call ReadNextInputBit	; 2bit目
+	inc a					   ; 1bit目が1なのでインクリメントしておく?
 
 	; INPUT: a = unpacking mode
 .unpackingMode0
@@ -106,6 +107,7 @@ UncompressSpriteDataLoop::
 	and a
 	jr z, .readRLEncodedZeros ; if first bit is 0, the input starts with zeroes, otherwise with (non-zero) input
 
+; ここでスプライトのグラフィックデータを終わりまで output buffer に書き込む
 .readNextInput
 	; a = 読み取った2bit (1bit目 << 1 | 2bit目)
 	call ReadNextInputBit		; read1
@@ -114,15 +116,16 @@ UncompressSpriteDataLoop::
 	sla c
 	or c                       	; a = read1 << 1 | read2
 	
-	; a == 0 つまり read1もread2も 0 -> .readRLEncodedZeros 
+	; a == 0 つまり read1もread2も 0 つまり グラフィックデータをすべて読み取り終えた -> .readRLEncodedZeros 
 	and a
 	jr z, .readRLEncodedZeros
 
 	; 読み取った2bit(read1, read2)が0でないときは output bufferに反映
 	call WriteSpriteBitsToBuffer
 	call MoveToNextBufferPosition
-	jr .readNextInput
+	jr .readNextInput ; グラフィックデータをすべて読み終えるまでループ
 
+; ここに来た時点で .readNextInput のループは抜けている
 .readRLEncodedZeros
 	ld c, $0                   ; number of zeroes it length encoded, the number
 .countConsecutiveOnesLoop      ; of consecutive ones determines the number of bits the number has
@@ -183,7 +186,7 @@ UncompressSpriteDataLoop::
 ; 現在解凍中のスプライトのoutput pointer を次の position に進めてreturnする  
 ; グラフィックデータをすべて読み終えたとき、returnせず UnpackSprite にジャンプする  
 ; 
-; ![flow](../docs/image/pic/uncompress.png)
+; ![flow](https://imgur.com/qxoHjcR.png)
 MoveToNextBufferPosition::
 	; wSpriteCurPosY + 1 == wSpriteHeight つまり処理が最後の行にいったとき -> .curColumnDone(列ごとに処理するので)
 	ld a, [wSpriteHeight]
@@ -255,7 +258,7 @@ MoveToNextBufferPosition::
 	jp StoreSpriteOutputPointer
 
 .allColumnsDone
-	pop hl
+	pop hl ; hl = return先
 	xor a
 	ld [wSpriteCurPosX], a
 	
@@ -268,7 +271,7 @@ MoveToNextBufferPosition::
 	ld [wSpriteLoadFlags], a
 	jp UncompressSpriteDataLoop
 .done
-	jp UnpackSprite
+	jp UnpackSprite ; hl = return先
 
 ; aに格納されている 2bitの値 を wSpriteOutputPtr が示す output buffer に書き込む
 WriteSpriteBitsToBuffer::
@@ -378,15 +381,18 @@ LengthEncodingOffsetList::
 	dw %1111111111111111
 
 ; **UnpackSprite**  
-; unpack modeに応じてスプライトのグラフィックデータを解凍する  
+; unpack modeに応じてスプライトのグラフィックデータを展開する  
 UnpackSprite::
+	; mode2
 	ld a, [wSpriteUnpackMode]
 	cp $2
 	jp z, UnpackSpriteMode2
 
+	; mode1
 	and a
 	jp nz, XorSpriteChunks
 
+	; mode0
 	; buffer1　と buffer2 を decode
 	ld hl, sSpriteBuffer1
 	call SpriteDifferentialDecode
@@ -397,20 +403,29 @@ UnpackSprite::
 ; diffrential encodingされたスプライトデータをdecodeする  
 ; - - -  
 ; diffrential encoding については ドキュメント参照  
+; 
+; INPUT: hl = output bufferのアドレス (sSpriteBuffer1 or sSpriteBuffer2)
 SpriteDifferentialDecode::
 	xor a
 	ld [wSpriteCurPosX], a
 	ld [wSpriteCurPosY], a
+
 	call StoreSpriteOutputPointer
+	
+	; スプライトのデコードテーブルを hl, de に読みこむ
 	ld a, [wSpriteFlipped]
 	and a
 	jr z, .notFlipped
+	; スプライトが左右反転している場合
 	ld hl, DecodeNybble0TableFlipped
 	ld de, DecodeNybble1TableFlipped
 	jr .storeDecodeTablesPointers
+	; スプライトが左右反転していない場合
 .notFlipped
 	ld hl, DecodeNybble0Table
 	ld de, DecodeNybble1Table
+
+	; 上で読み込んだデコードテーブルにしたがってデコードを開始する
 .storeDecodeTablesPointers
 	ld a, l
 	ld [wSpriteDecodeTable0Ptr], a
