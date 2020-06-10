@@ -24,7 +24,7 @@ UncompressSpriteData::
 	ld [MBC1RomBank], a
 	ret
 
-; スプライトをロードするのに必要なデータを初期化し、UncompressSpriteDataLoop を呼び出す
+; スプライトをロードするのに必要なデータを初期化し、 UncompressSpriteDataLoop を呼び出す
 _UncompressSpriteData::
 	; sSpriteBuffer1 と sSpriteBuffer2 を0クリア
 	ld hl, sSpriteBuffer1
@@ -107,7 +107,8 @@ UncompressSpriteDataLoop::
 	and a
 	jr z, .readRLEncodedZeros ; if first bit is 0, the input starts with zeroes, otherwise with (non-zero) input
 
-; ここでスプライトのグラフィックデータを終わりまで output buffer に書き込む
+; ここで sSpriteBuffer1 or sSpriteBuffer2 の先頭を始点としてグラフィックデータを書き込んでいき、全部書き終えたらUnpackする  
+; Unpack処理は MoveToNextBufferPosition参照
 .readNextInput
 	; a = 読み取った2bit (1bit目 << 1 | 2bit目)
 	call ReadNextInputBit		; read1
@@ -120,9 +121,8 @@ UncompressSpriteDataLoop::
 	and a
 	jr z, .readRLEncodedZeros
 
-	; 読み取った2bit(read1, read2)が0でないときは output bufferに反映
-	call WriteSpriteBitsToBuffer
-	call MoveToNextBufferPosition
+	call WriteSpriteBitsToBuffer	; 読み取った2bit(read1, read2)が 0でないときは output bufferに反映
+	call MoveToNextBufferPosition	; output bufferのポインタを進める
 	jr .readNextInput ; グラフィックデータをすべて読み終えるまでループ
 
 ; ここに来た時点で .readNextInput のループは抜けている
@@ -259,6 +259,7 @@ MoveToNextBufferPosition::
 
 .allColumnsDone
 	pop hl ; hl = return先
+
 	xor a
 	ld [wSpriteCurPosX], a
 	
@@ -404,7 +405,8 @@ UnpackSprite::
 ; - - -  
 ; diffrential encoding については ドキュメント参照  
 ; 
-; INPUT: hl = output bufferのアドレス (sSpriteBuffer1 or sSpriteBuffer2)
+; INPUT: hl = output bufferのアドレス (sSpriteBuffer1 or sSpriteBuffer2)  
+; sSpriteBuffer1 or sSpriteBuffer2 からグラフィックデータが始まる  
 SpriteDifferentialDecode::
 	xor a
 	ld [wSpriteCurPosX], a
@@ -662,7 +664,7 @@ DecodeNybble1TableFlipped::
 
 ; **XorSpriteChunks**  
 ; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところに入る)  
-; 合体前の2つの chunk は 関数の前のほうで differntial decode する
+; 合体前の2つの chunk は 関数の最初のほうで differntial decode している
 XorSpriteChunks::
 	; decode に 関する変数をクリアする
 	xor a
@@ -670,40 +672,48 @@ XorSpriteChunks::
 	ld [wSpriteCurPosY], a
 	call ResetSpriteBufferPointers
 
-	ld a, [wSpriteOutputPtr]          ; points to buffer 1 or 2, depending on flags
+	; hl = グラフィックデータの先頭(sSpriteBuffer1 or sSpriteBuffer2)
+	ld a, [wSpriteOutputPtr]
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
 	ld h, a
-	call SpriteDifferentialDecode      ; decode buffer 1 or 2, depending on flags
+	; differntial decodeする
+	call SpriteDifferentialDecode
 
-	; decode に 関する変数をクリアする
+	; wSpriteLoadFlags's bit0 == 0 -> (hl, de) = (sSpriteBuffer2, sSpriteBuffer1)
+	; wSpriteLoadFlags's bit0 == 1 -> (hl, de) = (sSpriteBuffer1, sSpriteBuffer2)
 	call ResetSpriteBufferPointers
-	ld a, [wSpriteOutputPtr]          ; source buffer, points to buffer 1 or 2, depending on flags
+	ld a, [wSpriteOutputPtr]
 	ld l, a
 	ld a, [wSpriteOutputPtr+1]
-	ld h, a
-	ld a, [wSpriteOutputPtrCached]    ; destination buffer, points to buffer 2 or 1, depending on flags
+	ld h, a								; hl = source buffer
+	ld a, [wSpriteOutputPtrCached]
 	ld e, a
 	ld a, [wSpriteOutputPtrCached+1]
-	ld d, a
+	ld d, a								; de = destination buffer
+
 .xorChunksLoop
 	ld a, [wSpriteFlipped]
 	and a
 	jr z, .notFlipped
+	
+	; スプライトが左右反転しているとき de を %ABCDEFGH -> %DCBAHGFE に反転させる
 	push de
 	ld a, [de]
 	ld b, a
 	swap a
-	and $f
-	call ReverseNybble                 ; if flipped reverse the nybbles in the destination buffer
-	swap a
-	ld c, a
-	ld a, b
-	and $f
+	and $f	; [de] = ABCDEFGH -> 0000ABCD -> a
 	call ReverseNybble
-	or c
+	swap a
+	ld c, a	; c = DCBA0000
+
+	ld a, b
+	and $f	; a = 0000EFGH
+	call ReverseNybble
+	or c	; c = DCBAHGFE
 	pop de
 	ld [de], a
+
 .notFlipped
 	ld a, [hli]
 	ld b, a
@@ -731,18 +741,32 @@ XorSpriteChunks::
 	ld [wSpriteCurPosX], a
 	ret
 
-; reverses the bits in the nybble given in register a
+; **ReverseNybble**  
+; レジスタaで与えられた nybble(0000XXXX) の bitを反転して a に入れて返す  
+; - - -  
+; e.g. 0010 -> 0100, 0001 -> 1000
 ReverseNybble::
+	; de =  NybbleReverseTable[a](NybbleReverseTableのオフセットa)  
 	ld de, NybbleReverseTable
 	add e
 	ld e, a
 	jr nc, .noCarry
 	inc d
 .noCarry
+	; a = NybbleReverseTable[a]
 	ld a, [de]
 	ret
 
-; wSpriteLoadFlags に 応じて output buffer のポインタを初期位置(sSpriteBuffer1 と sSpriteBuffer2)に戻す
+; **ResetSpriteBufferPointers**  
+; wSpriteLoadFlags に 応じて output buffer のポインタを初期位置に戻す  
+; - - -  
+; wSpriteLoadFlags の bit0 が  
+; 0:  
+; wSpriteOutputPtr = sSpriteBuffer2  
+; wSpriteOutputPtrCached = sSpriteBuffer1  
+; 1:  
+; wSpriteOutputPtr = sSpriteBuffer1  
+; wSpriteOutputPtrCached = sSpriteBuffer2  
 ResetSpriteBufferPointers::
 	; wSpriteLoadFlags の bit0 が
 	; 0 -> de = sSpriteBuffer1	hl = sSpriteBuffer2
@@ -769,7 +793,8 @@ ResetSpriteBufferPointers::
 	ld [wSpriteOutputPtrCached+1], a
 	ret
 
-; maps each nybble to its reverse
+; maps each nybble to its reverse  
+; db $0, $8, $4, $c, $2, $a, $6 ,$e, $1, $9, $5, $d, $3, $b, $7 ,$f  
 NybbleReverseTable::
 	db $0, $8, $4, $c, $2, $a, $6 ,$e, $1, $9, $5, $d, $3, $b, $7 ,$f
 

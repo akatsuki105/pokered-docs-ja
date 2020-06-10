@@ -23,7 +23,7 @@ picの uncompress で使用される変数についての
   <dd>wSpriteInputPtr から読み取った 2bitのデータを wSpriteOutputPtr の指す場所に書き込む</dd>
 
   <dt>MoveToNextBufferPosition</dt>
-  <dd>wSpriteOutputPtr をスプライトのグラフィックデータが終わるまで進めて 最後に unpack関数 を呼び出す</dd>
+  <dd>WriteSpriteBitsToBuffer で書き込んだ分 wSpriteOutputPtrを進める</dd>
 
   <dt>SpriteDifferentialDecode</dt>
   <dd>TODO</dd>
