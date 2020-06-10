@@ -69,9 +69,11 @@ _UncompressSpriteData::
 	ld [wSpriteLoadFlags], a 
 	; 下に続く
 
-; uncompresses a chunk from the sprite input data stream (pointed to at wd0da) into sSpriteBuffer1 or sSpriteBuffer2
-; 各チャンクは1bppでスプライトのグラフィックデータを保持している 2つのチャンクを組み合わせることで2bppのスプライトのグラを復元する
-; note that this is an endless loop which is terminated during a call to MoveToNextBufferPosition by manipulating the stack
+; **UncompressSpriteDataLoop**  
+; wSpriteInputPtr から得たチャンクを解凍して sSpriteBuffer1 か sSpriteBuffer2 に結果を格納する  
+; - - -  
+; 各チャンクは1bppでスプライトのグラフィックデータを保持している 2つのチャンクを組み合わせることで2bppのスプライトのグラを復元する  
+; 関数で起きる無限ループは MoveToNextBufferPosition の呼び出し中にスタックを操作することで終了する   
 UncompressSpriteDataLoop::
 	; hl = (wSpriteLoadFlagsの bit0 == 0) ? sSpriteBuffer1 : sSpriteBuffer2
 	ld hl, sSpriteBuffer1
@@ -107,8 +109,8 @@ UncompressSpriteDataLoop::
 	and a
 	jr z, .readRLEncodedZeros ; if first bit is 0, the input starts with zeroes, otherwise with (non-zero) input
 
-; ここで sSpriteBuffer1 or sSpriteBuffer2 の先頭を始点としてグラフィックデータを書き込んでいき、全部書き終えたらUnpackする  
-; Unpack処理は MoveToNextBufferPosition参照
+; ここで sSpriteBuffer1 or sSpriteBuffer2 の先頭を始点としてグラフィックデータを書き込んでいき、全部書き終えるまで無限ループする  
+; 全部書き終えたらUnpack処理を行い スタック操作により UncompressSpriteDataLoopの戻り先に戻る
 .readNextInput
 	; a = 読み取った2bit (1bit目 << 1 | 2bit目)
 	call ReadNextInputBit		; read1
@@ -258,7 +260,7 @@ MoveToNextBufferPosition::
 	jp StoreSpriteOutputPointer
 
 .allColumnsDone
-	pop hl ; hl = return先
+	pop hl ; return先を捨てることで MoveToNextBufferPosition(UnpackSprite)からの戻り先が その呼び出し元の戻り先になる
 
 	xor a
 	ld [wSpriteCurPosX], a
@@ -272,7 +274,7 @@ MoveToNextBufferPosition::
 	ld [wSpriteLoadFlags], a
 	jp UncompressSpriteDataLoop
 .done
-	jp UnpackSprite ; hl = return先
+	jp UnpackSprite
 
 ; aに格納されている 2bitの値 を wSpriteOutputPtr が示す output buffer に書き込む
 WriteSpriteBitsToBuffer::
@@ -831,21 +833,34 @@ ResetSpriteBufferPointers::
 NybbleReverseTable::
 	db $0, $8, $4, $c, $2, $a, $6 ,$e, $1, $9, $5, $d, $3, $b, $7 ,$f
 
-; combines the two loaded chunks with xor (the chunk loaded second is the destination). Both chunks are differeintial decoded beforehand.
+; **UnpackSpriteMode2**  
+; - - -  
+; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところに入る)  
+; 合体前の2つの chunk は 関数の最初のほうで differntial decode している  
 UnpackSpriteMode2::
 	call ResetSpriteBufferPointers
+
+	; wSpriteFlipped を退避
 	ld a, [wSpriteFlipped]
 	push af
+	
+	; デコードのために一時的に左右反転フラグをクリアする
 	xor a
-	ld [wSpriteFlipped], a            ; temporarily clear flipped flag for decoding the destination chunk
+	ld [wSpriteFlipped], a            
+	
+	; hl = [wSpriteOutputPtrCached]
 	ld a, [wSpriteOutputPtrCached]
 	ld l, a
 	ld a, [wSpriteOutputPtrCached+1]
 	ld h, a
+
 	call SpriteDifferentialDecode
 	call ResetSpriteBufferPointers
+
+	; 復帰
 	pop af
 	ld [wSpriteFlipped], a
+	
 	jp XorSpriteChunks
 
 ; **StoreSpriteOutputPointer**  
