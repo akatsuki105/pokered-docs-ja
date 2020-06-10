@@ -643,6 +643,16 @@ DecodeNybble1Table::
 	dn $7, $6
 	dn $4, $5
 
+; **DecodeNybble0TableFlipped**  
+; - - -  
+; 0: %0000_1000  
+; 1: %1100_0100  
+; 2: %1110_0110  
+; 3: %0010_1010  
+; 4: %1111_0111  
+; 5: %0011_1011  
+; 6: %0001_1001  
+; 7: %1101_0101  
 DecodeNybble0TableFlipped::
 	dn $0, $8
 	dn $c, $4
@@ -652,6 +662,17 @@ DecodeNybble0TableFlipped::
 	dn $3, $b
 	dn $1, $9
 	dn $d, $5
+
+; **DecodeNybble1TableFlipped**  
+; - - -  
+; 0: %1111_0111  
+; 1: %0011_1011  
+; 2: %0001_1001  
+; 3: %1101_0101  
+; 4: %0000_1000  
+; 5: %1100_0100  
+; 6: %1110_0110  
+; 7: %0010_1010  
 DecodeNybble1TableFlipped::
 	dn $f, $7
 	dn $3, $b
@@ -664,7 +685,7 @@ DecodeNybble1TableFlipped::
 
 ; **XorSpriteChunks**  
 ; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところに入る)  
-; 合体前の2つの chunk は 関数の最初のほうで differntial decode している
+; 合体前の2つの chunk は 関数の最初のほうで differntial decode している  
 XorSpriteChunks::
 	; decode に 関する変数をクリアする
 	xor a
@@ -715,28 +736,40 @@ XorSpriteChunks::
 	ld [de], a
 
 .notFlipped
+	; デコード結果2つの xor を取る  
+	; [de++] |= [hl++]  
 	ld a, [hli]
 	ld b, a
 	ld a, [de]
 	xor b
 	ld [de], a
 	inc de
+
+	; 次の行へ行く
 	ld a, [wSpriteCurPosY]
 	inc a
-	ld [wSpriteCurPosY], a             ; go to next row
+	ld [wSpriteCurPosY], a
+
+	; 1行ずつ処理して最後の行に行ったか確認して行っていない場合は次の行へ -> .xorChunksLoop
 	ld b, a
 	ld a, [wSpriteHeight]
 	cp b
-	jr nz, .xorChunksLoop               ; test if column finished
+	jr nz, .xorChunksLoop
+	
+	; 最後の行へ行ったら次のタイル列へ行く処理 -> .xorChunksLoop
 	xor a
 	ld [wSpriteCurPosY], a
 	ld a, [wSpriteCurPosX]
 	add $8
-	ld [wSpriteCurPosX], a             ; go to next column
+	ld [wSpriteCurPosX], a
+
+	; すべての列を処理したか確認してしていないなら次の行へ -> .xorChunksLoop
 	ld b, a
 	ld a, [wSpriteWidth]
 	cp b
-	jr nz, .xorChunksLoop               ; test if all columns finished
+	jr nz, .xorChunksLoop
+
+	; グラフィックデータすべてを処理したら終了
 	xor a
 	ld [wSpriteCurPosX], a
 	ret
