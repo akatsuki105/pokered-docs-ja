@@ -86,12 +86,14 @@ UncompressSpriteDataLoop::
 	; output buffer として sSpriteBufferX を設定する
 	call StoreSpriteOutputPointer
 
+	; UncompressSpriteDataLoopは2回呼び出される処理
+	; wSpriteLoadFlagsの bit1が 0なら 1回目, 1なら2回目となる  
 	; wSpriteLoadFlagsの bit1 == 0 -> .startDecompression  
 	ld a, [wSpriteLoadFlags]
 	bit 1, a
 	jr z, .startDecompression  ; check if last iteration
 
-	; 2チャンク目も読み取る場合は, 1-2bitさらに読み進めて unpacking modeを決定する
+	; 2回目のUncompressSpriteDataLoopは, 1-2bitさらに読み進めて unpacking modeを決定する
 	call ReadNextInputBit	; 1bit目
 	and a
 	jr z, .unpackingMode0      
@@ -287,6 +289,7 @@ MoveToNextBufferPosition::
 	ld a, [wSpriteLoadFlags]
 	bit 1, a
 	jr nz, .done
+	; sSpriteBufferを切り替えてもう一度 UncompressSpriteDataLoop
 	xor $1
 	set 1, a
 	ld [wSpriteLoadFlags], a

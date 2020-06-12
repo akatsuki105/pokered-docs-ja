@@ -10,10 +10,11 @@ Uncompress処理は `UncompressSpriteData` から始まり以下のように続�
 
 <dl>
   <dt>UncompressSpriteData</dt>
-  <dd>aレジスタで指定した対象のグラフィックがあるバンクにスイッチして _UncompressSpriteData を呼び出す</dd>
+  <dd>aレジスタで指定した対象のグラフィックがあるバンクにスイッチして `_UncompressSpriteData` を呼び出す</dd>
 
   <dt>_UncompressSpriteData</dt>
-  <dd>スプライトをロードするのに必要なデータを初期化し、 UncompressSpriteDataLoop を呼び出す</dd>
+  <dd>スプライトをロードするのに必要なデータを初期化し、 グラフィックのメタデータを取得した後で `UncompressSpriteDataLoop` を呼び出す</dd>
+  <dd>グラフィックのメタデータというのは、グラフィックの大きさや `wSpriteLoadFlags` のことである。</dd>
 
   <dt>UncompressSpriteDataLoop</dt>
   <dd>Uncompress処理は実質的にここから始まる。</dd>
@@ -32,11 +33,9 @@ Uncompress処理は `UncompressSpriteData` から始まり以下のように続�
   <dd>詳しくは後述。</dd>
 </dl>
 
-## UncompressSpriteDataLoop
+## 変数
 
-### 変数
-
-UncompressSpriteDataLoop で使用される変数について
+Uncompress処理 で使用される変数について
 
 <dl>
   <dt>wSpriteInputPtr</dt>
@@ -49,27 +48,45 @@ UncompressSpriteDataLoop で使用される変数について
   <dd>解凍処理の制御フラグ</dd>
 </dl>
 
+## UncompressSpriteDataLoop
+
+Uncompress処理は実質的にここから始まる。
+
 ### workflow
 
 <img src="./UncompressSpriteDataLoop_flowchart.svg">
 
-基本的な処理は、入力から2bit読み取ってoutput bufferに書き込んでいくというもの
+基本的な処理は、入力から2bit読み取ってoutput bufferに書き込んでいくという処理
 
-output buffer は `UncompressSpriteDataLoop`の最初に `wSpriteLoadFlags`のbit0によって sSpriteBuffer1 と sSpriteBuffer2のどちらを使うか決まる 
+output buffer は `UncompressSpriteDataLoop`の最初に `wSpriteLoadFlags`のbit0によって `sSpriteBuffer1` と `sSpriteBuffer2` のどちらを使うか決まる 
 
-.readNextInput では対象のスプライトデータを 2bitずつ output bufferにコピーしていくループに入る
+`.readNextInput` では対象のスプライトデータを 2bitずつ output bufferにコピーしていくループに入る
 
-対象のスプライトデータの全てをoutput bufferにコピーし終えたときは `UnpackSprite`を呼び出す
+2bitずつ outpub bufferにコピーをする処理は、 `.WriteSpriteBitsToBuffer` と `MoveToNextBufferPosition`で行う
 
-データによってはランレングス圧縮されていることもあり、その場合は入力のbitからわかるのでそのときには .readRLEncodedZeros でランレングス圧縮されたスプライトデータを解凍して output buffer にコピーする 
+`.WriteSpriteBitsToBuffer`でoutput bufferに2bit書き込みを行い、`MoveToNextBufferPosition`で書き込んだ分ポインタを進める。
 
-ランレングス圧縮されたデータをコピーし終えた後は .readNextInput のループに戻る
+`MoveToNextBufferPosition`で進めたoutput bufferのポインタが終端に来た時、つまり対象のスプライトデータの全てをoutput bufferにコピーし終えたとき、一度目ではもう一つのチャンク(output buffer)に切り替えて `UncompressSpriteDataLoop` を呼び出し、後続のグラフィックデータを同じサイズ分詰める処理を行う
+
+これは、1つのチャンク(output buffer)に入っているデータが 2bppフォーマットの半分(1bppフォーマット)であるためである  
+
+二度目では2bpp分のデータがoutput bufferにそろったので `UnpackSprite` を呼び出してUnpack処理に移行する
+
+データによってはランレングス圧縮されていることもあり、その場合は入力のbitからわかるのでそのときには `.readRLEncodedZeros` でランレングス圧縮されたスプライトデータを解凍して output buffer にコピーする 
 
 ### .readRLEncodedZeros
 
 スプライトデータによってはランレングス圧縮されているものもある
 
+`UncompressSpriteDataLoop` で
+
+- `.startDecompression` で読み取った bit が 0 つまりスプライトのデータ本体の最初のbitが 0 のとき
+- `.readNextInput` で読み取った 2bitが両方とも 0 のとき
+
+このときに `.readRLEncodedZeros` に移り、以降のデータをランレングス圧縮されたものとみなして解凍し解凍したデータを output bufferに格納して `.readNextInput` のループに戻る
+
 ## UnpackSprite
 
-スプライトデータを全て outpub bufferにコピーし終えた後は、この関数で Unpack処理を行っていく
+スプライトデータを全て output bufferにコピーし終えた後は、この関数で Unpack処理を行っていく
 
+`UnpackSprite` では
