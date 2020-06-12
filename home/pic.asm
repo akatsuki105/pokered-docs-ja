@@ -73,7 +73,7 @@ _UncompressSpriteData::
 ; wSpriteInputPtr から得たチャンクを解凍して sSpriteBuffer1 か sSpriteBuffer2 に結果を格納する  
 ; - - -  
 ; 各チャンクは1bppでスプライトのグラフィックデータを保持している 2つのチャンクを組み合わせることで2bppのスプライトのグラを復元する  
-; 関数で起きる無限ループは MoveToNextBufferPosition の呼び出し中にスタックを操作することで終了する   
+; 関数で起きる無限ループは MoveToNextBufferPosition の呼び出し中にスタックを操作することで終了する(UncompressSpriteDataLoopの戻り先にretする)  
 UncompressSpriteDataLoop::
 	; hl = (wSpriteLoadFlagsの bit0 == 0) ? sSpriteBuffer1 : sSpriteBuffer2
 	ld hl, sSpriteBuffer1
@@ -119,23 +119,27 @@ UncompressSpriteDataLoop::
 	sla c
 	or c                       	; a = read1 << 1 | read2
 	
-	; a == 0 つまり read1もread2も 0 つまり グラフィックデータをすべて読み取り終えた -> .readRLEncodedZeros 
+	; a == 0 つまり read1もread2も 0 のときは ランレングス圧縮を解凍する
 	and a
-	jr z, .readRLEncodedZeros
+	jr z, .readRLEncodedZeros ; この中でランレングス解凍したbit列を output bufferに書き込んでいる
 
 	call WriteSpriteBitsToBuffer	; 読み取った2bit(read1, read2)が 0でないときは output bufferに反映
 	call MoveToNextBufferPosition	; output bufferのポインタを進める
+
 	jr .readNextInput ; グラフィックデータをすべて読み終えるまでループ
 
-; ここに来た時点で .readNextInput のループは抜けている
+; ここから ランレングス圧縮されたデータを解凍する  
+	; 次に0が来るまで入力(wSpriteInputPtr)から bitを読み取り続け 1 が続いた数を c に記録する
 .readRLEncodedZeros
-	ld c, $0                   ; number of zeroes it length encoded, the number
-.countConsecutiveOnesLoop      ; of consecutive ones determines the number of bits the number has
+	ld c, $0
+.countConsecutiveOnesLoop
 	call ReadNextInputBit
 	and a
 	jr z, .countConsecutiveOnesFinished
 	inc c
 	jr .countConsecutiveOnesLoop
+
+	; hl = LengthEncodingOffsetList[a]のアドレス (LengthEncodingOffsetListのオフセットaのアドレス)
 .countConsecutiveOnesFinished
 	ld a, c
 	add a
@@ -145,33 +149,46 @@ UncompressSpriteDataLoop::
 	jr nc, .noCarry
 	inc h
 .noCarry
-	ld a, [hli]                ; read offset that is added to the number later on
-	ld e, a                    ; adding an offset of 2^length - 1 makes every integer uniquely
+	; de = LengthEncodingOffsetList[a] つまり LengthEncodingOffsetListのオフセットaの値
+	ld a, [hli]                ; 後で数値に追加される読み取りオフセット
+	ld e, a                    ; 2 ^ length-1のオフセットを追加すると、すべての整数が一意になる
 	ld d, [hl]                 ; representable in the length encoding and saves bits
+
 	push de
-	inc c
+	inc c ; c = 1 が続いた数 + 1
 	ld e, $0
 	ld d, e
-.readNumberOfZerosLoop        ; reads the next c+1 bits of input
+
+	; 入力から c+1 bit さらに読み取る  
+.readNumberOfZerosLoop
 	call ReadNextInputBit
 	or e
 	ld e, a
+	; c+1bit読み取ったら抜ける 
 	dec c
 	jr z, .readNumberOfZerosDone
+	; de <<= 1
 	sla e
 	rl d
 	jr .readNumberOfZerosLoop
+
+	; INPUT: de = 読み取ったbit e.g. c+1=4 で [1,2,3,4]bit目が[1,0,1,0]のときは (1 << 3 | 0 << 2 | 1 << 1 | 0) = %1010 になる
 .readNumberOfZerosDone
-	pop hl                     ; add the offset
+	; de = LengthEncodingOffsetList[a] + 読み取ったbit
+	pop hl                     ; hl = LengthEncodingOffsetList[a]
 	add hl, de
 	ld e, l
 	ld d, h
+
+	; de回、output bufferに 00 を書き込む
 .writeZerosLoop
+	;  output bufferに 00 を書き込む
 	ld b, e
-	xor a                      ; write 00 to buffer
+	xor a
 	call WriteSpriteBitsToBuffer
 	ld e, b
 	call MoveToNextBufferPosition
+	; 次のループへ
 	dec de
 	ld a, d
 	and a
@@ -180,6 +197,7 @@ UncompressSpriteDataLoop::
 	and a
 .continueLoop
 	jr nz, .writeZerosLoop
+
 	jr .readNextInput
 
 ; **MoveToNextBufferPosition**  
@@ -364,7 +382,27 @@ ReadNextInputByte::
 	ld a, b ; a = b = 読み取った内容
 	ret
 
-; the nth item is 2^n - 1
+; **LengthEncodingOffsetList**  
+; - - -  
+; LengthEncodingOffsetList[n] -> 2^n - 1  
+; 1エントリ = 2バイト  
+; 
+; dw %0000000000000001  
+; dw %0000000000000011  
+; dw %0000000000000111  
+; dw %0000000000001111  
+; dw %0000000000011111  
+; dw %0000000000111111  
+; dw %0000000001111111  
+; dw %0000000011111111  
+; dw %0000000111111111  
+; dw %0000001111111111  
+; dw %0000011111111111  
+; dw %0000111111111111  
+; dw %0001111111111111  
+; dw %0011111111111111  
+; dw %0111111111111111  
+; dw %1111111111111111  
 LengthEncodingOffsetList::
 	dw %0000000000000001
 	dw %0000000000000011
