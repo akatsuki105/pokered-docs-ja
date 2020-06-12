@@ -2,9 +2,41 @@
 
 解凍(Uncompress)を行うコードは `home/pic.asm` に格納されている
 
-## 変数
+## workflow
 
-picの uncompress で使用される変数についての
+Uncompress処理は `UncompressSpriteData` から始まり以下のように続いていく
+
+<img src="./uncompress_flowchart.svg">
+
+<dl>
+  <dt>UncompressSpriteData</dt>
+  <dd>aレジスタで指定した対象のグラフィックがあるバンクにスイッチして _UncompressSpriteData を呼び出す</dd>
+
+  <dt>_UncompressSpriteData</dt>
+  <dd>スプライトをロードするのに必要なデータを初期化し、 UncompressSpriteDataLoop を呼び出す</dd>
+
+  <dt>UncompressSpriteDataLoop</dt>
+  <dd>Uncompress処理は実質的にここから始まる。</dd>
+  <dd>詳しくは後述。</dd>
+
+  <dt>.WriteSpriteBitsToBuffer & MoveToNextBufferPosition</dt>
+  <dd>入力から読み取ったデータを Unpack処理で使うoutput bufferに格納する。</dd>
+  <dd>詳しくは後述。</dd>
+
+  <dt>.readRLEncodedZeros</dt>
+  <dd>ランレングス圧縮されたデータを解凍する。</dd>
+  <dd>詳しくは後述。</dd>
+
+  <dt>UnpackSprite</dt>
+  <dd>output bufferに入っているデータを Unpackして output bufferに戻す。</dd>
+  <dd>詳しくは後述。</dd>
+</dl>
+
+## UncompressSpriteDataLoop
+
+### 変数
+
+picの uncompress で使用される変数について
 
 <dl>
   <dt>wSpriteInputPtr</dt>
@@ -14,7 +46,7 @@ picの uncompress で使用される変数についての
   <dd>ここに解凍したスプライトのグラフィックデータを書き込む</dd>
 </dl>
 
-## スプライトのUnpack
+### workflow
 
 スプライトのグラフィックデータの Unpack は `WriteSpriteBitsToBuffer`, `MoveToNextBufferPosition`, `SpriteDifferentialDecode` で行われる
 
@@ -25,6 +57,7 @@ picの uncompress で使用される変数についての
   <dt>MoveToNextBufferPosition</dt>
   <dd>WriteSpriteBitsToBuffer で書き込んだ分 wSpriteOutputPtrを進める</dd>
 
-  <dt>SpriteDifferentialDecode</dt>
-  <dd>TODO</dd>
 </dl>
+
+## UnpackSprite
+
