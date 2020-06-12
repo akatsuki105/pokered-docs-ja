@@ -36,7 +36,7 @@ Uncompress処理は `UncompressSpriteData` から始まり以下のように続�
 
 ### 変数
 
-picの uncompress で使用される変数について
+UncompressSpriteDataLoop で使用される変数について
 
 <dl>
   <dt>wSpriteInputPtr</dt>
@@ -44,20 +44,32 @@ picの uncompress で使用される変数について
 
   <dt>wSpriteOutputPtr</dt>
   <dd>ここに解凍したスプライトのグラフィックデータを書き込む</dd>
+
+  <dt>wSpriteLoadFlags</dt>
+  <dd>解凍処理の制御フラグ</dd>
 </dl>
 
 ### workflow
 
-スプライトのグラフィックデータの Unpack は `WriteSpriteBitsToBuffer`, `MoveToNextBufferPosition`, `SpriteDifferentialDecode` で行われる
+<img src="./UncompressSpriteDataLoop_flowchart.svg">
 
-<dl>
-  <dt>WriteSpriteBitsToBuffer</dt>
-  <dd>wSpriteInputPtr から読み取った 2bitのデータを wSpriteOutputPtr の指す場所に書き込む</dd>
+基本的な処理は、入力から2bit読み取ってoutput bufferに書き込んでいくというもの
 
-  <dt>MoveToNextBufferPosition</dt>
-  <dd>WriteSpriteBitsToBuffer で書き込んだ分 wSpriteOutputPtrを進める</dd>
+output buffer は `UncompressSpriteDataLoop`の最初に `wSpriteLoadFlags`のbit0によって sSpriteBuffer1 と sSpriteBuffer2のどちらを使うか決まる 
 
-</dl>
+.readNextInput では対象のスプライトデータを 2bitずつ output bufferにコピーしていくループに入る
+
+対象のスプライトデータの全てをoutput bufferにコピーし終えたときは `UnpackSprite`を呼び出す
+
+データによってはランレングス圧縮されていることもあり、その場合は入力のbitからわかるのでそのときには .readRLEncodedZeros でランレングス圧縮されたスプライトデータを解凍して output buffer にコピーする 
+
+ランレングス圧縮されたデータをコピーし終えた後は .readNextInput のループに戻る
+
+### .readRLEncodedZeros
+
+スプライトデータによってはランレングス圧縮されているものもある
 
 ## UnpackSprite
+
+スプライトデータを全て outpub bufferにコピーし終えた後は、この関数で Unpack処理を行っていく
 
