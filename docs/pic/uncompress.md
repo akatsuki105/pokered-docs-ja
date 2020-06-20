@@ -89,4 +89,25 @@ output buffer は `UncompressSpriteDataLoop`の最初に `wSpriteLoadFlags`のbi
 
 スプライトデータを全て output bufferにコピーし終えた後は、この関数で Unpack処理を行っていく
 
-`UnpackSprite` では
+`UnpackSprite` では `wSpriteUnpackMode`に格納された値によってUnpackの内容を変える
+
+<dl>
+  <dt>Mode0</dt>
+  <dd>`wSpriteUnpackMode`が 0 のときは Mode0</dd>
+  <dd>Mode0のUnpackでは 各output buffer に対して `SpriteDifferentialDecode` を行う</dd>
+  <dd>`SpriteDifferentialDecode`ではoutput bufferを、バイト(2ニブル)ごとに differential decodingしていく</dd>
+
+  <dt>Mode1</dt>
+  <dd>`wSpriteLoadFlags`の値を見て、2つのoutput bufferを source bufferとdestination bufferに分ける</dd>
+  <dd>source buffer に対して `SpriteDifferentialDecode` を行い、そのあと2つのoutput bufferの XORを取る</dd>
+  <dd>その結果を destination bufferに格納する</dd>
+
+  <dt>Mode2</dt>
+  <dd>Mode1同様に `wSpriteLoadFlags`の値を見て、2つのoutput bufferを source bufferとdestination bufferに分ける</dd>
+  <dd>Mode1 と違ってoutput buffer両方に対して `SpriteDifferentialDecode`を行いそのあと2つのoutput bufferの XORを取る</dd>
+  <dd>その結果を destination bufferに格納する</dd>
+</dl>
+
+### differential encoding について
+
+[Differential encoding](./differential_encoding.md)参照

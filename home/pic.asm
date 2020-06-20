@@ -444,9 +444,9 @@ UnpackSprite::
 	; buffer2のデコードは下にそのまま続く
 
 ; **SpriteDifferentialDecode**  
-; diffrential encodingされたスプライトデータをdecodeする  
+; differential encodingされたスプライトデータをdecodeする  
 ; - - -  
-; diffrential encoding については ドキュメント参照  
+; differential encoding については ドキュメント参照  
 ; 
 ; INPUT: hl = output bufferのアドレス (sSpriteBuffer1 or sSpriteBuffer2)  
 ; sSpriteBuffer1 or sSpriteBuffer2 からグラフィックデータが始まる  
@@ -583,12 +583,12 @@ SpriteDifferentialDecode::
 ; aを AAAB (A, B = 0 or 1) と表したとき、  
 ; AAA は デコードテーブルのインデックス Bはデコードテーブルの上位、下位のnybbleのどちらを結果とするかを決定する  
 ; 
-; e の bit0(bit3)の値によって  
+; e の bit0(Flipped なら bit3)の値によって  
 ; DecodeNybble0Table(Flipped) と DecodeNybble1Table(Flipped)  
 ; のどちらを使うか決める  
 ; 
 ; OUPUT:  
-; - a = e = diffrential decodeの結果の nybble(0000XXXX)  
+; - a = e = differential decodeの結果の nybble(0000XXXX)  
 DifferentialDecodeNybble::
 	; c = a%2, a /= 2
 	srl a               
@@ -727,8 +727,8 @@ DecodeNybble1TableFlipped::
 	dn $2, $a
 
 ; **XorSpriteChunks**  
-; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところに入る)  
-; 合体前の2つの chunk は 関数の最初のほうで differntial decode している  
+; 2つの chunk を XORで合体させる (結果は2つめのチャンクが入っていたところ(destination buffer)に入る)  
+; source buffer は 関数の最初のほうで differntial decode している  
 XorSpriteChunks::
 	; decode に 関する変数をクリアする
 	xor a
