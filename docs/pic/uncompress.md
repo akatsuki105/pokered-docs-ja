@@ -114,7 +114,7 @@ output buffer は `UncompressSpriteDataLoop`の最初に `wSpriteLoadFlags`のbi
 
 ### UnpackSprite の Return
 
-`UncompressSpriteDataLoop` がcallしている `MoveToNextBufferPosition` の `.allColumnsDone` で `pop hl` を行っているため `MoveToNextBufferPosition` の Return先は `UncompressSpriteDataLoop` のReturn先になる
+`UncompressSpriteData` がcallしている `MoveToNextBufferPosition` の `.allColumnsDone` で `pop hl` を行っているため `MoveToNextBufferPosition` の Return先は `UncompressSpriteData` のReturn先になる
 
-また  `MoveToNextBufferPosition` から `UnpackSprite` には `jp` でジャンプしているので `UnpackSprite`の Return先は `UncompressSpriteDataLoop` のReturn先となる
+また  `MoveToNextBufferPosition` から `UnpackSprite` には `jp` でジャンプしているので `UnpackSprite`の Return先は `UncompressSpriteData` のReturn先となる
 
