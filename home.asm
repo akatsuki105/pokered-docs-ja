@@ -955,30 +955,44 @@ ZeroSpriteBuffer::
 	ret
 
 ; combines the (7*7 tiles, 1bpp) sprite chunks in buffer 0 and 1 into a 2bpp sprite located in buffer 1 through 2
-; in the resulting sprite, the rows of the two source sprites are interlaced
-; de: output address
+; buffer0 と buffer1 の7*7サイズの 1bppフォーマット のスプライトのデータをマージして 2bppの ???
+; in the resulting sprite, the rows of the two source sprites are interlaced  
+; スプライトを出力する際に、2つのsource(buffer)の各行は interlace される  
+; 
+; INPUT: de = output address
 InterlaceMergeSpriteBuffers::
+	; ROMバンクを0にする
 	xor a
 	ld [$4000], a
+
 	push de
+
 	ld hl, sSpriteBuffer2 + (SPRITEBUFFERSIZE - 1) ; destination: end of buffer 2
 	ld de, sSpriteBuffer1 + (SPRITEBUFFERSIZE - 1) ; source 2: end of buffer 1
 	ld bc, sSpriteBuffer0 + (SPRITEBUFFERSIZE - 1) ; source 1: end of buffer 0
 	ld a, SPRITEBUFFERSIZE/2 ; $c4
 	ld [H_SPRITEINTERLACECOUNTER], a
 .interlaceLoop
+	; write byte of source 2
 	ld a, [de]
 	dec de
-	ld [hld], a   ; write byte of source 2
+	ld [hld], a   ; [hl--] = [de--]
+	
+	; write byte of source 1
 	ld a, [bc]
 	dec bc
-	ld [hld], a   ; write byte of source 1
+	ld [hld], a   ; [hl--] = [bc--]
+	
+	; write byte of source 2
 	ld a, [de]
 	dec de
-	ld [hld], a   ; write byte of source 2
+	ld [hld], a  ; [hl--] = [de--] 
+	
+	; write byte of source 1
 	ld a, [bc]
 	dec bc
-	ld [hld], a   ; write byte of source 1
+	ld [hld], a   ; [hl--] = [bc--]
+	
 	ld a, [H_SPRITEINTERLACECOUNTER]
 	dec a
 	ld [H_SPRITEINTERLACECOUNTER], a

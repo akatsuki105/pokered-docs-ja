@@ -87,6 +87,7 @@ OakSpeech:
 	ld de, ProfOakPic
 	lb bc, Bank(ProfOakPic), $00
 	call IntroDisplayPicCenteredOrUpperRight
+
 	call FadeInIntroPic
 	ld hl, OakSpeechText1
 	call PrintText
@@ -239,7 +240,7 @@ MovePicLeft:
 ; 引数で指定したpicを画面の真ん中か右上に配置する  
 ; - - -  
 ; IntroDisplayPicCenteredOrUpperRightをfarcallで呼び出したい場合にこれをpredefで呼び出す
-; b = バンク番号  
+; b = 圧縮されたpicのあるバンク番号  
 ; c = 0 (真ん中) or 0以外(右上)  
 ; de = 圧縮されたpicのアドレス  
 DisplayPicCenteredOrUpperRight:
@@ -251,13 +252,17 @@ DisplayPicCenteredOrUpperRight:
 ; c = 0 (真ん中) or 0以外(右上)  
 ; de = 圧縮されたpicのアドレス  
 IntroDisplayPicCenteredOrUpperRight:
+	; 圧縮されたpicデータを解凍
 	push bc
 	ld a, b
-	call UncompressSpriteFromDE
+	call UncompressSpriteFromDE ; DisplayPicCenteredOrUpperRightで解凍するpicは sSpriteBuffer1に解凍結果が入ることになっている
+
+	; 解凍結果の入った sSpriteBuffer1 から sSpriteBuffer0 に 784バイト コピー
 	ld hl, sSpriteBuffer1
 	ld de, sSpriteBuffer0
-	ld bc, $310
+	ld bc, $310	; 784
 	call CopyData
+
 	ld de, vFrontPic
 	call InterlaceMergeSpriteBuffers
 	pop bc
