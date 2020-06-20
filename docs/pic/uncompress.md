@@ -111,3 +111,10 @@ output buffer は `UncompressSpriteDataLoop`の最初に `wSpriteLoadFlags`のbi
 ### differential encoding について
 
 [Differential encoding](./differential_encoding.md)参照
+
+### UnpackSprite の Return
+
+`UncompressSpriteDataLoop` がcallしている `MoveToNextBufferPosition` の `.allColumnsDone` で `pop hl` を行っているため `MoveToNextBufferPosition` の Return先は `UncompressSpriteDataLoop` のReturn先になる
+
+また  `MoveToNextBufferPosition` から `UnpackSprite` には `jp` でジャンプしているので `UnpackSprite`の Return先は `UncompressSpriteDataLoop` のReturn先となる
+
