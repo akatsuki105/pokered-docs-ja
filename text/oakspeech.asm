@@ -1,3 +1,5 @@
+; "Hello there! Welcome to the world of #MON!"  
+; "My name is OAK! People call me the #MON PROF!"  
 _OakSpeechText1::
 	text "Hello there!"
 	line "Welcome to the"
@@ -8,12 +10,16 @@ _OakSpeechText1::
 	cont "the #MON PROF!"
 	prompt
 
+; "This world is inhabited by creatures called #MON!@@"  
 _OakSpeechText2A::
 	text "This world is"
 	line "inhabited by"
 	cont "creatures called"
 	cont "#MON!@@"
 
+; "For some people, #MON are pets."  
+; "Others use them for fights."  
+; "Myself... I study #MON as a profession."  
 _OakSpeechText2B::
 	text $51,"For some people,"
 	line "#MON are"

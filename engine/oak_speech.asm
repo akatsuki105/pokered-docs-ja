@@ -84,13 +84,18 @@ OakSpeech:
 
 	; ここからオーキド博士のスピーチが始まり、主人公とライバルの名前を入力してもらう処理を行う  
 
+	; オーキド博士のグラを画面真ん中に配置
 	ld de, ProfOakPic
 	lb bc, Bank(ProfOakPic), $00
 	call IntroDisplayPicCenteredOrUpperRight
 
+	; オーキド博士のグラをフェードイン
 	call FadeInIntroPic
+
+	; OakSpeechText1 を表示
 	ld hl, OakSpeechText1
 	call PrintText
+
 	call GBFadeOutToWhite
 	call ClearScreen
 	ld a, NIDORINO
@@ -100,6 +105,7 @@ OakSpeech:
 	coord hl, 6, 4
 	call LoadFlippedFrontSpriteByMonIndex
 	call MovePicLeft
+	
 	ld hl, OakSpeechText2
 	call PrintText
 	call GBFadeOutToWhite
@@ -182,14 +188,24 @@ OakSpeech:
 	call DelayFrames
 	call GBFadeOutToWhite
 	jp ClearScreen
+
+; "Hello there! Welcome to the world of #MON!"  
+; "My name is OAK! People call me the #MON PROF!"  
 OakSpeechText1:
 	TX_FAR _OakSpeechText1
 	db "@"
+
+; "This world is inhabited by creatures called #MON!@@"  
+; 『ニドリーナの鳴き声』  
+; "For some people, #MON are pets."  
+; "Others use them for fights."  
+; "Myself... I study #MON as a profession."  
 OakSpeechText2:
 	TX_FAR _OakSpeechText2A
 	TX_CRY_NIDORINA
 	TX_FAR _OakSpeechText2B
 	db "@"
+
 IntroducePlayerText:
 	TX_FAR _IntroducePlayerText
 	db "@"
@@ -200,6 +216,17 @@ OakSpeechText3:
 	TX_FAR _OakSpeechText3
 	db "@"
 
+; **FadeInIntroPic**
+; イントロのグラのフェードイン処理
+; - - -  
+; 10フレームごとに BGPパレットを 以下のように変更する  
+; 
+; 0-10:  %01010100  
+; 10-20: %10101000  
+; 20-30: %11111100  
+; 30-40: %11111000  
+; 40-50: %11110100  
+; 50-60: %11100100  
 FadeInIntroPic:
 	ld hl, IntroFadePalettes
 	ld b, 6
@@ -260,17 +287,22 @@ IntroDisplayPicCenteredOrUpperRight:
 	; 解凍結果の入った sSpriteBuffer1 から sSpriteBuffer0 に 784バイト コピー
 	ld hl, sSpriteBuffer1
 	ld de, sSpriteBuffer0
-	ld bc, $310	; 784
+	ld bc, $310	; 784 => 49 * 16 = 2bppで 49タイル分のグラフィックデータ
 	call CopyData
 
+	; sSpriteBuffer0 と sSpriteBuffer1 の1bppのデータを 2bppとして vFrontPicに配置
+	; 今回は sSpriteBuffer1 を sSpriteBuffer0 にコピーしているので実質 1bpp
 	ld de, vFrontPic
 	call InterlaceMergeSpriteBuffers
+
+	; hl = (15, 1)(右上) or (6, 4)(真ん中)
 	pop bc
 	ld a, c
 	and a
 	coord hl, 15, 1
 	jr nz, .next
 	coord hl, 6, 4
+	; Uncompressedされたグラフィックデータ(7*7タイル)を hl のアドレスにコピーすることで描画
 .next
 	xor a
 	ld [hStartTileID], a

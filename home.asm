@@ -954,12 +954,13 @@ ZeroSpriteBuffer::
 	jr nz, .nextByteLoop
 	ret
 
-; combines the (7*7 tiles, 1bpp) sprite chunks in buffer 0 and 1 into a 2bpp sprite located in buffer 1 through 2
-; buffer0 と buffer1 の7*7サイズの 1bppフォーマット のスプライトのデータをマージして 2bppの ???
-; in the resulting sprite, the rows of the two source sprites are interlaced  
-; スプライトを出力する際に、2つのsource(buffer)の各行は interlace される  
+; **InterlaceMergeSpriteBuffers**  
+; buffer0 と buffer1 の49タイル分の 1bppフォーマット のスプライトのデータを 2bppデータにして de が示すアドレスに 配置する  
+; - - -  
+; buffer0 と buffer1 の7*7サイズの 1bppフォーマット のスプライトのデータをマージして 2bppとし sSpriteBuffer2 の終端から sSpriteBuffer1 の先頭まで配置する  
+; sSpriteBuffer1 と sSpriteBuffer2 は連続していてサイズはともに SPRITEBUFFERSIZE なので sSpriteBuffer2 の終端から配置していけば sSpriteBuffer1 の先頭で終わる  
 ; 
-; INPUT: de = output address
+; INPUT: de = output address  
 InterlaceMergeSpriteBuffers::
 	; ROMバンクを0にする
 	xor a
@@ -970,49 +971,60 @@ InterlaceMergeSpriteBuffers::
 	ld hl, sSpriteBuffer2 + (SPRITEBUFFERSIZE - 1) ; destination: end of buffer 2
 	ld de, sSpriteBuffer1 + (SPRITEBUFFERSIZE - 1) ; source 2: end of buffer 1
 	ld bc, sSpriteBuffer0 + (SPRITEBUFFERSIZE - 1) ; source 1: end of buffer 0
+
+	; .interlaceLoop のループ回数 = SPRITEBUFFERSIZE/2
 	ld a, SPRITEBUFFERSIZE/2 ; $c4
 	ld [H_SPRITEINTERLACECOUNTER], a
+	; 後ろの方から sSpriteBuffer0 と sSpriteBuffer1にある 1bppのデータを交互に sSpriteBuffer2に配置していく
+	; 1ループで 4バイト処理するので合計で SPRITEBUFFERSIZE * 2バイトを配置するため、sSpriteBuffer2の終端から sSpriteBuffer1の先頭まで配置される
 .interlaceLoop
-	; write byte of source 2
+	; source 2 から destination に 1バイト
 	ld a, [de]
 	dec de
 	ld [hld], a   ; [hl--] = [de--]
 	
-	; write byte of source 1
+	; source 1 から destination に 1バイト
 	ld a, [bc]
 	dec bc
 	ld [hld], a   ; [hl--] = [bc--]
 	
-	; write byte of source 2
+	; source 2 から destination に 1バイト
 	ld a, [de]
 	dec de
 	ld [hld], a  ; [hl--] = [de--] 
 	
-	; write byte of source 1
+	; source 1 から destination に 1バイト
 	ld a, [bc]
 	dec bc
 	ld [hld], a   ; [hl--] = [bc--]
 	
+	; 次のループへ
 	ld a, [H_SPRITEINTERLACECOUNTER]
 	dec a
 	ld [H_SPRITEINTERLACECOUNTER], a
 	jr nz, .interlaceLoop
+
+	; 対象のスプライトが左右反転したものでない -> .notFlipped
 	ld a, [wSpriteFlipped]
 	and a
 	jr z, .notFlipped
+
+	; 反転している場合はすべてのバイトのニブルを反転させる (XXXXYYYY -> YYYYXXXX)
 	ld bc, 2*SPRITEBUFFERSIZE
 	ld hl, sSpriteBuffer1
 .swapLoop
-	swap [hl]    ; if flipped swap nybbles in all bytes
+	swap [hl]    
 	inc hl
 	dec bc
 	ld a, b
 	or c
 	jr nz, .swapLoop
+
 .notFlipped
-	pop hl
+	; [H_LOADEDROMBANK] の sSpriteBuffer1 から output address に 49タイルだけコピー
+	pop hl ; hl = output address
 	ld de, sSpriteBuffer1
-	ld c, (2*SPRITEBUFFERSIZE)/16 ; $31, number of 16 byte chunks to be copied
+	ld c, (2*SPRITEBUFFERSIZE)/16 ; $31=49, number of 16 byte chunks to be copied
 	ld a, [H_LOADEDROMBANK]
 	ld b, a
 	jp CopyVideoData
