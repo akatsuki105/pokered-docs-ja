@@ -1,5 +1,6 @@
 ChoosePlayerName:
 	call OakSpeechSlidePicRight
+
 	ld de, DefaultNamesPlayer
 	call DisplayIntroNameTextBox
 	ld a, [wCurrentMenuItem]
@@ -161,17 +162,26 @@ OakSpeechSlidePicCommon:
 
 DisplayIntroNameTextBox:
 	push de
+
+	; デフォルトの名前メニュー用のテキストボックスを描画
 	coord hl, 0, 0
 	ld b, $a
 	ld c, $9
 	call TextBoxBorder
+
+	; 『NAME』(なまえこうほ)という文字をテキストボックスの枠の上に描画
 	coord hl, 3, 0
 	ld de, .namestring
 	call PlaceString
+
+	; 名前候補一覧をテキストボックスにメニューのアイテムとして配置
 	pop de
 	coord hl, 2, 2
-	call PlaceString
+	call PlaceString ; @が来るまで配置
+
 	call UpdateSprites
+	
+	; メニューにかかわる変数を初期化してキー入力を待つ
 	xor a
 	ld [wCurrentMenuItem], a
 	ld [wLastMenuItem], a
@@ -184,10 +194,12 @@ DisplayIntroNameTextBox:
 	ld [wMaxMenuItem], a
 	jp HandleMenuInput
 
+; "なまえこうほ"
 .namestring
 	db "NAME@"
 
 IF DEF(_RED)
+; [NEW NAME, RED, ASH, JACK]
 DefaultNamesPlayer:
 	db   "NEW NAME"
 	next "RED"
@@ -195,6 +207,7 @@ DefaultNamesPlayer:
 	next "JACK"
 	db   "@"
 
+; [NEW NAME, BLUE, GARY, JOHN]
 DefaultNamesRival:
 	db   "NEW NAME"
 	next "BLUE"
@@ -204,6 +217,7 @@ DefaultNamesRival:
 ENDC
 
 IF DEF(_BLUE)
+; [NEW NAME, BLUE, GARY, JOHN]
 DefaultNamesPlayer:
 	db   "NEW NAME"
 	next "BLUE"
@@ -211,6 +225,7 @@ DefaultNamesPlayer:
 	next "JOHN"
 	db   "@"
 
+; [NEW NAME, RED, ASH, JACK]
 DefaultNamesRival:
 	db   "NEW NAME"
 	next "RED"
