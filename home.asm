@@ -288,6 +288,12 @@ OverwritewMoves::
 	ld [hl], a
 	ret
 
+; **LoadFlippedFrontSpriteByMonIndex**  
+; ポケモンの左右反転した正面グラフィックデータを取得する  
+; - - -  
+; INPUT:  
+; - hl = グラフィックデータをロードする先(BGMapアドレスなど)  
+; - [wcf91] = ポケモンID
 LoadFlippedFrontSpriteByMonIndex::
 	ld a, 1
 	ld [wSpriteFlipped], a

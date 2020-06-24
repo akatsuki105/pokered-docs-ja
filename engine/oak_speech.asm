@@ -96,26 +96,36 @@ OakSpeech:
 	ld hl, OakSpeechText1
 	call PrintText
 
+	; 画面を真っ白にする
 	call GBFadeOutToWhite
 	call ClearScreen
+
+	; ニドリーノを左からスライドさせてくる
 	ld a, NIDORINO
 	ld [wd0b5], a
 	ld [wcf91], a
 	call GetMonHeader
 	coord hl, 6, 4
 	call LoadFlippedFrontSpriteByMonIndex
-	call MovePicLeft
+	call MovePicLeft ; ニドリーノはウィンドウとして描画されている?
 	
+	; OakSpeechText2 を表示
 	ld hl, OakSpeechText2
 	call PrintText
+
+	; 画面を真っ白にする
 	call GBFadeOutToWhite
 	call ClearScreen
+
+	; 主人公を左からスライドさせてくる
 	ld de, RedPicFront
 	lb bc, Bank(RedPicFront), $00
 	call IntroDisplayPicCenteredOrUpperRight
 	call MovePicLeft
+
 	ld hl, IntroducePlayerText
 	call PrintText
+	
 	call ChoosePlayerName
 	call GBFadeOutToWhite
 	call ClearScreen
@@ -206,12 +216,17 @@ OakSpeechText2:
 	TX_FAR _OakSpeechText2B
 	db "@"
 
+; "First, what is your name?"
 IntroducePlayerText:
 	TX_FAR _IntroducePlayerText
 	db "@"
+
+; "This is my grand-son. He's been your rival since you were a baby."
+; "...Erm, what is his name again?"
 IntroduceRivalText:
 	TX_FAR _IntroduceRivalText
 	db "@"
+	
 OakSpeechText3:
 	TX_FAR _OakSpeechText3
 	db "@"
@@ -247,11 +262,15 @@ IntroFadePalettes:
 	db %11110100
 	db %11100100
 
+; **MovePicLeft**  
+; グラフィックを左に動かす  
+; WXを徐々に減らす、つまりウィンドウを左に動かすことで実現している
 MovePicLeft:
 	ld a, 119
 	ld [rWX], a
 	call DelayFrame
 
+	; BGP = [3, 2, 1, 0]
 	ld a, %11100100
 	ld [rBGP], a
 .next

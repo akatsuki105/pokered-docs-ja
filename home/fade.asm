@@ -23,15 +23,23 @@ LoadGBPal::
 	ld [rOBP1], a
 	ret
 
+; 画面を徐々に真っ黒にする  
 GBFadeInFromBlack::
 	ld hl, FadePal1
 	ld b, 4
 	jr GBFadeIncCommon
 
+; 画面を徐々に真っ白にする  
 GBFadeOutToWhite::
 	ld hl, FadePal6
 	ld b, 3
 
+; **GBFadeIncCommon**  
+; FadePalN の内容を パレットに適用する  
+; - - -  
+; INPUT:  
+; - hl = FadePalN
+; - b = ループ回数 (FadePalを連続で何個使用するか)
 GBFadeIncCommon:
 	ld a, [hli]
 	ld [rBGP], a
@@ -67,12 +75,12 @@ GBFadeDecCommon:
 	jr nz, GBFadeDecCommon
 	ret
 
+;                rBGP      rOBP0      rOBP1
 FadePal1:: db %11111111, %11111111, %11111111
 FadePal2:: db %11111110, %11111110, %11111000
 FadePal3:: db %11111001, %11100100, %11100100
 FadePal4:: db %11100100, %11010000, %11100000	; [p3, p2, p1, p0] => BGP:[3, 2, 1, 0] OBP0:[3, 1, 0, 0] OBP1:[3, 2, 0, 0]
-;                rBGP      rOBP0      rOBP1
 FadePal5:: db %11100100, %11010000, %11100000
-FadePal6:: db %10010000, %10000000, %10010000
+FadePal6:: db %10010000, %10000000, %10010000	; [p3, p2, p1, p0] => BGP:[2, 1, 0, 0] OBP0:[2, 0, 0, 0] OBP1:[2, 1, 0, 0]
 FadePal7:: db %01000000, %01000000, %01000000
 FadePal8:: db %00000000, %00000000, %00000000
