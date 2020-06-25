@@ -1,4 +1,5 @@
 ChoosePlayerName:
+	; 名前メニュー表示のために主人公を真ん中から少し右にずらす
 	call OakSpeechSlidePicRight
 
 	ld de, DefaultNamesPlayer
@@ -82,65 +83,88 @@ OakSpeechSlidePicLeft:
 	ld a, $ff
 	jr OakSpeechSlidePicCommon
 
+; 名前メニュー表示のために主人公(ライバル)を真ん中から少し右にずらす
 OakSpeechSlidePicRight:
-	coord hl, 5, 4
-	lb de, 6, 6 * SCREEN_WIDTH + 5
-	xor a
+	coord hl, 5, 4 ; (5, 4)からスライド 
+	lb de, 6, 6 * SCREEN_WIDTH + 5 ; d = 6(6回スライド), e = 6 * SCREEN_WIDTH + 5(各スライドで6行 + 5タイル動かす)
+	xor a ; 右スライド
 
+; **OakSpeechSlidePicCommon**  
+; 名前メニュー表示のために主人公(ライバル)を真ん中から少し右(左)にずらす  
+; - - -  
+; INPUT:  
+; - a = -1(左スライド) or 0(右スライド)  
+; - d = スライド処理を何回行うか  
+; - e = 各スライド処理で動かすタイル数  
+; - hl = スライドの始点となるタイルアドレス e.g. coord hl, 5, 4
 OakSpeechSlidePicCommon:
 	push hl
 	push de
 	push bc
 	ld [hSlideDirection], a
+	
 	ld a, d
 	ld [hSlideAmount], a
+	
 	ld a, e
 	ld [hSlidingRegionSize], a
 	ld c, a
+	
+	; de = hl = タイルずらし作業の始点
 	ld a, [hSlideDirection]
 	and a
 	jr nz, .next
-; If sliding right, point hl to the end of the pic's tiles.
 	ld d, 0
-	add hl, de
+	add hl, de ; 右スライドの場合は、HLがpicのタイルの終端を指すようにする
 .next
 	ld d, h
 	ld e, l
+
+; [hl]から[hl+c]まで、1つずつずらす (+-はスライド方向による) つまり タイルを1つずつずらしていく
 .loop
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ld a, [hSlideDirection]
 	and a
 	jr nz, .slideLeft
-; sliding right
+; .slideRight
+	; [hl + 1] = [hl] && hl-- つまり [hl]を +1方向にずらしていく
 	ld a, [hli]
 	ld [hld], a
 	dec hl
 	jr .next2
 .slideLeft
+	; [hl-1] = [hl] && hl++ つまり [hl] を -1方向にずらしていく
 	ld a, [hld]
 	ld [hli], a
 	inc hl
 .next2
 	dec c
-	jr nz, .loop
+	jr nz, .loop ; c回ループする
+
 	ld a, [hSlideDirection]
 	and a
 	jr z, .next3
-; If sliding left, we need to zero the last tile in the pic (there is no need
-; to take a corresponding action when sliding right because hl initially points
-; to a 0 tile in that case).
+	; 左にスライドしているときは、picの最後のタイル(hlが指している)を0クリアする必要がある
+	; 右にスライドするときは hlは 既に0タイルを指しているのでその必要はない
 	xor a
 	dec hl
 	ld [hl], a
+
 .next3
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	call Delay3
+
+	; c = グラの各スライド処理で動かすタイル数
 	ld a, [hSlidingRegionSize]
 	ld c, a
+	
+	; hl = ずらし処理の始点
 	ld h, d
 	ld l, e
+	
+	; hl = hl + 1 or hl - 1
 	ld a, [hSlideDirection]
 	and a
 	jr nz, .slideLeft2
@@ -148,6 +172,7 @@ OakSpeechSlidePicCommon:
 	jr .next4
 .slideLeft2
 	dec hl
+
 .next4
 	ld d, h
 	ld e, l

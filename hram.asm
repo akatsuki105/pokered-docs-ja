@@ -48,7 +48,8 @@ hSpriteIndexOrTextID EQU $FF8C
 
 hPartyMonIndex EQU $FF8C
 
-; the total number of tiles being shifted each time the pic slides by one tile
+; OakSpeechSlidePicCommon で使用
+; グラをスライドするたびにシフトされるタイルの総数
 hSlidingRegionSize EQU $FF8C
 
 ; 2 bytes
@@ -58,8 +59,8 @@ hVRAMSlot EQU $FF8D
 
 hFourTileSpriteCount EQU $FF8E
 
-; -1 = left
-;  0 = right
+; -1 = left  
+;  0 = right  
 hSlideDirection EQU $FF8D
 
 hSpriteFacingDirection EQU $FF8D
