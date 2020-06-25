@@ -149,7 +149,7 @@ charmap "ー", $E3
 
 charmap "<pkmn>", $4A ; PkMn
 charmap "@", $50 ; 終端記号
-charmap "<PLAYER>", $52 ; プレイヤーの名前を表す
+charmap "<PLAYER>", $52 ; プレイヤーの名前を表す(wPlayerName)
 charmap "<RIVAL>", $53 ; ライバルの名前
 charmap "#", $54        ; POKéを表すバイトデータ
 charmap "<TARGET>", $59 ; ポケモンバトルにおける技のターゲット
