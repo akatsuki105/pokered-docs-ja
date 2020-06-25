@@ -4448,7 +4448,10 @@ WriteOAMBlock::
 ; メニューでのキー入力に対処するハンドラ  
 ; - - - 
 ; INPUT: [wMenuWatchedKeys] = 反応する対象のキー入力 上下ボタンは必ず反応して選択オフセットを上下に移動させる  
-; OUTPUT: a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]
+; 
+; OUTPUT:  
+; a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]  
+; [wCurrentMenuItem] = 選択されたメニューアイテム
 HandleMenuInput::
 	; 選択メニューがポケモン選択メニュー(手持ちポケモン一覧など)のときに選択しているポケモン以外のアニメーションを無効にする?
 	xor a

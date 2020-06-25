@@ -2,13 +2,18 @@ ChoosePlayerName:
 	; 名前メニュー表示のために主人公を真ん中から少し右にずらす
 	call OakSpeechSlidePicRight
 
+	; プレイヤーに主人公の なまえこうほ から1つ選択させる
 	ld de, DefaultNamesPlayer
 	call DisplayIntroNameTextBox
+
+	; 『じぶんできめる』 -> .customName 
 	ld a, [wCurrentMenuItem]
 	and a
 	jr z, .customName
+
 	ld hl, DefaultNamesPlayerList
 	call GetDefaultName
+
 	ld de, wPlayerName
 	call OakSpeechSlidePicLeft
 	jr .done
@@ -66,7 +71,9 @@ HisNameIsText:
 	TX_FAR _HisNameIsText
 	db "@"
 
+; 名前仮決定後、主人公(ライバル)を左にずらして真ん中に戻す
 OakSpeechSlidePicLeft:
+	; 画面をクリアする
 	push de
 	coord hl, 0, 0
 	lb bc, 12, 11
@@ -74,9 +81,13 @@ OakSpeechSlidePicLeft:
 	ld c, 10
 	call DelayFrames
 	pop de
+
+	; wcd6d に格納された名前を wPlayerName か wRivalName にコピーする
 	ld hl, wcd6d
 	ld bc, NAME_LENGTH
 	call CopyData
+
+	; 主人公(ライバル)の位置を真ん中に戻す
 	call Delay3
 	coord hl, 12, 4
 	lb de, 6, 6 * SCREEN_WIDTH + 5
@@ -185,6 +196,14 @@ OakSpeechSlidePicCommon:
 	pop hl
 	ret
 
+; **DisplayIntroNameTextBox**  
+; 主人公とライバルのデフォルトの名前メニューを表示してプレイヤーの入力を受け取る
+; - - -  
+; INPUT: de = 名前のリスト (DefaultNamesPlayer or DefaultNamesRival)  
+; 
+; OUTPUT:  
+; a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]  
+; [wCurrentMenuItem] = 選択された名前
 DisplayIntroNameTextBox:
 	push de
 
@@ -217,7 +236,7 @@ DisplayIntroNameTextBox:
 	ld [wTopMenuItemY], a
 	inc a
 	ld [wMaxMenuItem], a
-	jp HandleMenuInput
+	jp HandleMenuInput ; HandleMenuInputの retで DisplayIntroNameTextBoxから返る
 
 ; "なまえこうほ"
 .namestring
@@ -259,9 +278,12 @@ DefaultNamesRival:
 	db   "@"
 ENDC
 
+; INPUT:  
+; a = name index  
+; hl = name list  
+; 
+; OUTPUT: [wcd6d] = 名前の文字列データ (20バイト固定)
 GetDefaultName:
-; a = name index
-; hl = name list
 	ld b, a
 	ld c, 0
 .loop
