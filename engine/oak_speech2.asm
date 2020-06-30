@@ -17,6 +17,7 @@ ChoosePlayerName:
 	ld de, wPlayerName
 	call OakSpeechSlidePicLeft
 	jr .done
+	; 名前をユーザーに入力してもらう
 .customName
 	ld hl, wPlayerName
 	xor a ; NAME_PLAYER_SCREEN
@@ -71,7 +72,8 @@ HisNameIsText:
 	TX_FAR _HisNameIsText
 	db "@"
 
-; 名前仮決定後、主人公(ライバル)を左にずらして真ん中に戻す
+; 名前仮決定後、主人公(ライバル)を左にずらして真ん中に戻す  
+; deのアドレス(wPlayerName or wRivalName)に 名前の文字列データをコピーする
 OakSpeechSlidePicLeft:
 	; 画面をクリアする
 	push de

@@ -3559,9 +3559,15 @@ LoadTextBoxTilePatterns::
 	lb bc, BANK(TextBoxGraphics), (TextBoxGraphicsEnd - TextBoxGraphics) / $10
 	jp CopyVideoData
 
+; HPバーとステータスを構成する2bppデータをVRAMに転送する  
+; 
+; LCDCが有効か無効かによって転送時間が変わる  
+; on: VBlankのときに少しずつ転送  
+; off: 即座に全部転送
 LoadHpBarAndStatusTilePatterns::
+	; LCDCが有効なら -> .on 無効なら -> .off
 	ld a, [rLCDC]
-	bit 7, a ; is the LCD enabled?
+	bit 7, a
 	jr nz, .on
 .off
 	ld hl, HpBarAndStatusGraphics

@@ -88,8 +88,8 @@ GetAnimationSpeed:
 PartyMonSpeeds:
 	db 5, 16, 32
 
+; パーティを構成するポケモンのスプライトをVBlank中にVRAMに転送する
 LoadMonPartySpriteGfx:
-; Load mon party sprite tile patterns into VRAM during V-blank.
 	ld hl, MonPartySpritePointers
 	ld a, $1c
 

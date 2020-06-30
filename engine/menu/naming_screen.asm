@@ -81,15 +81,23 @@ DisplayNameRaterScreen:
 	scf
 	ret
 
+; **DisplayNamingScreen**  
+; テキスト入力ウィンドウを出す
 DisplayNamingScreen:
 	push hl
+	; 遅延を発生
 	ld hl, wd730
 	set 6, [hl]
+	
+	; 画面を真っ白にする
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
 	call UpdateSprites
+
+	; SGBのときのみ機能
 	ld b, SET_PAL_GENERIC
 	call RunPaletteCommand
+
 	call LoadHpBarAndStatusTilePatterns
 	call LoadEDTile
 	callba LoadMonPartySpriteGfx
@@ -323,6 +331,7 @@ DisplayNamingScreen:
 	ld [wTopMenuItemX], a
 	jp EraseMenuCursor
 
+; ED_TileをVRAMに転送する
 LoadEDTile:
 	ld de, ED_Tile
 	ld hl, vFont + $700
