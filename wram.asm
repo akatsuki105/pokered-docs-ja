@@ -1350,17 +1350,20 @@ wChangeMonPicEnemyTurnSpecies:: ; cee9
 wHPBarMaxHP:: ; cee9
 	ds 1
 
-wNamingScreenSubmitName:: ; ceea
+; ceea  
+; プレイヤーが提出する名前を選択しているときに0以外の値をとる
 ; non-zero when the player has chosen to submit the name
+wNamingScreenSubmitName::
 
 wChangeMonPicPlayerTurnSpecies:: ; ceea
 
 wEvoNewSpecies:: ; ceea
 	ds 1
 
-wAlphabetCase:: ; ceeb
-; 0 = upper case
-; 1 = lower case
+; ceeb  
+; 0 = upper case  
+; 1 = lower case  
+wAlphabetCase::
 
 wEvoMonTileOffset:: ; ceeb
 
@@ -1908,7 +1911,11 @@ wAnimationID:: ; d07c
 ; ID number of the current battle animation
 	ds 1
 
-wNamingScreenType:: ; d07d
+; d07d  
+; 0: NAME_PLAYER_SCREEN  
+; 1: NAME_RIVAL_SCREEN  
+; 2: NAME_MON_SCREEN
+wNamingScreenType::
 
 wPartyMenuTypeOrMessageID:: ; d07d
 

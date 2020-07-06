@@ -101,36 +101,52 @@ DisplayNamingScreen:
 	call LoadHpBarAndStatusTilePatterns
 	call LoadEDTile
 	callba LoadMonPartySpriteGfx
+
+	; キーボードとなるテキストボックスを描画
 	coord hl, 0, 4
 	ld b, 9
 	ld c, 18
 	call TextBoxBorder
+	
+	; 入力を促すテキスト
 	call PrintNamingText
+
+	; メニューカーソルの左上にキーボード『A』 を設定
 	ld a, 3
 	ld [wTopMenuItemY], a
 	ld a, 1
 	ld [wTopMenuItemX], a
+	; メニューカーソルの初期値にキーボード『A』 を設定
 	ld [wLastMenuItem], a
 	ld [wCurrentMenuItem], a
+	; 全部のキー入力をハンドルする
 	ld a, $ff
 	ld [wMenuWatchedKeys], a
+
 	ld a, 7
 	ld [wMaxMenuItem], a
+
 	ld a, "@"
 	ld [wcf4b], a
+	
 	xor a
 	ld hl, wNamingScreenSubmitName
 	ld [hli], a
-	ld [hli], a
-	ld [wAnimCounter], a
+	ld [hli], a						; [wNamingScreenSubmitName] = 0
+	ld [wAnimCounter], a			; [wAnimCounter] = 0
+	; selectボタンが押された時(大文字小文字を切り替える)
 .selectReturnPoint
 	call PrintAlphabet
 	call GBPalNormal
+	; ABStartボタンが押された時
 .ABStartReturnPoint
+	; [wNamingScreenSubmitName] != 0 -> .submitNickname
 	ld a, [wNamingScreenSubmitName]
 	and a
 	jr nz, .submitNickname
+
 	call PrintNicknameAndUnderscores
+	; 方向キーが押された時
 .dPadReturnPoint
 	call PlaceMenuCursor
 .inputLoop
@@ -344,53 +360,78 @@ ED_Tile:
 	INCBIN "gfx/ED_tile.1bpp"
 ED_TileEnd:
 
+; **PrintAlphabet**  
+; 英語キーボードを画面に表示する  
+; - - -  
+; 名前入力ウィンドウで使用  
+; INPUT:   
+; - [wAlphabetCase] = 0(小文字) or 1(大文字)
 PrintAlphabet:
+	; VRAM転送を無効化
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
+	; de = LowerCaseAlphabet or UpperCaseAlphabet
 	ld a, [wAlphabetCase]
 	and a
 	ld de, LowerCaseAlphabet
 	jr nz, .lowercase
 	ld de, UpperCaseAlphabet
 .lowercase
-	coord hl, 2, 5
-	lb bc, 5, 9 ; 5 rows, 9 columns
+	; ここから英語キーボードの表示を開始
+	coord hl, 2, 5	; (2, 5)からアルファベットの描画を開始
+	lb bc, 5, 9 	; 5行9列
+
+; ループごとに1行描画して5行描画する
 .outerLoop
 	push bc
+
+	; ループごとに1文字ずつ描画して1行描画する
 .innerLoop
 	ld a, [de]
 	ld [hli], a
 	inc hl
-	inc de
+	inc de ; [hl++] = [de++]
 	dec c
 	jr nz, .innerLoop
+
 	ld bc, SCREEN_WIDTH + 2
 	add hl, bc
 	pop bc
 	dec b
 	jr nz, .outerLoop
+; outerLoopを抜けた(lower case, UPPER CASE)をテキストボックスの外に描画
 	call PlaceString
 	ld a, $1
 	ld [H_AUTOBGTRANSFERENABLED], a
-	jp Delay3
+	jp Delay3	; Delay3でreturnする
 
+; db "abcdefghijklmnopqrstuvwxyz ×():;[]",$e1,$e2,"-?!♂♀/⠄,¥UPPER CASE@"
 LowerCaseAlphabet:
 	db "abcdefghijklmnopqrstuvwxyz ×():;[]",$e1,$e2,"-?!♂♀/⠄,¥UPPER CASE@"
 
+; db "ABCDEFGHIJKLMNOPQRSTUVWXYZ ×():;[]",$e1,$e2,"-?!♂♀/⠄,¥lower case@"
 UpperCaseAlphabet:
 	db "ABCDEFGHIJKLMNOPQRSTUVWXYZ ×():;[]",$e1,$e2,"-?!♂♀/⠄,¥lower case@"
 
 PrintNicknameAndUnderscores:
+	; [wNamingScreenNameLength] = ニックネームの長さ
 	call CalcStringLength
 	ld a, c
 	ld [wNamingScreenNameLength], a
+
+	; 入力した名前を表示欄からクリア
 	coord hl, 10, 2
 	lb bc, 1, 10
 	call ClearScreenArea
+	; 入力した名前を表示
 	coord hl, 10, 2
 	ld de, wcf4b
 	call PlaceString
+
+; ここから入力した名前を表示するところを描画する
 	coord hl, 10, 3
+
+	; b = 名前の最大文字数 7(主人公ライバル) or 10(ポケモンのニックネーム)
 	ld a, [wNamingScreenType]
 	cp NAME_MON_SCREEN
 	jr nc, .pokemon1
@@ -399,11 +440,15 @@ PrintNicknameAndUnderscores:
 .pokemon1
 	ld b, 10 ; pokemon max name length
 .playerOrRival1
-	ld a, $76 ; underscore tile id
+	
+; 下線を配置する(この上に名前が表示される)
+	ld a, $76 ; 下線のタイルID
 .placeUnderscoreLoop
 	ld [hli], a
 	dec b
 	jr nz, .placeUnderscoreLoop
+
+; 入力した文字数がMAXでない -> .emptySpacesRemaining
 	ld a, [wNamingScreenType]
 	cp NAME_MON_SCREEN
 	ld a, [wNamingScreenNameLength]
@@ -414,18 +459,22 @@ PrintNicknameAndUnderscores:
 	cp 10 ; pokemon max name length
 .playerOrRival2
 	jr nz, .emptySpacesRemaining
-	; when all spaces are filled, force the cursor onto the ED tile
+
+; 最大文字数まで名前を入力したとき
+	; カーソルを強制的に 『ED』 に配置する
 	call EraseMenuCursor
 	ld a, $11 ; "ED" x coord
 	ld [wTopMenuItemX], a
 	ld a, $5 ; "ED" y coord
 	ld [wCurrentMenuItem], a
+	; a = 6(主人公ライバル) or 9(ポケモン)
 	ld a, [wNamingScreenType]
-	cp NAME_MON_SCREEN
+	cp NAME_MON_SCREENS
 	ld a, 9 ; keep the last underscore raised
 	jr nc, .pokemon3
 	ld a, 6 ; keep the last underscore raised
 .pokemon3
+
 .emptySpacesRemaining
 	ld c, a
 	ld b, $0
@@ -464,7 +513,7 @@ Handakutens:
 	db "ハパ", "ヒピ", "フプ", "へぺ", "ホポ"
 	db $ff
 
-; calculates the length of the string at wcf4b and stores it in c
+; wcf4bに格納された文字列の長さを計算してcレジスタに格納する
 CalcStringLength:
 	ld hl, wcf4b
 	ld c, $0
@@ -476,15 +525,28 @@ CalcStringLength:
 	inc c
 	jr .loop
 
+; **PrintNamingText**  
+; 名前入力を促すテキストを表示する  
+; - - -  
+; INPUT:  [wNamingScreenType] = 名前入力のタイプ  
+; 0: YOUR NAME? を表示  
+; 1: RIVAL's NAME? を表示  
+; other: ポケモンのアイコン,種族名,NICKNAME? を表示 (https://imgur.com/ym8Ogbz)
 PrintNamingText:
 	coord hl, 0, 1
+
+	; 主人公の名前の場合 -> YOUR NAME?
 	ld a, [wNamingScreenType]
 	ld de, YourTextString
 	and a
 	jr z, .notNickname
+
+	; ライバルのの名前の場合 -> RIVAL's NAME?
 	ld de, RivalsTextString
 	dec a
 	jr z, .notNickname
+
+	; ポケモンのニックネームの場合 -> ポケモンのアイコン,種族名,NICKNAME? (https://imgur.com/ym8Ogbz)
 	ld a, [wcf91]
 	ld [wMonPartySpriteSpecies], a
 	push af
@@ -500,6 +562,7 @@ PrintNamingText:
 	coord hl, 1, 3
 	ld de, NicknameTextString
 	jr .placeString
+
 .notNickname
 	call PlaceString
 	ld l, c
@@ -508,9 +571,11 @@ PrintNamingText:
 .placeString
 	jp PlaceString
 
+; "YOUR @"
 YourTextString:
 	db "YOUR @"
 
+; "RIVAL's @"
 RivalsTextString:
 	db "RIVAL's @"
 
