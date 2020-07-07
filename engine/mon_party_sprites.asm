@@ -1,3 +1,4 @@
+; 手持ちのポケモンのHPバーの色を黄色扱いにして GetAnimationSpeed に続く
 AnimatePartyMon_ForceSpeed1:
 	xor a
 	ld [wCurrentMenuItem], a
@@ -5,33 +6,43 @@ AnimatePartyMon_ForceSpeed1:
 	inc a
 	jr GetAnimationSpeed
 
-; wPartyMenuHPBarColors contains the party mon's health bar colors
-; 0: green
-; 1: yellow
-; 2: red
+; [wCurrentMenuItem]が指す手持ちのポケモンのHPバーの色を格納して GetAnimationSpeed に続く
 AnimatePartyMon:
 	ld hl, wPartyMenuHPBarColors
 	ld a, [wCurrentMenuItem]
 	ld c, a
 	ld b, 0
 	add hl, bc
-	ld a, [hl]
+	ld a, [hl] ; a = [wCurrentMenuItem]が指す手持ちのポケモンのHPバーの色 0(green) or 1(yellow) or 2(red) 
 
+; **GetAnimationSpeed**  
+; - - -  
+; INPUT: a = ポケモンのHPバーの色 0(green) or 1(yellow) or 2(red) 
 GetAnimationSpeed:
+	; hl = アニメーション間隔を指すアドレス
 	ld c, a
 	ld hl, PartyMonSpeeds
 	add hl, bc
+
+	; a = 0(SGB) or 1(SGBでない)
 	ld a, [wOnSGB]
 	xor $1
+
+	; a = c = アニメーション間隔
 	add [hl]
 	ld c, a
+	; b = ???
 	add a
 	ld b, a
+	
+; [wAnimCounter] == 0 -> .resetSprites
 	ld a, [wAnimCounter]
 	and a
 	jr z, .resetSprites
+; [wAnimCounter] == c -> .animateSprite
 	cp c
 	jr z, .animateSprite
+; それ以外のとき [wAnimCounter]をインクリメントする
 .incTimer
 	inc a
 	cp b
@@ -40,6 +51,8 @@ GetAnimationSpeed:
 .skipResetTimer
 	ld [wAnimCounter], a
 	jp DelayFrame
+
+; OAMアニメーションを最初に戻す
 .resetSprites
 	push bc
 	ld hl, wMonPartySpritesSavedOAM
@@ -49,6 +62,7 @@ GetAnimationSpeed:
 	pop bc
 	xor a
 	jr .incTimer
+
 .animateSprite
 	push bc
 	ld hl, wOAMBuffer + $02 ; OAM tile id
@@ -81,10 +95,14 @@ GetAnimationSpeed:
 	ld a, c
 	jr .incTimer
 
-; Party mon animations cycle between 2 frames.
-; The members of the PartyMonSpeeds array specify the number of V-blanks
-; that each frame lasts for green HP, yellow HP, and red HP in order.
-; On the naming screen, the yellow HP speed is always used.
+; **PartyMonSpeeds**  
+; ポケモンのアイコンのアニメーションスピード
+; - - -  
+; 手持ちのポケモンのアイコンのアニメーションは2フレームの間をループしている  
+; 配列 PartyMonSpeeds の要素は 緑のHP、黄色のHP、赤のHPの順に各フレームが持続するVBlankの回数を指定している  
+; ポケモンのニックネームをつける際にもポケモンのアイコンのアニメーションが映し出されるが、このときは常に黄色のHPと同じアニメーションスピードになる  
+; 
+; db 5, 16, 32 green,yellow,red
 PartyMonSpeeds:
 	db 5, 16, 32
 

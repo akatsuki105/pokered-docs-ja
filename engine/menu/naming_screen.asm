@@ -134,6 +134,8 @@ DisplayNamingScreen:
 	ld [hli], a
 	ld [hli], a						; [wNamingScreenSubmitName] = 0
 	ld [wAnimCounter], a			; [wAnimCounter] = 0
+
+; 初期化処理かつボタンが押された時の処理
 	; selectボタンが押された時(大文字小文字を切り替える)
 .selectReturnPoint
 	call PrintAlphabet
@@ -144,16 +146,19 @@ DisplayNamingScreen:
 	ld a, [wNamingScreenSubmitName]
 	and a
 	jr nz, .submitNickname
-
 	call PrintNicknameAndUnderscores
 	; 方向キーが押された時
 .dPadReturnPoint
 	call PlaceMenuCursor
+
+; 
 .inputLoop
 	ld a, [wCurrentMenuItem]
+	; 
 	push af
 	callba AnimatePartyMon_ForceSpeed1
 	pop af
+	
 	ld [wCurrentMenuItem], a
 	call JoypadLowSensitivity
 	ld a, [hJoyPressed]
@@ -413,6 +418,8 @@ LowerCaseAlphabet:
 UpperCaseAlphabet:
 	db "ABCDEFGHIJKLMNOPQRSTUVWXYZ ×():;[]",$e1,$e2,"-?!♂♀/⠄,¥lower case@"
 
+; **PrintNicknameAndUnderscores**  
+; 入力した名前を下線とともに名前入力画面に表示する
 PrintNicknameAndUnderscores:
 	; [wNamingScreenNameLength] = ニックネームの長さ
 	call CalcStringLength
@@ -475,12 +482,13 @@ PrintNicknameAndUnderscores:
 	ld a, 6 ; keep the last underscore raised
 .pokemon3
 
+; まだ文字数が余っているときは次の文字が入る下線を持ち上げる
 .emptySpacesRemaining
 	ld c, a
 	ld b, $0
 	coord hl, 10, 3
-	add hl, bc
-	ld [hl], $77 ; raised underscore tile id
+	add hl, bc		; hl = 次の文字が入る場所
+	ld [hl], $77 	; raised underscore tile id
 	ret
 
 DakutensAndHandakutens:

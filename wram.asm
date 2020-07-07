@@ -593,10 +593,11 @@ wFilteredBagItems::
 
 wElevatorWarpMaps:: ; cc5b
 
-wMonPartySpritesSavedOAM:: ; cc5b
-; Saved copy of OAM for the first frame of the animation to make it easy to
-; flip back from the second frame.
-; $60 bytes
+; cc5b  
+; OAMのアニメーションの1つ目のフレームを保存しておく 60バイト の領域  
+; 保存しておくことで 2つ目のフレームから戻るのが楽になる  
+; (OAMのアニメーションは2つのフレーム(モーション)から成り立っていることに留意)
+wMonPartySpritesSavedOAM::
 
 wTrainerCardBlkPacket:: ; cc5b
 ; $40 bytes
