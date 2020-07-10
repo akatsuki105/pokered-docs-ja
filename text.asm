@@ -1905,6 +1905,7 @@ _DoYouWantToNicknameText::
 	text "?"
 	done
 
+; "Right! So your name is <PLAYER>!"
 _YourNameIsText::
 	text "Right! So your"
 	line "name is <PLAYER>!"

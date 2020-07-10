@@ -27,16 +27,18 @@ ChoosePlayerName:
 	ld a, [wcf4b]
 	cp "@"
 	jr z, .customName
-
+	; 入力した名前を確認する画面にいく
 	call ClearScreen
 	call Delay3
 	ld de, RedPicFront
 	ld b, BANK(RedPicFront)
 	call IntroDisplayPicCenteredOrUpperRight
+	; 入力した名前を表示する
 .done
 	ld hl, YourNameIsText
-	jp PrintText
+	jp PrintText ; ここで ret している
 
+; "Right! So your name is <PLAYER>!"
 YourNameIsText:
 	TX_FAR _YourNameIsText
 	db "@"

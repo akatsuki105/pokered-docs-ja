@@ -82,9 +82,12 @@ DisplayNameRaterScreen:
 	ret
 
 ; **DisplayNamingScreen**  
-; テキスト入力ウィンドウを出す
+; テキスト入力ウィンドウを出し、プレイヤーが入力し終えるのを待つ  
 ; - - -  
 ; INPUT: hl = wPlayerName or wRivalName or ???
+; OUTPUT: 
+; - [wcf4b] = 入力された名前  
+; - [wPlayerName] or [wRivalName] or [???] = 入力された名前  
 DisplayNamingScreen:
 	push hl
 	; 遅延を発生
