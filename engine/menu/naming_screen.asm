@@ -234,24 +234,31 @@ DisplayNamingScreen:
 	pop de
 	ld de, .selectReturnPoint
 	push de
+
+; 名前入力画面でセレクトボタンを押されたときの処理  
+; 大文字小文字を反転  
 .pressedSelect
 	ld a, [wAlphabetCase]
 	xor $1
-	ld [wAlphabetCase], a
+	ld [wAlphabetCase], a ; [wAlphabetCase] の bitを反転
 	ret
 
+; 名前入力画面でスタートボタンを押されたときの処理  
+; 名前入力を終了
 .pressedStart
 	ld a, 1
 	ld [wNamingScreenSubmitName], a
 	ret
 
 .pressedA
+	; "ED" を押されたときは .pressedStart で名前入力を終了する
 	ld a, [wCurrentMenuItem]
 	cp $5 ; "ED" row
 	jr nz, .didNotPressED
 	ld a, [wTopMenuItemX]
 	cp $11 ; "ED" column
 	jr z, .pressedStart
+	; "ED"以外が押された時
 .didNotPressED
 	ld a, [wCurrentMenuItem]
 	cp $6 ; case switch row
@@ -301,6 +308,7 @@ DisplayNamingScreen:
 	ld a, SFX_PRESS_AB
 	call PlaySound
 	ret
+
 .pressedB
 	ld a, [wNamingScreenNameLength]
 	and a
@@ -309,6 +317,7 @@ DisplayNamingScreen:
 	dec hl
 	ld [hl], "@"
 	ret
+
 .pressedRight
 	ld a, [wCurrentMenuItem]
 	cp $6
@@ -322,6 +331,7 @@ DisplayNamingScreen:
 .wrapToFirstColumn
 	ld a, $1
 	jr .done
+
 .pressedLeft
 	ld a, [wCurrentMenuItem]
 	cp $6
@@ -334,6 +344,7 @@ DisplayNamingScreen:
 .wrapToLastColumn
 	ld a, $11 ; max
 	jr .done
+
 .pressedUp
 	ld a, [wCurrentMenuItem]
 	dec a
@@ -344,6 +355,7 @@ DisplayNamingScreen:
 	ld [wCurrentMenuItem], a
 	ld a, $1 ; force left column
 	jr .done
+
 .pressedDown
 	ld a, [wCurrentMenuItem]
 	inc a
