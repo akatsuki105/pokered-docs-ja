@@ -439,8 +439,10 @@ wPlayerMonNumber:: ; cc2f
 ; index in party of currently battling mon
 	ds 1
 
-wMenuCursorLocation:: ; cc30
-; the address of the menu cursor's current location within wTileMap
+; cc30  
+; wTileMapにおいてメニューカーソルの現在の位置に対応するアドレス  
+; e.g. メニューカーソルが(1, 1)(8px単位)にあったら wTileMapの(1, 1)のアドレス
+wMenuCursorLocation::
 	ds 2
 
 	ds 2
@@ -1330,7 +1332,8 @@ wTileMapBackup2:: ; cd81
 ; second buffer for temporarily saving and restoring current screen's tiles (e.g. if menus are drawn on top)
 	ds 20 * 18
 
-wNamingScreenNameLength:: ; cee9
+; cee9
+wNamingScreenNameLength::
 
 wEvoOldSpecies:: ; cee9
 
@@ -1374,7 +1377,8 @@ wHPBarOldHP:: ; ceeb
 wEvoCancelled:: ; ceec
 	ds 1
 
-wNamingScreenLetter:: ; ceed
+; ceed
+wNamingScreenLetter::
 
 wHPBarNewHP:: ; ceed
 	ds 2

@@ -190,7 +190,7 @@ DisplayNamingScreen:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a		; e.g. hl = .pressedA
-	push de
+	push de		; hlのハンドラでのreturn先
 	jp hl		; .pressedXに飛ぶ
 
 .submitNickname
@@ -230,6 +230,8 @@ DisplayNamingScreen:
 	dw .ABStartReturnPoint
 	dw .pressedA
 
+; 大文字小文字反転のところでAボタンが押された時の処理  
+; セレクトが押された時と同じ処理
 .pressedA_changedCase
 	pop de
 	ld de, .selectReturnPoint
@@ -240,15 +242,15 @@ DisplayNamingScreen:
 .pressedSelect
 	ld a, [wAlphabetCase]
 	xor $1
-	ld [wAlphabetCase], a ; [wAlphabetCase] の bitを反転
-	ret
+	ld [wAlphabetCase], a 	; [wAlphabetCase] の bitを反転
+	ret						; jp .selectReturnPoint 
 
 ; 名前入力画面でスタートボタンを押されたときの処理  
 ; 名前入力を終了
 .pressedStart
 	ld a, 1
 	ld [wNamingScreenSubmitName], a
-	ret
+	ret						; jp .ABStartReturnPoint
 
 .pressedA
 	; "ED" を押されたときは .pressedStart で名前入力を終了する
@@ -258,33 +260,49 @@ DisplayNamingScreen:
 	ld a, [wTopMenuItemX]
 	cp $11 ; "ED" column
 	jr z, .pressedStart
+	
 	; "ED"以外が押された時
 .didNotPressED
+	; 大文字小文字反転のところでAボタンが押された時  
 	ld a, [wCurrentMenuItem]
 	cp $6 ; case switch row
 	jr nz, .didNotPressCaseSwtich
 	ld a, [wTopMenuItemX]
 	cp $1 ; case switch column
 	jr z, .pressedA_changedCase
+	
+	; 普通の文字が押された時
 .didNotPressCaseSwtich
+	; hl = [wMenuCursorLocation] = メニューカーソルのタイルのアドレス
 	ld hl, wMenuCursorLocation
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; a = [メニューカーソル+1] = 指している文字のタイルID = 入力した文字
 	inc hl
 	ld a, [hl]
+	
+	; a = [wNamingScreenLetter] = 入力した文字
+	; c = 現在入力した文字数
 	ld [wNamingScreenLetter], a
 	call CalcStringLength
 	ld a, [wNamingScreenLetter]
+
+	; 入力した文字が 濁点か半角点のとき -> .dakutensAndHandakutens
+	; このとき de には Dakutens or Handakutens
 	cp $e5
 	ld de, Dakutens
 	jr z, .dakutensAndHandakutens
 	cp $e4
 	ld de, Handakutens
 	jr z, .dakutensAndHandakutens
+
 	ld a, [wNamingScreenType]
 	cp NAME_MON_SCREEN
 	jr nc, .checkMonNameLength
+
+	; 入力できる文字数に空きがある -> .addLetter
 	ld a, [wNamingScreenNameLength]
 	cp $7 ; max length of player/rival names
 	jr .checkNameLength
@@ -292,8 +310,8 @@ DisplayNamingScreen:
 	ld a, [wNamingScreenNameLength]
 	cp $a ; max length of pokemon nicknames
 .checkNameLength
-	jr c, .addLetter
-	ret
+	jr c, .addLetter 	; [wNamingScreenNameLength] < 最大文字数
+	ret					; 現在(Aボタンを押した文字を入れることなく)文字数がMAX -> jp .ABStartReturnPoint 
 
 .dakutensAndHandakutens
 	push hl
@@ -513,18 +531,24 @@ PrintNicknameAndUnderscores:
 	ret
 
 DakutensAndHandakutens:
-	push de
+	push de ; push Dakutens or Handakutens
 	call CalcStringLength
+
+	; 名前の最後の文字 e.g. 『あか』 + 『゛』 -> 『か』
 	dec hl
 	ld a, [hl]
-	pop hl
+
+	; 名前の最後の文字が 濁点 か 半角点 に対応している文字が確認
+	pop hl ; hl = Dakutens or Handakutens
 	ld de, $2
 	call IsInArray
-	ret nc
+	ret nc	; 対応していない -> jp .ABStartReturnPoint
+
+	; 最後に入力された文字を濁点(半角点)付きに変えて終了
 	inc hl
 	ld a, [hl]
 	ld [wNamingScreenLetter], a
-	ret
+	ret	; jp .ABStartReturnPoint
 
 Dakutens:
 	db "かが", "きぎ", "くぐ", "けげ", "こご"
@@ -542,7 +566,8 @@ Handakutens:
 	db "ハパ", "ヒピ", "フプ", "へぺ", "ホポ"
 	db $ff
 
-; wcf4bに格納された文字列の長さを計算してcレジスタに格納する
+; wcf4bに格納された文字列の長さを計算してcレジスタに格納する  
+; 終了時 hl は "@" を指している
 CalcStringLength:
 	ld hl, wcf4b
 	ld c, $0

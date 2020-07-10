@@ -23,9 +23,11 @@ ChoosePlayerName:
 	xor a ; NAME_PLAYER_SCREEN
 	ld [wNamingScreenType], a
 	call DisplayNamingScreen
+	; 名前が入力されていない場合 -> .customName
 	ld a, [wcf4b]
 	cp "@"
 	jr z, .customName
+
 	call ClearScreen
 	call Delay3
 	ld de, RedPicFront
