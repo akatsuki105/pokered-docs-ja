@@ -151,20 +151,27 @@ DisplayNamingScreen:
 .dPadReturnPoint
 	call PlaceMenuCursor
 
-; 
+; ボタンが押されていない時名前入力画面でこの.inputLoop処理をループし続ける
 .inputLoop
 	ld a, [wCurrentMenuItem]
-	; 
+	
+	; 名前をつける対象のポケモンのアイコンを動かす
 	push af
 	callba AnimatePartyMon_ForceSpeed1
 	pop af
 	
 	ld [wCurrentMenuItem], a
 	call JoypadLowSensitivity
+	
+	; ボタンが押されてないときはループ
 	ld a, [hJoyPressed]
 	and a
 	jr z, .inputLoop
+
 	ld hl, .namingScreenButtonFunctions
+
+; hl = (.namingScreenButtonFunctions + 4*i)　を代入 -> .foundPressedButton
+; [↓, ↑, ←, →, Start, Select, B, A] -> i = [0, 1, 2, 3, 4, 5, 6, 7]
 .checkForPressedButton
 	sla a
 	jr c, .foundPressedButton
@@ -173,16 +180,18 @@ DisplayNamingScreen:
 	inc hl
 	inc hl
 	jr .checkForPressedButton
+
+; 押されたボタンに対応するハンドラのアドレスを de, hlに代入してhlにジャンプ
 .foundPressedButton
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
-	ld d, a
+	ld d, a		; e.g. de = .ABStartReturnPoint
 	ld a, [hli]
 	ld h, [hl]
-	ld l, a
+	ld l, a		; e.g. hl = .pressedA
 	push de
-	jp hl
+	jp hl		; .pressedXに飛ぶ
 
 .submitNickname
 	pop de

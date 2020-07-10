@@ -16,6 +16,7 @@ AnimatePartyMon:
 	ld a, [hl] ; a = [wCurrentMenuItem]が指す手持ちのポケモンのHPバーの色 0(green) or 1(yellow) or 2(red) 
 
 ; **GetAnimationSpeed**  
+; ポケモンのアイコンのアニメーション処理を行う  
 ; - - -  
 ; INPUT: a = ポケモンのHPバーの色 0(green) or 1(yellow) or 2(red) 
 GetAnimationSpeed:
@@ -65,32 +66,40 @@ GetAnimationSpeed:
 
 .animateSprite
 	push bc
-	ld hl, wOAMBuffer + $02 ; OAM tile id
-	ld bc, $10
+	; hl = 対象のポケモンのアイコンのアドレス
+	ld hl, wOAMBuffer + $02 ; OAMは各4byteで2バイト目はタイル番号を指す
+	ld bc, $10				; 各ポケモンアイコンは 16*16pxなので スプライト4枚分 = 4*4 = 0x10
 	ld a, [wCurrentMenuItem]
 	call AddNTimes
+
 	ld c, $40 ; amount to increase the tile id by
+
+; アイコンのスプライトが SPRITE_BALL_M or SPRITE_HELIX -> .editCoords
+; それ以外 -> .editTileIDS
 	ld a, [hl]
 	cp $4 ; tile ID for SPRITE_BALL_M
 	jr z, .editCoords
 	cp $8 ; tile ID for SPRITE_HELIX
 	jr nz, .editTileIDS
-; SPRITE_BALL_M and SPRITE_HELIX only shake up and down
+
+; アイコンが ボール(SPRITE_BALL_M) または アンモナイト?(SPRITE_HELIX)のときは アニメーションは上下に座標をずらすだけ
 .editCoords
 	dec hl
 	dec hl ; dec hl to the OAM y coord
 	ld c, $1 ; amount to increase the y coord by
-; otherwise, load a second sprite frame
+; それ以外は、2枚目のスプライトアイコンを読み込む
 .editTileIDS
-	ld b, $4
-	ld de, $4
+	ld b, $4	; アイコンは16*16pxなので 8*8が4枚?
+	ld de, $4 	; 各OAM = 4バイト
+; 4回(b=4)ループする
 .loop
 	ld a, [hl]
-	add c
+	add c		; y座標　+= 1 or スプライトのタイル番号 += 40
 	ld [hl], a
 	add hl, de
 	dec b
 	jr nz, .loop
+
 	pop bc
 	ld a, c
 	jr .incTimer
