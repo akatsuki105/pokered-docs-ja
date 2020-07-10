@@ -4745,7 +4745,7 @@ PlaceUnfilledArrowMenuCursor::
 	ld a, b
 	ret
 
-; Replaces the menu cursor with a blank space.
+; メニューカーソルのタイルを空白のタイルで置き換える
 EraseMenuCursor::
 	ld a, [wMenuCursorLocation]
 	ld l, a

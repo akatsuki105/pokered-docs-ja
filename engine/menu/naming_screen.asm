@@ -83,6 +83,8 @@ DisplayNameRaterScreen:
 
 ; **DisplayNamingScreen**  
 ; テキスト入力ウィンドウを出す
+; - - -  
+; INPUT: hl = wPlayerName or wRivalName or ???
 DisplayNamingScreen:
 	push hl
 	; 遅延を発生
@@ -193,11 +195,14 @@ DisplayNamingScreen:
 	push de		; hlのハンドラでのreturn先
 	jp hl		; .pressedXに飛ぶ
 
+; STARTか"ED"が押された時
 .submitNickname
-	pop de
+	; 名前入力結果を格納する
+	pop de ; de = wPlayerName or wRivalName or ???
 	ld hl, wcf4b
 	ld bc, NAME_LENGTH
 	call CopyData
+	; 画面に関する変数をクリア
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
 	call ClearSprites
@@ -207,10 +212,12 @@ DisplayNamingScreen:
 	ld [wAnimCounter], a
 	ld hl, wd730
 	res 6, [hl]
+	; バトル中 -> LoadHudTilePatterns
+	; それ以外 -> LoadTextBoxTilePatterns
 	ld a, [wIsInBattle]
 	and a
-	jp z, LoadTextBoxTilePatterns
-	jpab LoadHudTilePatterns
+	jp z, LoadTextBoxTilePatterns ; ここで ret
+	jpab LoadHudTilePatterns	  ; ここで ret
 
 .namingScreenButtonFunctions
 	dw .dPadReturnPoint
@@ -312,7 +319,7 @@ DisplayNamingScreen:
 .checkNameLength
 	jr c, .addLetter 	; [wNamingScreenNameLength] < 最大文字数
 	ret					; 現在(Aボタンを押した文字を入れることなく)文字数がMAX -> jp .ABStartReturnPoint 
-
+	; 濁点半角点が押された時の処理
 .dakutensAndHandakutens
 	push hl
 	call DakutensAndHandakutens
@@ -320,36 +327,46 @@ DisplayNamingScreen:
 	ret nc
 	dec hl
 .addLetter
-	ld a, [wNamingScreenLetter]
-	ld [hli], a
+	; この時点で hl = [wcf4b] の名前が格納されている場所の末尾@
+	ld a, [wNamingScreenLetter] ; a = 入力した文字
+	; "...@" -> "...X@"
+	ld [hli], a					
 	ld [hl], "@"
+	; ボタン入力サウンドを出す
 	ld a, SFX_PRESS_AB
 	call PlaySound
-	ret
+	ret		; jp .ABStartReturnPoint
 
+	; Bボタンが押された時
 .pressedB
+	; 入力している文字がない -> ret
 	ld a, [wNamingScreenNameLength]
 	and a
 	ret z
+	; 末尾の文字を@にして ret ("...X@" -> "...@@")
 	call CalcStringLength
 	dec hl
 	ld [hl], "@"
-	ret
+	ret	; jp .ABStartReturnPoint
 
+	; 右が押された時
 .pressedRight
+	; caseにカーソルがきているときは何もしない
 	ld a, [wCurrentMenuItem]
 	cp $6
 	ret z ; can't scroll right on bottom row
+	; 一番右で右押された時は左端に戻る
 	ld a, [wTopMenuItemX]
 	cp $11 ; max
 	jp z, .wrapToFirstColumn
+	; [wTopMenuItemX]をインクリメント
 	inc a
 	inc a
 	jr .done
 .wrapToFirstColumn
 	ld a, $1
 	jr .done
-
+	; 左が押された時(右と同様)
 .pressedLeft
 	ld a, [wCurrentMenuItem]
 	cp $6
@@ -362,18 +379,20 @@ DisplayNamingScreen:
 .wrapToLastColumn
 	ld a, $11 ; max
 	jr .done
-
+	; 上が押された時
 .pressedUp
+	; [wCurrentMenuItem]
 	ld a, [wCurrentMenuItem]
 	dec a
 	ld [wCurrentMenuItem], a
 	and a
 	ret nz
+	; [wCurrentMenuItem] = 0のときは一番下にいく(xは左端に設定)
 	ld a, $6 ; wrap to bottom row
 	ld [wCurrentMenuItem], a
 	ld a, $1 ; force left column
 	jr .done
-
+	; 下が押された時(上と同様)
 .pressedDown
 	ld a, [wCurrentMenuItem]
 	inc a
@@ -388,8 +407,9 @@ DisplayNamingScreen:
 	ret nz
 	ld a, $1
 .done
+	; メニューのx座標を更新 -> EraseMenuCursor
 	ld [wTopMenuItemX], a
-	jp EraseMenuCursor
+	jp EraseMenuCursor ; EraseMenuCursorでreturnする
 
 ; ED_TileをVRAMに転送する
 LoadEDTile:
