@@ -1,3 +1,5 @@
+; **ChoosePlayerName**  
+; OUTPUT: [wPlayerName] = プレイヤーの名前  
 ChoosePlayerName:
 	; 名前メニュー表示のために主人公を真ん中から少し右にずらす
 	call OakSpeechSlidePicRight
@@ -11,12 +13,14 @@ ChoosePlayerName:
 	and a
 	jr z, .customName
 
+	; それ以外 = デフォルトの名前から選んだとき
+	; wPlayerName に　選んだ名前をセットする
 	ld hl, DefaultNamesPlayerList
 	call GetDefaultName
-
 	ld de, wPlayerName
 	call OakSpeechSlidePicLeft
 	jr .done
+
 	; 名前をユーザーに入力してもらう
 .customName
 	ld hl, wPlayerName

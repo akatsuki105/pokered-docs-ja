@@ -123,33 +123,43 @@ OakSpeech:
 	call IntroDisplayPicCenteredOrUpperRight
 	call MovePicLeft
 
+	; 主人公の名前選択
 	ld hl, IntroducePlayerText
 	call PrintText
-	
-	call ChoosePlayerName
+	call ChoosePlayerName 	; [wPlayerName] = 主人公の名前
+
 	call GBFadeOutToWhite
 	call ClearScreen
+	
+	; 次にライバルのグラを表示
 	ld de, Rival1Pic
 	lb bc, Bank(Rival1Pic), $00
 	call IntroDisplayPicCenteredOrUpperRight
 	call FadeInIntroPic
+
+	; ライバルの名前選択
 	ld hl, IntroduceRivalText
 	call PrintText
-	call ChooseRivalName
+	call ChooseRivalName	; [wRivalName] = ライバルの名前
 
 .skipChoosingNames
+	; 主人公のグラを表示
 	call GBFadeOutToWhite
 	call ClearScreen
 	ld de, RedPicFront
 	lb bc, Bank(RedPicFront), $00
 	call IntroDisplayPicCenteredOrUpperRight
 	call GBFadeInFromWhite
+
 	ld a, [wd72d]
 	and a
 	jr nz, .next
 	ld hl, OakSpeechText3
 	call PrintText
 .next
+	; ここから主人公のグラをアイコンサイズに縮ませる処理
+	
+	; 縮むSE
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, SFX_SHRINK
@@ -157,20 +167,29 @@ OakSpeech:
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
 	ld c, 4
 	call DelayFrames
+
+	; 縮んだ後のRedSprite(主人公の16*16pxのアイコン)をVRAMに
 	ld de, RedSprite
 	ld hl, vSprites
 	lb bc, BANK(RedSprite), $0C
 	call CopyVideoData
+
+	; 収縮途中のスプライト1 を表示
 	ld de, ShrinkPic1
 	lb bc, BANK(ShrinkPic1), $00
 	call IntroDisplayPicCenteredOrUpperRight
+
 	ld c, 4
 	call DelayFrames
+
+	; 収縮途中のスプライト2 を表示
 	ld de, ShrinkPic2
 	lb bc, BANK(ShrinkPic2), $00
 	call IntroDisplayPicCenteredOrUpperRight
+
 	call ResetPlayerSpriteData
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -226,7 +245,11 @@ IntroducePlayerText:
 IntroduceRivalText:
 	TX_FAR _IntroduceRivalText
 	db "@"
-	
+
+; "\<PLAYER\>!"  
+; "Your very own #MON legend is about to unfold!"  
+; "A world of dreams and adventures with #MON awaits!"  
+; "Let's go!"  
 OakSpeechText3:
 	TX_FAR _OakSpeechText3
 	db "@"
