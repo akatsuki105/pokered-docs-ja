@@ -44,6 +44,11 @@ SetDefaultNames:
 	ld bc, NAME_LENGTH
 	jp CopyData
 
+; **OakSpeech**  
+; オーキド博士のスピーチを行う  
+; - - -  
+; 『さいしょからはじめる』をスタートメニューで押した後から、スピーチが終わる(主人公の2階からゲーム開始)までをこの関数が担当する  
+; 特にINPUT, OUTPUTは無し  
 OakSpeech:
 	ld a, $FF
 	call PlaySound ; BGMを止める
@@ -191,6 +196,8 @@ OakSpeech:
 	call IntroDisplayPicCenteredOrUpperRight
 
 	call ResetPlayerSpriteData
+
+	; マサラタウンのBGMを再生する準備
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, BANK(Music_PalletTown)
@@ -204,8 +211,11 @@ OakSpeech:
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
 	ld c, 20
 	call DelayFrames
+
+	; 画面をクリアしてreturn
 	coord hl, 6, 5
 	ld b, 7
 	ld c, 7
@@ -216,7 +226,7 @@ OakSpeech:
 	ld c, 50
 	call DelayFrames
 	call GBFadeOutToWhite
-	jp ClearScreen
+	jp ClearScreen ; return
 
 ; "Hello there! Welcome to the world of #MON!"  
 ; "My name is OAK! People call me the #MON PROF!"  

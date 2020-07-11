@@ -46,8 +46,8 @@ load_mon_data.asm | ポケモンのデータが必要な時にそれを取得す
 load_pokedex_tiles.asm | null
 mon_party_sprites.asm | null
 multiply_divide.asm | null
-oak_speech.asm | null
-oak_speech2.asm | null
+oak_speech.asm | 『さいしょからはじめる』を選んだ時のオーキド博士のスピーチ
+oak_speech2.asm | オーキド博士のスピーチで使用されるユーティリティ関数などがまとめてある
 oam_dma.asm | OAM DMA転送を行う処理
 palettes.asm | null
 pathfinding.asm | NPCがプレイヤーのところに歩いてくるときに道順(Path)を決定する処理

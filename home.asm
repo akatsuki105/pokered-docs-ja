@@ -1107,15 +1107,19 @@ PickUpItemText::
 
 INCLUDE "home/pic.asm"
 
-
+; **ResetPlayerSpriteData**  
+; 主人公のスプライトデータを初期化する
 ResetPlayerSpriteData::
+	; 主人公のスプライトデータを0クリア
 	ld hl, wSpriteStateData1
 	call ResetPlayerSpriteData_ClearSpriteData
 	ld hl, wSpriteStateData2
 	call ResetPlayerSpriteData_ClearSpriteData
+	; 主人公なので 0xc100 と 0xc20eは1
 	ld a, $1
 	ld [wSpriteStateData1], a
 	ld [wSpriteStateData2 + $0e], a
+	; 主人公の初期値(自分の部屋)の座標を設定
 	ld hl, wSpriteStateData1 + 4
 	ld [hl], $3c     ; set Y screen pos
 	inc hl
@@ -1123,11 +1127,12 @@ ResetPlayerSpriteData::
 	ld [hl], $40     ; set X screen pos
 	ret
 
-; overwrites sprite data with zeroes
+; 主人公のスプライトデータを0クリアする  
+; INPUT: hl = wSpriteStateData1(0xc100) or wSpriteStateData2(0xc200)
 ResetPlayerSpriteData_ClearSpriteData::
 	ld bc, $10
 	xor a
-	jp FillMemory
+	jp FillMemory ; return
 
 FadeOutAudio::
 	ld a, [wAudioFadeOutControl]
