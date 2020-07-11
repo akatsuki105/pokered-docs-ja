@@ -536,9 +536,9 @@ wWhichTradeMonSelectionMenu::
 ; 3 = 育て屋  
 ; 4 = 戦闘中のポケモン  
 ; 
-; AddPartyMon uses it slightly differently.
-; If the lower nybble is 0, the mon is added to the player's party, else the enemy's.
-; If the entire value is 0, then the player is allowed to name the mon.
+; ただし AddPartyMonでは 異なる使われ方をする  
+; - 下位ニブルが 0 なら ポケモンは主人公の手持ちに、 そうでないならライバルの手持ちに  
+; - 値が 0 なら 主人公は 加わったポケモンのニックネームを変更可能  
 wMonDataLocation::
 	ds 1
 
@@ -2461,9 +2461,11 @@ wPartyDataStart::
 
 ; d163  
 ; 現在の手持ちの数  
-; 直下のwPartySpeciesと合わせてlist(各エントリ1バイト)を形成している  
-wPartyCount::   ds 1 ; d163
-wPartySpecies:: ds PARTY_LENGTH ; d164
+; 直下のwPartySpeciesと合わせてlist(各エントリにポケモンの内部ID=1バイト)を形成している  
+wPartyCount::   ds 1
+; d164  
+; 各エントリにはポケモンの内部ID(1バイト)が格納される
+wPartySpecies:: ds PARTY_LENGTH
 wPartyEnd::     ds 1 ; d16a
 
 ; 手持ちのポケモンのPokemon Dataのテーブル(要素数6)

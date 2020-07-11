@@ -1,37 +1,51 @@
+; **_AddPartyMon**  
+; 新しいポケモンを主人公かライバルの手持ちに加える  
+; - - -  
+; この関数では [wMonDataLocation] が通常とは異なる使われ方をすることに注意  
+; INPUT: [wcf91] = 加える対象のポケモンの内部ID
 _AddPartyMon:
-; Adds a new mon to the player's or enemy's party.
-; [wMonDataLocation] is used in an unusual way in this function.
-; If the lower nybble is 0, the mon is added to the player's party, else the enemy's.
-; If the entire value is 0, then the player is allowed to name the mon.
+	; de = wPartyCount(下位ニブルが0) or wEnemyPartyCount(0以外)
 	ld de, wPartyCount
 	ld a, [wMonDataLocation]
 	and $f
 	jr z, .next
 	ld de, wEnemyPartyCount
 .next
+	; a = 加える前の手持ち数 + 1
 	ld a, [de]
 	inc a
+	
+	; 手持ちがいっぱいなら return
 	cp PARTY_LENGTH + 1
-	ret nc ; return if the party is already full
+	ret nc
+	
+	; 手持ちのポケモン数を1増やす
 	ld [de], a
 	ld a, [de]
 	ld [hNewPartyLength], a
+	
+	; de = 新しいポケモン用の wPartySpecies のスロット(wPartyCountはlistの長さでもあることに注意)
 	add e
 	ld e, a
 	jr nc, .noCarry
 	inc d
 .noCarry
+
+	; wPartySpecies に新しいポケモンの内部IDをセット
 	ld a, [wcf91]
-	ld [de], a ; write species of new mon in party list
+	ld [de], a
 	inc de
 	ld a, $ff ; terminator
 	ld [de], a
+
+	; hl = wPartyMonOT or wEnemyMonOT
 	ld hl, wPartyMonOT
 	ld a, [wMonDataLocation]
 	and $f
 	jr z, .next2
 	ld hl, wEnemyMonOT
 .next2
+
 	ld a, [hNewPartyLength]
 	dec a
 	call SkipFixedLengthTextEntries
