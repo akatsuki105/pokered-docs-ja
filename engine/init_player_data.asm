@@ -37,7 +37,7 @@ InitPlayerData2:
 START_MONEY EQU $3000
 	ld hl, wPlayerMoney + 1
 	ld a, START_MONEY / $100
-	ld [hld], a　; xx30xx
+	ld [hld], a ; xx30xx
 	xor a
 	ld [hli], a ; xxxx00
 	inc hl

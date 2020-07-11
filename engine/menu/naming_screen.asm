@@ -538,7 +538,7 @@ PrintNicknameAndUnderscores:
 	ld [wCurrentMenuItem], a
 	; a = 6(主人公ライバル) or 9(ポケモン)
 	ld a, [wNamingScreenType]
-	cp NAME_MON_SCREENS
+	cp NAME_MON_SCREEN
 	ld a, 9 ; keep the last underscore raised
 	jr nc, .pokemon3
 	ld a, 6 ; keep the last underscore raised
