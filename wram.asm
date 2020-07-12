@@ -2491,7 +2491,8 @@ wPartyDataEnd::
 wMainDataStart::
 
 ; d30a  
-; 151÷8 = 19(切り上げ)
+; 151÷8 = 19(切り上げ)  
+; ポケモンを捕まえていたら対応するbitが立つ
 wPokedexOwned:: ; d2f7
 	flag_array NUM_POKEMON
 wPokedexOwnedEnd::

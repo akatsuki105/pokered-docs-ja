@@ -1,7 +1,9 @@
 ; **AskName**  
+; ポケモンのニックネームをユーザーに入力してもらう
 ; - - -  
-; INPUT: 
-; - hl = 名前の文字列を格納するアドレス
+; hl に 名前の文字列を格納するアドレス(wPartyMonNicks or wBoxMonNicks)を入れて呼び出す  
+; ポケモンにニックネームをつけるかの選択肢を出し、『はい』を選んだ時はユーザーにニックネームを入力させ、 hl のアドレスに格納する  
+; 『いいえ』 を選んだときはポケモンの種族名をニックネームとして格納する  
 AskName:
 	call SaveScreenTilesToBuffer1
 	call GetPredefRegisters

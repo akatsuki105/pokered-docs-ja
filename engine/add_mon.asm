@@ -70,42 +70,55 @@ _AddPartyMon:
 	ld [wNamingScreenType], a		; [wNamingScreenType] =  NAME_MON_SCREEN
 	predef AskName
 
+	; hl = wPartyMons or wEnemyMons
 .skipNaming
 	ld hl, wPartyMons
 	ld a, [wMonDataLocation]
 	and $f
 	jr z, .next3
 	ld hl, wEnemyMons
+
 .next3
+	; de = hl = wPartyMons(wEnemyMons)の新しいスロット
 	ld a, [hNewPartyLength]
 	dec a
 	ld bc, wPartyMon2 - wPartyMon1
 	call AddNTimes
 	ld e, l
 	ld d, h
+
 	push hl
+
 	ld a, [wcf91]
 	ld [wd0b5], a
 	call GetMonHeader
 	ld hl, wMonHeader
 	ld a, [hli]
-	ld [de], a ; species
-	inc de
+	ld [de], a 	; species
+	inc de		; de = 図鑑番号 + 1
+
 	pop hl
 	push hl
+
+	; ライバルの手持ちに加わるときは、個体値は平均値に固定され .next4へ
 	ld a, [wMonDataLocation]
 	and $f
-	ld a, $98     ; set enemy trainer mon IVs to fixed average values
+	ld a, $98
 	ld b, $88
 	jr nz, .next4
 
-; If the mon is being added to the player's party, update the pokedex.
+	; ポケモンがプレイヤーの手持ちに加わる場合はポケモン図鑑を更新
+	
+	; a = [wd11e] = 図鑑番号
 	ld a, [wcf91]
 	ld [wd11e], a
 	push de
 	predef IndexToPokedex
 	pop de
 	ld a, [wd11e]
+
+	; [wUnusedD153] = ポケモンをすでに捕まえているか (1なら捕まえてる)
+	; 特に意味のないコードの模様
 	dec a
 	ld c, a
 	ld b, FLAG_TEST
@@ -113,6 +126,8 @@ _AddPartyMon:
 	call FlagAction
 	ld a, c ; whether the mon was already flagged as owned
 	ld [wUnusedD153], a ; not read
+
+	; ポケモンを 捕まえた & 見た フラグを立てる
 	ld a, [wd11e]
 	dec a
 	ld c, a
@@ -126,12 +141,12 @@ _AddPartyMon:
 	pop hl
 	push hl
 
+	; 種族値の計算 (野生の場合) -> 野生のポケモンの種族値をコピー
 	ld a, [wIsInBattle]
-	and a ; is this a wild mon caught in battle?
+	and a
 	jr nz, .copyEnemyMonData
-
-; Not wild.
-	call Random ; generate random IVs
+	; 種族値の計算 (野生でない場合) -> ランダムに決定
+	call Random
 	ld b, a
 	call Random
 
