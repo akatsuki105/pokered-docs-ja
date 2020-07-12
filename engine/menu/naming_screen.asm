@@ -1,35 +1,56 @@
+; **AskName**  
+; - - -  
+; INPUT: 
+; - hl = 名前の文字列を格納するアドレス
 AskName:
 	call SaveScreenTilesToBuffer1
 	call GetPredefRegisters
 	push hl
+
+	; 野生のポケモンを捕まえたときは(0, 0)から 11*4枚 クリアする
 	ld a, [wIsInBattle]
 	dec a
 	coord hl, 0, 0
 	ld b, 4
 	ld c, 11
 	call z, ClearScreenArea ; only if in wild battle
+
 	ld a, [wcf91]
 	ld [wd11e], a
 	call GetMonName
+
+	; "Do you want to give a nickname to ${wcd6d}?"
 	ld hl, DoYouWantToNicknameText
 	call PrintText
+	; 『はい/いいえ』
 	coord hl, 14, 7
 	lb bc, 8, 15
 	ld a, TWO_OPTION_MENU
 	ld [wTextBoxID], a
 	call DisplayTextBoxID
+
 	pop hl
+
+	; [wCurrentMenuItem] != 0 つまり 『いいえ』 -> .declinedNickname
 	ld a, [wCurrentMenuItem]
 	and a
 	jr nz, .declinedNickname
+
+	; スプライトを非表示に
 	ld a, [wUpdateSpritesEnabled]
 	push af
 	xor a
 	ld [wUpdateSpritesEnabled], a
+
 	push hl
+	
+	; 名前をプレイヤーに入力させる
+	; 入力した名前は hlの示すアドレスに 文字列として入る
 	ld a, NAME_MON_SCREEN
 	ld [wNamingScreenType], a
 	call DisplayNamingScreen
+
+	; バトル中 -> .inBattle
 	ld a, [wIsInBattle]
 	and a
 	jr nz, .inBattle
@@ -43,12 +64,14 @@ AskName:
 	cp "@"
 	ret nz
 .declinedNickname
+	; ニックネームとしてポケモンの種族名を格納
 	ld d, h
 	ld e, l
 	ld hl, wcd6d
 	ld bc, NAME_LENGTH
 	jp CopyData
 
+; "Do you want to give a nickname to ${wcd6d}?"
 DoYouWantToNicknameText:
 	TX_FAR _DoYouWantToNicknameText
 	db "@"
@@ -84,10 +107,11 @@ DisplayNameRaterScreen:
 ; **DisplayNamingScreen**  
 ; テキスト入力ウィンドウを出し、プレイヤーが入力し終えるのを待つ  
 ; - - -  
-; INPUT: hl = wPlayerName or wRivalName or ???
+; INPUT: hl = wPlayerName or wRivalName or &wPartyMonNicks[i] など  
+; 
 ; OUTPUT: 
 ; - [wcf4b] = 入力された名前  
-; - [wPlayerName] or [wRivalName] or [???] = 入力された名前  
+; - [wPlayerName] or [wRivalName] = wPartyMonNicks[i] = 入力された名前  
 DisplayNamingScreen:
 	push hl
 	; 遅延を発生

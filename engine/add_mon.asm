@@ -46,6 +46,7 @@ _AddPartyMon:
 	ld hl, wEnemyMonOT
 .next2
 
+	; wPartyMonOT(wEnemyMonOT)の新しいスロットに追加するポケモンの名前を格納
 	ld a, [hNewPartyLength]
 	dec a
 	call SkipFixedLengthTextEntries
@@ -54,16 +55,21 @@ _AddPartyMon:
 	ld hl, wPlayerName
 	ld bc, NAME_LENGTH
 	call CopyData
+
+	; [wMonDataLocation]が 0 でないなら ニックネームは変更不可能
 	ld a, [wMonDataLocation]
 	and a
 	jr nz, .skipNaming
+
+	; ポケモンのニックネームを設定
 	ld hl, wPartyMonNicks
 	ld a, [hNewPartyLength]
 	dec a
-	call SkipFixedLengthTextEntries
+	call SkipFixedLengthTextEntries ; hl = wPartyMonNicksの新しいスロット
 	ld a, NAME_MON_SCREEN
-	ld [wNamingScreenType], a
+	ld [wNamingScreenType], a		; [wNamingScreenType] =  NAME_MON_SCREEN
 	predef AskName
+
 .skipNaming
 	ld hl, wPartyMons
 	ld a, [wMonDataLocation]
