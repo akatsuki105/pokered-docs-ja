@@ -151,12 +151,14 @@ _AddPartyMon:
 	call Random
 
 .next4
+	; 個体値を書き込む
 	push bc
 	ld bc, wPartyMon1DVs - wPartyMon1
-	add hl, bc
+	add hl, bc	; hl = 新しいポケモンのwPartyMon1DVsのアドレス
 	pop bc
 	ld [hli], a
-	ld [hl], b         ; write IVs
+	ld [hl], b	; 決定した個体値(a, b)を書き込む
+
 	ld bc, (wPartyMon1HPExp - 1) - (wPartyMon1DVs + 1)
 	add hl, bc
 	ld a, 1

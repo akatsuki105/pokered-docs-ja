@@ -26,7 +26,7 @@ box_struct: MACRO
 \1DefenseExp:: dw
 \1SpeedExp::   dw
 \1SpecialExp:: dw
-\1DVs::        ds 2
+\1DVs::        ds 2	; 1byte = AAAABBBB 2byte = CCCCDDDD (A=こうげき, B=ぼうぎょ, C=すばやさ, D=とくしゅ) HPはこれらから計算
 \1PP::         ds NUM_MOVES
 ENDM
 

@@ -4156,16 +4156,24 @@ CalcStats::
 	jr nz, .statsLoop
 	ret
 
-; calculates stat c of current mon
-; c = stat to calc (HP=1,Atk=2,Def=3,Spd=4,Spc=5)
-; b = consider stat exp?
-; hl = base ptr to stat exp values ([hl + 2*c - 1] and [hl + 2*c])
+; **CalcStat**  
+; 現在のポケモンのステータス(Cレジスタで指定)を計算する  
+; - - -  
+; INPUT:  
+; c = 計算対象のステータス (HP=1,Atk=2,Def=3,Spd=4,Spc=5)  
+; b = 努力値(stat exp)を考慮するか?  
+; hl = 努力値を格納したアドレス ([hl + 2*c - 1] and [hl + 2*c])  
+; 
+; OUTPUT:  
+; ???  
 CalcStat::
 	push hl
 	push de
 	push bc
 	ld a, b
-	ld d, a
+	ld d, a ; d = 努力値を考慮するか?
+
+	; e = 計算対象のステータスの種族値
 	push hl
 	ld hl, wMonHeader
 	ld b, $0
@@ -4173,13 +4181,19 @@ CalcStat::
 	ld a, [hl]          ; read base value of stat
 	ld e, a
 	pop hl
+
 	push hl
 	sla c
+
+	; 努力値を考慮しない場合 -> .statExpDone
 	ld a, d
 	and a
-	jr z, .statExpDone  ; consider stat exp?
+	jr z, .statExpDone
+
 	add hl, bc          ; skip to corresponding stat exp value
-.statExpLoop            ; calculates ceil(Sqrt(stat exp)) in b
+
+; b = ceil(√努力値)
+.statExpLoop
 	xor a
 	ld [H_MULTIPLICAND], a
 	ld [H_MULTIPLICAND+1], a
@@ -4199,13 +4213,20 @@ CalcStat::
 	ld a, [$ff97]
 	sbc d               ; test if (current stat exp bonus)^2 < stat exp
 	jr c, .statExpLoop
+
 .statExpDone
-	srl c
-	pop hl
+	srl c ; c = 計算対象のステータス (HP=1,Atk=2,Def=3,Spd=4,Spc=5)
+	pop hl	; hl = 努力値を格納したアドレス ([hl + 2*c - 1] and [hl + 2*c]) 
+
+	; hl = 計算対象の DVsのアドレス (wPartyMon1DVs[i])
 	push bc
 	ld bc, wPartyMon1DVs - (wPartyMon1HPExp - 1) ; also wEnemyMonDVs - wEnemyMonHP
 	add hl, bc
 	pop bc
+
+; ここから .calcStatFromIV　までの処理で計算対象のステータスの個体値を取得する
+	; c の値によって処理を分岐
+	; c == 1のときは下の .getHpIV
 	ld a, c
 	cp $2
 	jr z, .getAttackIV
@@ -4215,6 +4236,7 @@ CalcStat::
 	jr z, .getSpeedIV
 	cp $5
 	jr z, .getSpecialIV
+
 .getHpIV
 	push bc
 	ld a, [hl]  ; Atk IV
@@ -4242,7 +4264,7 @@ CalcStat::
 	pop bc
 	jr .calcStatFromIV
 .getAttackIV
-	ld a, [hl]
+	ld a, [hl] ; a = 攻撃の個体値
 	swap a
 	and $f
 	jr .calcStatFromIV
@@ -4260,6 +4282,10 @@ CalcStat::
 	inc hl
 	ld a, [hl]
 	and $f
+
+; この時点で a = 計算対象の個体値
+
+; INPUT: a = 計算対象の個体値
 .calcStatFromIV
 	ld d, $0
 	add e
