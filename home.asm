@@ -4165,7 +4165,8 @@ CalcStats::
 ; hl = 努力値を格納したアドレス ([hl + 2*c - 1] and [hl + 2*c])  
 ; 
 ; OUTPUT:  
-; ???  
+; [H_MULTIPLICAND+1] = ステータス1 (上位桁)  
+; [H_MULTIPLICAND+2] = ステータス2 (下位桁)  
 CalcStat::
 	push hl
 	push de
@@ -4283,9 +4284,11 @@ CalcStat::
 	ld a, [hl]
 	and $f
 
-; この時点で a = 計算対象の個体値
+; この時点で 
+; a = 計算対象の個体値 (IV)
+; b = ceil(√努力値) = ceil(Sqrt(stat exp))
+; e = 計算対象の種族値 (Base)
 
-; INPUT: a = 計算対象の個体値
 .calcStatFromIV
 	ld d, $0
 	add e

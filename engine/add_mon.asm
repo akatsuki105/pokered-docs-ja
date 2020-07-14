@@ -94,8 +94,8 @@ _AddPartyMon:
 	call GetMonHeader
 	ld hl, wMonHeader
 	ld a, [hli]
-	ld [de], a 	; species
-	inc de		; de = 図鑑番号 + 1
+	ld [de], a 	; wPartyMons に図鑑番号を格納
+	inc de		; de = wPartyMons の HP数値 のアドレス
 
 	pop hl
 	push hl
@@ -141,11 +141,11 @@ _AddPartyMon:
 	pop hl
 	push hl
 
-	; 種族値の計算 (野生の場合) -> 野生のポケモンの種族値をコピー
+	; 個体値の計算 (野生の場合) -> 野生のポケモンの個体値をコピーするために .copyEnemyMonData
 	ld a, [wIsInBattle]
 	and a
 	jr nz, .copyEnemyMonData
-	; 種族値の計算 (野生でない場合) -> ランダムに決定
+	; 個体値の計算 (野生でない場合) -> ランダムに決定
 	call Random
 	ld b, a
 	call Random
@@ -159,6 +159,7 @@ _AddPartyMon:
 	ld [hli], a
 	ld [hl], b	; 決定した個体値(a, b)を書き込む
 
+	; 新しいポケモンの HP を計算
 	ld bc, (wPartyMon1HPExp - 1) - (wPartyMon1DVs + 1)
 	add hl, bc
 	ld a, 1
@@ -166,18 +167,24 @@ _AddPartyMon:
 	xor a
 	ld b, a
 	call CalcStat      ; calc HP stat (set cur Hp to max HP)
+
+	; de、つまり wPartyMon${N}HP に 計算したHPを書き込む
 	ld a, [H_MULTIPLICAND+1]
 	ld [de], a
 	inc de
 	ld a, [H_MULTIPLICAND+2]
 	ld [de], a
 	inc de
+
+	; その他の値を初期化して .copyMonTypesAndMoves
 	xor a
-	ld [de], a         ; box level
+	ld [de], a         ; wPartyMon${N}BoxLevel = 0
 	inc de
-	ld [de], a         ; status ailments
+	ld [de], a         ; wPartyMon${N}Status = 0
 	inc de
 	jr .copyMonTypesAndMoves
+
+; 野生のポケモンの場合、ここで捕まえたポケモンの個体値データをコピーしている
 .copyEnemyMonData
 	ld bc, wEnemyMon1DVs - wEnemyMon1
 	add hl, bc
@@ -197,31 +204,48 @@ _AddPartyMon:
 	ld a, [wEnemyMonStatus]   ; copy status ailments from cur enemy mon
 	ld [de], a
 	inc de
+
 .copyMonTypesAndMoves
-	ld hl, wMonHTypes
+	ld hl, wMonHTypes	; GetMonHeader で取得している 
+
+	; wPartyMon${N}Type1 = wMonHTypes のタイプ1
 	ld a, [hli]       ; type 1
 	ld [de], a
 	inc de
+	; wPartyMon${N}Type2 = wMonHTypes のタイプ2
 	ld a, [hli]       ; type 2
 	ld [de], a
 	inc de
+	
+	; wPartyMon${N}CatchRate
 	ld a, [hli]       ; catch rate (held item in gen 2)
 	ld [de], a
+
 	ld hl, wMonHMoves
-	ld a, [hli]
-	inc de
+	ld a, [hli] ; a = 技数
+
+	inc de		; de = wPartyMon${N}Moves
 	push de
+
+	; Move1
 	ld [de], a
+
+	; Move2
 	ld a, [hli]
 	inc de
 	ld [de], a
+
+	; Move3
 	ld a, [hli]
 	inc de
 	ld [de], a
+
+	; Move4
 	ld a, [hli]
 	inc de
 	ld [de], a
-	push de
+	
+	push de	; このとき de = wPartyMon${N}Moves + 3 = 4つめの技アドレス
 	dec de
 	dec de
 	dec de
@@ -229,17 +253,23 @@ _AddPartyMon:
 	ld [wLearningMovesFromDayCare], a
 	predef WriteMonMoves
 	pop de
+
+	; この時点で de = wPartyMon${N}Moves + 3 = 4つめの技アドレス
+
+	; wPartyMon${N}OTID (2バイト)
 	ld a, [wPlayerID]  ; set trainer ID to player ID
 	inc de
 	ld [de], a
 	ld a, [wPlayerID + 1]
 	inc de
 	ld [de], a
+
 	push de
 	ld a, [wCurEnemyLVL]
 	ld d, a
 	callab CalcExperience
 	pop de
+	
 	inc de
 	ld a, [hExperience] ; write experience
 	ld [de], a

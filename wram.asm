@@ -1345,9 +1345,10 @@ wBuffer::
 wTownMapCoords:: ; cee9
 ; lower nybble is x, upper nybble is y
 
-wLearningMovesFromDayCare:: ; cee9
-; whether WriteMonMoves is being used to make a mon learn moves from day care
-; non-zero if so
+; cee9  
+; whether WriteMonMoves is being used to make a mon learn moves from day care  
+; non-zero if so  
+wLearningMovesFromDayCare::
 
 wChangeMonPicEnemyTurnSpecies:: ; cee9
 
