@@ -1,4 +1,5 @@
-; calculates the level a mon should be based on its current exp
+; **CalcLevelFromExperience**  
+; 現在の経験値に基づいたポケモンのレベルを計算する  
 CalcLevelFromExperience:
 	ld a, [wLoadedMonSpecies]
 	ld [wd0b5], a
@@ -27,13 +28,16 @@ CalcLevelFromExperience:
 	dec d ; since the exp was too high on the last loop iteration, go back to the previous value and return
 	ret
 
-; calculates the amount of experience needed for level d
+; **CalcExperience**  
+; Dレジスタで指定したレベルになるのに必要な経験値の合計を計算する  
+; 
+; OUTPUT: [hExperience] = 経験値量
 CalcExperience:
-	ld a, [wMonHGrowthRate]
+	ld a, [wMonHGrowthRate] ; Pokemon Headerの経験値パターン
 	add a
 	add a
 	ld c, a
-	ld b, 0
+	ld b, 0	; bc = 3 * [wMonHGrowthRate]
 	ld hl, GrowthRateTable
 	add hl, bc
 	call CalcDSquared
@@ -136,7 +140,7 @@ CalcExperience:
 	ld [hExperience], a
 	ret
 
-; calculates d*d
+; [FF95-FF98] = (Dレジスタ)*(Dレジスタ) (ビッグエンディアン)
 CalcDSquared:
 	xor a
 	ld [H_MULTIPLICAND], a
@@ -146,15 +150,19 @@ CalcDSquared:
 	ld [H_MULTIPLIER], a
 	jp Multiply
 
-; each entry has the following scheme:
-; %AAAABBBB %SCCCCCCC %DDDDDDDD %EEEEEEEE
-; resulting in
-;  (a*n^3)/b + sign*c*n^2 + d*n - e
-; where sign = -1 <=> S=1
+; **GrowthRateTable**  
+; ポケモンの経験値タイプを定義したテーブル  
+; - - -  
+; 各エントリ(4バイト)は次のフォーマットで表される
+; 
+; ```
+; ; %AAAABBBB %SCCCCCCC %DDDDDDDD %EEEEEEEE
+; (A*Lv^3)/B + (-S)*C*Lv^2 + D*Lv - E
+; ```
 GrowthRateTable:
-	db $11,$00,$00,$00 ; medium fast      n^3
-	db $34,$0A,$00,$1E ; (unused?)    3/4 n^3 + 10 n^2         - 30
-	db $34,$14,$00,$46 ; (unused?)    3/4 n^3 + 20 n^2         - 70
-	db $65,$8F,$64,$8C ; medium slow: 6/5 n^3 - 15 n^2 + 100 n - 140
-	db $45,$00,$00,$00 ; fast:        4/5 n^3
-	db $54,$00,$00,$00 ; slow:        5/4 n^3
+	db $11,$00,$00,$00 ; 1000000:      	n^3
+	db $34,$0A,$00,$1E ; (unused?)    	3/4 n^3 + 10 n^2         - 30
+	db $34,$14,$00,$46 ; (unused?)    	3/4 n^3 + 20 n^2         - 70
+	db $65,$8F,$64,$8C ; 1050000: 		6/5 n^3 - 15 n^2 + 100 n - 140
+	db $45,$00,$00,$00 ; 800000:        4/5 n^3
+	db $54,$00,$00,$00 ; 1250000:       5/4 n^3

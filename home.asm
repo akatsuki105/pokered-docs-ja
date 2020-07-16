@@ -4010,13 +4010,20 @@ ManualTextScroll::
 	ld c, 65
 	jp DelayFrames
 
-; function to do multiplication
-; all values are big endian
-; INPUT
-; FF96-FF98 =  multiplicand
-; FF99 = multiplier
-; OUTPUT
-; FF95-FF98 = product
+; **Multiply**  
+; 掛け算を行う関数  
+; - - -  
+; GBZ80 には mul命令 がないため関数として定義する必要がある  
+; すべての値は ビッグエンディアン として扱う  
+; 
+; c = a * b
+; 
+; INPUT  
+; FF96-FF98 =  被乗数(a)  
+; FF99 = 乗数(b)
+; 
+; OUTPUT  
+; FF95-FF98 = 掛け算の結果(c)
 Multiply::
 	push hl
 	push bc

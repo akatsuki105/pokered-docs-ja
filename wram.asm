@@ -2216,7 +2216,8 @@ wMonHBackSprite:: ; d0c5
 wMonHMoves:: ; d0c7
 	ds NUM_MOVES
 
-wMonHGrowthRate:: ; d0cb
+; d0cb
+wMonHGrowthRate::
 	ds 1
 
 wMonHLearnset:: ; d0cc

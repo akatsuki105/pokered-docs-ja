@@ -264,12 +264,15 @@ _AddPartyMon:
 	inc de
 	ld [de], a
 
+	; 経験値量を計算
 	push de
 	ld a, [wCurEnemyLVL]
 	ld d, a
 	callab CalcExperience
 	pop de
 	
+	; CalcExperience で計算された Exp([hExperience])を書き込む
+	; wPartyMon${N}Exp (3バイト)
 	inc de
 	ld a, [hExperience] ; write experience
 	ld [de], a
@@ -279,16 +282,22 @@ _AddPartyMon:
 	inc de
 	ld a, [hExperience + 2]
 	ld [de], a
+
+; 努力値を全て 0クリアする 
 	xor a
 	ld b, NUM_STATS * 2
-.writeEVsLoop              ; set all EVs to 0
+.writeEVsLoop
 	inc de
 	ld [de], a
 	dec b
 	jr nz, .writeEVsLoop
+
+	; wPartyMon${N}DVs をスキップ
 	inc de
 	inc de
+
 	pop hl
+	
 	call AddPartyMon_WriteMovePP
 	inc de
 	ld a, [wCurEnemyLVL]
