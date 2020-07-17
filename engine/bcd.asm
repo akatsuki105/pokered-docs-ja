@@ -217,6 +217,15 @@ AddBCD::
 SubBCDPredef::
 	call GetPredefRegisters
 
+; **SubBCD**  
+; BCD数値を引き算する  
+; - - -  
+; INPUT:  
+; - c = BCD数値のサイズ
+; - de = 対象のBCD数値のポインタ1 (nバイトある場合はnバイト目を指す)
+; - hl = 対象のBCD数値のポインタ2  
+; 
+; OUTPUT: [de] = [de] - [hl]
 SubBCD::
 	and a
 	ld b, c
