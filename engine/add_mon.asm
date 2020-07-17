@@ -2,7 +2,13 @@
 ; 新しいポケモンを主人公かライバルの手持ちに加える  
 ; - - -  
 ; この関数では [wMonDataLocation] が通常とは異なる使われ方をすることに注意  
-; INPUT: [wcf91] = 加える対象のポケモンの内部ID
+; 
+; INPUT:  
+; [wcf91] = 加える対象のポケモンの内部ID  
+; 
+; OUTPUT:  
+; carry = 手持ちに加えることに成功したときにセットされる  
+; wPartyMons(wEnemyMons) = 加えたポケモンのデータがセットされる  
 _AddPartyMon:
 	; de = wPartyCount(下位ニブルが0) or wEnemyPartyCount(0以外)
 	ld de, wPartyCount
@@ -283,7 +289,8 @@ _AddPartyMon:
 	ld a, [hExperience + 2]
 	ld [de], a
 
-; 努力値を全て 0クリアする 
+; 努力値を全て 0クリアする  
+; この時点で de = wPartyMon${N}HPExp-1
 	xor a
 	ld b, NUM_STATS * 2
 .writeEVsLoop
@@ -295,30 +302,42 @@ _AddPartyMon:
 	; wPartyMon${N}DVs をスキップ
 	inc de
 	inc de
+	; この時点で de = wPartyMon${N}PP-1
 
-	pop hl
+	pop hl ; hl = wPartyMon${N}Moves
 	
 	call AddPartyMon_WriteMovePP
+	; この時点で de = wPartyMon${N}Level -1
+
+	; wPartyMon${N}Level
 	inc de
 	ld a, [wCurEnemyLVL]
 	ld [de], a
+
 	inc de
+	
+	; 野生のポケモンではない -> .calcFreshStats
 	ld a, [wIsInBattle]
 	dec a
 	jr nz, .calcFreshStats
+
+	; 野生のポケモン -> ステータスはすでに計算されているのでそれをコピー
 	ld hl, wEnemyMonMaxHP
 	ld bc, $a
 	call CopyData          ; copy stats of cur enemy mon
 	pop hl
 	jr .done
+
+	; 野生のポケモンのではない -> 種族値、努力値、個体値からステータスを計算してセット
 .calcFreshStats
 	pop hl
 	ld bc, wPartyMon1HPExp - 1 - wPartyMon1
 	add hl, bc
 	ld b, $0
 	call CalcStats         ; calculate fresh set of stats
+
 .done
-	scf
+	scf	; キャリーを立てる
 	ret
 
 LoadMovePPs:
@@ -327,23 +346,28 @@ LoadMovePPs:
 AddPartyMon_WriteMovePP:
 	ld b, NUM_MOVES
 .pploop
-	ld a, [hli]     ; read move ID
+	ld a, [hli]     ; a = MoveID
+	
+	; MoveID == 0 つまりそこの技スロットは空 -> .empty
 	and a
 	jr z, .empty
+
+	; a = PP
 	dec a
 	push hl
 	push de
 	push bc
 	ld hl, Moves
 	ld bc, MoveEnd - Moves
-	call AddNTimes
+	call AddNTimes	; hl = Moves[i] つまり 対象の技データ
 	ld de, wcd6d
 	ld a, BANK(Moves)
-	call FarCopyData
+	call FarCopyData ; [wcd6d] = 技データ
 	pop bc
 	pop de
 	pop hl
-	ld a, [wcd6d + 5] ; PP is byte 5 of move data
+	ld a, [wcd6d + 5] ; a = PP(Move[5])
+; PPスロットに書き込む
 .empty
 	inc de
 	ld [de], a

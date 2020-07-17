@@ -4136,6 +4136,17 @@ CopyDataUntil::
 RemovePokemon::
 	jpab _RemovePokemon
 
+; **AddPartyMon**  
+; 新しいポケモンを主人公かライバルの手持ちに加える  
+; - - -  
+; この関数では [wMonDataLocation] が通常とは異なる使われ方をすることに注意  
+; 
+; INPUT:  
+; [wcf91] = 加える対象のポケモンの内部ID  
+; 
+; OUTPUT:  
+; carry = 手持ちに加えることに成功したときにセットされる  
+; wPartyMons(wEnemyMons) = 加えたポケモンのデータがセットされる  
 AddPartyMon::
 	push hl
 	push de
