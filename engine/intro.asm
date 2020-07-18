@@ -12,9 +12,9 @@ const_value = 3
 
 PlayIntro:
 	xor a
-	ld [hJoyHeld], a
+	ld [hJoyHeld], a 	; [hJoyHeld] = 0
 	inc a
-	ld [H_AUTOBGTRANSFERENABLED], a
+	ld [H_AUTOBGTRANSFERENABLED], a	; [H_AUTOBGTRANSFERENABLED] = 1
 	call PlayShootingStar
 	call PlayIntroScene
 	call GBFadeOutToWhite
@@ -286,12 +286,15 @@ PlayMoveSoundB:
 	ld a, b
 	jp PlaySound
 
+; イントロアニメーションに必要なグラをVRAMに転送
 LoadIntroGraphics:
+	; ゲンガー
 	ld hl, FightIntroBackMon
 	ld de, vChars2
 	ld bc, FightIntroBackMonEnd - FightIntroBackMon
 	ld a, BANK(FightIntroBackMon)
 	call FarCopyData2
+	; ゲーフリのロゴ や 星
 	ld hl, GameFreakIntro
 	ld de, vChars2 + (FightIntroBackMonEnd - FightIntroBackMon)
 	ld bc, GameFreakIntroEnd - GameFreakIntro
@@ -302,6 +305,7 @@ LoadIntroGraphics:
 	ld bc, GameFreakIntroEnd - GameFreakIntro
 	ld a, BANK(GameFreakIntro)
 	call FarCopyData2
+	; ニドリーノ
 	ld hl, FightIntroFrontMon
 	ld de, vChars0
 	ld bc, FightIntroFrontMonEnd - FightIntroFrontMon
@@ -309,6 +313,7 @@ LoadIntroGraphics:
 	jp FarCopyData2
 
 PlayShootingStar:
+	; コピーライト を 3秒間表示
 	ld b, SET_PAL_GAME_FREAK_INTRO
 	call RunPaletteCommand
 	callba LoadCopyrightAndTextBoxTiles
@@ -316,7 +321,11 @@ PlayShootingStar:
 	ld [rBGP], a
 	ld c, 180
 	call DelayFrames
+
+	; 画面をまっさらにする
 	call ClearScreen
+	
+	; 画面上下に黒い枠を表示し、その間にイントロアニメの描画の準備を進める
 	call DisableLCD
 	xor a
 	ld [wCurOpponent], a
@@ -328,6 +337,8 @@ PlayShootingStar:
 	set 3, [hl]
 	ld c, 64
 	call DelayFrames
+
+	; ゲーフリのロゴと流れ星 (予めVRAMに転送ずみ)
 	callba AnimateShootingStar
 	push af
 	pop af

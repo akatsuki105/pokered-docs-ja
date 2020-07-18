@@ -206,6 +206,7 @@ tx_pre_jump: MACRO
 	jp PrintPredefTextID
 ENDM
 
+; \1 で 指定したところに パレット: 0b \2 \3 \4 \5 を格納する
 ldPal: MACRO
 	ld \1, \2 << 6 | \3 << 4 | \4 << 2 | \5
 ENDM

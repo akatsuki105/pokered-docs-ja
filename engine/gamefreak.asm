@@ -1,16 +1,22 @@
+; LCDは有効
 LoadShootingStarGraphics:
 	ld a, $f9
 	ld [rOBP0], a
 	ld a, $a4
 	ld [rOBP1], a
-	ld de, AnimationTileset2 + $30 ; star tile (top left quadrant)
+
+	; 星のタイル(左上, 1枚)
+	ld de, AnimationTileset2 + $30
 	ld hl, vChars1 + $200
 	lb bc, BANK(AnimationTileset2), $01
 	call CopyVideoData
-	ld de, AnimationTileset2 + $130 ; star tile (bottom left quadrant)
+
+	; 星のタイル(左下, 1枚)
+	ld de, AnimationTileset2 + $130
 	ld hl, vChars1 + $210
 	lb bc, BANK(AnimationTileset2), $01
 	call CopyVideoData
+
 	ld de, FallingStar
 	ld hl, vChars1 + $220
 	lb bc, BANK(FallingStar), (FallingStarEnd - FallingStar) / $10
