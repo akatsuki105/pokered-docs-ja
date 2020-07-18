@@ -338,13 +338,17 @@ PlayShootingStar:
 	ld c, 64
 	call DelayFrames
 
-	; ゲーフリのロゴと流れ星 (予めVRAMに転送ずみ)
+	; ゲーフリのロゴと流れ星のアニメーションを流す(予めVRAMに転送ずみ)
 	callba AnimateShootingStar
+
 	push af
 	pop af
-	jr c, .next ; skip the delay if the user interrupted the animation
+
+	; ユーザーが CheckForUserInterruptionのキー入力 でアニメーションに割り込んだときは遅延処理をスキップする
+	jr c, .next
 	ld c, 40
 	call DelayFrames
+
 .next
 	ld a, BANK(Music_IntroBattle)
 	ld [wAudioROMBank], a

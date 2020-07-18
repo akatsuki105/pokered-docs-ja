@@ -1,3 +1,4 @@
+; VRAM と OAM に ゲーフリのロゴと流れ星を転送  
 ; LCDは有効
 LoadShootingStarGraphics:
 	ld a, $f9
@@ -17,25 +18,34 @@ LoadShootingStarGraphics:
 	lb bc, BANK(AnimationTileset2), $01
 	call CopyVideoData
 
+	; ゲーフリの文字から落ちてくる小さい星
 	ld de, FallingStar
 	ld hl, vChars1 + $220
 	lb bc, BANK(FallingStar), (FallingStarEnd - FallingStar) / $10
 	call CopyVideoData
+
+	; OAMにゲーフリのロゴをコピー
 	ld hl, GameFreakLogoOAMData
 	ld de, wOAMBuffer + $60
 	ld bc, GameFreakLogoOAMDataEnd - GameFreakLogoOAMData
 	call CopyData
+
+	; OAMに星をコピー
 	ld hl, GameFreakShootingStarOAMData
 	ld de, wOAMBuffer
 	ld bc, GameFreakShootingStarOAMDataEnd - GameFreakShootingStarOAMData
 	jp CopyData
 
+; ゲーフリのロゴと流れ星のアニメーション  
+; CheckForUserInterruptionの実行時点でユーザーが特定のキー入力をしていた場合、キャリーを立てて戻る(アニメーションのスキップ処理)  
+; アニメーションがスキップされなかったときは、キャリーをクリアして戻る  
 AnimateShootingStar:
-	call LoadShootingStarGraphics
+	call LoadShootingStarGraphics 	; VRAM と OAMの 準備
+	; 流れ星が落ちてくる音
 	ld a, SFX_SHOOTING_STAR
 	call PlaySound
 
-; Move the big star down and left across the screen.
+; 大きい星を左下に移動させていく(左下への流れ星)
 	ld hl, wOAMBuffer
 	lb bc, $a0, $4
 .bigStarLoop
@@ -53,7 +63,7 @@ AnimateShootingStar:
 	dec c
 	jr nz, .bigStarInnerLoop
 	ld c, 1
-	call CheckForUserInterruption
+	call CheckForUserInterruption ; アニメーションをスキップ
 	pop bc
 	pop hl
 	ret c
@@ -65,7 +75,7 @@ AnimateShootingStar:
 	cp b
 	jr nz, .bigStarLoop
 
-; Clear big star OAM.
+; 大きい星を OAM から削除
 	ld hl, wOAMBuffer
 	ld c, 4
 	ld de, 4
@@ -75,7 +85,7 @@ AnimateShootingStar:
 	dec c
 	jr nz, .clearOAMLoop
 
-; Make Gamefreak logo flash.
+; ゲーフリのロゴを点滅させる
 	ld b, 3
 .flashLogoLoop
 	ld hl, rOBP0
@@ -87,8 +97,8 @@ AnimateShootingStar:
 	dec b
 	jr nz, .flashLogoLoop
 
-; Copy 24 instances of the small stars OAM data.
-; Note that their coordinates put them off-screen.
+; 小さい星のタイルを OAM に 24枚配置する  
+; この時点でコピーされた 24枚の OAMが画面上にはない
 	ld de, wOAMBuffer
 	ld a, 24
 .initSmallStarsOAMLoop
@@ -100,7 +110,7 @@ AnimateShootingStar:
 	dec a
 	jr nz, .initSmallStarsOAMLoop
 
-; Animate the small stars falling from the Gamefreak logo.
+; ゲーフリのロゴの下から小さい星をたくさん降らすアニメーション
 	xor a
 	ld [wMoveDownSmallStarsOAMCount], a
 	ld hl, SmallStarsWaveCoordsPointerTable
@@ -135,19 +145,18 @@ AnimateShootingStar:
 .next2
 	call MoveDownSmallStars
 	push af
-
-; shift the existing OAM entries down to make room for the next wave
-	ld hl, wOAMBuffer + $10
+; 次のウェーブ(ループ)のために OAM を前のアドレス(+16)にずらす
+	ld hl, wOAMBuffer + $10	; 0x10 = 16
 	ld de, wOAMBuffer
-	ld bc, $50
+	ld bc, $50 				; 0x50 = 80
 	call CopyData
-
 	pop af
 	pop hl
 	pop bc
 	ret c
 	dec c
 	jr nz, .smallStarsLoop
+
 	and a
 	ret
 
