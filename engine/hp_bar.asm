@@ -1,10 +1,34 @@
+; **HPBarLength**  
+; HPバーのピクセル数を計算する  
+; - - -  
+; e = (現在HP*48)/(最大HP) = ピクセル数  
+; HPバーは必ず 1px 存在する必要があるので e = 0 になったときは 1 を返す
+; 
+; INPUT:  
+; bc = 現在HP  
+; de = 最大HP  
+; 
+; OUTPUT:  
+; e = ピクセル数  
 HPBarLength:
 	call GetPredefRegisters
 
-; calculates bc * 48 / de, the number of pixels the HP bar has
-; the result is always at least 1
+; **GetHPBarLength**  
+; HPバーのピクセル数を計算する  
+; - - -  
+; e = (現在HP*48)/(最大HP) = ピクセル数  
+; HPバーは必ず 1px 存在する必要があるので e = 0 になったときは 1 を返す
+; 
+; INPUT:  
+; bc = 現在HP  
+; de = 最大HP  
+; 
+; OUTPUT:  
+; e = ピクセル数  
 GetHPBarLength:
 	push hl
+	
+	; 48 * bc (HPバーは48ピクセルの長さなので)
 	xor a
 	ld hl, H_MULTIPLICAND
 	ld [hli], a
@@ -12,33 +36,47 @@ GetHPBarLength:
 	ld [hli], a
 	ld a, c
 	ld [hli], a
-	ld [hl], $30
+	ld [hl], $30 ; 0x30 = 48
 	call Multiply      ; 48 * bc (hp bar is 48 pixels long)
+
+	; d == 0 -> .maxHPSmaller256
 	ld a, d
 	and a
 	jr z, .maxHPSmaller256
+
+	; 最大HP([H_DIVISOR])が256より多い時ここにくる
+	; [H_DIVISOR]は1バイトである必要があるので、計算可能なように [H_MULTIPLICAND] /= 4, de /= 4 する
+
+	; de /= 4
 	srl d              ; make HP in de fit into 1 byte by dividing by 4
 	rr e
 	srl d
 	rr e
+	; [H_MULTIPLICAND] /= 4
 	ld a, [H_MULTIPLICAND+1]
 	ld b, a
 	ld a, [H_MULTIPLICAND+2]
-	srl b              ; divide multiplication result as well
+	srl b
 	rr a
 	srl b
 	rr a
 	ld [H_MULTIPLICAND+2], a
 	ld a, b
 	ld [H_MULTIPLICAND+1], a
+
 .maxHPSmaller256
+	; bc * 48 / de を計算
 	ld a, e
 	ld [H_DIVISOR], a
 	ld b, $4
 	call Divide
+
+	; e = bc * 48 / de (num of pixels of HP bar)
 	ld a, [H_MULTIPLICAND+2]
-	ld e, a            ; e = bc * 48 / de (num of pixels of HP bar)
+	ld e, a     
+
 	pop hl
+	; 結果が 0のときは1にする
 	and a
 	ret nz
 	ld e, $1           ; make result at least 1

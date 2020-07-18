@@ -4032,15 +4032,23 @@ Multiply::
 	pop hl
 	ret
 
-; function to do division
-; all values are big endian
-; INPUT
-; FF95-FF98 = dividend
-; FF99 = divisor
-; b = number of bytes in the dividend (starting from FF95)
-; OUTPUT
-; FF95-FF98 = quotient
-; FF99 = remainder
+
+; **Divide**  
+; 割り算を行う関数  
+; - - -  
+; GBZ80 には div命令 がないため関数として定義する必要がある  
+; すべての値は ビッグエンディアン として扱う  
+; 
+; z = x / y
+; 
+; INPUT:  
+; b = dividendのバイト長  
+; FF95-FF98 =  dividend(x)  
+; FF99 = divisor(y)  
+; 
+; OUTPUT:  
+; FF95-FF98 = 商  
+; FF99 = 余り  
 Divide::
 	push hl
 	push de
