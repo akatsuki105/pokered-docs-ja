@@ -82,8 +82,15 @@ GetHPBarLength:
 	ld e, $1           ; make result at least 1
 	ret
 
+; **UpdateHPBar**  
+; HPバー更新処理  
+; - - -  
 ; predef $48
 UpdateHPBar:
+; **UpdateHPBar2**  
+; HPバー更新処理  
+; - - -  
+; predef $48
 UpdateHPBar2:
 	push hl
 	ld hl, wHPBarOldHP
