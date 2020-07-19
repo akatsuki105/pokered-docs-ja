@@ -34,6 +34,7 @@
 - [カートリッジ](./docs/cartridge.md)
 - [イベント](./docs/event.md)
 - [hidden object](./docs/hidden_object.md)
+- [intro](./docs/intro.md)
 - [キー入力](./docs/joypad.md)
 - [list](./docs/list.md)
 - [マクロ](./docs/macro.md)
