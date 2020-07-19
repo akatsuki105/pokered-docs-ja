@@ -40,16 +40,18 @@ PlayIntroScene:
 	xor a
 	ld [hSCX], a
 
-	; ゲンガーを画面右端に配置
+	; ゲンガーをBGとして画面右端に配置
 	ld b, GENGAR_INTRO_TILES1
 	call IntroCopyTiles
 
+	; ニドリーノをスプライトとして(0px, 80px)配置
 	ld a, 0
 	ld [wBaseCoordX], a
 	ld a, 80
 	ld [wBaseCoordY], a
 	lb bc, 6, 6
 	call InitIntroNidorinoOAM
+
 	lb de, 80 / 2, MOVE_NIDORINO_RIGHT
 	call IntroMoveMon
 	ret c
@@ -189,33 +191,57 @@ UpdateIntroNidorinoOAM:
 	jr nz, .loop
 	ret
 
+; (0px, 80px)から ニドリーノのスプライトを 6*6枚配置  
+; 
+; INPUT:  
+; [wBaseCoordX] = 0  px
+; [wBaseCoordY] = 80 px 
+; b = 6  
+; c = 6  
 InitIntroNidorinoOAM:
 	ld hl, wOAMBuffer
 	ld d, 0
+
+; {
 .loop
+	; 全列(6列)描画し終えるまで、1列描画のループ
 	push bc
 	ld a, [wBaseCoordY]
 	ld e, a
-.innerLoop
+
+.innerLoop ; {
+	; 1列(6枚)描画し終えるまで、1枚描画のループ
+
+	; Y = [wBaseCoordY]
+	; [wBaseCoordY] += 8(1タイル分)
 	ld a, e
 	add 8
 	ld e, a
-	ld [hli], a ; Y
+	ld [hli], a
+
+	; X = [wBaseCoordX]
 	ld a, [wBaseCoordX]
-	ld [hli], a ; X
+	ld [hli], a
+
+	; タイルID = d
 	ld a, d
-	ld [hli], a ; tile
+	ld [hli], a
+
+	; attr = OAM_BEHIND_BG
 	ld a, OAM_BEHIND_BG
-	ld [hli], a ; attributes
-	inc d
+	ld [hli], a
+
+	inc d ; 次のタイル
 	dec c
-	jr nz, .innerLoop
+	jr nz, .innerLoop ; }
+
 	ld a, [wBaseCoordX]
 	add 8
 	ld [wBaseCoordX], a
 	pop bc
 	dec b
-	jr nz, .loop
+	jr nz, .loop 
+; }
 	ret
 
 IntroClearScreen:
