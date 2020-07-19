@@ -2,7 +2,7 @@
 
 ゲーム開始時のアニメーションのこと
 
-<img src="./image/intro/intro.gif" />
+![intro](./image/intro/intro.gif)
 
 `PlayIntro` から処理が始まる
 
@@ -10,7 +10,7 @@
 
 コピーライト + ゲーフリロゴ のアニメーションを流す
 
-<img src="./image/intro/gamefreak.gif" />
+![gamefreak]("./image/intro/gamefreak.gif")
 
  処理の大半を内部の `AnimateShootingStar` で行っている  
 
