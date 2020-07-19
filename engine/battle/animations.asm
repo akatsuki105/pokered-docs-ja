@@ -2257,19 +2257,27 @@ GetMonSpriteTileMapPointerFromRowCount:
 	pop de
 	ret
 
-; Input:
-; a = tile ID list index
-; Output:
-; de = tile ID list pointer
-; b = number of rows
-; c = number of columns
+; **GetTileIDList**  
+; 引数で渡した TileIDListPointerTable のインデックスから TileIDList をえる
+; - - -  
+; INPUT:  
+; a = TileIDListPointerTable のインデックス
+; 
+; OUTPUT:  
+; de = タイルIDの配列のアドレス  
+; b = 配列が何行を表すか  
+; c = 配列が何枚を表すか  
 GetTileIDList:
+	; hl = aに対応する TileIDListPointerTable のエントリのアドレス
 	ld hl, TileIDListPointerTable
 	ld e, a
 	ld d, 0
 	add hl, de
 	add hl, de
 	add hl, de
+	; de = タイルIDの配列のアドレス  
+	; b = 配列が何行を表すか  
+	; c = 配列が何枚を表すか  
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
@@ -2559,40 +2567,58 @@ CopyTileIDs_NoBGTransfer:
 	ld [H_AUTOBGTRANSFERENABLED], a
 ; fall through
 
-; b = number of rows
-; c = number of columns
+; **CopyTileIDs**  
+; deで指定したタイルIDを配置していく  
+; - - -  
+; de = タイルIDリストのアドレス  
+; b = 行数  
+; c = 列数  
+; hl = タイルを配置する場所 e.g. coord hl, 13, 7  
+; [hBaseTileID] = タイルIDリストの何枚目から配置していくか 基本0?  
 CopyTileIDs:
 	push hl
-.rowLoop
+
+.rowLoop ; {
+	; 全行描画し終えるまで、1行描画のループ
 	push bc
 	push hl
 	ld a, [hBaseTileID]
-	ld b, a
-.columnLoop
+	ld b, a ; b = [hBaseTileID]
+
+.columnLoop ; {
+	; 1行描画し終えるまで、1枚描画のループ
+	; [hl] = [de + [hBaseTileID]] して de++, hl++
 	ld a, [de]
 	add b
 	inc de
 	ld [hli], a
 	dec c
-	jr nz, .columnLoop
+	jr nz, .columnLoop ; }
+	
 	pop hl
 	ld bc, 20
 	add hl, bc
 	pop bc
 	dec b
-	jr nz, .rowLoop
+	jr nz, .rowLoop ; }
+
 	ld a, $1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	pop hl
 	ret
 
+; **TileIDListPointerTable**  
+; - - -  
+; 各エントリ(3バイト)の内容:  
+; dw XXXX = タイルIDリストのアドレス  
+; dn A, B = 行数, 列数  
 TileIDListPointerTable:
 	dw Unknown_79b24
 	dn 7, 7
 	dw Unknown_79b55
 	dn 5, 7
 	dw Unknown_79b78
-	dn 3, 7
+	dn 3, 7	
 	dw GengarIntroTiles1
 	dn 7, 7
 	dw GengarIntroTiles2
@@ -2637,6 +2663,7 @@ Unknown_79b78:
 	db $02,$09,$10,$17,$1E,$25,$2C
 	db $04,$0B,$12,$19,$20,$27,$2E
 
+; タイルIDのリスト
 GengarIntroTiles1:
 	db $00,$00,$00,$00,$00,$00,$00
 	db $00,$00,$00,$00,$00,$19,$00
@@ -2911,8 +2938,13 @@ AnimationShakeEnemyHUD:
 	ld hl, vBGMap1
 	jp BattleAnimCopyTileMapToVRAM
 
-; b = tile ID list index
-; c = base tile ID
+; **CopyTileIDsFromList**  
+; TileIDListPointerTable のタイルのリストを画面上に配置していく  
+; - - -  
+; INPUT:  
+; b = TileIDListPointerTable のインデックス  
+; c = タイルIDリストの何枚目から配置していくか  
+; hl = タイルを配置する場所 e.g. coord hl, 13, 7  
 CopyTileIDsFromList:
 	call GetPredefRegisters
 	ld a, c

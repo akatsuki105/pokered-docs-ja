@@ -5225,6 +5225,8 @@ GBPalWhiteOut::
 ; SGBでないなら何もせずに終了  
 RunDefaultPaletteCommand::
 	ld b, $ff
+; **RunPaletteCommand**  
+; SGBでないなら何もせずに終了  
 RunPaletteCommand::
 	; SGBのときに _RunPaletteCommand (ポケモンのHPバーに色(緑,橙,赤)をつける必要があるので)
 	ld a, [wOnSGB]

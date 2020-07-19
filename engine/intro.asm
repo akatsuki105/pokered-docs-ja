@@ -1,22 +1,22 @@
 const_value = -1
-	const MOVE_NIDORINO_RIGHT
-	const MOVE_GENGAR_RIGHT
-	const MOVE_GENGAR_LEFT
+	const MOVE_NIDORINO_RIGHT 	; -1
+	const MOVE_GENGAR_RIGHT		; 0
+	const MOVE_GENGAR_LEFT		; 1
 
 ANIMATION_END EQU 80
 
 const_value = 3
-	const GENGAR_INTRO_TILES1
-	const GENGAR_INTRO_TILES2
-	const GENGAR_INTRO_TILES3
+	const GENGAR_INTRO_TILES1	; 3
+	const GENGAR_INTRO_TILES2	; 4
+	const GENGAR_INTRO_TILES3	; 5
 
 PlayIntro:
 	xor a
 	ld [hJoyHeld], a 	; [hJoyHeld] = 0
 	inc a
 	ld [H_AUTOBGTRANSFERENABLED], a	; [H_AUTOBGTRANSFERENABLED] = 1
-	call PlayShootingStar
-	call PlayIntroScene
+	call PlayShootingStar 			; コピーライト + ゲーフリロゴ
+	call PlayIntroScene				; イントロアニメ(ゲンガーとニドリーノのやつ)
 	call GBFadeOutToWhite
 	xor a
 	ld [hSCX], a
@@ -26,16 +26,24 @@ PlayIntro:
 	ret
 
 PlayIntroScene:
+	; SGB only
 	ld b, SET_PAL_NIDORINO_INTRO
 	call RunPaletteCommand
+	
+	; パレットを設定
 	ldPal a, BLACK, DARK_GRAY, LIGHT_GRAY, WHITE
 	ld [rBGP], a
 	ld [rOBP0], a
 	ld [rOBP1], a
+
+	; SCX = 0
 	xor a
 	ld [hSCX], a
+
+	; ゲンガーを画面右端に配置
 	ld b, GENGAR_INTRO_TILES1
 	call IntroCopyTiles
+
 	ld a, 0
 	ld [wBaseCoordX], a
 	ld a, 80
@@ -215,8 +223,8 @@ IntroClearScreen:
 	ld bc, BG_MAP_WIDTH * SCREEN_HEIGHT
 	jr IntroClearCommon
 
+; 画面の上下の黒枠に挟まれた部分をクリアする
 IntroClearMiddleOfScreen:
-; clear the area of the tile map between the black bars on the top and bottom
 	coord hl, 0, 4
 	ld bc, SCREEN_WIDTH * 10
 
@@ -273,9 +281,20 @@ IntroMoveMon:
 	jr nz, IntroMoveMon
 	ret
 
+; 画面(13, 7) からタイルを配置していく  
+; b = GENGAR_INTRO_TILES1 or GENGAR_INTRO_TILES2 or GENGAR_INTRO_TILES3  
+; GENGAR_INTRO_TILES は全部 7*7枚なので (13, 7)から配置すれば ゲンガーがぴったり画面右端に描画される  
 IntroCopyTiles:
-	coord hl, 13, 7
+	coord hl, 13, 7 ; (13, 7) -> (20, 14)
 
+; CopyTileIDsFromList_ZeroBaseTileID  
+; TileIDListPointerTableのタイルのリストを画面上に配置していく  
+; - - -  
+; c = 0 で CopyTileIDsFromList を呼び出す  
+; 
+; INPUT:  
+; b = TileIDListPointerTable のインデックス  
+; hl = タイルを配置する場所 e.g. coord hl, 13, 7  
 CopyTileIDsFromList_ZeroBaseTileID:
 	ld c, 0
 	predef_jump CopyTileIDsFromList
@@ -312,6 +331,8 @@ LoadIntroGraphics:
 	ld a, BANK(FightIntroFrontMon)
 	jp FarCopyData2
 
+; コピーライトを表示したあと、ゲーフリのロゴと流れ星のアニメーションを流す  
+; 最後にイントロアニメの準備をしてreturn  
 PlayShootingStar:
 	; コピーライト を 3秒間表示
 	ld b, SET_PAL_GAME_FREAK_INTRO
@@ -344,12 +365,13 @@ PlayShootingStar:
 	push af
 	pop af
 
-	; ユーザーが CheckForUserInterruptionのキー入力 でアニメーションに割り込んだときは遅延処理をスキップする
+	; AnimateShootingStarで ユーザーが CheckForUserInterruptionのキー入力 でアニメーションに割り込んだときは遅延処理をスキップする
 	jr c, .next
 	ld c, 40
 	call DelayFrames
 
 .next
+	; イントロアニメ(ゲンガーとニドリーノのやつ)の準備
 	ld a, BANK(Music_IntroBattle)
 	ld [wAudioROMBank], a
 	ld [wAudioSavedROMBank], a
@@ -358,7 +380,7 @@ PlayShootingStar:
 	call PlaySound
 	call IntroClearMiddleOfScreen
 	call ClearSprites
-	jp Delay3
+	jp Delay3	; return
 
 IntroDrawBlackBars:
 ; clear the screen and draw black bars on the top and bottom
