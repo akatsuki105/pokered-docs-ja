@@ -10,7 +10,7 @@
 
 コピーライト + ゲーフリロゴ のアニメーションを流す
 
-![gamefreak]("./image/intro/gamefreak.gif")
+![gamefreak](./image/intro/gamefreak.gif)
 
  処理の大半を内部の `AnimateShootingStar` で行っている  
 
