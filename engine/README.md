@@ -39,7 +39,7 @@ HoF_room_pc.asm | null
 hp_bar.asm | null
 in_game_trades.asm | null
 init_player_data.asm | ゲームを『はじめから』始めたときにプレイヤーデータを初期化する
-intro.asm | null
+intro.asm | ゲーム起動時のアニメーションを流す
 joypad.asm | null
 learn_move.asm | null
 load_mon_data.asm | ポケモンのデータが必要な時にそれを取得する処理

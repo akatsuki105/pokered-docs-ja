@@ -10,6 +10,10 @@ const_value = 3
 	const GENGAR_INTRO_TILES2	; 4
 	const GENGAR_INTRO_TILES3	; 5
 
+; **PlayIntro**  
+; ゲーム起動時のアニメーションを流す  
+; - - -  
+; 画面真っ白 -> コピーライト -> ゲーフリロゴと流れ星 -> ゲンガーとニドリーノのアニメ -> 画面真っ白 までを担当する
 PlayIntro:
 	xor a
 	ld [hJoyHeld], a 	; [hJoyHeld] = 0
@@ -17,6 +21,7 @@ PlayIntro:
 	ld [H_AUTOBGTRANSFERENABLED], a	; [H_AUTOBGTRANSFERENABLED] = 1
 	call PlayShootingStar 			; コピーライト + ゲーフリロゴ
 	call PlayIntroScene				; イントロアニメ(ゲンガーとニドリーノのやつ)
+	; 終了処理をして return
 	call GBFadeOutToWhite
 	xor a
 	ld [hSCX], a
@@ -25,6 +30,7 @@ PlayIntro:
 	call DelayFrame
 	ret
 
+; ゲンガーとニドリーノが戦っているアニメーションを流す
 PlayIntroScene:
 	; SGB only
 	ld b, SET_PAL_NIDORINO_INTRO
@@ -52,18 +58,21 @@ PlayIntroScene:
 	lb bc, 6, 6
 	call InitIntroNidorinoOAM
 
+; ニドリーノを右に、ゲンガーを左にスライドさせる
+	; d = 40, e = MOVE_NIDORINO_RIGHT(ゲンガーの移動も兼ねている)
 	lb de, 80 / 2, MOVE_NIDORINO_RIGHT
 	call IntroMoveMon
-	ret c
+	ret c ; ユーザーのキー入力があったときはこの後のアニメーションをスキップする
 
-; hip
+; ニドリーノが左右にステップする1
+; 左(ユーザーから見て右)
 	ld a, SFX_INTRO_HIP
 	call PlaySound
 	xor a
 	ld [wIntroNidorinoBaseTile], a
 	ld de, IntroNidorinoAnimation1
 	call AnimateIntroNidorino
-; hop
+; 右(ユーザーから見て左)
 	ld a, SFX_INTRO_HOP
 	call PlaySound
 	ld de, IntroNidorinoAnimation2
@@ -72,12 +81,13 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
-; hip
+; ニドリーノが左右にステップする2
+; 左
 	ld a, SFX_INTRO_HIP
 	call PlaySound
 	ld de, IntroNidorinoAnimation1
 	call AnimateIntroNidorino
-; hop
+; 右
 	ld a, SFX_INTRO_HOP
 	call PlaySound
 	ld de, IntroNidorinoAnimation2
@@ -86,7 +96,7 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
-; raise
+; ゲンガーが右手をあげる
 	ld b, GENGAR_INTRO_TILES2
 	call IntroCopyTiles
 	ld a, SFX_INTRO_RAISE
@@ -97,14 +107,15 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
-; slash
+; ゲンガーがあげた右手を振り下ろす
 	ld b, GENGAR_INTRO_TILES3
 	call IntroCopyTiles
 	ld a, SFX_INTRO_CRASH
 	call PlaySound
 	lb de, 16 / 2, MOVE_GENGAR_RIGHT
 	call IntroMoveMon
-; hip
+
+; ゲンガーの振り下ろしと同時にニドリーノがバックステップして振り下ろしをかわす
 	ld a, SFX_INTRO_HIP
 	call PlaySound
 	ld a, (FightIntroFrontMon2 - FightIntroFrontMon) / BYTES_PER_TILE
@@ -115,6 +126,7 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
+; ゲンガーが振り下ろし状態から攻撃前の状態に戻る
 	lb de, 8 / 2, MOVE_GENGAR_LEFT
 	call IntroMoveMon
 	ld b, GENGAR_INTRO_TILES1
@@ -123,14 +135,15 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
-; hip
+; ニドリーノが左右にステップする3
+; 左
 	ld a, SFX_INTRO_HIP
 	call PlaySound
 	xor a
 	ld [wIntroNidorinoBaseTile], a
 	ld de, IntroNidorinoAnimation4
 	call AnimateIntroNidorino
-; hop
+; 右
 	ld a, SFX_INTRO_HOP
 	call PlaySound
 	ld de, IntroNidorinoAnimation5
@@ -139,6 +152,7 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
+; 噛みつきのための飛び上がり準備
 	ld a, (FightIntroFrontMon2 - FightIntroFrontMon) / BYTES_PER_TILE
 	ld [wIntroNidorinoBaseTile], a
 	ld de, IntroNidorinoAnimation6
@@ -147,18 +161,19 @@ PlayIntroScene:
 	call CheckForUserInterruption
 	ret c
 
-; lunge
+; 飛び上がって噛みつき
 	ld a, SFX_INTRO_LUNGE
 	call PlaySound
 	ld a, (FightIntroFrontMon3 - FightIntroFrontMon) / BYTES_PER_TILE
 	ld [wIntroNidorinoBaseTile], a
 	ld de, IntroNidorinoAnimation7
-	jp AnimateIntroNidorino
+	jp AnimateIntroNidorino ; ここで return
 
 AnimateIntroNidorino:
+	; 描画終了
 	ld a, [de]
 	cp ANIMATION_END
-	ret z
+	ret z ;
 	ld [wBaseCoordY], a
 	inc de
 	ld a, [de]
@@ -172,23 +187,30 @@ AnimateIntroNidorino:
 	inc de
 	jr AnimateIntroNidorino
 
+; ニドリーノのOAMに (+[wBaseCoordX], +[wBaseCoordY])する
 UpdateIntroNidorinoOAM:
 	ld hl, wOAMBuffer
 	ld a, [wIntroNidorinoBaseTile]
 	ld d, a
-.loop
+
+.loop 
+; {
+	; Y += [wBaseCoordY]
 	ld a, [wBaseCoordY]
 	add [hl]
 	ld [hli], a ; Y
+	; X += [wBaseCoordX]
 	ld a, [wBaseCoordX]
 	add [hl]
 	ld [hli], a ; X
+	; update Tile
 	ld a, d
 	ld [hli], a ; tile
 	inc hl
 	inc d
 	dec c
-	jr nz, .loop
+	jr nz, .loop 
+; }
 	ret
 
 ; (0px, 80px)から ニドリーノのスプライトを 6*6枚配置  
@@ -271,19 +293,31 @@ IntroPlaceBlackTiles:
 	jr nz, .loop
 	ret
 
+; INPUT:  
+; d = ポケモンを動かす回数(1回ごとに2px動かす)  
+; e = 動作タイプ(MOVE_NIDORINO_RIGHT or MOVE_GENGAR_LEFT or MOVE_GENGAR_RIGHT)  
+; 
+; OUTPUT:  
+; carry = ユーザーのキー入力によってスキップされたときは carryがセットされている
 IntroMoveMon:
-; d = number of times to move the mon (2 pixels each time)
 	ld a, e
+	
+	; 動作タイプによって分岐
 	cp MOVE_NIDORINO_RIGHT
 	jr z, .moveNidorinoRight
 	cp MOVE_GENGAR_LEFT
 	jr z, .moveGengarLeft
-; move Gengar right
+	; MOVE_GENGAR_RIGHT のときは下に続く
+
+; .moveGengarRight
+	; 右に2pxスクロール
 	ld a, [hSCX]
 	dec a
 	dec a
 	jr .next
+
 .moveNidorinoRight
+	; ニドリーノのOAMを (+2, +0)する
 	push de
 	ld a, 2
 	ld [wBaseCoordX], a
@@ -292,7 +326,10 @@ IntroMoveMon:
 	ld c, 6 * 6
 	call UpdateIntroNidorinoOAM
 	pop de
+	; 下に続く(? ニドリーノが動くときはゲンガーも動くから？)
+
 .moveGengarLeft
+	; 左に2pxスクロール
 	ld a, [hSCX]
 	inc a
 	inc a
@@ -300,7 +337,7 @@ IntroMoveMon:
 	ld [hSCX], a
 	push de
 	ld c, 2
-	call CheckForUserInterruption
+	call CheckForUserInterruption ; ユーザー入力があったときは carryを立ててreturn
 	pop de
 	ret c
 	dec d
