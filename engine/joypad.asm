@@ -68,12 +68,14 @@ DiscardButtonPresses:
 TrySoftReset:
 	call DelayFrame
 
-	; deselect (redundant)
+	; キー入力を未選択にして無効に
 	ld a, $30
 	ld [rJOYP], a
 
+	; hl -= 1, 0になったらつまり元の [hSoftReset] が 1 -> SoftReset
 	ld hl, hSoftReset
 	dec [hl]
 	jp z, SoftReset
 
+	; 
 	jp Joypad

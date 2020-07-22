@@ -1,8 +1,7 @@
+; 16で初期化され、JOYPADの走査ループで、A,B,Start,Select が押されているときに 1ずつデクリメントされる  
+; 0 になると リセット処理が走る  
+; つまり A,B,Start,Select が 16ループの間押されているとリセット処理が走る  
 hSoftReset EQU $FF8A
-; Initialized to 16.
-; Decremented each input iteration if the player
-; presses the reset sequence (A+B+SEL+START).
-; Soft reset when 0 is reached.
 
 ; base tile ID to which offsets are added
 hBaseTileID EQU $FF8B

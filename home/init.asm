@@ -1,9 +1,11 @@
+; A,B,Start,Selectなどが押されたときのReset処理  
+; 音を消して、画面を真っ白にした後、Init処理からゲームをリスタートする
 SoftReset::
-	call StopAllSounds
-	call GBPalWhiteOut
+	call StopAllSounds 	; 音を停止
+	call GBPalWhiteOut	; 画面を真っ白に
 	ld c, 32
 	call DelayFrames
-	; fallthrough
+	; Init処理に続く
 
 Init::
 ;  Program init.
@@ -89,8 +91,9 @@ rLCDC_DEFAULT EQU %11100011
 
 	ld a, rLCDC_DEFAULT
 	ld [rLCDC], a
+	; 
 	ld a, 16
-	ld [hSoftReset], a
+	ld [hSoftReset], a 
 	call StopAllSounds
 
 	ei
@@ -125,6 +128,8 @@ ClearVram:
 	jp FillMemory
 
 
+; **StopAllSounds**  
+; BGMやSEの再生を即座に停止する  
 StopAllSounds::
 	ld a, BANK(Audio1_UpdateMusic)
 	ld [wAudioROMBank], a
