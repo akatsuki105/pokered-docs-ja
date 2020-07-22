@@ -12,7 +12,10 @@ sHallOfFame:: ds HOF_TEAM * HOF_TEAM_CAPACITY ; a598
 SECTION "Save Data", SRAM ; BANK 1
 	ds $598
 
-sPlayerName::  ds NAME_LENGTH ; a598
+; a598  
+; プレイヤーの名前が保存されている
+sPlayerName::  ds NAME_LENGTH
+
 sMainData::    ds wMainDataEnd   - wMainDataStart ; a5a3
 sSpriteData::  ds wSpriteDataEnd - wSpriteDataStart ; ad2c
 sPartyData::   ds wPartyDataEnd  - wPartyDataStart ; af2c

@@ -1,15 +1,25 @@
+; **LoadSAV**  
+; - - - 
 LoadSAV:
 ;(if carry -> write
 ;"the file data is destroyed")
 	call ClearScreen
 	call LoadFontTilePatterns
 	call LoadTextBoxTilePatterns
+	
+	; セーブデータをロード
+	; 失敗したときはキャリーが立っているので -> .badsum
 	call LoadSAV0
 	jr c, .badsum
+
+	; 失敗したときはキャリーが立っているので -> .badsum
 	call LoadSAV1
 	jr c, .badsum
+
+	; 失敗したときはキャリーが立っているので -> .badsum
 	call LoadSAV2
 	jr c, .badsum
+	
 	ld a, $2 ; good checksum
 	jr .goodsum
 .badsum
@@ -32,12 +42,16 @@ FileDataDestroyedText:
 	db "@"
 
 LoadSAV0:
+	; SRAMを有効化
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
+	; SRAMをバンク1にスイッチ
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamBank], a
-	ld hl, sPlayerName ; hero name located in SRAM
+
+	; 保存していたチェックサムとセーブデータから再度導いたチェックサムが一致する -> .checkSumsMatched
+	ld hl, sPlayerName ; hl = 主人公の名前
 	ld bc, sMainDataCheckSum - sPlayerName ; but here checks the full SAV
 	call SAVCheckSum
 	ld c, a
@@ -45,37 +59,53 @@ LoadSAV0:
 	cp c
 	jp z, .checkSumsMatched
 
-; If the computed checksum didn't match the saved on, try again.
+	; チェックサムが一致しなかったときはもう一度検証する
+	; これで一致しなかったら SAVBadCheckSumへ
 	ld hl, sPlayerName
 	ld bc, sMainDataCheckSum - sPlayerName
 	call SAVCheckSum
 	ld c, a
 	ld a, [sMainDataCheckSum] ; SAV's checksum
 	cp c
-	jp nz, SAVBadCheckSum
+	jp nz, SAVBadCheckSum ; キャリーを立てて return
 
+; チェックサムが一致したとき  
+; SRAM に保存されたセーブデータを WRAMなどにコピーしていく  
 .checkSumsMatched
+	; wPlayerName に プレイヤー名をコピー
 	ld hl, sPlayerName
 	ld de, wPlayerName
 	ld bc, NAME_LENGTH
 	call CopyData
+	
+	; 保存したゲームデータを WRAMにコピー
 	ld hl, sMainData
 	ld de, wMainDataStart
 	ld bc, wMainDataEnd - wMainDataStart
 	call CopyData
+
+	; ???
 	ld hl, wCurMapTileset
 	set 7, [hl]
+
+	; OAM を WRAMにコピー
 	ld hl, sSpriteData
 	ld de, wSpriteDataStart
 	ld bc, wSpriteDataEnd - wSpriteDataStart
 	call CopyData
+
+	; tilesetのtypeをコピー
 	ld a, [sTilesetType]
 	ld [hTilesetType], a
+
+	; ボックスのポケモンデータをコピー
 	ld hl, sCurBoxData
 	ld de, wBoxDataStart
 	ld bc, wBoxDataEnd - wBoxDataStart
 	call CopyData
-	and a
+
+	; キャリーをクリアして SAVGoodChecksum
+	and a ; CopyData終了時点で a = 0
 	jp SAVGoodChecksum
 
 LoadSAV1:
@@ -120,11 +150,13 @@ LoadSAV2:
 	ld bc, wPokedexSeenEnd - wPokedexOwned
 	call CopyData
 	and a
-	jp SAVGoodChecksum
+	jp SAVGoodChecksum ; return
 
+; キャリーを立てて SRAMのバンク番号を 0に戻して return
 SAVBadCheckSum:
 	scf
 
+; SRAMのバンク番号を 0に戻して return
 SAVGoodChecksum:
 	ld a, $0
 	ld [MBC1SRamBankingMode], a
@@ -278,8 +310,8 @@ SaveSAVtoSRAM:
 	call SaveSAVtoSRAM1
 	jp SaveSAVtoSRAM2
 
+; セーブデータのチェックサム(1 byte)を計算 Aレジスタに入れて返す
 SAVCheckSum:
-;Check Sum (result[1 byte] is complemented)
 	ld d, 0
 .loop
 	ld a, [hli]

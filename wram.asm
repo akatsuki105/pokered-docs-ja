@@ -2455,7 +2455,10 @@ wEvoStoneItemID:: ; d156
 wSavedNPCMovementDirections2Index:: ; d157
 	ds 1
 
-wPlayerName:: ; d158
+; d158  
+; プレイヤーの名前が入る  
+; ゲーム内で名前が必要なときはここから読み取る  
+wPlayerName::
 	ds NAME_LENGTH
 
 
