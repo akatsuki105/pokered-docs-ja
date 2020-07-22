@@ -2006,21 +2006,26 @@ SECTION "Text 6", ROMX ; BANK $25
 INCLUDE "text/maps/Route24_2.asm"
 INCLUDE "text/maps/Route25.asm"
 
+; "The file data is  
+; "destroyed!"
 _FileDataDestroyedText::
 	text "The file data is"
 	line "destroyed!"
 	prompt
 
+; "Would you like to SAVE the game?"
 _WouldYouLikeToSaveText::
 	text "Would you like to"
 	line "SAVE the game?"
 	done
 
+; "<PLAYER> saved the game!"
 _GameSavedText::
 	text "<PLAYER> saved"
 	line "the game!"
 	done
 
+; "The older file will be erased to save. Okay?"
 _OlderFileWillBeErasedText::
 	text "The older file"
 	line "will be erased to"

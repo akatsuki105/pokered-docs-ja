@@ -367,31 +367,53 @@ DisplayContinueGameInfo:
 	ld c, 30
 	jp DelayFrames
 
+; プレイヤーの進行状況を示すテキストボックスを描画する  
 PrintSaveScreenText:
+	; BG転送 を無効化
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
+
+	; ゲームの進行状況を表示するためのテキストボックスを描画
+	; 名前、バッジ数、図鑑数、プレイ時間
 	coord hl, 4, 0
 	ld b, $8
 	ld c, $e
 	call TextBoxBorder
+
 	call LoadTextBoxTilePatterns
 	call UpdateSprites
+
+	; テキストボックスに進行状況を描画していく
+
+	; "PLAYER"  
+	; "BADGES"  
+	; "POKEDEX"  
+	; "TIME@" 
 	coord hl, 5, 2
 	ld de, SaveScreenInfoText
 	call PlaceString
+
+	; 名前
 	coord hl, 12, 2
 	ld de, wPlayerName
 	call PlaceString
+
+	; バッジ数
 	coord hl, 17, 4
 	call PrintNumBadges
+
+	; 図鑑数
 	coord hl, 16, 6
 	call PrintNumOwnedMons
+	
+	; プレイ時間
 	coord hl, 13, 8
 	call PrintPlayTime
+	
 	ld a, $1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ld c, 30
-	jp DelayFrames
+	jp DelayFrames ; return
 
 PrintNumBadges:
 	push hl
@@ -423,6 +445,10 @@ PrintPlayTime:
 	lb bc, LEADING_ZEROES | 1, 2
 	jp PrintNumber
 
+; "PLAYER"  
+; "BADGES"  
+; "POKEDEX"  
+; "TIME@"  
 SaveScreenInfoText:
 	db   "PLAYER"
 	next "BADGES    "

@@ -1,8 +1,12 @@
 ; **LoadSAV**  
-; - - - 
+; セーブデータを SRAM から WRAM にロードする処理
+; - - -  
+; まず SRAM のデータのチェックサムをとって、データが破損していないかチェック  
+; 破損していなかったら、WRAM にロードしていく
+; 
+; OUTPUT:  
+; [wSaveFileStatus] = ロード成功(2) or ロード失敗(1) 
 LoadSAV:
-;(if carry -> write
-;"the file data is destroyed")
 	call ClearScreen
 	call LoadFontTilePatterns
 	call LoadTextBoxTilePatterns
@@ -12,31 +16,40 @@ LoadSAV:
 	call LoadSAV0
 	jr c, .badsum
 
+	; いらない処理?
 	; 失敗したときはキャリーが立っているので -> .badsum
 	call LoadSAV1
 	jr c, .badsum
 
+	; 手持ちやポケモン図鑑のセーブデータをロード
 	; 失敗したときはキャリーが立っているので -> .badsum
 	call LoadSAV2
 	jr c, .badsum
 	
-	ld a, $2 ; good checksum
+	ld a, $2 ; [wSaveFileStatus] = 2
 	jr .goodsum
+
 .badsum
+	; "The file data is destroyed!"
 	ld hl, wd730
 	push hl
-	set 6, [hl]
+	set 6, [hl] ; テキストに遅延
 	ld hl, FileDataDestroyedText
 	call PrintText
+
 	ld c, 100
 	call DelayFrames
 	pop hl
-	res 6, [hl]
-	ld a, $1 ; bad checksum
+	res 6, [hl]	; 遅延状態を戻す
+
+	ld a, $1 ; [wSaveFileStatus] = 1
+
 .goodsum
 	ld [wSaveFileStatus], a
 	ret
 
+; "The file data is  
+; "destroyed!"
 FileDataDestroyedText:
 	TX_FAR _FileDataDestroyedText
 	db "@"
@@ -108,6 +121,7 @@ LoadSAV0:
 	and a ; CopyData終了時点で a = 0
 	jp SAVGoodChecksum
 
+; チェックサムの確認を 1度だけ行い、一致したら ボックスのポケモンデータをコピー(LoadSAV0でもやっているため無駄？)
 LoadSAV1:
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
@@ -129,11 +143,16 @@ LoadSAV1:
 	jp SAVGoodChecksum
 
 LoadSAV2:
+	; SRAM を有効化
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
+
+	; SRAMをバンク1にスイッチ
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamBank], a
+
+	; チェックサムが一致するか確認　一致しない -> SAVBadCheckSum
 	ld hl, sPlayerName ; hero name located in SRAM
 	ld bc, sMainDataCheckSum - sPlayerName  ; but here checks the full SAV
 	call SAVCheckSum
@@ -141,14 +160,22 @@ LoadSAV2:
 	ld a, [sMainDataCheckSum] ; SAV's checksum
 	cp c
 	jp nz, SAVBadCheckSum
+
+	; チェックサムが一致したとき
+
+	; 手持ちのポケモンのデータをコピー
 	ld hl, sPartyData
 	ld de, wPartyDataStart
 	ld bc, wPartyDataEnd - wPartyDataStart
 	call CopyData
+
+	; ポケモン図鑑のデータをコピー
 	ld hl, sMainData
 	ld de, wPokedexOwned
 	ld bc, wPokedexSeenEnd - wPokedexOwned
 	call CopyData
+
+	; キャリーをクリアして return
 	and a
 	jp SAVGoodChecksum ; return
 
@@ -163,18 +190,24 @@ SAVGoodChecksum:
 	ld [MBC1SRamEnable], a
 	ret
 
+; 未使用  
+; チェックサムが壊れていても強引にセーブデータをロードする  
 LoadSAVIgnoreBadCheckSum:
-; unused function that loads save data and ignores bad checksums
 	call LoadSAV0
 	call LoadSAV1
 	jp LoadSAV2
 
 SaveSAV:
 	callba PrintSaveScreenText
+
+	; "Would you like to SAVE the game?" という確認のテキストを描画して、 Yes/Noメニューを描画
 	ld hl, WouldYouLikeToSaveText
 	call SaveSAVConfirm
+
+	; Noなら終了
 	and a   ;|0 = Yes|1 = No|
 	ret nz
+
 	ld a, [wSaveFileStatus]
 	dec a
 	jr z, .save
@@ -205,16 +238,23 @@ SaveSAV:
 NowSavingString:
 	db "Now saving...@"
 
+; "Would you like to SAVE the game?" という確認のテキストを描画して、 Yes/Noメニューをだし結果を Aレジスタに入れて返す  
+; OUTPUT:  a = 0(Yes) or 1(No)
 SaveSAVConfirm:
+	; "Would you like to SAVE the game?"
 	call PrintText
+
+	; yes/no menu
 	coord hl, 0, 7
 	lb bc, 8, 1
 	ld a, TWO_OPTION_MENU
 	ld [wTextBoxID], a
-	call DisplayTextBoxID ; yes/no menu
+	call DisplayTextBoxID 
+
 	ld a, [wCurrentMenuItem]
 	ret
 
+; "Would you like to SAVE the game?"
 WouldYouLikeToSaveText:
 	TX_FAR _WouldYouLikeToSaveText
 	db "@"

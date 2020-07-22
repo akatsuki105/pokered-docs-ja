@@ -1961,9 +1961,10 @@ wSubAnimCounter:: ; d087
 ; counts the number of subentries left in the current subanimation
 	ds 1
 
-wSaveFileStatus:: ; d088
-; 1 = no save file or save file is corrupted
-; 2 = save file exists and no corruption has been detected
+; d088  
+; 1 = セーブデータが存在しない or セーブデータが壊れている  
+; 2 = 正常なセーブデータが存在  
+wSaveFileStatus::
 	ds 1
 
 wNumFBTiles:: ; d089
