@@ -191,7 +191,7 @@ CopyVideoDataDouble::
 ; - - -  
 ; INPUT:  
 ; - hl = 始点のタイルアドレス(BGマップアドレス)  
-; - b, c = c*b枚がタイルクリアの対象  
+; - b, c = c(width)*b(height)枚がタイルクリアの対象  
 ClearScreenArea::
 	ld a, " " ; 空白のタイル
 	ld de, 20 ; スクリーンサイズ

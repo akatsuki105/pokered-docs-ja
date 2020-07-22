@@ -208,32 +208,47 @@ SaveSAV:
 	and a   ;|0 = Yes|1 = No|
 	ret nz
 
+	; 既存のセーブデータが存在しない or 破損している場合はすぐにセーブ処理に移行
 	ld a, [wSaveFileStatus]
 	dec a
 	jr z, .save
+
+	; すでにセーブデータが存在している場合は　上書きしていいかの Yes/Noメニュー
 	call SAVCheckRandomID
 	jr z, .save
-	ld hl, OlderFileWillBeErasedText
+	ld hl, OlderFileWillBeErasedText	; "The older file will be erased to save. Okay?"
 	call SaveSAVConfirm
 	and a
-	ret nz
+	ret nz ; Noなら終了
+
+	; Yes を押したとき セーブ処理を行う
 .save
-	call SaveSAVtoSRAM
+	call SaveSAVtoSRAM ; ここでセーブを行っている
+
+	; 下のテキストボックスをクリア
 	coord hl, 1, 13
-	lb bc, 4, 18
+	lb bc, 4, 18 				; 18(width) 4(height) 
 	call ClearScreenArea
+
+	; "Now saving...@"
 	coord hl, 1, 14
 	ld de, NowSavingString
 	call PlaceString
+
+	; "Now saving...@" と表示して2秒待機
 	ld c, 120
 	call DelayFrames
+
+	; "<PLAYER> saved the game!"
 	ld hl, GameSavedText
 	call PrintText
+
+	; セーブ完了のサウンドを鳴らして終了
 	ld a, SFX_SAVE
 	call PlaySoundWaitForCurrent
 	call WaitForSoundToFinish
 	ld c, 30
-	jp DelayFrames
+	jp DelayFrames	; return
 
 NowSavingString:
 	db "Now saving...@"
@@ -259,54 +274,80 @@ WouldYouLikeToSaveText:
 	TX_FAR _WouldYouLikeToSaveText
 	db "@"
 
+; "<PLAYER> saved the game!"
 GameSavedText:
 	TX_FAR _GameSavedText
 	db "@"
 
+; "The older file will be erased to save. Okay?"
 OlderFileWillBeErasedText:
 	TX_FAR _OlderFileWillBeErasedText
 	db "@"
 
+; WRAMに格納されているゲームの進行データを SRAMにコピーしていくことでセーブを行う
 SaveSAVtoSRAM0:
+	; SRAM を有効化
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
+
+	; SRAMをバンク1にスイッチ
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamBank], a
+	
+	; 名前を WRAM -> SRAM
 	ld hl, wPlayerName
 	ld de, sPlayerName
 	ld bc, NAME_LENGTH
 	call CopyData
+
+	; セーブデータを WRAM -> SRAM
 	ld hl, wMainDataStart
 	ld de, sMainData
 	ld bc, wMainDataEnd - wMainDataStart
 	call CopyData
+
+	; OAMデータを WRAM -> SRAM
 	ld hl, wSpriteDataStart
 	ld de, sSpriteData
 	ld bc, wSpriteDataEnd - wSpriteDataStart
 	call CopyData
+
+	; ボックスのポケモンデータを WRAM -> SRAM
 	ld hl, wBoxDataStart
 	ld de, sCurBoxData
 	ld bc, wBoxDataEnd - wBoxDataStart
 	call CopyData
+
+	; tilesetのtypeを WRAM -> SRAM
 	ld a, [hTilesetType]
 	ld [sTilesetType], a
+
+	; チェックサムを計算して SRAM に保存(ロード時のチェックに使う)
 	ld hl, sPlayerName
 	ld bc, sMainDataCheckSum - sPlayerName
 	call SAVCheckSum
 	ld [sMainDataCheckSum], a
+
+	; SRAM を バンク0に戻す
 	xor a
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamEnable], a
 	ret
 
+; SaveSAVtoSRAM0 と処理が完全にかぶっている
+; 無駄なコード?
 SaveSAVtoSRAM1:
-; stored pokÃ©mon
+	; SRAM を有効化
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
+
+	; SRAMをバンク1にスイッチ
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamBank], a
+
+	; ボックスのポケモンデータをコピー
 	ld hl, wBoxDataStart
 	ld de, sCurBoxData
 	ld bc, wBoxDataEnd - wBoxDataStart
@@ -321,28 +362,44 @@ SaveSAVtoSRAM1:
 	ret
 
 SaveSAVtoSRAM2:
+	; SRAM を有効化
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
+
+	; SRAMをバンク1にスイッチ
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamBank], a
+
+	; 手持ちのポケモンのデータをコピー
 	ld hl, wPartyDataStart
 	ld de, sPartyData
 	ld bc, wPartyDataEnd - wPartyDataStart
 	call CopyData
+
+	; ポケモン図鑑のデータをコピー
 	ld hl, wPokedexOwned ; pokÃ©dex only
 	ld de, sMainData
 	ld bc, wPokedexSeenEnd - wPokedexOwned
 	call CopyData
+
+	; チェックサムを計算して SRAM に保存(ロード時のチェックに使う)
 	ld hl, sPlayerName
 	ld bc, sMainDataCheckSum - sPlayerName
 	call SAVCheckSum
 	ld [sMainDataCheckSum], a
+	
+	; SRAM を バンク0に戻す
 	xor a
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamEnable], a
 	ret
 
+; **SaveSAVtoSRAM**  
+; 実際のセーブ処理を行う関数  
+; - - -  
+; WRAM のゲーム進行状況を SRAM にコピー(保存)する  
+; チェックサムも計算して保存しておく  
 SaveSAVtoSRAM:
 	ld a, $2
 	ld [wSaveFileStatus], a
