@@ -76,7 +76,14 @@ rNR51       EQU $ff25 ; Selection of Sound output terminal (R/W)
 rNR52       EQU $ff26 ; Sound on/off
 rLCDC       EQU $ff40 ; LCD Control (R/W)
 rLCDC_ENABLE EQU 7    ; %0000_0111
-rLCDC_ENABLE_MASK EQU 1 << rLCDC_ENABLE ; %0000_1110
+
+; %0000_1110  
+; - - -  
+; BGマップ: 0x9c00  
+; スプライトのサイズ: 8*16  
+; スプライト有効  
+rLCDC_ENABLE_MASK EQU 1 << rLCDC_ENABLE
+
 rSTAT       EQU $ff41 ; LCDC Status (R/W)
 rSCY        EQU $ff42 ; Scroll Y (R/W)
 rSCX        EQU $ff43 ; Scroll X (R/W)

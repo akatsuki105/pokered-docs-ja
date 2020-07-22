@@ -6,7 +6,7 @@
 _Joypad::
 	ld a, [hJoyInput]	; [↓, ↑, ←, →, Start, Select, B, A] 押されているときにbitが立つ
 
-	; A,B,Start,Select を同時に押されたときゲームをリセット(タイトル画面に戻る)
+	; A,B,Start,Select を同時に押されたとき hSoftReset をデクリメント (0になったらリセット処理)
 	cp A_BUTTON + B_BUTTON + SELECT + START ; soft reset
 	jp z, TrySoftReset
 
@@ -65,6 +65,12 @@ DiscardButtonPresses:
 	ld [hJoyReleased], a
 	ret
 
+; **TrySoftReset**  
+; A,B,Start,Select を同時に押されたとき リセット処理を試みる
+; - - -  
+; A,B,Start,Select を同時に押されたときにここにくる  
+; すぐにリセット処理を行うわけではなく [hSoftReset] をデクリメントして Joypadに戻る  
+; 何度も TrySoftReset が実行されて [hSoftReset] が 0 になったときリセット処理が走る 
 TrySoftReset:
 	call DelayFrame
 
@@ -72,10 +78,10 @@ TrySoftReset:
 	ld a, $30
 	ld [rJOYP], a
 
-	; hl -= 1, 0になったらつまり元の [hSoftReset] が 1 -> SoftReset
+	; [hSoftReset] をデクリメント, 0になったら リセット処理
 	ld hl, hSoftReset
 	dec [hl]
 	jp z, SoftReset
 
-	; 
+	; まだ A,B,Start,Select が押されているか走査
 	jp Joypad

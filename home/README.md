@@ -12,7 +12,7 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  copy.asm  |  データコピー用のユーティリティ関数
  copy2.asm  |  データコピー用のユーティリティ関数 <br/>copy.asmとは配置されるアドレスが離れている
  fade.asm  |  null
- init.asm  |  null
+ init.asm  |  ゲーム起動時の処理
  joypad.asm  |  キー入力を処理する関数
  overworld.asm  |  null
  pic.asm  |  null

@@ -470,6 +470,9 @@ PrepareSuperNintendoVRAMTransfer:
 	dw DataSnd_725a8
 	dw DataSnd_725b8
 
+; **CheckSGB**  
+; ハードウェアがSGBかどうかチェックする  
+; OUTPUT: carry = 1(SGB) or 0(not SGB)
 CheckSGB:
 ; Returns whether the game is running on an SGB in carry.
 	ld hl, MltReq2Packet
