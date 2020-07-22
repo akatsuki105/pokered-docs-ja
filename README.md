@@ -48,6 +48,7 @@
 - [Pokemon](./docs/pokemon/README.md)
 - [predef](./docs/predef.md)
 - [rgbgfx](./docs/rgbgfx.md)
+- [セーブ](./docs/save.md)
 - [simulated joypad](./docs/simulated_joypad.md)
 - [スプライト](./docs/sprite/README.md)
 - [用語](./docs/term.md)
