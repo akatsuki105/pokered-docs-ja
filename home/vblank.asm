@@ -8,16 +8,19 @@ VBlank::
 	ld a, [H_LOADEDROMBANK]
 	ld [wVBlankSavedROMBank], a
 
+	; HRAM　に格納してあった 擬似SCX, SCY を実際の SCX, SCY に格納
 	ld a, [hSCX]
 	ld [rSCX], a
 	ld a, [hSCY]
 	ld [rSCY], a
 
+	; HRAM に格納してあった 擬似WY を実際の WY に格納 (wDisableVBlankWYUpdateフラグが立っていたらスキップ)
 	ld a, [wDisableVBlankWYUpdate]
 	and a
 	jr nz, .ok
 	ld a, [hWY]
 	ld [rWY], a
+	
 .ok
 
 	call AutoBgMapTransfer

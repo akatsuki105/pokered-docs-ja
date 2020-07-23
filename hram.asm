@@ -199,9 +199,10 @@ TRANSFERTOP    EQU 0
 TRANSFERMIDDLE EQU 1
 TRANSFERBOTTOM EQU 2
 
-; 00 = top third of background
-; 01 = middle third of background
-; 02 = bottom third of background
+; 3ステップに分けて行われる AutoBgMapTransfer が今何ステップ目か
+; 00 = 3/3  
+; 01 = 2/3  
+; 02 = 1/3  
 H_AUTOBGTRANSFERPORTION EQU $FFBB
 
 ; 自動的なBG転送の転送先のアドレス

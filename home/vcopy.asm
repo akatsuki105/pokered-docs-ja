@@ -114,27 +114,38 @@ RedrawRowOrColumn::
 	jr nz, .loop2
 	ret
 
-; This function automatically transfers tile number data from the tile map at
-; wTileMap to VRAM during V-blank. Note that it only transfers one third of the
-; background per V-blank. It cycles through which third it draws.
-; This transfer is turned off when walking around the map, but is turned
-; on when talking to sprites, battling, using menus, etc. This is because
-; the above function, RedrawRowOrColumn, is used when walking to
-; improve efficiency.
+; **AutoBgMapTransfer**  
+; VBlank期間に自動的に wTileMapのタイルIDデータを VRAMに転送する関数  
+; - - -  
+; 1回のVBlankで全て転送するわけではなく VBlankごとに1/3ずつ転送することに注意  
+; この関数による転送はプレイヤーがマップを歩いているときは offになり、スプライトと会話しているときや戦闘中、メニュー画面などでは onになる  
+; マップ上を歩いているときは より効率的な `RedrawRowOrColumn` を使用する  
 AutoBgMapTransfer::
+	; H_AUTOBGTRANSFERENABLED で転送が無効になっているときは何もせず return
 	ld a, [H_AUTOBGTRANSFERENABLED]
 	and a
 	ret z
+
 	ld hl, sp + 0
+	
+	; spを退避
 	ld a, h
 	ld [H_SPTEMP], a
 	ld a, l
 	ld [H_SPTEMP + 1], a ; save stack pinter
+
+	; [H_AUTOBGTRANSFERPORTION]の値によって分岐
 	ld a, [H_AUTOBGTRANSFERPORTION]
+
+	; [H_AUTOBGTRANSFERPORTION] == 0
 	and a
 	jr z, .transferTopThird
+
+	; [H_AUTOBGTRANSFERPORTION] == 1
 	dec a
 	jr z, .transferMiddleThird
+
+	; [H_AUTOBGTRANSFERPORTION] == 2
 .transferBottomThird
 	coord hl, 0, 12
 	ld sp, hl
@@ -146,6 +157,7 @@ AutoBgMapTransfer::
 	add hl, de
 	xor a ; TRANSFERTOP
 	jr .doTransfer
+
 .transferTopThird
 	coord hl, 0, 0
 	ld sp, hl
@@ -155,6 +167,7 @@ AutoBgMapTransfer::
 	ld l, a
 	ld a, TRANSFERMIDDLE
 	jr .doTransfer
+
 .transferMiddleThird
 	coord hl, 0, 6
 	ld sp, hl
@@ -165,6 +178,7 @@ AutoBgMapTransfer::
 	ld de, (6 * 32)
 	add hl, de
 	ld a, TRANSFERBOTTOM
+	
 .doTransfer
 	ld [H_AUTOBGTRANSFERPORTION], a ; store next portion
 	ld b, 6
