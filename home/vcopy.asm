@@ -126,9 +126,8 @@ AutoBgMapTransfer::
 	and a
 	ret z
 
-	ld hl, sp + 0
-	
 	; spを退避
+	ld hl, sp + 0
 	ld a, h
 	ld [H_SPTEMP], a
 	ld a, l
@@ -149,13 +148,14 @@ AutoBgMapTransfer::
 .transferBottomThird
 	coord hl, 0, 12
 	ld sp, hl
+	; hl = 転送先
 	ld a, [H_AUTOBGTRANSFERDEST + 1]
 	ld h, a
 	ld a, [H_AUTOBGTRANSFERDEST]
 	ld l, a
 	ld de, (12 * 32)
 	add hl, de
-	xor a ; TRANSFERTOP
+	xor a ; TRANSFERTOP (00)
 	jr .doTransfer
 
 .transferTopThird
@@ -165,7 +165,7 @@ AutoBgMapTransfer::
 	ld h, a
 	ld a, [H_AUTOBGTRANSFERDEST]
 	ld l, a
-	ld a, TRANSFERMIDDLE
+	ld a, TRANSFERMIDDLE ; (01)
 	jr .doTransfer
 
 .transferMiddleThird
@@ -177,37 +177,61 @@ AutoBgMapTransfer::
 	ld l, a
 	ld de, (6 * 32)
 	add hl, de
-	ld a, TRANSFERBOTTOM
+	ld a, TRANSFERBOTTOM ; (02)
 	
+	; この時点で
+	; a = 0(2/3のとき) or 1(0/3のとき) or 2(1/3のとき)
+	; 
+	; sp = 
+	; wTileMap の (0, 0)
+	; wTileMap の (0, 6)
+	; wTileMap の (0, 12)
+	; 
+	; hl = 
+	; 	0/3:	[H_AUTOBGTRANSFERDEST]  
+	; 	1/3:	[H_AUTOBGTRANSFERDEST] + (6 * 32)  
+	; 	2/3:    [H_AUTOBGTRANSFERDEST] + (12 * 32)  
+
 .doTransfer
-	ld [H_AUTOBGTRANSFERPORTION], a ; store next portion
-	ld b, 6
+	ld [H_AUTOBGTRANSFERPORTION], a ; 次のステップ(n/3)にしておく
+	ld b, 6	; (画面1/3)
+	; 下に続く
 
+; wTileMap から VRAM(H_AUTOBGTRANSFERDEST) に タイルIDを転送していく  
+; VBlank中に行われるので、速度を考えて pop を使っている
 TransferBgRows::
-; unrolled loop and using pop for speed
-
-	rept 20 / 2 - 1
+; {
+	rept 20 / 2 - 1 ; 9 (1行分のタイル-1枚分)
+	; de = [sp], sp++
+	; sp には 転送する wTileMap のアドレスが入っている
+	; pop により wTileMapからタイルIDが取り出され、 sp++ されることで 転送対象の wTileMap のアドレス進んでいく
+	; 1度のコピーで 2回(横2枚)コピーする (縦には1枚)
 	pop de
+	; [H_AUTOBGTRANSFERDEST] = wTileMap の タイルID 
 	ld [hl], e
-	inc l
+	inc l	; 1枚目
 	ld [hl], d
-	inc l
+	inc l 	; 2枚目
 	endr
-
+	; 行の最後の1枚分
 	pop de
 	ld [hl], e
 	inc l
 	ld [hl], d
 
-	ld a, 32 - (20 - 1)
+	; hl += 32 - (20 - 1) = (6*2)-1 見えてない部分
+	ld a, 32 - (20 - 1) 
 	add l
 	ld l, a
 	jr nc, .ok
-	inc h
-.ok
-	dec b
-	jr nz, TransferBgRows
+	inc h	; carry
 
+.ok
+	dec b ; 6(画面の縦の1/3)から減っていく
+	jr nz, TransferBgRows
+; }
+
+	; spを復帰して終了
 	ld a, [H_SPTEMP]
 	ld h, a
 	ld a, [H_SPTEMP + 1]

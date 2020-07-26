@@ -199,7 +199,7 @@ TRANSFERTOP    EQU 0
 TRANSFERMIDDLE EQU 1
 TRANSFERBOTTOM EQU 2
 
-; 3ステップに分けて行われる AutoBgMapTransfer が今何ステップ目か
+; 3ステップに分けて行われる AutoBgMapTransfer が今何ステップ目か  
 ; 00 = 3/3  
 ; 01 = 2/3  
 ; 02 = 1/3  
