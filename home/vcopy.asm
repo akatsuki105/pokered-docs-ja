@@ -1,8 +1,10 @@
 ; 一度しか使われてなさそう  
 ; hlレジスタに次の引数で指定したBGタイルマップの行と列のアドレスを入れる関数  
-; h -> 行  
-; l -> 列  
-; b -> BGタイルマップの上位バイト e.g. $98 -> 0x9800
+; 
+; INPUT:  
+; h = 行  
+; l = 列  
+; b = BGタイルマップの上位バイト e.g. $98 -> 0x9800  
 GetRowColAddressBgMap::
 	xor a
 	srl h
@@ -67,26 +69,38 @@ RedrawRowOrColumn::
 	ld e, a
 	ld a, [hRedrawRowOrColumnDest + 1]
 	ld d, a
-	ld c, SCREEN_HEIGHT
+	ld c, SCREEN_HEIGHT ; ループ回数
+
+; ループにつき、縦に16px再描画 1列再描画を終えるまで続ける
 .loop1
+; {
+	; [de] = [hl++] 列(1列=8px*2 なので その1枚目)
 	ld a, [hli]
 	ld [de], a
 	inc de
+	; 2枚目
 	ld a, [hli]
 	ld [de], a
+
+	; 次の行へ
 	ld a, BG_MAP_WIDTH - 1
 	add e
 	ld e, a
 	jr nc, .noCarry
 	inc d
 .noCarry
-; the following 4 lines wrap us from bottom to top if necessary
+
+	; 画面外の 4行(4*2*8=64px)部分にきてしまった時は次の行の先頭に移動しておく
 	ld a, d
 	and $03
 	or $98
 	ld d, a
+
 	dec c
 	jr nz, .loop1
+; }
+
+; 終了
 	xor a
 	ld [hRedrawRowOrColumnMode], a
 	ret
@@ -98,17 +112,24 @@ RedrawRowOrColumn::
 	ld e, a
 	ld a, [hRedrawRowOrColumnDest + 1]
 	ld d, a
+
+	; 上半分(8px * 1行)再描画
 	push de
 	call .DrawHalf ; draw upper half
 	pop de
+
+	; 下半分(+8px)へ
 	ld a, BG_MAP_WIDTH ; width of VRAM background map
 	add e
 	ld e, a
-	; fall through and draw lower half
 
+	; そのまま下に続いて下半分を再描画
 .DrawHalf
 	ld c, SCREEN_WIDTH / 2
+
+; .loop1と同じような処理
 .loop2
+; {
 	ld a, [hli]
 	ld [de], a
 	inc de
@@ -125,6 +146,7 @@ RedrawRowOrColumn::
 	ld e, a
 	dec c
 	jr nz, .loop2
+; }
 	ret
 
 ; **AutoBgMapTransfer**  

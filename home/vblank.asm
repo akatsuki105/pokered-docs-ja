@@ -25,7 +25,7 @@ VBlank::
 
 	call AutoBgMapTransfer 	; wTileMap -> VRAM(?)への転送
 	call VBlankCopyBgMap	; H_VBCOPYBGSRC -> H_VBCOPYBGDEST への転送
-	call RedrawRowOrColumn
+	call RedrawRowOrColumn	; BG1行(16px) or BG1列 (16px) を再描画
 	call VBlankCopy
 	call VBlankCopyDouble
 	call UpdateMovingBgTiles

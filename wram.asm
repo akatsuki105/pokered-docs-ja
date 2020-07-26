@@ -367,9 +367,10 @@ wOverworldMap::
 	ds 1300
 wOverworldMapEnd::
 
-wRedrawRowOrColumnSrcTiles:: ; cbfc
-; the tiles of the row or column to be redrawn by RedrawRowOrColumn
-	ds SCREEN_WIDTH * 2
+; cbfc  
+; RedrawRowOrColumn で再描画する 1行分 or 1列分　のタイルID  
+wRedrawRowOrColumnSrcTiles::
+	ds SCREEN_WIDTH * 2 ; 16px なので *2
 
 ; cc24  
 ; アイテム選択メニューで一番上(id 0)のカーソルの位置の Y coords  
