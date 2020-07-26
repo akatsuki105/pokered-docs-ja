@@ -35,21 +35,32 @@ ClearBgMap::
 	jr nz, .loop
 	ret
 
-; This function redraws a BG row of height 2 or a BG column of width 2.
-; One of its main uses is redrawing the row or column that will be exposed upon
-; scrolling the BG when the player takes a step. Redrawing only the exposed
-; row or column is more efficient than redrawing the entire screen.
-; However, this function is also called repeatedly to redraw the whole screen
-; when necessary. It is also used in trade animation and elevator code.
+; **RedrawRowOrColumn**  
+; BG1行(16px) or BG1列 (16px) を再描画する関数  
+; - - -  
+; この関数の主な用途としては、主人公が歩いた時にスクロールによって画面内に入った 行 or 列 を再描画することがある  
+; 全画面を再描画するのではなく、新しく画面に入ったところだけを再描画することで、無駄なCPU消費を避けている  
+; とはいえ、この関数は、交換時のアニメーションやエレベータの処理時などで画面全体の再描画にも利用されることがある  
+; 
+; INPUT:  
+; [hRedrawRowOrColumnMode] = 0(無効) or 1(列) or 2(行)
 RedrawRowOrColumn::
+
+	; [hRedrawRowOrColumnMode] == 0 -> return
 	ld a, [hRedrawRowOrColumnMode]
 	and a
 	ret z
-	ld b, a
+
+	ld b, a ; b = [hRedrawRowOrColumnMode]
+
+	; [hRedrawRowOrColumnMode] をクリア
 	xor a
 	ld [hRedrawRowOrColumnMode], a
+
 	dec b
-	jr nz, .redrawRow
+	jr nz, .redrawRow ; b == 2 -> .redrawRow
+
+; [hRedrawRowOrColumnMode] == 1
 .redrawColumn
 	ld hl, wRedrawRowOrColumnSrcTiles
 	ld a, [hRedrawRowOrColumnDest]
@@ -79,6 +90,8 @@ RedrawRowOrColumn::
 	xor a
 	ld [hRedrawRowOrColumnMode], a
 	ret
+
+; [hRedrawRowOrColumnMode] == 2
 .redrawRow
 	ld hl, wRedrawRowOrColumnSrcTiles
 	ld a, [hRedrawRowOrColumnDest]
@@ -197,8 +210,15 @@ AutoBgMapTransfer::
 	ld b, 6	; (画面1/3)
 	; 下に続く
 
+; **TransferBgRows**  
 ; wTileMap から VRAM(H_AUTOBGTRANSFERDEST) に タイルIDを転送していく  
+; - - -  
 ; VBlank中に行われるので、速度を考えて pop を使っている
+; 
+; INPUT:  
+; sp = 転送元  
+; hl = 転送先  
+; b = 何行(1行=8px)転送するか  
 TransferBgRows::
 ; {
 	rept 20 / 2 - 1 ; 9 (1行分のタイル-1枚分)
@@ -239,30 +259,46 @@ TransferBgRows::
 	ld sp, hl
 	ret
 
-; Copies [H_VBCOPYBGNUMROWS] rows from H_VBCOPYBGSRC to H_VBCOPYBGDEST.
-; If H_VBCOPYBGSRC is XX00, the transfer is disabled.
+; **VBlankCopyBgMap**  
+; H_VBCOPYBGSRC から H_VBCOPYBGDEST に [H_VBCOPYBGNUMROWS]*行　コピーする  
+; - - -  
+; H_VBCOPYBGSRC のアドレスが 0xXX00なら転送は無効  
+; 内部処理に `TransferBgRows` を用いている
 VBlankCopyBgMap::
-	ld a, [H_VBCOPYBGSRC] ; doubles as enabling byte
+	
+	; [H_VBCOPYBGSRC]の下位バイト * 2 == 0 -> return 
+	ld a, [H_VBCOPYBGSRC]
 	and a
 	ret z
+
+	; 現在の sp を退避
 	ld hl, sp + 0
 	ld a, h
 	ld [H_SPTEMP], a
 	ld a, l
 	ld [H_SPTEMP + 1], a ; save stack pointer
+
+	; sp = [H_VBCOPYBGSRC]
 	ld a, [H_VBCOPYBGSRC]
 	ld l, a
 	ld a, [H_VBCOPYBGSRC + 1]
 	ld h, a
 	ld sp, hl
+
+	; hl = [H_VBCOPYBGDEST]
 	ld a, [H_VBCOPYBGDEST]
 	ld l, a
 	ld a, [H_VBCOPYBGDEST + 1]
 	ld h, a
+
+	; b = [H_VBCOPYBGNUMROWS]
 	ld a, [H_VBCOPYBGNUMROWS]
 	ld b, a
+
 	xor a
 	ld [H_VBCOPYBGSRC], a ; disable transfer so it doesn't continue next V-blank
+
+	; [H_VBCOPYBGSRC] から [H_VBCOPYBGDEST] に [H_VBCOPYBGNUMROWS]行分転送
 	jr TransferBgRows
 
 

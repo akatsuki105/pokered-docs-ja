@@ -23,8 +23,8 @@ VBlank::
 	
 .ok
 
-	call AutoBgMapTransfer
-	call VBlankCopyBgMap
+	call AutoBgMapTransfer 	; wTileMap -> VRAM(?)への転送
+	call VBlankCopyBgMap	; H_VBCOPYBGSRC -> H_VBCOPYBGDEST への転送
 	call RedrawRowOrColumn
 	call VBlankCopy
 	call VBlankCopyDouble

@@ -212,17 +212,18 @@ H_AUTOBGTRANSFERDEST EQU $FFBC ; 2 bytes
 ; to increase speed
 H_SPTEMP EQU $FFBF ; 2 bytes
 
-; source address for VBlankCopyBgMap function
-; the first byte doubles as the byte that enabled the transfer.
-; if it is 0, the transfer is disabled
-; if it is not 0, the transfer is enabled
-; this means that XX00 is not a valid source address
+; VBlankCopyBgMap での転送元となるアドレス(リトルエンディアンで2バイト)  
+; 1バイト目を 2倍した値 によって転送が有効か無効か分かる
+; 0 なら転送は無効  
+; 0 以外なら転送は有効  
+; つまり [H_VBCOPYBGSRC] が 0xXX00 なら転送は無効 
 H_VBCOPYBGSRC EQU $FFC1 ; 2 bytes
 
 ; destination address for VBlankCopyBgMap function
 H_VBCOPYBGDEST EQU $FFC3 ; 2 bytes
 
 ; number of rows for VBlankCopyBgMap to copy
+; VBlankCopyBgMap でコピーを行う行数
 H_VBCOPYBGNUMROWS EQU $FFC5
 
 ; VBlankCopyの転送サイズ（16バイト単位）
@@ -243,10 +244,10 @@ H_VBCOPYDOUBLESRC EQU $FFCC
 ; destination address for VBlankCopyDouble function
 H_VBCOPYDOUBLEDEST EQU $FFCE
 
-; controls whether a row or column of 2x2 tile blocks is redrawn in V-blank
-; 00 = no redraw
-; 01 = redraw column
-; 02 = redraw row
+; controls whether a row or column of 2x2 tile blocks is redrawn in V-blank  
+; 00 = no redraw  
+; 01 = redraw column  
+; 02 = redraw row  
 hRedrawRowOrColumnMode EQU $FFD0
 
 REDRAW_COL EQU 1
