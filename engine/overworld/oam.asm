@@ -16,7 +16,7 @@ PrepareOAMData:
 
 .updateEnabled
 	xor a
-	ld [hOAMBufferOffset], a
+	ld [hOAMBufferOffset], a	; [hOAMBufferOffset] = 0
 
 .spriteLoop
 	ld [hSpriteOffset2], a
