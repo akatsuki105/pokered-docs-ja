@@ -81,16 +81,22 @@ ClearSprites::
 	jr nz, .loop
 	ret
 
+; **HideSprites**  
+; wOAMBuffer に格納された OAM を全て非表示にする  
+; - - -  
+; 具体的には OAM の Y座標 を 160にすることで非表示にする
 HideSprites::
 	ld a, 160
 	ld hl, wOAMBuffer
 	ld de, 4
 	ld b, 40
 .loop
-	ld [hl], a
-	add hl, de
+; {
+	ld [hl], a	; Y = 160 -> 非表示
+	add hl, de 	; +4 次の OAMへ
 	dec b
 	jr nz, .loop
+; }
 	ret
 
 INCLUDE "home/copy.asm"

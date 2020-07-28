@@ -1,14 +1,18 @@
 ; Determine OAM data for currently visible
 ; sprites and write it to wOAMBuffer.
 PrepareOAMData:
-	ld a, [wUpdateSpritesEnabled]
+	ld a, [wUpdateSpritesEnabled]	; a = [wUpdateSpritesEnabled] - 1
+
+	; [wUpdateSpritesEnabled] - 1 == 0 つまり スプライトが有効 -> .updateEnabled
 	dec a
 	jr z, .updateEnabled
-
+	; [wUpdateSpritesEnabled] - 1 != 0xff つまり [wUpdateSpritesEnabled] == 0xff -> return
 	cp -1
 	ret nz
-	ld [wUpdateSpritesEnabled], a
-	jp HideSprites
+
+	; [wUpdateSpritesEnabled] == 0 のとき
+	ld [wUpdateSpritesEnabled], a ; [wUpdateSpritesEnabled] = 0xff
+	jp HideSprites ; OAM を全部非表示にして return
 
 .updateEnabled
 	xor a
