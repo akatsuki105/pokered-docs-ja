@@ -324,54 +324,64 @@ VBlankCopyBgMap::
 	jr TransferBgRows
 
 
+; **VBlankCopyDouble**  
+; H_VBCOPYDOUBLESRC から H_VBCOPYDOUBLEDEST に [H_VBCOPYDOUBLESIZE]タイル分の 2bppデータ(元は1bppデータ) を転送する
+; 転送の際に 1bppデータ を 2bppデータ に　変換(2回同じ値を転送しているだけ) している
+; 転送の詳細は VBlankCopy と似ているのでそちらを参照
 VBlankCopyDouble::
-; Copy [H_VBCOPYDOUBLESIZE] 1bpp tiles
-; from H_VBCOPYDOUBLESRC to H_VBCOPYDOUBLEDEST.
 
-; While we're here, convert to 2bpp.
-; The process is straightforward:
-; copy each byte twice.
-
+	; [H_VBCOPYDOUBLESIZE] == 0 -> return
 	ld a, [H_VBCOPYDOUBLESIZE]
 	and a
 	ret z
 
+	; spを退避 (高速な転送が要求されるのでスタックを用いる)
 	ld hl, sp + 0
 	ld a, h
 	ld [H_SPTEMP], a
 	ld a, l
 	ld [H_SPTEMP + 1], a
 
+	; sp = 転送元
 	ld a, [H_VBCOPYDOUBLESRC]
 	ld l, a
 	ld a, [H_VBCOPYDOUBLESRC + 1]
 	ld h, a
 	ld sp, hl
 
+	; hl = 転送先
 	ld a, [H_VBCOPYDOUBLEDEST]
 	ld l, a
 	ld a, [H_VBCOPYDOUBLEDEST + 1]
 	ld h, a
 
+	; [H_VBCOPYDOUBLESIZE] = 0 = 転送終了にしておく
 	ld a, [H_VBCOPYDOUBLESIZE]
 	ld b, a
 	xor a ; transferred
 	ld [H_VBCOPYDOUBLESIZE], a
 
 .loop
-	rept 3
-	pop de
+; .loopのiter 1回で 1タイル(8*8px)分の 1bpp データ を 2bppデータにして転送する
+; .loopを通して  [H_VBCOPYDOUBLESIZE]タイル分の 2bpp データを転送する
+; {
+	rept 3 ; {
+	pop de ; sp++
+	
+	; 1bpp -> 2bpp にするために 2回 同じ値(e)を転送する必要がある
 	ld [hl], e
 	inc l
 	ld [hl], e
 	inc l
+	; 1bpp -> 2bpp にするために 2回 同じ値(d)を転送する必要がある
 	ld [hl], d
 	inc l
 	ld [hl], d
 	inc l
+	; }
 	endr
 
-	pop de
+	pop de ; sp++
 	ld [hl], e
 	inc l
 	ld [hl], e
@@ -382,18 +392,20 @@ VBlankCopyDouble::
 	inc hl
 	dec b
 	jr nz, .loop
+; }
 
+	; [H_VBCOPYDOUBLESIZE] の転送を終えたときの [H_VBCOPYDOUBLESRC], [H_VBCOPYDOUBLEDEST] の位置を記録しておく
 	ld a, l
 	ld [H_VBCOPYDOUBLEDEST], a
 	ld a, h
 	ld [H_VBCOPYDOUBLEDEST + 1], a
-
 	ld hl, sp + 0
 	ld a, l
 	ld [H_VBCOPYDOUBLESRC], a
 	ld a, h
 	ld [H_VBCOPYDOUBLESRC + 1], a
 
+	; spを復帰
 	ld a, [H_SPTEMP]
 	ld h, a
 	ld a, [H_SPTEMP + 1]
@@ -419,13 +431,12 @@ VBlankCopyDouble::
 ; [H_VBCOPYSIZE] = 0(次に H_VBCOPYSIZE に値をセットすれば続きから転送ができる)  
 VBlankCopy::
 
-	; [H_VBCOPYSIZE] == 0 なら 何もすることはない
+	; [H_VBCOPYSIZE] == 0 -> return
 	ld a, [H_VBCOPYSIZE]
 	and a
 	ret z
 
-	; 高速な転送が要求されるのでスタックを用いる
-	; spを退避
+	; spを退避 (高速な転送が要求されるのでスタックを用いる)
 	ld hl, sp + 0
 	ld a, h
 	ld [H_SPTEMP], a
@@ -445,7 +456,7 @@ VBlankCopy::
 	ld a, [H_VBCOPYDEST + 1]
 	ld h, a
 
-	; [H_VBCOPYSIZE] = 0
+	; [H_VBCOPYSIZE] = 0 = 転送終了にしておく
 	ld a, [H_VBCOPYSIZE]
 	ld b, a
 	xor a ; transferred
