@@ -1,7 +1,6 @@
-PrepareOAMData:
 ; Determine OAM data for currently visible
 ; sprites and write it to wOAMBuffer.
-
+PrepareOAMData:
 	ld a, [wUpdateSpritesEnabled]
 	dec a
 	jr z, .updateEnabled

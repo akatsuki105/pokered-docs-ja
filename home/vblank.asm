@@ -29,7 +29,8 @@ VBlank::
 	call VBlankCopy				; H_VBCOPYSRC から H_VBCOPYDEST に [H_VBCOPYSIZE]タイル分の 2bpp データを転送する
 	call VBlankCopyDouble		; H_VBCOPYDOUBLESRC から H_VBCOPYDOUBLEDEST に [H_VBCOPYDOUBLESIZE]タイル分の 2bppデータ(元は1bppデータ) を転送する
 	call UpdateMovingBgTiles	; マップ上での花や水のアニメーション処理を行う
-	call $ff80 ; hOAMDMA
+	call $ff80 					; hOAMDMA (DMARoutine)
+	
 	ld a, BANK(PrepareOAMData)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
