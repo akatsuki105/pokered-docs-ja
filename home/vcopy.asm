@@ -506,14 +506,13 @@ VBlankCopy::
 
 	ret
 
-
+; マップ上での花や水のアニメーション処理を行う
 UpdateMovingBgTiles::
-; Animate water and flower
-; tiles in the overworld.
 
+	; [hTilesetType] == 0 -> return
 	ld a, [hTilesetType]
 	and a
-	ret z ; no animations if indoors (or if a menu set this to 0)
+	ret z ; 室内やメニュー画面では [hTilesetType] = 0 になる
 
 	ld a, [hMovingBGTilesCounter1]
 	inc a
