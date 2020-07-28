@@ -72,7 +72,7 @@ FarCopyDataDouble::
 ; 一度の実行で8タイル分転送を行う  
 ; つまりすべてのタイルデータの転送にc/8フレームほどの時間を要する  
 ; 
-; 転送はH_VBCOPYSRC, H_VBCOPYDEST, H_VBCOPYSIZEに転送元、転送先、転送サイズを入れておけばVBlank時にVBlankハンドラが転送してくれる  
+; 転送は H_VBCOPYSRC, H_VBCOPYDEST, H_VBCOPYSIZE に転送元、転送先、転送サイズを入れておけばVBlank時にVBlankハンドラが転送してくれる  
 CopyVideoData::
 
 	; コピー中はBGの自動転送を無効にする

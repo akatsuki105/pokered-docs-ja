@@ -226,13 +226,15 @@ H_VBCOPYBGDEST EQU $FFC3 ; 2 bytes
 ; VBlankCopyBgMap でコピーを行う行数
 H_VBCOPYBGNUMROWS EQU $FFC5
 
-; VBlankCopyの転送サイズ（16バイト単位）
+; VBlankCopyの転送サイズ  
+; H_VBCOPYSIZE = n のときは n枚分のタイル つまり 16n byte転送
 H_VBCOPYSIZE EQU $FFC6
 
-; VBlankCopyのコピー元
+; VBlankCopy のコピー元
 H_VBCOPYSRC EQU $FFC7
 
-; VBlankCopyのコピー先
+; VBlankCopyのコピー先  
+; 基本的に(というか絶対?) VRAMの タイルデータ($8000-97FF) を指す？
 H_VBCOPYDEST EQU $FFC9
 
 ; size of source data for VBlankCopyDouble in 8-byte units

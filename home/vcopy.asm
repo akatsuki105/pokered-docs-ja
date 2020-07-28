@@ -403,67 +403,90 @@ VBlankCopyDouble::
 	ret
 
 
+; **VBlankCopy**  
+; H_VBCOPYSRC から H_VBCOPYDEST に [H_VBCOPYSIZE]タイル分の 2bpp データを転送する (つまり 16 * [H_VBCOPYSIZE]バイト)  
+; - - -  
+; この関数は複数回に分けて呼びたい時があるので、 終了時に H_VBCOPYSRC と H_VBCOPYDEST は [H_VBCOPYSIZE]タイル分転送した時点での値に更新される  
+; 
+; INPUT:  
+; [H_VBCOPYSRC] = 転送元  
+; [H_VBCOPYDEST] = 転送先  
+; [H_VBCOPYSIZE] = 何タイル分転送するか  
+; 
+; OUTPUT:  
+; [H_VBCOPYSRC] = 転送を終えた後の値  
+; [H_VBCOPYDEST] = 転送を終えた後の値  
+; [H_VBCOPYSIZE] = 0(次に H_VBCOPYSIZE に値をセットすれば続きから転送ができる)  
 VBlankCopy::
-; Copy [H_VBCOPYSIZE] 2bpp tiles (or 16 * [H_VBCOPYSIZE] tile map entries)
-; from H_VBCOPYSRC to H_VBCOPYDEST.
 
-; Source and destination addresses are updated,
-; so transfer can continue in subsequent calls.
-
+	; [H_VBCOPYSIZE] == 0 なら 何もすることはない
 	ld a, [H_VBCOPYSIZE]
 	and a
 	ret z
 
+	; 高速な転送が要求されるのでスタックを用いる
+	; spを退避
 	ld hl, sp + 0
 	ld a, h
 	ld [H_SPTEMP], a
 	ld a, l
 	ld [H_SPTEMP + 1], a
 
+	; sp = [H_VBCOPYSRC] = 転送元
 	ld a, [H_VBCOPYSRC]
 	ld l, a
 	ld a, [H_VBCOPYSRC + 1]
 	ld h, a
 	ld sp, hl
 
+	; hl = 転送先
 	ld a, [H_VBCOPYDEST]
 	ld l, a
 	ld a, [H_VBCOPYDEST + 1]
 	ld h, a
 
+	; [H_VBCOPYSIZE] = 0
 	ld a, [H_VBCOPYSIZE]
 	ld b, a
 	xor a ; transferred
 	ld [H_VBCOPYSIZE], a
 
 .loop
+; .loopのiter 1回で 1タイル(8*8px)分の 2bpp データを転送する
+; .loopを通して  [H_VBCOPYSIZE]タイル分の 2bpp データを転送する
+; {
+	; [hl] = [sp] を2回 つまり グラフィックデータを転送
 	rept 7
-	pop de
+	pop de	; de = 転送する2bppグラフィックデータ([sp]) && sp++
 	ld [hl], e
 	inc l
 	ld [hl], d
-	inc l
+	inc l ; de = 2バイトなので l += 2
 	endr
 
+	; 最後の1回
 	pop de
 	ld [hl], e
 	inc l
 	ld [hl], d
 	inc hl
+
 	dec b
 	jr nz, .loop
+; }
 
+	; [H_VBCOPYSIZE] の転送を終えたときの [H_VBCOPYSRC], [H_VBCOPYDEST] の位置を記録しておく
 	ld a, l
 	ld [H_VBCOPYDEST], a
 	ld a, h
 	ld [H_VBCOPYDEST + 1], a
-
 	ld hl, sp + 0
 	ld a, l
 	ld [H_VBCOPYSRC], a
 	ld a, h
 	ld [H_VBCOPYSRC + 1], a
 
+	; spを復帰
 	ld a, [H_SPTEMP]
 	ld h, a
 	ld a, [H_SPTEMP + 1]
