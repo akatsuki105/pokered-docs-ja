@@ -274,6 +274,8 @@ H_VBLANKOCCURRED EQU $FFD6
 ; 00にセットすることで水や花が定期的に動く処理をoffにすることがよくある  
 hTilesetType EQU $FFD7
 
+; 20 = water  
+; 21 = flower  
 hMovingBGTilesCounter1 EQU $FFD8
 
 ; 現在処理中のスプライトの番号に$10をかけたもの  

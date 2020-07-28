@@ -514,69 +514,97 @@ UpdateMovingBgTiles::
 	and a
 	ret z ; 室内やメニュー画面では [hTilesetType] = 0 になる
 
+	; [hMovingBGTilesCounter1]++
 	ld a, [hMovingBGTilesCounter1]
 	inc a
 	ld [hMovingBGTilesCounter1], a
+	
+	; [hMovingBGTilesCounter1] < 20  -> return
 	cp 20
 	ret c
+	; [hMovingBGTilesCounter1] == 21 -> .flower 
 	cp 21
 	jr z, .flower
+	; [hMovingBGTilesCounter1] == 20  -> .water(fall through)
 
 ; water
-
+; 2bpp の bitデータ を右や左にシフトさせることで波の動きを表現する
 	ld hl, vTileset + $14 * $10
-	ld c, $10
+	ld c, $10 ; .right, .left での ループ回数 = 16
 
+	; a = [wMovingBGTilesCounter2] = ([wMovingBGTilesCounter2] + 1)%8
 	ld a, [wMovingBGTilesCounter2]
 	inc a
-	and 7
+	and 7 						; and 0b0111 つまり %8
 	ld [wMovingBGTilesCounter2], a
 
+	; [wMovingBGTilesCounter2] >= 4 のとき -> .left
 	and 4
 	jr nz, .left
+
+; [wMovingBGTilesCounter2] < 4 のとき
 .right
+; 右シフト を 16回 = タイル1枚を 右に1bitシフト
+; {
 	ld a, [hl]
 	rrca
 	ld [hli], a
 	dec c
 	jr nz, .right
+; }
 	jr .done
-.left
+
+.left	
+; 左シフト を 16回 = タイル1枚を 左に1bitシフト
+; {
 	ld a, [hl]
 	rlca
 	ld [hli], a
 	dec c
 	jr nz, .left
+; }
+
 .done
+	; c == 0 or c == 2 -> return
 	ld a, [hTilesetType]
 	rrca
 	ret nc
-; if in a cave, no flower animations
+	; c == 1 つまり 洞窟のとき [hMovingBGTilesCounter1] を 0にして 21にしないことで 花のアニメーションは行わないようにする
 	xor a
 	ld [hMovingBGTilesCounter1], a
 	ret
 
 .flower
+	; [hMovingBGTilesCounter1] を 21 から 0 にリセット
 	xor a
 	ld [hMovingBGTilesCounter1], a
 
+	; a = [wMovingBGTilesCounter2]%4
 	ld a, [wMovingBGTilesCounter2]
 	and 3
+
+	; hl = FlowerTile1(0, 1) or FlowerTile2(2) or FlowerTile3(3)
 	cp 2
 	ld hl, FlowerTile1
 	jr c, .copy
 	ld hl, FlowerTile2
 	jr z, .copy
 	ld hl, FlowerTile3
+
 .copy
 	ld de, vTileset + $3 * $10
-	ld c, $10
+	ld c, $10	; ループ回数 = 16 = 2bppで1タイル
+
 .loop
+; VRAM に FlowerTileN の 2bppデータをコピー
+; {
+	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec c
 	jr nz, .loop
+; }
 	ret
 
 FlowerTile1: INCBIN "gfx/tilesets/flower/flower1.2bpp"

@@ -1948,11 +1948,13 @@ wBaseCoordY:: ; d082
 ; high bit = enable, others = timer to cycle frequencies
 wLowHealthAlarm:: ds 1 ; d083
 
-wFBTileCounter:: ; d084
+; d084  
 ; counts how many tiles of the current frame block have been drawn
+wFBTileCounter::
 	ds 1
 
-wMovingBGTilesCounter2:: ; d085
+; d085
+wMovingBGTilesCounter2::
 	ds 1
 
 wSubAnimFrameDelay:: ; d086
