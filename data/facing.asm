@@ -1,20 +1,29 @@
+; **SpriteFacingAndAnimationTable**  
+; ???  
+; - - -  
+; 各エントリ 4byte
 SpriteFacingAndAnimationTable:
-	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; facing down, walk animation frame 0
-	dw SpriteFacingDownAndWalking, SpriteOAMParameters         ; facing down, walk animation frame 1
-	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; facing down, walk animation frame 2
-	dw SpriteFacingDownAndWalking, SpriteOAMParametersFlipped  ; facing down, walk animation frame 3
-	dw SpriteFacingUpAndStanding, SpriteOAMParameters          ; facing up, walk animation frame 0
-	dw SpriteFacingUpAndWalking, SpriteOAMParameters           ; facing up, walk animation frame 1
-	dw SpriteFacingUpAndStanding, SpriteOAMParameters          ; facing up, walk animation frame 2
-	dw SpriteFacingUpAndWalking, SpriteOAMParametersFlipped    ; facing up, walk animation frame 3
-	dw SpriteFacingLeftAndStanding, SpriteOAMParameters        ; facing left, walk animation frame 0
-	dw SpriteFacingLeftAndWalking, SpriteOAMParameters         ; facing left, walk animation frame 1
-	dw SpriteFacingLeftAndStanding, SpriteOAMParameters        ; facing left, walk animation frame 2
-	dw SpriteFacingLeftAndWalking, SpriteOAMParameters         ; facing left, walk animation frame 3
-	dw SpriteFacingLeftAndStanding, SpriteOAMParametersFlipped ; facing right, walk animation frame 0
-	dw SpriteFacingLeftAndWalking, SpriteOAMParametersFlipped  ; facing right, walk animation frame 1
-	dw SpriteFacingLeftAndStanding, SpriteOAMParametersFlipped ; facing right, walk animation frame 2
-	dw SpriteFacingLeftAndWalking, SpriteOAMParametersFlipped  ; facing right, walk animation frame 3
+; facing down
+	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; walk animation frame 0
+	dw SpriteFacingDownAndWalking, SpriteOAMParameters         ; walk animation frame 1
+	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; walk animation frame 2
+	dw SpriteFacingDownAndWalking, SpriteOAMParametersFlipped  ; walk animation frame 3
+; facing up
+	dw SpriteFacingUpAndStanding, SpriteOAMParameters          ; walk animation frame 0
+	dw SpriteFacingUpAndWalking, SpriteOAMParameters           ; walk animation frame 1
+	dw SpriteFacingUpAndStanding, SpriteOAMParameters          ; walk animation frame 2
+	dw SpriteFacingUpAndWalking, SpriteOAMParametersFlipped    ; walk animation frame 3
+; facing left
+	dw SpriteFacingLeftAndStanding, SpriteOAMParameters        ; walk animation frame 0
+	dw SpriteFacingLeftAndWalking, SpriteOAMParameters         ; walk animation frame 1
+	dw SpriteFacingLeftAndStanding, SpriteOAMParameters        ; walk animation frame 2
+	dw SpriteFacingLeftAndWalking, SpriteOAMParameters         ; walk animation frame 3
+; facing right
+	dw SpriteFacingLeftAndStanding, SpriteOAMParametersFlipped ; walk animation frame 0
+	dw SpriteFacingLeftAndWalking, SpriteOAMParametersFlipped  ; walk animation frame 1
+	dw SpriteFacingLeftAndStanding, SpriteOAMParametersFlipped ; walk animation frame 2
+	dw SpriteFacingLeftAndWalking, SpriteOAMParametersFlipped  ; walk animation frame 3
+; ???
 	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; ---
 	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; This table is used for sprites $a and $b.
 	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; All orientation and animation parameters

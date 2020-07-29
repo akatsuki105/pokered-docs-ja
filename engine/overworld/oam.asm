@@ -79,44 +79,51 @@ PrepareOAMData:
 	ld [hSpritePriority], a ; temp store sprite priority
 	pop de
 
-; read the entry from the table
-	ld h, 0
+	; hl = SpriteFacingAndAnimationTable の対応方向の frame0 のエントリ
+	ld h, 0		; hl = スプライトの方向 0x00 or 0x04 or 0x08 or 0x0c 
 	ld bc, SpriteFacingAndAnimationTable
-	add hl, hl
-	add hl, hl
-	add hl, bc
+	add hl, hl 	; *= 2
+	add hl, hl	; *= 2
+	add hl, bc	; hl = 4*hl + SpriteFacingAndAnimationTable
+
+	; bc = SpriteFacing${A}And${B} (SpriteFacingAndAnimationTable の dwエントリ0)
 	ld a, [hli]
 	ld c, a
 	ld a, [hli]
 	ld b, a
+	; hl = SpriteOAMParameters(Flipped) (SpriteFacingAndAnimationTable の dwエントリ1)
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 
 	call GetSpriteScreenXY
 
+	; de = OAM(Buf) の先頭
 	ld a, [hOAMBufferOffset]
 	ld e, a
 	ld d, wOAMBuffer / $100
 
 .tileLoop
-	ld a, [hSpriteScreenY]   ; temp for sprite Y position
-	add $10                  ; Y=16 is top of screen (Y=0 is invisible)
-	add [hl]                 ; add Y offset from table
-	ld [de], a               ; write new sprite OAM Y position
+	ld a, [hSpriteScreenY]   ; Y座標(pixel単位)
+	add $10                  ; Y += 16 (GBのOAMの仕様)
+	add [hl]                 ; table の Yオフセット を加算
+	ld [de], a               ; OAMの Y座標に計算した値を書き込む
+
 	inc hl
-	ld a, [hSpriteScreenX]   ; temp for sprite X position
-	add $8                   ; X=8 is left of screen (X=0 is invisible)
-	add [hl]                 ; add X offset from table
+
+	ld a, [hSpriteScreenX]   ; X座標(pixel単位)
+	add $8                   ; X += 8 (GBのOAMの仕様)
+	add [hl]                 ; table の Xオフセット を加算
 	inc e
-	ld [de], a               ; write new sprite OAM X position
+	ld [de], a               ; OAMの X座標に計算した値を書き込む
+
 	inc e
 	ld a, [bc]               ; read pattern number offset (accommodates orientation (offset 0,4 or 8) and animation (offset 0 or $80))
 	inc bc
 	push bc
 	ld b, a
 
-	ld a, [wd5cd]            ; temp copy of c1x2
+	ld a, [wd5cd]            ; a = [c1x2]
 	swap a                   ; high nybble determines sprite used (0 is always player sprite, next are some npcs)
 	and $f
 
@@ -193,7 +200,8 @@ PrepareOAMData:
 ; de = 0xc1X2
 ; 
 ; OUTPUT:  
-; [0xc1Xa], [0xc1Xb] = 計算された Y, X座標
+; [0xc1Xa], [0xc1Xb] = 計算された Y, X座標  
+; [hSpriteScreenX], [hSpriteScreenY] = pixel単位のX, Y座標(c1x6, c1x4)  
 GetSpriteScreenXY:
 
 	; [hSpriteScreenY] = [0xc1X4]
