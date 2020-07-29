@@ -41,7 +41,7 @@ sprite image indexは 上位ニブル(XXXX0000) と 下位ニブル(0000YYYY)の
 
 上位ニブルは スプライトのVRAM内でのオフセットを指し `[C2xe] - 1`で表される
 
-で算出される　主人公は\[C2xe\]の値が1なので上位ニブルは 0 になる
+主人公は\[C2xe\]の値が1なので上位ニブルは 0 になる
 
 下位ニブルは次の式で算出される [参考: .calcImageIndex](./../../engine/overworld/movement.asm)
 
