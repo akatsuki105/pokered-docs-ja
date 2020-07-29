@@ -1004,7 +1004,7 @@ GetSpriteScreenXYPointerCommon:
 	ret
 
 AnimScriptedNPCMovement:
-	; [hl] = スプライトのイメージデータがあるアドレス
+	; [hl] = スプライトのイメージデータ(2bppデータ?)があるアドレス
 	ld hl, wSpriteStateData2
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $e
@@ -1012,9 +1012,9 @@ AnimScriptedNPCMovement:
 	
 	; TODO
 	; b = VRAMスロット
-	ld a, [hl] ; VRAM slot
+	ld a, [hl] 	; VRAM slot
 	dec a
-	swap a
+	swap a		; AAAABBBB -> BBBBAAAA
 	ld b, a
 	
 	; a = スプライトの移動方向
@@ -1033,10 +1033,10 @@ AnimScriptedNPCMovement:
 	cp SPRITE_FACING_RIGHT
 	jr z, .anim
 	ret
-; a = スプライトの方向
+; a = スプライトの方向 0x00 or 0x04 or 0x08 or 0x0c 
 ; b = VRAMスロット
 .anim
-	; hSpriteVRAMSlotAndFacingを現在の方向に更新
+	; hSpriteVRAMSlotAndFacing を現在の方向に更新
 	add b
 	ld b, a
 	ld [hSpriteVRAMSlotAndFacing], a

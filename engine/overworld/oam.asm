@@ -16,51 +16,66 @@ PrepareOAMData:
 
 .updateEnabled
 	xor a
-	ld [hOAMBufferOffset], a	; [hOAMBufferOffset] = 0
+	ld [hOAMBufferOffset], a		; [hOAMBufferOffset] = 0
 
 .spriteLoop
 	ld [hSpriteOffset2], a
 
-	ld d, wSpriteStateData1 / $100
-	ld a, [hSpriteOffset2]
+	; a = [0xc1X0], de = 0xc1X0
+	ld d, wSpriteStateData1 / $100	; d = 0xc1
+	ld a, [hSpriteOffset2]			; e = 0xX0
 	ld e, a
-	ld a, [de] ; c1x0
+	ld a, [de] 						; a = [0xc1X0] = picture ID
+
+	; picture ID == 0 -> .nextSprite
 	and a
 	jp z, .nextSprite
 
+	; a = [0xc1X2]
+	; de = 0xc1X2(facing/anim)
+	; [wd5cd] = [0xc1X2]
 	inc e
 	inc e
-	ld a, [de] ; c1x2 (facing/anim)
+	ld a, [de]
 	ld [wd5cd], a
-	cp $ff ; off-screen (don't draw)
+
+	; [0xc1X2] != 0xff つまり スプライトを表示するとき -> .visible
+	cp $ff
 	jr nz, .visible
 
+	; スプライトを表示しない時
 	call GetSpriteScreenXY
 	jr .nextSprite
 
 .visible
+	; この時点で a = [0xc1X2]
 	cp $a0 ; is the sprite unchanging like an item ball or boulder?
 	jr c, .usefacing
 
 ; unchanging
+; 対象のスプライトが、アイテムや 『かいりき』の岩のように 『顔』 を持たない場合
 	and $f
-	add $10 ; skip to the second half of the table which doesn't account for facing direction
+	add $10 ; アイテム(モンボアイコン)や岩は方向を持たないので 方向を表す後半のテーブル(c1X2の下位ニブルのこと)はスキップする
 	jr .next
 
 .usefacing
-	and $f
+; 対象のスプライトが、人など 『顔』　を持っている場合
+	and $f	; and 0b0000XXXX
 
+; この時点で  
+; a = スプライトの方向 0x00 or 0x04 or 0x08 or 0x0c  
+; de = 0xc1X2
 .next
 	ld l, a
 
-; get sprite priority
+; [hSpritePriority] = [c2x7] (0x80(スプライトが草むらの上) or 0x00(それ以外))
 	push de
 	inc d
 	ld a, e
 	add $5
-	ld e, a
-	ld a, [de] ; c2x7
-	and $80
+	ld e, a		; de = c2x7
+	ld a, [de] 	; a = sprite priority
+	and $80		; 0b_1000_0000
 	ld [hSpritePriority], a ; temp store sprite priority
 	pop de
 
@@ -169,24 +184,45 @@ PrepareOAMData:
 	add hl, de
 	jr .clear
 
+; **GetSpriteScreenXY**  
+; OAMの (16*16px) のグリッド単位での XY座標 を計算する
+; - - -  
+; wSpriteStateData1 参照
+; 
+; INPUT:  
+; de = 0xc1X2
+; 
+; OUTPUT:  
+; [0xc1Xa], [0xc1Xb] = 計算された Y, X座標
 GetSpriteScreenXY:
+
+	; [hSpriteScreenY] = [0xc1X4]
 	inc e
 	inc e
 	ld a, [de] ; c1x4
 	ld [hSpriteScreenY], a
+
+	; [hSpriteScreenX] = [0xc1X6]
 	inc e
 	inc e
 	ld a, [de] ; c1x6
 	ld [hSpriteScreenX], a
+
+	; de = 0xc1Xa
 	ld a, 4
 	add e
 	ld e, a
+
+	; [0xc1Xa] = OAMの (16*16px) のグリッド単位での Y座標
 	ld a, [hSpriteScreenY]
 	add 4
-	and $f0
+	and $f0	; and 0b11110000 つまり a /= 16
 	ld [de], a ; c1xa (y)
+
+	; [0xc1Xb] = OAMの (16*16px) のグリッド単位での X座標
 	inc e
 	ld a, [hSpriteScreenX]
 	and $f0
 	ld [de], a  ; c1xb (x)
+
 	ret

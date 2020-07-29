@@ -77,7 +77,10 @@ hSpriteOffset2 EQU $FF8F
 
 hOAMBufferOffset EQU $FF90
 
+; [0xc1X6] のバッファ
 hSpriteScreenX EQU $FF91
+
+; [0xc1X4] のバッファ
 hSpriteScreenY EQU $FF92
 
 hTilePlayerStandingOn EQU $FF93
