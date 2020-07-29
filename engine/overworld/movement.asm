@@ -3,7 +3,6 @@
 MAP_TILESET_SIZE EQU $60
 
 ; **UpdatePlayerSprite**  
-; 
 ; プレイヤーの方向転換やアニメーション画像の変化を実行する関数
 UpdatePlayerSprite:
 	ld a, [wSpriteStateData2]

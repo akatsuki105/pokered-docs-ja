@@ -41,7 +41,6 @@
 - [Map](./docs/map/README.md)
 - [メニュー](./docs/menu.md)
 - [movement byte](./docs/movement_byte.md)
-- [OAM](./docs/oam.md)
 - [pewter guys](./docs/pewter_guys.md)
 - [pic](./docs/pic/README.md)
 - [ポケモン図鑑](./docs/pokedex.md)

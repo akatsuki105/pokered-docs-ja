@@ -45,7 +45,7 @@ _UpdateSprites:
 ; **UpdateNonPlayerSprite**
 ;  
 ; NPCスプライトの移動処理を行う関数  
-; a: $c2Xeの値
+; a: $c2Xe の値
 UpdateNonPlayerSprite:
 	; UpdateSpriteImageで利用するためにスプライト番号を$ff93に保存
 	dec a

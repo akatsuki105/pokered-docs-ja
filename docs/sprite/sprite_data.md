@@ -37,10 +37,22 @@
 
 #### sprite image index(\$C1x2)
 
-sprite image indexは次の式で算出される [参考: .calcImageIndex](./../../engine/overworld/movement.asm)
+sprite image indexは 上位ニブル(XXXX0000) と 下位ニブル(0000YYYY)の 2パートに分かれている
+
+上位ニブルは スプライトのVRAM内でのオフセットを指し `[C2xe] - 1`で表される
+
+で算出される　主人公は\[C2xe\]の値が1なので上位ニブルは 0 になる
+
+下位ニブルは次の式で算出される [参考: .calcImageIndex](./../../engine/overworld/movement.asm)
 
 ```
-[$C1x2] = [$C1x8] + [$C1x9] = (animation frame counter) + (facing direction)
+[$C1x2]の下位ニブル = [$C1x8] + [$C1x9] = animation_frame_counter(0~3) + facing_direction(00, 04, 08, 0c)
+```
+
+つまり \$C1x2は
+
+```
+[$C1x2] = (VRAMオフセット * 0x10) + animation_frame_counter(0~3) + facing_direction(00, 04, 08, 0c)
 ```
 
 #### animation frame counter(\$C1x7,\$C1x8)

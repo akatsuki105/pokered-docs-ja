@@ -7,6 +7,10 @@
 スプライトの一例  
 <img src="../image/sprite.png" width="40%" />
 
+## OAM  
+
+[OAM](./oam.md)参照
+
 ## スプライトの保持しているデータ
 
 [スプライトデータ](./sprite_data.md)参照
