@@ -118,17 +118,27 @@ PrepareOAMData:
 	ld [de], a               ; OAMの X座標に計算した値を書き込む
 
 	inc e
-	ld a, [bc]               ; read pattern number offset (accommodates orientation (offset 0,4 or 8) and animation (offset 0 or $80))
+
+	; a = SpriteFacing${A}And${B}[i] = pattern number offset
+	; pattern number offset = animation | orientation
+	; animation = 歩きモーション(0x80) or 突っ立っている(0x00)
+	; orientation = 0x00 or 0x04 or 0x08
+	ld a, [bc]
+
+	; SpriteFacing${A}And${B} の次のエントリへ
 	inc bc
 	push bc
+
 	ld b, a
 
+	; a = [c1x2]の上位ニブル = スプライトが使用されているか
 	ld a, [wd5cd]            ; a = [c1x2]
 	swap a                   ; high nybble determines sprite used (0 is always player sprite, next are some npcs)
 	and $f
 
-	; Sprites $a and $b have one face (and therefore 4 tiles instead of 12).
+	; [c1x2] が $aX か $bX のスプライトは 一つの 『顔』 しかもたない (12タイル ではなく 4タイル)
 	; As a result, sprite $b's tile offset is less than normal.
+	; 従って、$bXのタイルオフセットは通常より小さい
 	cp $b
 	jr nz, .notFourTileSprite
 	ld a, $a * 12 + 4
