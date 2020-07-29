@@ -104,20 +104,22 @@ PrepareOAMData:
 	ld d, wOAMBuffer / $100
 
 .tileLoop
+	; hl = SpriteOAMParameters(or SpriteOAMParametersFlipped) の offsetY のアドレス
+
 	ld a, [hSpriteScreenY]   ; Y座標(pixel単位)
 	add $10                  ; Y += 16 (GBのOAMの仕様)
 	add [hl]                 ; table の Yオフセット を加算
 	ld [de], a               ; OAMの Y座標に計算した値を書き込む
 
-	inc hl
+	inc hl	; hl = offsetX のアドレス
 
 	ld a, [hSpriteScreenX]   ; X座標(pixel単位)
 	add $8                   ; X += 8 (GBのOAMの仕様)
 	add [hl]                 ; table の Xオフセット を加算
-	inc e
+	inc e					 ; de = OAMのX
 	ld [de], a               ; OAMの X座標に計算した値を書き込む
 
-	inc e
+	inc e					; de = OAMのタイルID
 
 	; a = SpriteFacing${A}And${B}[i] = pattern number offset
 	; pattern number offset = animation | orientation
@@ -125,10 +127,12 @@ PrepareOAMData:
 	; orientation = 0x00 or 0x04 or 0x08
 	ld a, [bc]
 
-	; SpriteFacing${A}And${B} の次のエントリへ
+	; SpriteFacing${A}And${B} の次のエントリへ  
+	; 例: bc = SpriteFacingDownAndStanding の $02 のアドレスなら $03 のアドレスへ
 	inc bc
 	push bc
 
+	; b = 
 	ld b, a
 
 	; a = [c1x2]の上位ニブル = スプライトが使用されているか
@@ -137,25 +141,37 @@ PrepareOAMData:
 	and $f
 
 	; [c1x2] が $aX か $bX のスプライトは 一つの 『顔』 しかもたない (12タイル ではなく 4タイル)
+	; 1タイル = 8*8px つまり 12タイル = 4(上向き) + 4(下向き) + 4(左右)
 	; As a result, sprite $b's tile offset is less than normal.
 	; 従って、$bXのタイルオフセットは通常より小さい
+
+	; $bXでない -> .notFourTileSprite  
+	; $aX は .visible で対処済み?
 	cp $b
 	jr nz, .notFourTileSprite
+
+; .fourTileSprite
+	; $bX のとき
 	ld a, $a * 12 + 4
 	jr .next2
 
 .notFourTileSprite
 	; a *= 12
-	sla a
-	sla a
-	ld c, a
-	sla a
-	add c
+	sla a	; 2a
+	sla a	; 4a
+	ld c, a	; c = 4a
+	sla a	; 8a
+	add c	; a = 8a + 4a = 12a
 
 .next2
-	add b ; add the tile offset from the table (based on frame and facing direction)
-	pop bc
-	ld [de], a ; tile id
+	; a = OAMのタイルID
+	; add the tile offset from the table (based on frame and facing direction)
+	add b 				
+
+	pop bc				; SpriteFacing${A}And${B}[i]のアドレス (i = 0, 1, 2, 3)
+	
+	ld [de], a 			; OAMのタイルIDをセット
+
 	inc hl
 	inc e
 	ld a, [hl]

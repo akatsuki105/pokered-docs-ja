@@ -1,7 +1,10 @@
 ; **SpriteFacingAndAnimationTable**  
 ; ???  
 ; - - -  
-; 各エントリ 4byte
+; 各エントリ 4byte  
+; 
+; 0-1: SpriteFacing${A}And${B}のアドレス(2byte)  
+; 2-3: ???
 SpriteFacingAndAnimationTable:
 ; facing down
 	dw SpriteFacingDownAndStanding, SpriteOAMParameters        ; walk animation frame 0
@@ -41,24 +44,48 @@ SpriteFacingAndAnimationTable:
 	dw SpriteFacingDownAndStanding, SpriteOAMParameters
 	dw SpriteFacingDownAndStanding, SpriteOAMParameters
 
+; --------------------
+; SpriteFacing${A}And${B}  
+; ${A}: Down, Up, Left  
+; ${B}: Standing, Walking  
+; 
+; db ${X+Y}, ${X+Y}+1, ${X+Y}+2, ${X+Y}+3
+; X: 0x80(歩) or 0x00(立)
+; Y: 0x00(下) or 0x04(上) or 0x08(右 or 左)
+; つまり ${X+Y} = 0x00 or 0x04 or 0x08 or 0x80 or 0x84 or 0x88
+
+; down
 SpriteFacingDownAndStanding:
 	db $00,$01,$02,$03
 SpriteFacingDownAndWalking:
 	db $80,$81,$82,$83
+
+; up
 SpriteFacingUpAndStanding:
 	db $04,$05,$06,$07
 SpriteFacingUpAndWalking:
 	db $84,$85,$86,$87
+
+; right or left
 SpriteFacingLeftAndStanding:
 	db $08,$09,$0a,$0b
 SpriteFacingLeftAndWalking:
 	db $88,$89,$8a,$8b
 
+; --------------------
+
+; **SpriteOAMParameters**  
+; OAM4枚からなるオブジェクト(16\*16pxのスプライト) の各OAMの属性を定めたテーブル  
+; - - -  
+; ポケモンのスプライトは 16\*16px なので 8\*8pxのスプライトが 4枚必要になることに注意  
+; db offsetY, offsetX, attr  
 SpriteOAMParameters:
-	db $00,$00, $00                                      ; top left
-	db $00,$08, $00                                      ; top right
-	db $08,$00, OAMFLAG_CANBEMASKED                      ; bottom left
-	db $08,$08, OAMFLAG_CANBEMASKED | OAMFLAG_ENDOFDATA  ; bottom right
+	db $00,$00, $00                                      ; 左上(0, 0)
+	db $00,$08, $00                                      ; 右上(8, 0)
+	db $08,$00, OAMFLAG_CANBEMASKED                      ; 左下(0, 8)
+	db $08,$08, OAMFLAG_CANBEMASKED | OAMFLAG_ENDOFDATA  ; 右下(8, 8)
+; **SpriteOAMParametersFlipped**  
+; OAM4枚からなるオブジェクト(16\*16pxのスプライト) の各OAMの属性を定めたテーブル  
 SpriteOAMParametersFlipped:
 	db $00,$08, OAMFLAG_VFLIPPED
 	db $00,$00, OAMFLAG_VFLIPPED
