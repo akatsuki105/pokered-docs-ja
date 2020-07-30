@@ -1,5 +1,8 @@
-; Determine OAM data for currently visible
-; sprites and write it to wOAMBuffer.
+; **PrepareOAMData**  
+; 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む関数  
+; - - -  
+; この関数は VBlank中に実行される  
+; スプライトが有効かどうかの判断、また wOAMBuffer に書き込む値は wSpriteStateData1 の内容をもとにする  
 PrepareOAMData:
 	ld a, [wUpdateSpritesEnabled]	; a = [wUpdateSpritesEnabled] - 1
 
@@ -19,7 +22,8 @@ PrepareOAMData:
 	ld [hOAMBufferOffset], a		; [hOAMBufferOffset] = 0
 
 .spriteLoop
-	ld [hSpriteOffset2], a
+; {
+	ld [hSpriteOffset2], a			; [hSpriteOffset2] = 0xX0
 
 	; a = [0xc1X0], de = 0xc1X0
 	ld d, wSpriteStateData1 / $100	; d = 0xc1
@@ -104,6 +108,7 @@ PrepareOAMData:
 	ld d, wOAMBuffer / $100
 
 .tileLoop
+ ; {
 	; hl = SpriteOAMParameters(or SpriteOAMParametersFlipped) の offsetY のアドレス
 
 	ld a, [hSpriteScreenY]   ; Y座標(pixel単位)
@@ -111,7 +116,7 @@ PrepareOAMData:
 	add [hl]                 ; table の Yオフセット を加算
 	ld [de], a               ; OAMの Y座標に計算した値を書き込む
 
-	inc hl	; hl = offsetX のアドレス
+	inc hl	; hl = SpriteOAMParameters(or SpriteOAMParametersFlipped) の offsetX のアドレス
 
 	ld a, [hSpriteScreenX]   ; X座標(pixel単位)
 	add $8                   ; X += 8 (GBのOAMの仕様)
@@ -132,7 +137,7 @@ PrepareOAMData:
 	inc bc
 	push bc
 
-	; b = 
+	; b = SpriteFacing${A}And${B}[i]
 	ld b, a
 
 	; a = [c1x2]の上位ニブル = スプライトが使用されているか
@@ -156,66 +161,95 @@ PrepareOAMData:
 	jr .next2
 
 .notFourTileSprite
-	; a *= 12
+	; a = 12a = 12 * (c1x2の上位ニブル)
 	sla a	; 2a
 	sla a	; 4a
 	ld c, a	; c = 4a
 	sla a	; 8a
 	add c	; a = 8a + 4a = 12a
 
-.next2
-	; a = OAMのタイルID
-	; add the tile offset from the table (based on frame and facing direction)
-	add b 				
+; VRAMオフセット(c1X2の上位ニブル)から求まるスプライトのタイルIDのベース
+; VRAMオフセットが [0, a]のとき ベースタイルID = 12 * (c1X2の上位ニブル) = タイル数 * VRAMオフセット
+; VRAMオフセットが b のとき ベースタイルID = (12 * 0x0a) + 4 (VRAMオフセットaのスプライトは4タイルしかもたないので)
+; つまりこの時点で a = スプライトのベースタイルID
 
-	pop bc				; SpriteFacing${A}And${B}[i]のアドレス (i = 0, 1, 2, 3)
+.next2
+	add b 	; a = SpriteFacing${A}And${B}[i] (つまり 自分の向いている方向や歩き状態を考慮したオフセットをベースタイルIDに加えている)
+	; この時点で a = OAMのタイルID		
+
+	pop bc				; 上の`add b`で加えた `SpriteFacing${A}And${B}[i]` の次のアドレス (つまり SpriteFacing${A}And${B}[i+1])
 	
 	ld [de], a 			; OAMのタイルIDをセット
 
-	inc hl
+	inc hl				; hl = SpriteOAMParameters(or SpriteOAMParametersFlipped) の attr のアドレス
 	inc e
 	ld a, [hl]
-	bit 1, a ; is the tile allowed to set the sprite priority bit?
-	jr z, .skipPriority
-	ld a, [hSpritePriority]
-	or [hl]
-.skipPriority
-	inc hl
-	ld [de], a
-	inc e
-	bit 0, a ; OAMFLAG_ENDOFDATA
-	jr z, .tileLoop
 
+	; attr の OAMFLAG_CANBEMASKED がセットされていない つまり attrをマスクすることを許可していない -> .skipPriority
+	bit 1, a
+	jr z, .skipPriority
+	
+	; attr のマスクが可能
+	; スプライトが草むらの上なら 最上位ビットを立てるように attr をマスクしたものを a に格納する(|= 0x80)
+	ld a, [hSpritePriority]
+	or [hl]					; a = ([hSpritePriority] | attr)
+
+.skipPriorityS
+	inc hl			; 次の OAM(8*8px)のための SpriteOAMParameters
+	ld [de], a		; attr (もしくは ([hSpritePriority] | attr)) を OAM(wOAMBuffer)に格納
+	inc e			; 次の OAM の wOAMBuffer
+
+	; OAMFLAG_ENDOFDATA つまり 今処理中のスプライトが 右下のOAMタイル でない -> .tileLoop
+	bit 0, a 		; OAMFLAG_ENDOFDATA
+	jr z, .tileLoop
+ ; }
+
+	; ここに来た時は 右下の OAMタイル を処理し終えた場合
+	; このとき e = 次の [hOAMBufferOffset]
+	; なぜなら wOAMBuffer = (8*8pxのOAM 40個分) = (16*16のスプライト 10個分) なので 右下のタイルを終えた時点で 0-10のどれかだから
+	; この eを [hOAMBufferOffset] にセットして [hOAMBufferOffset] を次に進める
 	ld a, e
 	ld [hOAMBufferOffset], a
 
 .nextSprite
+	; a = 0x${X}0 -> 0x${X+1}0 (X、現在処理中のスプライトのオフセット)
 	ld a, [hSpriteOffset2]
 	add $10
-	cp $100 % $100
-	jp nz, .spriteLoop
 
-	; Clear unused OAM.
-	ld a, [hOAMBufferOffset]
+	; 16人分のスプライトを処理するまでループ
+	; wOAMBuffer は 10人分しかないが picuture IDが 0のスプライトは早々にここにジャンプされるので大丈夫
+	cp $100 % $100	; cp 0 -> 0xf0 + 0x10 = 0x00(オーバーフロー)
+	jp nz, .spriteLoop
+; }
+
+	; 使ってない OAM をクリアする 
+	ld a, [hOAMBufferOffset]	; 0xX0 (例: 2人スプライトを処理した場合は 0x20)
 	ld l, a
-	ld h, wOAMBuffer / $100
+	ld h, wOAMBuffer / $100		; hl = c3X0
 	ld de, $4
 	ld b, $a0
+
+	; a = 0x90(段差or釣り) or 0xa0(それ以外)
+	; Don't clear the last 4 entries because they are used for the shadow in the
+	; jumping down ledge animation and the rod in the fishing animation.
 	ld a, [wd736]
-	bit 6, a ; jumping down ledge or fishing animation?
+	bit 6, a 
 	ld a, $a0
 	jr z, .clear
-
-; Don't clear the last 4 entries because they are used for the shadow in the
-; jumping down ledge animation and the rod in the fishing animation.
 	ld a, $90
 
 .clear
+; {
+	; 段差or釣り中なら wOAMBuffer のクリアは 9人分まで(段差釣り中は影のスプライトを最後のスロットに用意してやる必要があるので)
+	; それ以外は 10人分 つまり wOAMBufferの最後まで クリアする
 	cp l
 	ret z
+
+	; クリアする つまり c3XY = 0xa0
 	ld [hl], b
 	add hl, de
 	jr .clear
+; }
 
 ; **GetSpriteScreenXY**  
 ; OAMの (16*16px) のグリッド単位での XY座標 を計算する

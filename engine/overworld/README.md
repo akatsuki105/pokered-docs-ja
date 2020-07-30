@@ -31,7 +31,7 @@ missable_objects.asm | null
 movement.asm | null
 npc_movement.asm | null
 oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を行う
-oam.asm | null
+oam.asm | 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む関数<br/>VBlank中に実行される
 pewter_guys.asm | ニビシティの強制連行イベント処理  
 player_animations.asm | null
 player_state.asm | null

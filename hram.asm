@@ -75,6 +75,11 @@ hHalveItemPrices EQU $FF8E
 
 hSpriteOffset2 EQU $FF8F
 
+; **hOAMBufferOffset**  
+; PrepareOAMData の .spriteLoop で wOAMBuffer(10人分) にスプライトを何人分書き込んだかを格納する  
+; ただ実際に入っているのは 人数ではなく 人数分の OAM分のバイトオフセット  
+; 1人 -> 4タイル(8*8px) -> 4OAM -> 16バイト  
+; よってN人 書き込んだ場合は [hOAMBufferOffset] -> 16×N  
 hOAMBufferOffset EQU $FF90
 
 ; [0xc1X6] のバッファ
@@ -85,6 +90,7 @@ hSpriteScreenY EQU $FF92
 
 hTilePlayerStandingOn EQU $FF93
 
+; 0x80(スプライトが草むらの上) or 0x00(それ以外)
 hSpritePriority EQU $FF94
 
 ; 2 bytes

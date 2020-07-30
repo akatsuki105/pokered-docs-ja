@@ -50,7 +50,7 @@ UpdateNonPlayerSprite:
 	; UpdateSpriteImageで利用するためにスプライト番号を$ff93に保存
 	dec a
 	swap a
-	ld [$ff93], a  ; $10 * sprite#
+	ld [$ff93], a  ; $10 * sprite#  = VRAMオフセット
 
 	; 更新対象のスプライトが"Scripted NPC"かで更新処理を分岐
 	ld a, [wNPCMovementScriptSpriteOffset]

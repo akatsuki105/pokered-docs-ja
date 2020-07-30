@@ -31,6 +31,7 @@ VBlank::
 	call UpdateMovingBgTiles	; マップ上での花や水のアニメーション処理を行う
 	call $ff80 					; hOAMDMA (DMARoutine)
 	
+	; 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む
 	ld a, BANK(PrepareOAMData)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
