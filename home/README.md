@@ -21,4 +21,4 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  text.asm  |  テキストの配置 <br/>特殊文字の処理 <br/>テキストコマンドの処理
  timer.asm  |  タイマー割り込みハンドラ
  vblank.asm  |  VBlank割り込みハンドラ
- vcopy.asm  |  null
+ vcopy.asm  |  VBlank期間に行われる VRAM に関するデータ転送
