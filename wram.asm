@@ -3175,7 +3175,8 @@ wEnemyMonOrTrainerClass:: ; d713
 ; trainer classes start at OPP_ID_OFFSET
 	ds 1
 
-wPlayerJumpingYScreenCoordsIndex:: ; d714
+; d714
+wPlayerJumpingYScreenCoordsIndex::
 	ds 1
 
 wRivalStarter:: ; d715

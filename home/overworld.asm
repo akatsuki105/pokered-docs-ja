@@ -1,6 +1,6 @@
+; **HandleMidJump**  
+; プレイヤーがマップ上の段差から飛び降りた時の処理
 HandleMidJump::
-; Handle the player jumping down
-; a ledge in the overworld.
 	jpba _HandleMidJump
 
 ; Load a new map.

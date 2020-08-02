@@ -502,6 +502,8 @@ RedFishingTiles:
 	db 3, BANK(RedFishingRodTiles)
 	dw vNPCSprites2 + $7d0
 
+; **_HandleMidJump**  
+; プレイヤーがマップ上の段差から飛び降りた時の処理
 _HandleMidJump:
 	ld a, [wPlayerJumpingYScreenCoordsIndex]
 	ld c, a
