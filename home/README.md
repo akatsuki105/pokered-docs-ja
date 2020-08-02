@@ -15,10 +15,10 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  init.asm  |  ゲーム起動時の処理
  joypad.asm  |  キー入力を処理する関数
  overworld.asm  |  null
- pic.asm  |  null
+ pic.asm  |  ポケモン赤の様々なグラフィックデータで使われているデータフォーマットの解凍(Uncompress)を行うコード
  predef.asm  |  predefに関する処理 <br/>predefについては[ドキュメント](../docs/predef.md)参照
  serial.asm  |  null
  text.asm  |  テキストの配置 <br/>特殊文字の処理 <br/>テキストコマンドの処理
  timer.asm  |  タイマー割り込みハンドラ
- vblank.asm  |  null
+ vblank.asm  |  VBlank割り込みハンドラ
  vcopy.asm  |  null
