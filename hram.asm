@@ -271,9 +271,8 @@ hRandomSub EQU $FFD4
 
 H_FRAMECOUNTER EQU $FFD5 ; VBlankごとにデクリメントされる(遅延処理の実現に利用)
 
-; V-blank sets this to 0 each time it runs.
-; So, by setting it to a nonzero value and waiting for it to become 0 again,
-; you can detect that the V-blank handler has run since then.
+; VBlankが起こるとここには毎回 0 がセットされる  
+; つまり、VBlankでないときに、ここに 0 でない値をセットし、それが 0 になったかを確認することで、VBlankハンドラが走ったことを検知できる
 H_VBLANKOCCURRED EQU $FFD6
 
 ; 現在のタイルセットの種類  
@@ -341,6 +340,7 @@ hFlags_0xFFF6 EQU $FFF6
 
 hFieldMoveMonMenuTopMenuItemX EQU $FFF7
 
+; フラグがクリアされていたら VBlank ごとに ReadJoypad を呼び出す  
 hDisableJoypadPolling EQU $FFF9
 
 hJoyInput EQU $FFF8

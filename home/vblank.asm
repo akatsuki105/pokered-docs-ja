@@ -1,3 +1,5 @@
+; **VBlank**  
+; VBlankハンドラ  
 VBlank::
 
 	push af
@@ -39,14 +41,17 @@ VBlank::
 
 	; VBlank-sensitive operations end.
 
-	call Random
+	; ??
+	call Random 
 
+	; VBlankなので [H_VBLANKOCCURRED] = 0 にする
 	ld a, [H_VBLANKOCCURRED]
 	and a
 	jr z, .skipZeroing
 	xor a
 	ld [H_VBLANKOCCURRED], a
 
+	; [H_FRAMECOUNTER]-- (0なら何もしない)
 .skipZeroing
 	ld a, [H_FRAMECOUNTER]
 	and a
@@ -55,38 +60,51 @@ VBlank::
 	ld [H_FRAMECOUNTER], a
 
 .skipDec
-	call FadeOutAudio
+	call FadeOutAudio 		; 音楽の fadeout 処理の tick
 
-	ld a, [wAudioROMBank] ; music ROM bank
+; 音楽更新処理  
+; .audio1 or .audio2 or .audio3 のどれかを呼び出して .afterMusic へ
+
+	ld a, [wAudioROMBank] 	; music ROM bank
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
+; .checkForAudio1  
+; [wAudioROMBank] が Audio1_UpdateMusic -> .audio1 -> .afterMusic
 	cp BANK(Audio1_UpdateMusic)
 	jr nz, .checkForAudio2
 .audio1
 	call Audio1_UpdateMusic
 	jr .afterMusic
+
 .checkForAudio2
+; [wAudioROMBank] が Audio2_UpdateMusic ->.audio2 -> .afterMusic
 	cp BANK(Audio2_UpdateMusic)
 	jr nz, .audio3
 .audio2
 	call Music_DoLowHealthAlarm
 	call Audio2_UpdateMusic
 	jr .afterMusic
+
+; .audio1 も .audio2 にも行かなかった時  
 .audio3
 	call Audio3_UpdateMusic
-.afterMusic
 
+.afterMusic
+	; プレイ時間の tick
 	callba TrackPlayTime ; keep track of time played
 
+	; [hDisableJoypadPolling] == 0 なら キー入力を読み取る
 	ld a, [hDisableJoypadPolling]
 	and a
 	call z, ReadJoypad
 
+	; VBlank 当初に退避した バンクを復帰
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 
+	; 終了
 	pop hl
 	pop de
 	pop bc

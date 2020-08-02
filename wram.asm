@@ -195,7 +195,9 @@ wSfxHeaderPointer:: ; c0ec
 wNewSoundID:: ; c0ee
 	ds 1
 
-wAudioROMBank:: ; c0ef
+; c0ef  
+; 音楽再生時に `music header` のある ROMバンク番号を格納する(Music_XXXX e.g. Music_Pokecenter)  
+wAudioROMBank::
 	ds 1
 
 wAudioSavedROMBank:: ; c0f0
@@ -1637,17 +1639,25 @@ wTileInFrontOfPlayer::
 
 ; cfc7  
 ; PlaySoundを呼び出す前に`desired fade counter reload value`をここに格納する(新しいBGMを流すため現在のBGMをfade-outさせる目的)  
+; 
 ; ここに0を格納するとfade-outせず、すぐに次のBGMの再生が始まる  
+; 
 ; この変数はfade-outが起きた後に再生されるBGMのSound IDを格納するという利用法もある  
+; 
 ; `FadeOutAudio`はVBlankが来るたびにこの値が0でないかチェックし、0でないなら現在のBGMをfade-outさせる  
 ; BGMのfade-outが終了すると、この変数を0クリアして格納されたSound IDに対応するBGMの再生を始める  
 wAudioFadeOutControl::
 	ds 1
 
-wAudioFadeOutCounterReloadValue:: ; cfc8
+; cfc8  
+; FadeOutAudio で wAudioFadeOutCounter が 0になったときこの値がセットされる
+wAudioFadeOutCounterReloadValue::
 	ds 1
 
-wAudioFadeOutCounter:: ; cfc9
+; cfc9  
+; VBlankごとに下がっていき、 0 になったときに現在の音量を 1落とす  
+; fadeout 処理に利用される
+wAudioFadeOutCounter::
 	ds 1
 
 wLastMusicSoundID:: ; cfca
@@ -3229,9 +3239,10 @@ wBeatGymFlags:: ; d72a
 
 	ds 1
 
-wd72c:: ; d72c
-; bit 0: if not set, the 3 minimum steps between random battles have passed
-; bit 1: prevent audio fade out
+; d72c  
+; bit 0: if not set, the 3 minimum steps between random battles have passed  
+; bit 1: セットされているならオーディオのフェードアウトを防ぐ  
+wd72c::
 	ds 1
 
 ; d72d  

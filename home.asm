@@ -1140,49 +1140,79 @@ ResetPlayerSpriteData_ClearSpriteData::
 	xor a
 	jp FillMemory ; return
 
+; **FadeOutAudio**  
+; VBlankごとに 音楽の fadeout 処理  
 FadeOutAudio::
+	; [wAudioFadeOutControl] > 0 なら fadeout 処理をする  -> .fadingOut
 	ld a, [wAudioFadeOutControl]
-	and a ; currently fading out audio?
+	and a
 	jr nz, .fadingOut
+
+; fadeout せず問答無用で音楽をストップする 
+	; wd72c[1] が立っているなら何もせず終了
 	ld a, [wd72c]
 	bit 1, a
 	ret nz
-	ld a, $77
+	; 音量を 0 にして fadeout処理を完了する
+	ld a, $77	; b01110111 = 左右の音量 0
 	ld [rNR50], a
 	ret
+
+; fadeout処理
 .fadingOut
+	; [wAudioFadeOutCounter] == 0 -> .counterReachedZero
 	ld a, [wAudioFadeOutCounter]
 	and a
 	jr z, .counterReachedZero
+
+	; [wAudioFadeOutCounter]--
 	dec a
 	ld [wAudioFadeOutCounter], a
 	ret
+
+; [wAudioFadeOutCounter] が 0 になったとき
+; 音量を 1だけ下げる
 .counterReachedZero
+	; [wAudioFadeOutCounter] に reload用の値をセット
 	ld a, [wAudioFadeOutCounterReloadValue]
 	ld [wAudioFadeOutCounter], a
+
+	; 音量がすでに 0 つまり 完全に音楽が fadeoutした -> .fadeOutComplete
 	ld a, [rNR50]
-	and a ; has the volume reached 0?
+	and a
 	jr z, .fadeOutComplete
-	ld b, a
+
+	ld b, a ; b = [rNR50]
 	and $f
 	dec a
-	ld c, a
+	ld c, a	; c = ([rNR50]の下位ニブル) - 1
+
 	ld a, b
 	and $f0
 	swap a
-	dec a
+	dec a	; a = ([rNR50]の上位ニブル) - 1
+
+	; [rNR50] = ([rNR50]の上位ニブル) - 1 << 4 | ([rNR50]の下位ニブル) - 1
+	; つまり　左右の音量を 1ずつ下げる
 	swap a
 	or c
 	ld [rNR50], a
 	ret
+
 .fadeOutComplete
+	; b = [wAudioFadeOutControl] = 次に再生する音楽のID
+	; [wAudioFadeOutControl] = 0
 	ld a, [wAudioFadeOutControl]
 	ld b, a
 	xor a
 	ld [wAudioFadeOutControl], a
+
+	; 音楽の再生を止める(音量を0にするのとは別に)
 	ld a, $ff
 	ld [wNewSoundID], a
 	call PlaySound
+
+	; 次の音楽の再生を開始する
 	ld a, [wAudioSavedROMBank]
 	ld [wAudioROMBank], a
 	ld a, b
