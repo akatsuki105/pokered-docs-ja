@@ -3,7 +3,9 @@
 MAP_TILESET_SIZE EQU $60
 
 ; **UpdatePlayerSprite**  
-; プレイヤーの方向転換やアニメーション画像の変化を実行する関数
+; プレイヤーの方向転換やアニメーション画像の変化を実行する関数  
+; - - -  
+; 0xC10X や 0xC20X を更新する
 UpdatePlayerSprite:
 	ld a, [wSpriteStateData2]
 	and a
@@ -36,7 +38,8 @@ UpdatePlayerSprite:
 	jr nz, .moving
 
 	ld a, [wPlayerMovingDirection]
-; check if down
+
+; .checkIfDown
 	bit PLAYER_DIR_BIT_DOWN, a
 	jr z, .checkIfUp
 	xor a ; ld a, SPRITE_FACING_DOWN (SPRITE_FACING_DOWNは0なので)
@@ -657,7 +660,7 @@ CheckSpriteAvailability:
 .spriteVisible
 	ld c, a
 
-	; a = wWalkCounter = 0 つまりプレイヤーが現在歩きモーション中でないことを確認
+	; a = wWalkCounter == 0 つまりプレイヤーが現在歩きモーション中でないことを確認
 	ld a, [wWalkCounter]
 	and a
 	jr nz, .done           ; if player is currently walking, we're done

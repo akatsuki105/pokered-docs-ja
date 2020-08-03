@@ -3,10 +3,13 @@
 HandleMidJump::
 	jpba _HandleMidJump
 
-; Load a new map.
+; **EnterMap**  
+; 新しいマップをロードする関数  
 EnterMap::
+	; キー入力を無効化
 	ld a, $ff
 	ld [wJoyIgnore], a
+
 	call LoadMapData
 	callba ClearVariablesOnEnterMap
 	ld hl, wd72c
@@ -2386,7 +2389,7 @@ CopyMapConnectionHeader::
 	jr nz, .loop
 	ret
 
-; function to load map data
+; 新しいマップのデータをロードする関数
 LoadMapData::
 	ld a, [H_LOADEDROMBANK]
 	push af
