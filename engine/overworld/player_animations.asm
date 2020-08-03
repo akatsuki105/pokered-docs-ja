@@ -503,39 +503,62 @@ RedFishingTiles:
 	dw vNPCSprites2 + $7d0
 
 ; **_HandleMidJump**  
-; プレイヤーがマップ上の段差から飛び降りた時の処理
+; プレイヤーがマップ上の段差から飛び降りた時のアニメーション処理
 _HandleMidJump:
+	; a = [wPlayerJumpingYScreenCoordsIndex] + 1
 	ld a, [wPlayerJumpingYScreenCoordsIndex]
 	ld c, a
 	inc a
-	cp $10
+
+	; a == 0x10(16) つまり 段差からジャンプするアニメーションを終えた -> .finishedJump
+	cp $10	; 
 	jr nc, .finishedJump
+
+	; [wPlayerJumpingYScreenCoordsIndex] = [wPlayerJumpingYScreenCoordsIndex] + 1
 	ld [wPlayerJumpingYScreenCoordsIndex], a
+
+	; 主人公の Y px を更新して終了
 	ld b, 0
 	ld hl, PlayerJumpingYScreenCoords
 	add hl, bc
 	ld a, [hl]
-	ld [wSpriteStateData1 + 4], a ; player's sprite y coordinate
+	ld [wSpriteStateData1 + 4], a ; 0xc1X4
 	ret
+
 .finishedJump
+	; 段差からジャンプするアニメーションを終えた ときの処理
+	; 変数やフラグ、キー入力の状態をクリアして終了
+
+	; [wWalkCounter] > 0 -> return
 	ld a, [wWalkCounter]
 	cp 0
 	ret nz
+
+	; [wWalkCounter] == 0 のとき
+	; TODO: [wWalkCounter] が 0であることをチェックする理由は?
+
 	call UpdateSprites
 	call Delay3
+
 	xor a
+	
+	; キー入力をリセット
 	ld [hJoyHeld], a
 	ld [hJoyPressed], a
 	ld [hJoyReleased], a
+
+	; [wPlayerJumpingYScreenCoordsIndex] = 0
 	ld [wPlayerJumpingYScreenCoordsIndex], a
+
 	ld hl, wd736
-	res 6, [hl] ; not jumping down a ledge any more
+	res 6, [hl] ; 段差ジャンプ時にセットされるフラグをクリア
 	ld hl, wd730
-	res 7, [hl] ; not simulating joypad states any more
+	res 7, [hl] ; simulated joypad 状態をクリア
+
 	xor a
-	ld [wJoyIgnore], a
+	ld [wJoyIgnore], a ; [wJoyIgnore] = 0
 	ret
 
+; PlayerJumpingYScreenCoords + i = 段差からジャンプして iフレーム目(段差ジャンプは 16フレーム で終わり) でのスプライトの Y座標(px)
 PlayerJumpingYScreenCoords:
-; Sequence of y screen coordinates for player's sprite when jumping over a ledge.
 	db $38, $36, $34, $32, $31, $30, $30, $30, $31, $32, $33, $34, $36, $38, $3C, $3C

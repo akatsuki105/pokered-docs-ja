@@ -3175,7 +3175,8 @@ wEnemyMonOrTrainerClass:: ; d713
 ; trainer classes start at OPP_ID_OFFSET
 	ds 1
 
-; d714
+; d714  
+; 段差からジャンプするアニメーション(全体16フレーム) のうち何フレーム目かを表す  
 wPlayerJumpingYScreenCoordsIndex::
 	ds 1
 
