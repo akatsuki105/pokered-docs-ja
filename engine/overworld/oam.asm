@@ -194,7 +194,7 @@ PrepareOAMData:
 	ld a, [hSpritePriority]
 	or [hl]					; a = ([hSpritePriority] | attr)
 
-.skipPriorityS
+.skipPriority
 	inc hl			; 次の OAM(8*8px)のための SpriteOAMParameters
 	ld [de], a		; attr (もしくは ([hSpritePriority] | attr)) を OAM(wOAMBuffer)に格納
 	inc e			; 次の OAM の wOAMBuffer

@@ -90,6 +90,8 @@ hSpriteScreenY EQU $FF92
 
 hTilePlayerStandingOn EQU $FF93
 
+hSpriteVRAMOffset EQU $FF93
+
 ; 0x80(スプライトが草むらの上) or 0x00(それ以外)
 hSpritePriority EQU $FF94
 

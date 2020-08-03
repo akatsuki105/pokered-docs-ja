@@ -700,7 +700,7 @@ UpdateSpriteImage:
 	add b
 	ld b, a
 
-	ld a, [$ff93]  ; current sprite offset (VRAMオフセット)
+	ld a, [hSpriteVRAMOffset]  ; current sprite offset (VRAMオフセット)
 	add b
 	ld b, a
 

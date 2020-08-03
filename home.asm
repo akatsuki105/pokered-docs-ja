@@ -1055,7 +1055,7 @@ INCLUDE "home/audio.asm"
 
 
 ; **UpdateSprites**  
-; マップに表示されているスプライトの状態を更新する
+; _UpdateSprites を呼び出している
 UpdateSprites::
 	; wUpdateSpritesEnabledが$00か$ffのときは何もしない
 	ld a, [wUpdateSpritesEnabled]
