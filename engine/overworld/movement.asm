@@ -132,8 +132,10 @@ UnusedReadSpriteDataFunction:
 	ret
 
 ; **UpdateNPCSprite**  
-; 
-; NPCの移動を実行するスクリプト
+; NPCの移動を実行するスクリプト  
+; - - -  
+; NPCの移動 = wSpriteStateData1 と wSpriteStateData2 を更新すること  
+; こうしておくことで VBlank中に OAMに状態が反映されて移動処理が実現する  
 UpdateNPCSprite:
 	; a = 処理中のスプライト番号 
 	ld a, [H_CURRENTSPRITEOFFSET]
