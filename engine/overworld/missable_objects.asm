@@ -1,25 +1,40 @@
 MarkTownVisitedAndLoadMissableObjects:
 	ld a, [wCurMap]
+	
+	; [wCurMap] >= ROUTE_1 -> .next
+	; Town の Map ID は 全て ROUTE_1 の前に割り当てられているので wCurMap >= ROUTE_1 なら Townではない
 	cp ROUTE_1
-	jr nc, .notInTown
+	jr nc, .next
+
+; .inTown
+	; Town のときは 訪れたことのあるマップを表すフラグを立てる (そらをとぶ のため)
 	ld c, a
 	ld b, FLAG_SET
-	ld hl, wTownVisitedFlag   ; mark town as visited (for flying)
+	ld hl, wTownVisitedFlag
 	predef FlagActionPredef
-.notInTown
+
+.next
+	; hl = 現在のマップの MapHSPointersエントリ
 	ld hl, MapHSPointers
 	ld a, [wCurMap]
 	ld b, $0
 	ld c, a
 	add hl, bc
-	add hl, bc
-	ld a, [hli]                ; load missable objects pointer in hl
+	add hl, bc	; MapHSPointers の各エントリは 2byte なので
+
+	; hl = [hl]	(LoadMissableObjects の `ld l, a`と合わせて)
+	ld a, [hli]
 	ld h, [hl]
 	; fall through
 
 LoadMissableObjects:
 	ld l, a
+
+	; この時点で hl = MapHS${XX}
+
 	push hl
+
+; hl = MapHS${XX} - MapHS00
 	ld de, MapHS00             ; calculate difference between out pointer and the base pointer
 	ld a, l
 	sub e
@@ -30,6 +45,9 @@ LoadMissableObjects:
 	ld a, h
 	sub d
 	ld h, a
+
+; (MapHS${XX} - MapHS00) / 3  
+; MapHS${XX} の global offsetが得られる (つまり MapHS00 から MapHS${XX} まで　いくつの missable item が得られる)
 	ld a, h
 	ld [H_DIVIDEND], a
 	ld a, l
@@ -40,19 +58,28 @@ LoadMissableObjects:
 	ld a, $3
 	ld [H_DIVISOR], a
 	ld b, $2
-	call Divide                ; divide difference by 3, resulting in the global offset (number of missable items before ours)
+	call Divide
+
 	ld a, [wCurMap]
-	ld b, a
+	ld b, a						; b = [wCurMap]
 	ld a, [H_DIVIDEND+3]
-	ld c, a                    ; store global offset in c
-	ld de, wMissableObjectList
-	pop hl
+	ld c, a                    	; a = c = global_offset
+	ld de, wMissableObjectList	; de = wMissableObjectList
+	pop hl						; hl = MapHS${XX}
+
 .writeMissableObjectsListLoop
+; {
+	; a = Map ID (MapHS${XX} の各エントリの 1byte目)
 	ld a, [hli]
+
+	; テーブルの終わり(MapHSA2 のときに有効) -> .done
 	cp $ff
 	jr z, .done     ; end of list
+
+	; Map ID != [wCurMap] つまり 現在のマップ の探索は終了 -> .done
 	cp b
-	jr nz, .done    ; not for current map anymore
+	jr nz, .done
+
 	ld a, [hli]
 	inc hl
 	ld [de], a                 ; write (map-local) sprite ID
@@ -62,6 +89,8 @@ LoadMissableObjects:
 	ld [de], a                 ; write (global) missable object index
 	inc de
 	jr .writeMissableObjectsListLoop
+; }
+
 .done
 	ld a, $ff
 	ld [de], a                 ; write sentinel

@@ -2268,8 +2268,9 @@ wMovesString:: ; d0e1
 wUnusedD119:: ; d119
 	ds 1
 
-wWalkBikeSurfStateCopy:: ; d11a
-; wWalkBikeSurfState is sometimes copied here, but it doesn't seem to be used for anything
+; d11a  
+; wWalkBikeSurfState の値がしばしばここにコピーされるが、特に使われている様子はない
+wWalkBikeSurfStateCopy::
 	ds 1
 
 wInitListType:: ; d11b
@@ -2757,8 +2758,9 @@ wSpriteSet:: ; d39d
 ; sprite set for the current map (11 sprite picture ID's)
 	ds 11
 
-wSpriteSetID:: ; d3a8
-; sprite set ID for the current map
+; d3a8  
+; 現在のマップの sprite set ID
+wSpriteSetID::
 	ds 1
 
 wObjectDataPointerTemp:: ; d3a9

@@ -1,9 +1,12 @@
-; data for default hidden/shown
-; objects for each map ($00-$F8)
-
-; Table of 2-Byte pointers, one pointer per map,
-; goes up to Map_F7, ends with $FFFF.
-; points to table listing all missable object in the area
+; **MapHSPointers**  
+; マップ上の hidden/shown objects (見えているオブジェクト と 透明なオブジェクト 両方)のデータを格納したテーブル  
+; - - -  
+; HSPointers -> hidden/shown pointers  
+; 
+; このテーブルでは マップごとに 2byteのポインタが割り当てられていて、そのポインタが MapHSPointers の各エントリとなっている  
+; また $FFFF がこのテーブルの終端記号となっている (最後は Map_F7(MapHSXX))  
+; 
+; 各ポインタは そのマップでの missable object の テーブルを指している  
 MapHSPointers:
 	dw MapHS00
 	dw MapHS01
@@ -255,16 +258,17 @@ MapHSPointers:
 	dw MapHSXX
 	dw $FFFF
 
-; Structure:
-; 3 bytes per object
-; [Map_ID][Object_ID][H/S]
-;
-; Program stops reading when either:
-; a) Map_ID = $FF
-; b) Map_ID ≠ currentMapID
-;
-; This Data is loaded into RAM at wd5ce-$D5F?. (wMissableObjectList)
 
+; Structure:  
+; 各エントリは 3byte の大きさを持ち、マップ上のオブジェクトに対応している   
+; db [Map_ID] [Object_ID] [H/S]  
+; 
+; これを扱うプログラムは、次のどちらかの場合に読み出し処理を止める  
+; a) Map_ID = $FF  
+; b) Map_ID ≠ currentMapID  
+; 
+; このデータは、 RAM[wd5ce-$D5F?] にロードされる (wMissableObjectList)  
+; 
 ; These constants come from the bytes for Predef functions:
 Hide equ $11
 Show equ $15

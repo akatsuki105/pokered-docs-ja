@@ -2099,7 +2099,7 @@ LoadPlayerSpriteGraphicsCommon::
 	lb bc, BANK(RedSprite), $0c
 	jp CopyVideoData
 
-; function to load data from the map header
+; Map Header からデータをロードする関数  
 LoadMapHeader::
 	callba MarkTownVisitedAndLoadMissableObjects
 	ld a, [wCurMapTileset]
@@ -2391,19 +2391,26 @@ CopyMapConnectionHeader::
 
 ; 新しいマップのデータをロードする関数
 LoadMapData::
+	; 現在のバンク番号を退避
 	ld a, [H_LOADEDROMBANK]
 	push af
+
 	call DisableLCD
+
+	; wMapViewVRAMPointer = 0x9800
 	ld a, $98
 	ld [wMapViewVRAMPointer + 1], a
 	xor a
 	ld [wMapViewVRAMPointer], a
+
+	; 各変数を初期化
 	ld [hSCY], a
 	ld [hSCX], a
 	ld [wWalkCounter], a
 	ld [wUnusedD119], a
 	ld [wWalkBikeSurfStateCopy], a
 	ld [wSpriteSetID], a
+
 	call LoadTextBoxTilePatterns
 	call LoadMapHeader
 	callba InitMapSprites ; load tile pattern data for sprites
