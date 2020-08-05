@@ -1,3 +1,7 @@
+; **MarkTownVisitedAndLoadMissableObjects**  
+; マップ訪問フラグを立て、 missable object(マップ上のアイテム)の情報を wMissableObjectList に読み込む  
+; - - -  
+; LoadMapHeader によってマップ読み込み時に呼び出される  
 MarkTownVisitedAndLoadMissableObjects:
 	ld a, [wCurMap]
 	
@@ -46,8 +50,8 @@ LoadMissableObjects:
 	sub d
 	ld h, a
 
-; (MapHS${XX} - MapHS00) / 3  
-; MapHS${XX} の global offsetが得られる (つまり MapHS00 から MapHS${XX} まで　いくつの missable item が得られる)
+	; (MapHS${XX} - MapHS00) / 3  
+	; MapHS${XX} の global offsetが得られる (つまり MapHS00 から MapHS${XX} まで　いくつの missable item が得られる)
 	ld a, h
 	ld [H_DIVIDEND], a
 	ld a, l
@@ -68,6 +72,7 @@ LoadMissableObjects:
 	pop hl						; hl = MapHS${XX}
 
 .writeMissableObjectsListLoop
+; ループ全体を通して、 wMissableObjectList に 現在のマップの missable object情報を書き込んでいく
 ; {
 	; a = Map ID (MapHS${XX} の各エントリの 1byte目)
 	ld a, [hli]
@@ -80,18 +85,23 @@ LoadMissableObjects:
 	cp b
 	jr nz, .done
 
-	ld a, [hli]
-	inc hl
-	ld [de], a                 ; write (map-local) sprite ID
+	ld a, [hli]					; a = スプライトID
+	inc hl						; hl = 次のアイテムエントリ
+
+	; wMissableObjectList のエントリの 1byte目 = スプライトID
+	ld [de], a                 	; wMissableObjectList = スプライトID
 	inc de
+	; wMissableObjectList のエントリの 2byte目 = global offset (MapHS00を 0として対象の missable object が何番目のアイテムか)
 	ld a, c
 	inc c
-	ld [de], a                 ; write (global) missable object index
+	ld [de], a
 	inc de
+
 	jr .writeMissableObjectsListLoop
 ; }
 
 .done
+	; wMissableObjectList に 番兵として 0xffを書き込んで return
 	ld a, $ff
 	ld [de], a                 ; write sentinel
 	ret
@@ -127,7 +137,7 @@ InitializeMissableObjectsFlags:
 	jr .missableObjectsLoop
 
 ; 現在処理中のスプライトが非表示になっているかを確認する  
-; 結果はAレジスタに格納される 0なら表示 0以外なら非表示
+; 結果はAレジスタに格納される 0なら表示 0以外なら非表示  
 IsObjectHidden:
 	; b = 現在処理中のスプライト番号
 	ld a, [H_CURRENTSPRITEOFFSET]

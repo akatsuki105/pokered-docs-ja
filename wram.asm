@@ -2630,7 +2630,8 @@ wUnusedD366:: ; d366
 
 ; d367  
 ; 現在のタイルセットのオフセット  
-; タイルセットのオフセットは constants/tilesets.asm で定義されている
+; タイルセットのオフセットは constants/tilesets.asm で定義されている  
+; このアドレスを起点として下のアドレスに Map Header が次々と格納されていく  
 wCurMapTileset::
 	ds 1
 
@@ -2658,7 +2659,9 @@ wMapConnections:: ; d370
 ; connection byte
 	ds 1
 
-wMapConn1Ptr:: ; d371
+; d371  
+; 0xff = disabled
+wMapConn1Ptr::
 	ds 1
 
 wNorthConnectionStripSrc:: ; d372
@@ -2914,9 +2917,11 @@ wMissableObjectFlagsEnd::
 wd5cd:: ds 1 ; temp copy of c1x2 (sprite facing/anim)
 
 ; d5ce  
-; 各エントリごとに2バイトのサイズ(最大17エントリ)      
+; 現在のマップの missable object(マップ上のアイテム) の情報を格納する
+; 
+; 各エントリごとに2バイトのサイズ(最大17エントリ)  
 ; - スプライトID(現在のマップに依存)  
-; - そのスプライトの番号(wSpriteDataStartにおいて何番目にあるか)  
+; - missable object の global offset (MapHS00を 0として対象の missable object が何番目のアイテムか)
 ; 終端記号として$FF  
 wMissableObjectList::
 	ds 17 * 2

@@ -2102,20 +2102,29 @@ LoadPlayerSpriteGraphicsCommon::
 ; Map Header からデータをロードする関数  
 LoadMapHeader::
 	callba MarkTownVisitedAndLoadMissableObjects
+
+	; unused
 	ld a, [wCurMapTileset]
 	ld [wUnusedD119], a
+
 	ld a, [wCurMap]
 	call SwitchToMapRomBank
+
+	; [wCurMapTileset] の bit7をクリア
+	; [hPreviousTileset] にも 格納
 	ld a, [wCurMapTileset]
 	ld b, a
 	res 7, a
 	ld [wCurMapTileset], a
 	ld [hPreviousTileset], a
+	; [wCurMapTileset] の bit7 がクリア前に立っていたら return
 	bit 7, b
 	ret nz
+
+	; hl = 現在のマップに対応する MapHeaderPointers のエントリ
 	ld hl, MapHeaderPointers
 	ld a, [wCurMap]
-	sla a
+	sla a	; MapHeaderPointers は各2byteなので
 	jr nc, .noCarry1
 	inc h
 .noCarry1
@@ -2124,25 +2133,32 @@ LoadMapHeader::
 	jr nc, .noCarry2
 	inc h
 .noCarry2
+
+	; hl = 現在のマップの Map Header のアドレス
 	ld a, [hli]
 	ld h, [hl]
-	ld l, a ; hl = base of map header
-; copy the first 10 bytes (the fixed area) of the map data to D367-D370
+	ld l, a
+
+; wCurMapTileset 以下に Map Header の最初の 10byte までを格納していく
 	ld de, wCurMapTileset
 	ld c, $0a
 .copyFixedHeaderLoop
+; {
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec c
 	jr nz, .copyFixedHeaderLoop
-; initialize all the connected maps to disabled at first, before loading the actual values
+; }
+
+; 実際のコネクション情報(マップが他のマップとどのようにつながっているか)を Map Header から読み込む前に、マップのコネクション情報を初期化(全部のコネクションを無効)する
 	ld a, $ff
 	ld [wMapConn1Ptr], a
 	ld [wMapConn2Ptr], a
 	ld [wMapConn3Ptr], a
 	ld [wMapConn4Ptr], a
-; copy connection data (if any) to WRAM
+
+; 実際にマップにコネクションがある場合は、WRAMのマップのコネクション情報を管理する場所にセットする
 	ld a, [wMapConnections]
 	ld b, a
 .checkNorth

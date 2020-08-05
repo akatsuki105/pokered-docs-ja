@@ -261,7 +261,8 @@ MapHSPointers:
 
 ; Structure:  
 ; 各エントリは 3byte の大きさを持ち、マップ上のオブジェクトに対応している   
-; db [Map_ID] [Object_ID] [H/S]  
+; db [Map_ID] [sprite_ID] [H/S]  
+; sprite ID: マップの人やsignやアイテムなどのオブジェクトに割り当てられるID Mapドキュメントを参照  
 ; 
 ; これを扱うプログラムは、次のどちらかの場合に読み出し処理を止める  
 ; a) Map_ID = $FF  
