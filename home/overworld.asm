@@ -2159,8 +2159,10 @@ LoadMapHeader::
 	ld [wMapConn4Ptr], a
 
 ; 実際にマップにコネクションがある場合は、WRAMのマップのコネクション情報を管理する場所にセットする
+	; b = [wMapConnections] (さきほどの10byteのコピーでどのようなコネクションがあるかが書き込まれている)
 	ld a, [wMapConnections]
 	ld b, a
+
 .checkNorth
 	bit 3, b
 	jr z, .checkSouth

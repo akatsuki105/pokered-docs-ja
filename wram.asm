@@ -2655,8 +2655,9 @@ wMapTextPtr::
 wMapScriptPtr:: ; d36e
 	ds 2
 
-wMapConnections:: ; d370
-; connection byte
+; d370  
+; connection byte  
+wMapConnections::
 	ds 1
 
 ; d371  
