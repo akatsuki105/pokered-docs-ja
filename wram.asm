@@ -2661,7 +2661,12 @@ wMapConnections::
 	ds 1
 
 ; d371  
-; 0xff = disabled
+; 現在のマップのコネクション情報(北)  
+; 
+; ここをベースアドレスとして 11byte 分マップのコネクションデータを格納する  
+; コネクションデータの例 = `NORTH_MAP_CONNECTION PALLET_TOWN, ROUTE_1, 0, 0, Route1_Blocks`  
+; 
+; 0xff のときは コネクションがない つまり disabled
 wMapConn1Ptr::
 	ds 1
 
@@ -2686,7 +2691,9 @@ wNorthConnectedMapXAlignment:: ; d379
 wNorthConnectedMapViewPointer:: ; d37a
 	ds 2
 
-wMapConn2Ptr:: ; d37c
+; d37c  
+; 現在のマップのコネクション情報(南)
+wMapConn2Ptr::
 	ds 1
 
 wSouthConnectionStripSrc:: ; d37d
@@ -2710,7 +2717,9 @@ wSouthConnectedMapXAlignment:: ; d384
 wSouthConnectedMapViewPointer:: ; d385
 	ds 2
 
-wMapConn3Ptr:: ; d387
+; d387  
+; 現在のマップのコネクション情報(西)
+wMapConn3Ptr::
 	ds 1
 
 wWestConnectionStripSrc:: ; d388
@@ -2734,7 +2743,9 @@ wWestConnectedMapXAlignment:: ; d38f
 wWestConnectedMapViewPointer:: ; d390
 	ds 2
 
-wMapConn4Ptr:: ; d392
+; d392  
+; 現在のマップのコネクション情報(東)
+wMapConn4Ptr::
 	ds 1
 
 wEastConnectionStripSrc:: ; d393
@@ -2772,8 +2783,9 @@ wObjectDataPointerTemp:: ; d3a9
 
 	ds 2
 
-wMapBackgroundTile:: ; d3ad
-; the tile shown outside the boundaries of the map
+; d3ad  
+; マップの境界の外側に表示されるタイルのタイルID  
+wMapBackgroundTile::
 	ds 1
 
 wNumberOfWarps:: ; d3ae
@@ -2794,12 +2806,16 @@ wNumSigns:: ; d4b0
 ; number of signs in the current map (up to 16)
 	ds 1
 
-wSignCoords:: ; d4b1
-; 2 bytes each
-; Y, X
+; d4b1  
+; 現在のマップの signの coordを格納する  
+; sign 1つにつき 2byte (Y, X)  
+wSignCoords::
 	ds 32
 
-wSignTextIDs:: ; d4d1
+; d4d1  
+; 現在のマップの signの TextID を格納する  
+; wSignCoords の sign とオフセットが同じ  
+wSignTextIDs::
 	ds 16
 
 ; d4e1  

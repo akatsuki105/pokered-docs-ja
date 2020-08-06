@@ -2163,6 +2163,7 @@ LoadMapHeader::
 	ld a, [wMapConnections]
 	ld b, a
 
+; コネクションがあれば de = wMapConn${N}Ptr(N = 1, 2, 3, 4) に Map Header のコネクション情報を書き込む
 .checkNorth
 	bit 3, b
 	jr z, .checkSouth
@@ -2183,117 +2184,186 @@ LoadMapHeader::
 	jr z, .getObjectDataPointer
 	ld de, wMapConn4Ptr
 	call CopyMapConnectionHeader
+
+; この時点で hl = Map Header の objects のアドレス (e.g. `PalletTown_h` の `dw PalletTown_Object`)
+
+; Map Object(e.g. PalletTown_Object) のデータを WRAM に書き込んでいく
 .getObjectDataPointer
+	; [wObjectDataPointerTemp] = Map Object へのポインタ
 	ld a, [hli]
 	ld [wObjectDataPointerTemp], a
 	ld a, [hli]
 	ld [wObjectDataPointerTemp + 1], a
+	
 	push hl
+
+	; hl = Map Object のアドレス e.g. PalletTown_Object
 	ld a, [wObjectDataPointerTemp]
 	ld l, a
 	ld a, [wObjectDataPointerTemp + 1]
 	ld h, a ; hl = base of object data
+
+	; [wMapBackgroundTile] = ボーダーのタイルID
 	ld de, wMapBackgroundTile
 	ld a, [hli]
 	ld [de], a
+
 .loadWarpData
+	; [wNumberOfWarps] = マップの warp の数
 	ld a, [hli]
 	ld [wNumberOfWarps], a
+	
+	; マップに warp がない -> .loadSignData
 	and a
 	jr z, .loadSignData
+
 	ld c, a
 	ld de, wWarpEntries
-.warpLoop ; one warp per loop iteration
+
+; wWarpEntries に Map Object の warp情報を書き込んでいく
+.warpLoop
+; 1回のループ で warp 1つの情報を wWarpEntries に書き込んでいく
+; {
 	ld b, $04
 .warpInnerLoop
+; 1回のループで warp情報(4byte) を 1byteずつ書き込んでいく
+;  {
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec b
 	jr nz, .warpInnerLoop
+;  }
 	dec c
 	jr nz, .warpLoop
+; }
+
 .loadSignData
+	; [wNumSigns] = マップの sign数
 	ld a, [hli] ; number of signs
 	ld [wNumSigns], a
-	and a ; are there any signs?
-	jr z, .loadSpriteData ; if not, skip this
-	ld c, a
+
+	; マップに sign がない -> .loadSpriteData
+	and a 
+	jr z, .loadSpriteData
+
+	ld c, a ; c = マップの sign数
+
+	; [hSignCoordPointer] = wSignTextIDs
 	ld de, wSignTextIDs
 	ld a, d
 	ld [hSignCoordPointer], a
 	ld a, e
 	ld [hSignCoordPointer + 1], a
+
+; wSignCoords と wSignTextIDs に 現在のマップの signのデータ をコピーしていく
 	ld de, wSignCoords
 .signLoop
+; {
+	; wSignCoords に sign の coord をコピーしていく
 	ld a, [hli]
 	ld [de], a
-	inc de
+	inc de	; Y
 	ld a, [hli]
 	ld [de], a
-	inc de
+	inc de	; X
+
 	push de
+	
+	; de = [hSignCoordPointer] つまり wSignTextIDs の現在のエントリ
 	ld a, [hSignCoordPointer]
 	ld d, a
 	ld a, [hSignCoordPointer + 1]
 	ld e, a
+
+	; wSignTextIDs に sign の TextID を格納
 	ld a, [hli]
 	ld [de], a
 	inc de
+
+	; [hSignCoordPointer] = wSignTextIDs の次のエントリ
 	ld a, d
 	ld [hSignCoordPointer], a
 	ld a, e
 	ld [hSignCoordPointer + 1], a
-	pop de
+
+	pop de	; de = wSignCoords の次のエントリ
+
 	dec c
 	jr nz, .signLoop
+; }
+
 .loadSpriteData
+	; 戦闘終了直後 -> .finishUp
+	; 戦闘をしても、 WRAM上の現在のマップのスプライトのデータは変わっていないことが保証されている。
+	; よって 戦闘終了直後に LoadMapHeader が 呼ばれたときは .loadSpriteData をスキップする
 	ld a, [wd72e]
-	bit 5, a ; did a battle happen immediately before this?
-	jp nz, .finishUp ; if so, skip this because battles don't destroy this data
+	bit 5, a
+	jp nz, .finishUp
+
+	; [wNumSprites] = 現在のマップの object(スプライト) の数
 	ld a, [hli]
-	ld [wNumSprites], a ; save the number of sprites
+	ld [wNumSprites], a
+
 	push hl
-; zero C110-C1FF and C210-C2FF
+
+	; wSpriteStateData1(C110-C1FF) と wSpriteStateData2(C210-C2FF) を 0クリアする
 	ld hl, wSpriteStateData1 + $10
 	ld de, wSpriteStateData2 + $10
 	xor a
 	ld b, $f0
 .zeroSpriteDataLoop
+; {
 	ld [hli], a
 	ld [de], a
 	inc e
 	dec b
 	jr nz, .zeroSpriteDataLoop
-; initialize all C100-C1FF sprite entries to disabled (other than player's)
-	ld hl, wSpriteStateData1 + $12
+; }
+
+	; wSpriteStateData1 を プレイヤー以外 すべて disable にする (c1X2 に 0xffを格納していく)
+	ld hl, wSpriteStateData1 + $12 ; 0x10 + 0x02 (プレイヤーはスキップするため 0x10が加えられている)
 	ld de, $0010
 	ld c, $0f
 .disableSpriteEntriesLoop
+; {
 	ld [hl], $ff
 	add hl, de
 	dec c
 	jr nz, .disableSpriteEntriesLoop
-	pop hl
+; }
+
+	pop hl	; hl = Map Object の最初のエントリのアドレス
+
 	ld de, wSpriteStateData1 + $10
-	ld a, [wNumSprites] ; number of sprites
-	and a ; are there any sprites?
-	jp z, .finishUp ; if there are no sprites, skip the rest
+
+	; 現在のマップに プレイヤーを除いた objectが ない -> .finishUp
+	ld a, [wNumSprites]
+	and a
+	jp z, .finishUp
+
+	; 以後、 wSpriteStateData1 と wSpriteStateData2 に Map Objectのデータを格納していく
 	ld b, a
 	ld c, $00
 .loadSpriteLoop
+	; c1X0 = スプライトID(picture ID)
 	ld a, [hli]
 	ld [de], a ; store picture ID at C1X0
+
 	inc d
 	ld a, $04
 	add e
 	ld e, a
+
+	; c2X4 = Y座標
 	ld a, [hli]
 	ld [de], a ; store Y position at C2X4
 	inc e
+	; c2X5 = X座標
 	ld a, [hli]
 	ld [de], a ; store X position at C2X5
 	inc e
+
 	ld a, [hli]
 	ld [de], a ; store movement byte 1 at C2X6
 	ld a, [hli]
@@ -2395,16 +2465,26 @@ LoadMapHeader::
 	ld [MBC1RomBank], a
 	ret
 
-; function to copy map connection data from ROM to WRAM
-; Input: hl = source, de = destination
+; **CopyMapConnectionHeader**  
+; ROM から WRAM にマップのコネクションデータをコピーする関数  
+; - - -  
+; コネクションデータ(サイズは 11byte 例: PalletTown_h)  
+; `NORTH_MAP_CONNECTION PALLET_TOWN, ROUTE_1, 0, 0, Route1_Blocks`  
+; 
+; INPUT:  
+; hl = source  (コネクションデータのアドレス e.g. PalletTown_hの 11byte目のアドレス)
+; de = destination (wMapConn${N}Ptr N = 1(北) or 2(南) or 3(西) or 4(東))
 CopyMapConnectionHeader::
-	ld c, $0b
+	ld c, $0b	; コネクションデータは 11byte
 .loop
+; {
+	; [de++] = [hl++]
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec c
 	jr nz, .loop
+; }
 	ret
 
 ; 新しいマップのデータをロードする関数
