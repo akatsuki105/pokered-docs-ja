@@ -2099,7 +2099,10 @@ LoadPlayerSpriteGraphicsCommon::
 	lb bc, BANK(RedSprite), $0c
 	jp CopyVideoData
 
+; **LoadMapHeader**  
 ; Map Header からデータをロードする関数  
+; - - -  
+; ROMの Map Headerのデータを WRAM の決められた場所に格納していく
 LoadMapHeader::
 	callba MarkTownVisitedAndLoadMissableObjects
 
@@ -2343,6 +2346,7 @@ LoadMapHeader::
 	jp z, .finishUp
 
 	; 以後、 wSpriteStateData1 と wSpriteStateData2 に Map Objectのデータを格納していく
+	; bc = 0xXX00 (XX = スプライト数)
 	ld b, a
 	ld c, $00
 .loadSpriteLoop
@@ -2364,105 +2368,165 @@ LoadMapHeader::
 	ld [de], a ; store X position at C2X5
 	inc e
 
+	; c2X6 = movement byte 1 (WALK(0xfe) or STAY(0xff))
 	ld a, [hli]
-	ld [de], a ; store movement byte 1 at C2X6
+	ld [de], a
+
+	; [hLoadSpriteTemp1] = movement byte 2
 	ld a, [hli]
-	ld [hLoadSpriteTemp1], a ; save movement byte 2
+	ld [hLoadSpriteTemp1], a
+
+	; [hLoadSpriteTemp2] = TextID　と フラグ
+	; フラグ => トレーナーの場合は TRAINER | TextID, アイテムの場合は ITEM | TextID
 	ld a, [hli]
-	ld [hLoadSpriteTemp2], a ; save text ID and flags byte
+	ld [hLoadSpriteTemp2], a
+
 	push bc
 	push hl
+
+	; hl = 現在処理中のスプライトの wMapSpriteData のエントリ
 	ld b, $00
 	ld hl, wMapSpriteData
 	add hl, bc
+
+	; wMapSpriteData の1バイト目 に movement byte 2
 	ld a, [hLoadSpriteTemp1]
-	ld [hli], a ; store movement byte 2 in byte 0 of sprite entry
+	ld [hli], a
+
+	; wMapSpriteData の2バイト目 に フラグ付きの TextID
+	; この値はすぐに上書きされているのでこの処理は無駄な処理と思われる
 	ld a, [hLoadSpriteTemp2]
-	ld [hl], a ; this appears pointless, since the value is overwritten immediately after
+	ld [hl], a
+
+	; wMapSpriteData の2バイト目 に TextID
 	ld a, [hLoadSpriteTemp2]
 	ld [hLoadSpriteTemp1], a
-	and $3f
-	ld [hl], a ; store text ID in byte 1 of sprite entry
+	and $3f		; フラグを削除
+	ld [hl], a
+
 	pop hl
+	; この時点で hl = Map object の現在処理中のスプライトのデータの 7バイト目
+	; つまり `object` マクロの 7バイト目
+
+	; TextID のフラグによって分岐
 	ld a, [hLoadSpriteTemp1]
 	bit 6, a
-	jr nz, .trainerSprite
+	jr nz, .trainerSprite	; TRAINER | TextID -> .trainerSprite
 	bit 7, a
-	jr nz, .itemBallSprite
-	jr .regularSprite
+	jr nz, .itemBallSprite	; ITEM | TextID -> .itemBallSprite
+	jr .regularSprite		; others -> .regularSprite
+
 .trainerSprite
+	; [hLoadSpriteTemp1] = trainer class (trainer_const参照)
 	ld a, [hli]
-	ld [hLoadSpriteTemp1], a ; save trainer class
+	ld [hLoadSpriteTemp1], a
+
+	; [hLoadSpriteTemp2] = trainer number (within class)
 	ld a, [hli]
-	ld [hLoadSpriteTemp2], a ; save trainer number (within class)
+	ld [hLoadSpriteTemp2], a
+
 	push hl
+
+	; wMapSpriteExtraData のエントリに [trainer class, trainer number] をセット
 	ld hl, wMapSpriteExtraData
 	add hl, bc
 	ld a, [hLoadSpriteTemp1]
-	ld [hli], a ; store trainer class in byte 0 of the entry
+	ld [hli], a ; trainer class
 	ld a, [hLoadSpriteTemp2]
-	ld [hl], a ; store trainer number in byte 1 of the entry
-	pop hl
+	ld [hl], a 	; trainer number
+
+	pop hl			; hl = 次の Map Objectエントリ
 	jr .nextSprite
+
 .itemBallSprite
+	; [hLoadSpriteTemp1] = Item ID
 	ld a, [hli]
 	ld [hLoadSpriteTemp1], a ; save item number
+
 	push hl
+
+	; wMapSpriteExtraData のエントリに [ItemID, 0]をセット
 	ld hl, wMapSpriteExtraData
 	add hl, bc
 	ld a, [hLoadSpriteTemp1]
-	ld [hli], a ; store item number in byte 0 of the entry
+	ld [hli], a
 	xor a
-	ld [hl], a ; zero byte 1, since it is not used
-	pop hl
+	ld [hl], a
+
+	pop hl	; hl = 次の Map Objectエントリ
 	jr .nextSprite
+
 .regularSprite
+	; wMapSpriteExtraData のエントリに [0, 0] をセット
 	push hl
 	ld hl, wMapSpriteExtraData
 	add hl, bc
-; zero both bytes, since regular sprites don't use this extra space
 	xor a
 	ld [hli], a
 	ld [hl], a
 	pop hl
+
 .nextSprite
+	; bc = 0xXXYY
+	; XX = スプライト数 - ループ数  0になったら.loadSpriteLoopを抜ける
+	; YY = ループ数*2 wMapSpriteExtraDataのエントリのオフセットに用いる
 	pop bc
-	dec d
-	ld a, $0a
-	add e
-	ld e, a
+
+	; de = 次のスプライトの wSpriteStateData1エントリ
+	dec d		; c2X6(de) -> c1X6
+	ld a, $0a	
+	add e		
+	ld e, a		; c1X6 + 0x0a -> c1(X+1)0
+
+	; c = ループ数*2
 	inc c
 	inc c
+
 	dec b
 	jp nz, .loadSpriteLoop
+
 .finishUp
 	predef LoadTilesetHeader
 	callab LoadWildData
 	pop hl ; restore hl from before going to the warp/sign/sprite data (this value was saved for seemingly no purpose)
-	ld a, [wCurMapHeight] ; map height in 4x4 tile blocks
-	add a ; double it
-	ld [wCurrentMapHeight2], a ; store map height in 2x2 tile blocks
-	ld a, [wCurMapWidth] ; map width in 4x4 tile blocks
-	add a ; double it
-	ld [wCurrentMapWidth2], a ; map width in 2x2 tile blocks
+
+	; [wCurrentMapHeight2] = [wCurMapHeight]*2
+	ld a, [wCurMapHeight]
+	add a
+	ld [wCurrentMapHeight2], a
+
+	; [wCurrentMapWidth2] = [wCurMapWidth]*2
+	ld a, [wCurMapWidth]
+	add a
+	ld [wCurrentMapWidth2], a
+
 	ld a, [wCurMap]
 	ld c, a
 	ld b, $00
+
 	ld a, [H_LOADEDROMBANK]
 	push af
+
+	; MapSongBanks にバンクスイッチ
 	ld a, BANK(MapSongBanks)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	; hl = ロードするマップのBGMデータ (MapSongBanksの該当エントリのアドレス)
 	ld hl, MapSongBanks
 	add hl, bc
 	add hl, bc
+
+	; [wMapMusicSoundID] にセット
 	ld a, [hli]
 	ld [wMapMusicSoundID], a ; music 1
 	ld a, [hl]
 	ld [wMapMusicROMBank], a ; music 2
+
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
 	ret
 
 ; **CopyMapConnectionHeader**  

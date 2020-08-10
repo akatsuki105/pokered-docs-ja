@@ -113,20 +113,20 @@ NONE  EQU $FF
 ; \7 trainers only: trainer class/pokemon id  
 ; \8 trainers only: trainer number/pokemon level  
 object: MACRO
-	db \1
-	db \3 + 4
-	db \2 + 4
-	db \4
-	db \5
-	IF (_NARG > 7)
+	db \1					; sprite id
+	db \3 + 4				; y
+	db \2 + 4				; x
+	db \4					; movement byte 1
+	db \5					; movement byte 2
+	IF (_NARG > 7)			; db (TRAINER | \6), \7, \8
 		db TRAINER | \6
 		db \7
 		db \8
-	ELSE
-		IF (_NARG > 6)
+	ELSE					
+		IF (_NARG > 6)		; db (ITEM | \6), \7
 			db ITEM | \6
 			db \7
-		ELSE
+		ELSE				; db \6
 			db \6
 		ENDC
 	ENDC

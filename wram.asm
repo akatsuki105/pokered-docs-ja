@@ -2578,10 +2578,12 @@ wLetterPrintingDelayFlags::
 wPlayerID::
 	ds 2
 
-wMapMusicSoundID:: ; d35b
+; d35b
+wMapMusicSoundID::
 	ds 1
 
-wMapMusicROMBank:: ; d35c
+; d35c
+wMapMusicROMBank::
 	ds 1
 
 ; d35d  
@@ -2836,16 +2838,29 @@ wXOffsetSinceLastSpecialWarp:: ; d4e3
 wMapSpriteData::
 	ds 32
 
-wMapSpriteExtraData:: ; d504
-; two bytes per sprite (trainer class/item ID, trainer set ID)
+; d504  
+; スプライトごとに2バイト  
+; 
+; スプライトがトレーナーの場合:  
+; [trainer class, trainer number]  
+; trainer number = trainer class内で スプライトを識別するためのID  
+; 
+; スプライトがアイテム(モンボアイコン)の場合:  
+; [item ID, 0]  
+; 
+; 通常のスプライトの場合:  
+; [0, 0]  
+wMapSpriteExtraData::
 	ds 32
 
-wCurrentMapHeight2:: ; d524
-; map height in 2x2 meta-tiles
+; d524  
+; マップの高さ (16*16pxのブロック単位)
+wCurrentMapHeight2::
 	ds 1
 
-wCurrentMapWidth2:: ; d525
-; map width in 2x2 meta-tiles
+; d525
+; マップの幅 (16*16pxのブロック単位)
+wCurrentMapWidth2::
 	ds 1
 
 ; d526  
