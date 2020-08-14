@@ -292,7 +292,7 @@ wSprite15StateData1::      spritestatedata1 wSprite15StateData1
 ; - C2xA: ???
 ; - C2xB: ???
 ; - C2xC: ???
-; - C2xD: ???
+; - C2xD: SPRITE_RED など spriteID
 ; - C2xE: スプライトのイメージデータがVRAMのどのアドレスにあるか (主人公は常に1, C1x2で使用する) 画面非表示から表示に戻すときに必要になる？
 ; - C2xF: ???
 wSpriteStateData2::

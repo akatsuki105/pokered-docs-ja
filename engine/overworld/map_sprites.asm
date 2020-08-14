@@ -1,8 +1,10 @@
-; Loads tile patterns for map's sprites.
-; For outside maps, it loads one of several fixed sets of sprites.
-; For inside maps, it loads each sprite picture ID used in the map header.
-; This is also called after displaying text because loading
-; text tile patterns overwrites half of the sprite tile pattern data.
+; **InitMapSprites**  
+; マップ上のスプライトのタイルパターンをロードする関数  
+; - - -  
+; 外部マップの場合は、いくつかの固定されたスプライトのセットの1つをロードします。
+; 建物などの内部マップでは、この関数は Map Headerで使われている各スプライトの picture IDをロードする  
+; 会話時にはテキストのタイルパターンがスプライトのタイルパターンデータを半分上書きしてしまうので、会話終了時にもこの関数が呼ばれる  
+; 
 ; Note on notation:
 ; $C1X* and $C2X* are used to denote wSpriteStateData1-wSpriteStateData1 + $ff and wSpriteStateData2 + $00-wSpriteStateData2 + $ff sprite slot
 ; fields, respectively, within loops. The X is the loop index.
@@ -248,31 +250,48 @@ ReadSpriteSheetData:
 	ld a, [hli]
 	ret
 
-; Loads sprite set for outside maps (cities and routes) and sets VRAM slots.
-; sets carry if the map is a city or route, unsets carry if not
+; **InitOutsideMapSprites**  
+; 外部マップ(町や道路)のスプライトセットをロードし、VRAMスロットにセットする  
+; - - -  
+; スプライトセットは `data/sprite_sets.asm` 参照  
+; OUTPUT: carry = 1(対象が外部マップ) or 0(対象が内部マップ)
 InitOutsideMapSprites:
+	; [wCurMap] >= REDS_HOUSE_1F つまり マップが内部マップならキャリーをクリアして終了
 	ld a, [wCurMap]
-	cp REDS_HOUSE_1F ; is the map a city or a route (map ID less than $25)?
-	ret nc ; if not, return
+	cp REDS_HOUSE_1F ; 外部マップは全て < REDS_HOUSE_1F
+	ret nc
+
+	; a = spriteSetID (MapSpriteSets の該当エントリ)
 	ld hl, MapSpriteSets
 	add l
 	ld l, a
 	jr nc, .noCarry
 	inc h
 .noCarry
-	ld a, [hl] ; a = spriteSetID
-	cp $f0 ; does the map have 2 sprite sets?
-	call nc, GetSplitMapSpriteSetID ; if so, choose the appropriate one
+	ld a, [hl]
+
+	; spriteSetID >= 0xf0 つまり マップが2つのスプライトセットを持っている -> GetSplitMapSpriteSetID
+	cp $f0
+	call nc, GetSplitMapSpriteSetID
+
 	ld b, a ; b = spriteSetID
+
+	; [wFontLoaded] の bit0 が立っている つまり テキストデータのタイルが VRAM の BGマップ の上半分にセットされている -> .loadSpriteSet
 	ld a, [wFontLoaded]
-	bit 0, a ; reloading upper half of tile patterns after displaying text?
-	jr nz, .loadSpriteSet ; if so, forcibly reload the sprite set
+	bit 0, a
+	jr nz, .loadSpriteSet
+
+	; 現在 VRAMにセットされている スプライトセット(wSpriteSetIDからわかる) が ロードしようとしているスプライトセットと等しい -> .skipLoadingSpriteSet
 	ld a, [wSpriteSetID]
-	cp b ; has the sprite set ID changed?
-	jr z, .skipLoadingSpriteSet ; if not, don't load it again
+	cp b
+	jr z, .skipLoadingSpriteSet
+
 .loadSpriteSet
+	; [wSpriteSetID] = ロードする spriteSetID
 	ld a, b
 	ld [wSpriteSetID], a
+
+	; a = (spriteSetID - 1) * 11
 	dec a
 	ld b, a
 	sla a
@@ -280,17 +299,20 @@ InitOutsideMapSprites:
 	sla a
 	sla a
 	add c
-	add b ; a = (spriteSetID - 1) * 11
+	add b
+	
+	; de = SpriteSets の該当エントリ (11個ごとの区切りの先頭)
 	ld de, SpriteSets
-; add a to de to get offset of sprite set
 	add e
 	ld e, a
 	jr nc, .noCarry2
 	inc d
 .noCarry2
+	; $C20D はプレイヤーのspriteIDのスロットなので SPRITE_REDで固定
 	ld hl, wSpriteStateData2 + $0d
 	ld a, SPRITE_RED
 	ld [hl], a
+
 	ld bc, wSpriteSet
 ; Load the sprite set into RAM.
 ; This loop also fills $C2XD (sprite picture ID) where X is from $0 to $A
@@ -378,24 +400,36 @@ InitOutsideMapSprites:
 	scf
 	ret
 
-; Chooses the correct sprite set ID depending on the player's position within
-; the map for maps with two sprite sets.
+; **GetSplitMapSpriteSetID**  
+; 2つのスプライトセットを持つマップの場合、マップ内でのプレーヤーの位置に応じて、正しい spriteSetID を選択する関数  
+; - - -  
+; MapSpriteSets から取得した spriteSetID が 0xf0 以上の場合、そのまま spriteSetID として使うのではなく
+; SplitMapSpriteSets を通して正しい spriteSetID に変換して使う  
+; 
+; INPUT: a = 0xf0以上の spriteSetID (MapSpriteSets のエントリ)  
+; OUTPUT: a = spriteSetID  
 GetSplitMapSpriteSetID:
+	; spriteSetID == 0xf8 -> .route20
 	cp $f8
 	jr z, .route20
+
+	; hl = SplitMapSpriteSets の該当エントリのアドレス
 	ld hl, SplitMapSpriteSets
 	and $0f
 	dec a
 	sla a
-	sla a
+	sla a		; エントリは 4byteなので a << 2
 	add l
 	ld l, a
 	jr nc, .noCarry
 	inc h
 .noCarry
-	ld a, [hli] ; determines whether the map is split East/West or North/South
+
+	; a = [wXCoord](東西分割) or [wYCoord](南北分割)
+	; b = 境界線の coord
+	ld a, [hli]
 	cp $01
-	ld a, [hli] ; position of dividing line
+	ld a, [hli]
 	ld b, a
 	jr z, .eastWestDivide
 .northSouthDivide
@@ -403,14 +437,18 @@ GetSplitMapSpriteSetID:
 	jr .compareCoord
 .eastWestDivide
 	ld a, [wXCoord]
+
+; この時点で hl = SplitMapSpriteSets の該当エントリの3バイト目のアドレス
+
+; 境界線と自分の座標を比較して a に spriteSetIDを格納して return
 .compareCoord
 	cp b
 	jr c, .loadSpriteSetID
-; if in the East side or South side
-	inc hl
+	inc hl	; 東側 or 南側
 .loadSpriteSetID
 	ld a, [hl]
 	ret
+
 ; Uses sprite set $01 for West side and $0A for East side.
 ; Route 20 is a special case because the two map sections have a more complex
 ; shape instead of the map simply being split horizontally or vertically.

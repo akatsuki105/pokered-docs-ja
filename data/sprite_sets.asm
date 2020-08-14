@@ -37,13 +37,11 @@ MapSpriteSets:
 	db $02 ; ROUTE_24
 	db $02 ; ROUTE_25
 
-; Format:
-; 00: determines whether the map is split East/West or North/South
-; $01 = East/West divide
-; $02 = North/South divide
-; 01: coordinate of dividing line
-; 02: sprite set ID if in the West or North side
-; 03: sprite set ID if in the East or South side
+; **SplitMapSpriteSets**  
+; 1バイト目: マップが東西に分割できるか南北に分割できるか ($01: 東西, $02: 南北)  
+; 2バイト目: 境界線の coord  
+; 3バイト目: 西側または北側での sprite set ID  
+; 4バイト目: 東側または南側での sprite set ID   
 SplitMapSpriteSets:
 	db $02,$25,$02,$01 ; $f1
 	db $02,$32,$02,$03 ; $f2
@@ -58,6 +56,10 @@ SplitMapSpriteSets:
 	db $01,$11,$05,$07 ; $fb
 	db $01,$03,$07,$03 ; $fc
 
+; **SpriteSets**  
+; スプライトのタイルデータの塊(スプライトセット)を定義したテーブル  
+; - - -  
+; 各スプライトセットは 11個(11人)のスプライトデータから構成されている
 SpriteSets:
 ; sprite set $01
 	db SPRITE_BLUE
