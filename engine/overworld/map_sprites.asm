@@ -28,20 +28,24 @@ InitMapSprites:
 	ld l, a
 	jr nz, .copyPictureIDLoop
 
-; This is used for both inside and outside maps, since it is called by
-; InitOutsideMapSprites.
-; Loads tile pattern data for sprites into VRAM.
+; **LoadMapSpriteTilePatterns**  
+; スプライトのタイルデータを VRAM にロードする関数  
+; - - -  
+; この関数は InitOutsideMapSprites によって呼ばれるため、 内部マップでも外部マップでも利用される  
 LoadMapSpriteTilePatterns:
+	; 処理対象のスプライトがもうない -> return
 	ld a, [wNumSprites]
 	and a ; are there any sprites?
 	jr nz, .spritesExist
 	ret
+
 .spritesExist
 	ld c, a ; c = [wNumSprites]
-	ld b, $10 ; number of sprite slots
+	ld b, $10 ; スプライトスロットの数 (wSpriteStateData1 は 全部で16スプライト分なので 0x10)
 	ld hl, wSpriteStateData2 + $0d
 	xor a
-	ld [hFourTileSpriteCount], a
+	ld [hFourTileSpriteCount], a	; 各スプライトは 8*8タイル4枚からなるのでそのカウンタ
+
 .copyPictureIDLoop ; loop to copy picture ID from $C2XD to $C2XE
 	ld a, [hli] ; $C2XD (sprite picture ID)
 	ld [hld], a ; $C2XE
@@ -308,30 +312,45 @@ InitOutsideMapSprites:
 	jr nc, .noCarry2
 	inc d
 .noCarry2
-	; $C20D はプレイヤーのspriteIDのスロットなので SPRITE_REDで固定
+	; $C20D はプレイヤーのスプライトIDのスロットなので SPRITE_REDで固定
 	ld hl, wSpriteStateData2 + $0d
 	ld a, SPRITE_RED
 	ld [hl], a
 
 	ld bc, wSpriteSet
-; Load the sprite set into RAM.
-; This loop also fills $C2XD (sprite picture ID) where X is from $0 to $A
-; with picture ID's. This is done so that LoadMapSpriteTilePatterns will
-; load tile patterns for all sprite pictures in the sprite set.
+
+; スプライトセット(の中身の sprite picture ID)を wSpriteSet と 各 $C2XD にセットしていく
+; これは、 LoadMapSpriteTilePatterns がスプライトセット内のすべてのスプライトのタイルパターンを読み込むように行われます。  
 .loadSpriteSetLoop
+; {
+	; ループ開始時 
+	; bc は wSpriteSetの新しいエントリ
+	; de は処理対象のスプライトIDを指している (SpriteSets の該当スプライトセット(11個の塊)の中の該当スプライト)
+
+	; hl += 0x10 (次の スプライトの C2XD)
 	ld a, $10
 	add l
 	ld l, a
-	ld a, [de] ; sprite picture ID from sprite set
-	ld [hl], a ; $C2XD (sprite picture ID)
+
+	; スプライトセットから取得した スプライトID を C2XD にセット
+	ld a, [de]
+	ld [hl], a
+
+	; bc, de を次のエントリへ
 	ld [bc], a
 	inc de
 	inc bc
+
+	; スプライトセット全てを処理し終えたら終了 (11個目のスプライトを処理したら終了)
 	ld a, l
-	cp $bd ; reached 11th sprite slot?
+	cp $bd
 	jr nz, .loadSpriteSetLoop
-	ld b, 4 ; 4 remaining sprite slots
-.zeroRemainingSlotsLoop ; loop to zero the picture ID's of the remaining sprite slots
+; }
+
+; 残り4つの wSpriteStateData2 の c2XDを 0クリアする
+	ld b, 4
+.zeroRemainingSlotsLoop
+; {
 	ld a, $10
 	add l
 	ld l, a
@@ -339,13 +358,20 @@ InitOutsideMapSprites:
 	ld [hl], a ; $C2XD (sprite picture ID)
 	dec b
 	jr nz, .zeroRemainingSlotsLoop
+; }
+
+	; [wNumSprites] を退避
 	ld a, [wNumSprites]
 	push af ; save number of sprites
+
 	ld a, 11 ; 11 sprites in sprite set
 	ld [wNumSprites], a
 	call LoadMapSpriteTilePatterns
+
+	; [wNumSprites] を下に戻す
 	pop af
 	ld [wNumSprites], a ; restore number of sprites
+
 	ld hl, wSpriteStateData2 + $1e
 	ld b, $0f
 ; The VRAM tile pattern slots that LoadMapSpriteTilePatterns set are in the

@@ -2771,8 +2771,9 @@ wEastConnectedMapXAlignment:: ; d39a
 wEastConnectedMapViewPointer:: ; d39b
 	ds 2
 
-wSpriteSet:: ; d39d
-; sprite set for the current map (11 sprite picture ID's)
+; d39d  
+; 現在のマップのスプライトセット (スプライトセットを構成する 11個の sprite picture ID)
+wSpriteSet::
 	ds 11
 
 ; d3a8  
