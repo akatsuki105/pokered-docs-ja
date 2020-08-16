@@ -191,6 +191,11 @@ SpriteSets:
 	db SPRITE_BALL
 	db SPRITE_OMANYTE
 
+; **SpriteSheetPointerTable**  
+; - - -  
+; dw スプライトの2bppデータのアドレス  
+; db 0xc0(3方向) or 0x40(1方向)  
+; db スプライトのあるバンク番号  
 SpriteSheetPointerTable:
 	; SPRITE_RED
 	dw RedSprite

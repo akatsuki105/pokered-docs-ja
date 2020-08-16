@@ -46,7 +46,9 @@ LoadMapSpriteTilePatterns:
 	xor a
 	ld [hFourTileSpriteCount], a	; 各スプライトは 8*8タイル4枚からなるのでそのカウンタ
 
-.copyPictureIDLoop ; loop to copy picture ID from $C2XD to $C2XE
+; 各$C2XD に格納されている sprite picture ID を $C2XE にコピーしていく
+.copyPictureIDLoop 
+; {
 	ld a, [hli] ; $C2XD (sprite picture ID)
 	ld [hld], a ; $C2XE
 	ld a, l
@@ -54,70 +56,109 @@ LoadMapSpriteTilePatterns:
 	ld l, a
 	dec b
 	jr nz, .copyPictureIDLoop
+; }
+
 	ld hl, wSpriteStateData2 + $1e
 .loadTilePatternLoop
 	ld de, wSpriteStateData2 + $1d
-; Check if the current picture ID has already had its tile patterns loaded.
-; This done by looping through the previous sprite slots and seeing if any of
-; their picture ID's match that of the current sprite slot.
+; 現在の picutire ID に対応するタイルデータがすでにロード済か確認する  
+; wSpriteStateData2 の16個のスプライトについてループを通して1つずつ確認していく  
+; すでに確認済のスプライトを見ていき picture IDが現在処理中のスプライトの picture ID と一致した場合ロード済とする  
+; 未ロードの場合はロード処理を行う
 .checkIfAlreadyLoadedLoop
+; {
+	; b = 比較対象のスプライト(すでに確認済のスプライト)のオフセット
 	ld a, e
 	and $f0
-	ld b, a ; b = offset of the wSpriteStateData2 sprite slot being checked against
+	ld b, a
+
+	; a = 確認対象のスプライト
 	ld a, l
-	and $f0 ; a = offset of current wSpriteStateData2 sprite slot
-	cp b ; done checking all previous sprite slots?
+	and $f0
+
+	; 確認対象のスプライトより前のスプライトをすべてチェックした -> .notAlreadyLoaded
+	cp b
 	jr z, .notAlreadyLoaded
-	ld a, [de] ; picture ID of the wSpriteStateData2 sprite slot being checked against
-	cp [hl] ; do the picture ID's match?
+
+	; 前のスプライトに picture IDが一致するものが見つかった -> .alreadyLoaded
+	ld a, [de]	; c2XD
+	cp [hl]		; c2YE
 	jp z, .alreadyLoaded
+
+	; 次のスロットへ
 	ld a, e
 	add $10
 	ld e, a
 	jr .checkIfAlreadyLoadedLoop
+; }
+
 .notAlreadyLoaded
 	ld de, wSpriteStateData2 + $0e
 	ld b, $01
-; loop to find the highest tile pattern VRAM slot (among the first 10 slots) used by a previous sprite slot
-; this is done in order to find the first free VRAM slot available
+	; この時点で hl は現在処理中のスプライトの c2XE
+
+; VRAMスロットのうち空いている場所をVRAMスロットが10以内の範囲で前から探していく
 .findNextVRAMSlotLoop
 	ld a, e
 	add $10
 	ld e, a
+
+	; 以前のスプライトを全て見た -> .foundNextVRAMSlot
 	ld a, l
-	cp e ; reached current slot?
+	cp e
 	jr z, .foundNextVRAMSlot
+
+	; 見ているスプライトスロットのスプライトのタイルデータのVRAM内オフセットが 10スロット以降にある -> .findNextVRAMSlotLoop
 	ld a, [de] ; $C2YE (VRAM slot)
 	cp 11 ; is it one of the first 10 slots?
 	jr nc, .findNextVRAMSlotLoop
+
+	; 10スロット以内の場合
 	cp b ; compare the slot being checked to the current max
 	jr c, .findNextVRAMSlotLoop ; if the slot being checked is less than the current max
+
 ; if the slot being checked is greater than or equal to the current max
 	ld b, a ; store new max VRAM slot
 	jr .findNextVRAMSlotLoop
+
+; この時点で b = スプライトのタイルデータのために使われているVRAMスロットの最大値 (つまりこれ以降はVRAMスロットが空いている)
+
 .foundNextVRAMSlot
-	inc b ; increment previous max value to get next VRAM tile pattern slot
-	ld a, b ; a = next VRAM tile pattern slot
+	inc b ; b = 空きVRAMスロットのオフセット
+
+	ld a, b ; a = 空きVRAMスロットのオフセット
 	push af
+
 	ld a, [hl] ; $C2XE (sprite picture ID)
 	ld b, a ; b = current sprite picture ID
+
+	; spriteID >= SPRITE_BALL の場合  a = 空きVRAMスロットのオフセット
+	; spriteID < SPRITE_BALL  の場合  a = 11 + [hFourTileSpriteCount]
 	cp SPRITE_BALL ; is it a 4-tile sprite?
-	jr c, .notFourTileSprite
+	jr c, .notFourTileSprite 
 	pop af
 	ld a, [hFourTileSpriteCount]
 	add 11
 	jr .storeVRAMSlot
 .notFourTileSprite
 	pop af
+
+	; この時点で a には処理中のスプライトのタイルデータを格納するVRAMオフセットが入っている
+
 .storeVRAMSlot
-	ld [hl], a ; store VRAM slot at $C2XE
+	ld [hl], a ; c2XE = VRAMオフセット
 	ld [hVRAMSlot], a ; used to determine if it's 4-tile sprite later
-	ld a, b ; a = current sprite picture ID
+	
+	; a = 3(spriteID-1)
+	ld a, b ; a = spriteID
 	dec a
 	add a
 	add a
+
 	push bc
 	push hl
+
+	; hl = SpriteSheetPointerTableの該当エントリ
 	ld hl, SpriteSheetPointerTable
 	jr nc, .noCarry
 	inc h
@@ -127,6 +168,7 @@ LoadMapSpriteTilePatterns:
 	jr nc, .noCarry2
 	inc h
 .noCarry2
+
 	push hl
 	call ReadSpriteSheetData
 	push af
@@ -235,22 +277,28 @@ LoadMapSpriteTilePatterns:
 	jr nz, .zeroStoredPictureIDLoop
 	ret
 
-; reads data from SpriteSheetPointerTable
-; INPUT:
-; hl = address of sprite sheet entry
-; OUTPUT:
-; de = pointer to sprite sheet
-; bc = length in bytes
-; a = ROM bank
+; **ReadSpriteSheetData**  
+; SpriteSheetPointerTable からデータを読み取る  
+; - - -  
+; INPUT:  
+; hl = SpriteSheetPointerTable の該当エントリ  
+; 
+; OUTPUT:  
+; de = スプライトの2bppデータのアドレス  
+; bc = 2bppデータのバイト長(bc = 0x0c or 0x04)  
+; a = ROMバンク番号
 ReadSpriteSheetData:
+	; de = スプライトの2bppデータのアドレス
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
 	ld d, a
+	; bc = 2bppデータのバイト長
 	ld a, [hli]
 	ld c, a
 	xor a
 	ld b, a
+	; a = ROMバンク番号
 	ld a, [hli]
 	ret
 
