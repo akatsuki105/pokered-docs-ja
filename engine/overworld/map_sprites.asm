@@ -121,7 +121,7 @@ LoadMapSpriteTilePatterns:
 	ld b, a ; store new max VRAM slot
 	jr .findNextVRAMSlotLoop
 
-; この時点で b = スプライトのタイルデータのために使われているVRAMスロットの最大値 (つまりこれ以降はVRAMスロットが空いている)
+; この時点で b = スプライトのタイルデータのために使われているVRAMスロットの最大値 (つまりこれ以降はVRAMスロットが空いている 1から数える)
 
 .foundNextVRAMSlot
 	inc b ; b = 空きVRAMスロットのオフセット
@@ -132,8 +132,8 @@ LoadMapSpriteTilePatterns:
 	ld a, [hl] ; $C2XE (sprite picture ID)
 	ld b, a ; b = current sprite picture ID
 
-	; spriteID >= SPRITE_BALL の場合  a = 空きVRAMスロットのオフセット
-	; spriteID < SPRITE_BALL  の場合  a = 11 + [hFourTileSpriteCount]
+	; spriteID >= SPRITE_BALL の場合(3面スプライト)  a = 空きVRAMスロットのオフセット
+	; spriteID < SPRITE_BALL  の場合(1面スプライト)  a = 11 + [hFourTileSpriteCount]
 	cp SPRITE_BALL ; is it a 4-tile sprite?
 	jr c, .notFourTileSprite 
 	pop af
@@ -174,38 +174,60 @@ LoadMapSpriteTilePatterns:
 	push af
 	push de
 	push bc
-	ld hl, vNPCSprites ; VRAM base address
-	ld bc, $c0 ; number of bytes per VRAM slot
+
+	ld hl, vNPCSprites 	; VRAM base address
+	ld bc, $c0 			; 3面(上下右)スプライトの2bppデータのサイズ 2bppフォーマットの 1タイルが 0x10なので 0x0c * 0x10 
+
+	; 対象のスプライトの spriteIDが SPRITE_BALL以上のとき、つまり 1面(4タイル)しかタイルデータを持たない場合 -> .fourTileSpriteVRAMAddr
 	ld a, [hVRAMSlot]
-	cp 11 ; is it a 4-tile sprite?
+	cp 11
 	jr nc, .fourTileSpriteVRAMAddr
-	ld d, a
-	dec d
-; Equivalent to multiplying $C0 (number of bytes in 12 tiles) times the VRAM
-; slot and adding the result to $8000 (the VRAM base address).
+
+; 3面(上下右)スプライトのとき
+; hl = vNPCSprites + ([hVRAMSlot]-1)*0xc0
+	ld d, a	
+	dec d	; VRAMスロットは1から数えているので
 .calculateVRAMAddrLoop
+; {
 	add hl, bc
 	dec d
 	jr nz, .calculateVRAMAddrLoop
+; }
+
 	jr .loadStillTilePattern
+
 .fourTileSpriteVRAMAddr
-	ld hl, vSprites + $7c0 ; address for second 4-tile sprite
+	; 前提として、VRAMに存在できる1面スプライトのタイルデータは2個まで
+	; 0x8000-0x8800の末尾(0x8780-0x8800)を 1面スプライトが使う
+	ld hl, vSprites + $7c0
+
+	; [hFourTileSpriteCount] > 0 -> .loadStillTilePattern
 	ld a, [hFourTileSpriteCount]
 	and a
 	jr nz, .loadStillTilePattern
-; if it's the first 4-tile sprite
-	ld hl, vSprites + $780 ; address for first 4-tile sprite
+	
+	; [hFourTileSpriteCount] == 0 つまり 4タイルのうち最初の1タイルのとき
+	ld hl, vSprites + $780
 	inc a
 	ld [hFourTileSpriteCount], a
+
+	; つまり hl = vSprites + $780(最初の1面スプライト) or vSprites + $7c0(2個目の1面スプライト)
+
+; この時点で hl = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
 .loadStillTilePattern
-	pop bc
-	pop de
-	pop af
+	pop bc	; bc = 2bppデータのバイト長(bc = 0x0c or 0x04)
+	pop de	; de = スプライトの2bppデータのアドレス
+	pop af	; a = ROMバンク番号
+
 	push hl
 	push hl
+
+	; hl = スプライトの2bppデータのアドレス
 	ld h, d
 	ld l, e
-	pop de
+
+	pop de	; de = SpriteSheetPointerTableの該当エントリ
+	
 	ld b, a
 	ld a, [wFontLoaded]
 	bit 0, a ; reloading upper half of tile patterns after displaying text?

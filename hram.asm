@@ -56,6 +56,8 @@ hEnemySpeed EQU $FF8D
 
 hVRAMSlot EQU $FF8D
 
+; 1面スプライト(モンスターボールや化石など)がVRAMタイルデータに何種類存在しているかのカウンター  
+; LoadMapSpriteTilePatterns で使用される
 hFourTileSpriteCount EQU $FF8E
 
 ; -1 = left  
