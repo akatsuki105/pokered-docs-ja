@@ -226,15 +226,24 @@ LoadMapSpriteTilePatterns:
 	ld h, d
 	ld l, e
 
-	pop de	; de = SpriteSheetPointerTableの該当エントリ
+	pop de	; de = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
 	
 	ld b, a
+
+	; テキスト表示後にこの関数が呼ばれた場合は、VRAMの上半分(0x8000-0x8800)にはスプライトデータが残っており、歩きモーションなどを格納する下半分(0x8800-0x8fff)だけがテキストデータで上書きされている
+	; よってリロードの必要があるのは下半分だけなので上半分はスキップする
 	ld a, [wFontLoaded]
-	bit 0, a ; reloading upper half of tile patterns after displaying text?
-	jr nz, .skipFirstLoad ; if so, skip loading data into the lower half
-	ld a, b
-	ld b, 0
-	call FarCopyData2 ; load tile pattern data for sprite when standing still
+	bit 0, a
+	jr nz, .skipFirstLoad
+
+; スプライトの上半分(立ち姿)の 2bppタイルデータを VRAMにロード
+	ld a, b	; a = スプライトの2bppデータのROMバンク番号
+	ld b, 0	; bc = スプライトの2bppデータのバイト長(bc = 0x0c or 0x04)
+	; この時点で
+	; hl = スプライトの2bppデータのアドレス
+	; de = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
+	call FarCopyData2
+
 .skipFirstLoad
 	pop de
 	pop hl
