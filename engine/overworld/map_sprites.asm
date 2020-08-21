@@ -29,8 +29,11 @@ InitMapSprites:
 	jr nz, .copyPictureIDLoop
 
 ; **LoadMapSpriteTilePatterns**  
-; スプライトのタイルデータを VRAM にロードする関数  
+; スプライトの2bppタイルデータを VRAM にロードする関数  
 ; - - -  
+; 外部マップの場合は、VRAMに `SpriteSets` のスプライトセットと同じ順番でタイルデータを配置 (C2XEにセットされるべきVRAMオフセットはここではセットしない)  
+; 詳細は `docs/sprite`参照 
+;
 ; この関数は InitOutsideMapSprites によって呼ばれるため、 内部マップでも外部マップでも利用される  
 LoadMapSpriteTilePatterns:
 	; 処理対象のスプライトがもうない -> return
@@ -352,6 +355,8 @@ ReadSpriteSheetData:
 ; **InitOutsideMapSprites**  
 ; 外部マップ(町や道路)のスプライトセットをロードし、VRAMスロットにセットする  
 ; - - -  
+; VRAMに `SpriteSets` のスプライトセットと同じ順番でタイルデータを配置し、各C2XEのVRAMオフセット(先頭を1)には (SpriteSetsのオフセット+1)を入れる (主人公が常に先頭の1なので)
+; 
 ; スプライトセットは `data/sprite_sets.asm` 参照  
 ; OUTPUT: carry = 1(対象が外部マップ) or 0(対象が内部マップ)
 InitOutsideMapSprites:
@@ -431,7 +436,7 @@ InitOutsideMapSprites:
 	ld a, [de]
 	ld [hl], a
 
-	; bc, de を次のエントリへ
+	; wSpriteSet にスプライトIDをセットしたら bc, de を次のエントリへ
 	ld [bc], a
 	inc de
 	inc bc
@@ -471,7 +476,7 @@ InitOutsideMapSprites:
 	ld hl, wSpriteStateData2 + $1e
 	ld b, $0f
 
-; LoadMapSpriteTilePatterns で C2XE にセットされた VRAMオフセットはマップのスプライトセットの順番で並んでおりスプライトが実際にロードされた順番ではない
+; LoadMapSpriteTilePatterns で C2XE にセットされた VRAMオフセットはマップのスプライトセット(SpriteSets) の順番で並んでおりスプライトが実際にロードされた順番ではない
 ; よって C2XE の値は不要なので 0クリアする
 .zeroVRAMSlotsLoop
 ; C21E, C22E, ..., C2FE を 0クリアする
@@ -487,43 +492,51 @@ InitOutsideMapSprites:
 
 .skipLoadingSpriteSet
 	ld hl, wSpriteStateData1 + $10
-; このループは、 Map Header からのスプライトデータに従って、正しいVRAMタイルパターンスロットを格納します。
-; C2XEのVRAMオフセットはスプライトセットの順序で埋められるため、正しいVRAMオフセットを見つけるためスプライトIDがスプライトセット内で検索されます。
-; Since the VRAM tile pattern slots are filled in the order of the sprite set, in order to find the VRAM tile pattern slot
-; for a sprite slot, the picture ID for the sprite is looked up within the
-; sprite set. The index of the picture ID within the sprite set plus one
-; (since the Red sprite always has the first VRAM tile pattern slot) is the
-; VRAM tile pattern slot.
+; このループは、 wSpriteSetに従って、正しいVRAMオフセットを C2XE に格納する
+; C2XEのVRAMオフセットは最初スプライトセット(SpriteSets) の順序で埋められており、これでは不適なので正しいVRAMオフセットを見つけるためスプライトIDが wSpriteSet内で検索される
+; wSpriteSet のpicture IDのインデックスに +1(主人公のスプライトが常にVRAMスロットの最初に入るため) したものが VRAMオフセットになる
 .storeVRAMSlotsLoop
 	ld c, 0
-	ld a, [hl] ; $C1X0 (picture ID) (zero if sprite slot is not used)
-	and a ; is the sprite slot used?
-	jr z, .skipGettingPictureIndex ; if the sprite slot is not used
+
+	; picture ID === 0 つまり未使用のスプライト -> .skipGettingPictureIndex
+	ld a, [hl] ; $C1X0 (picture ID)
+	and a
+	jr z, .skipGettingPictureIndex
+
+; $C1X0のスプライトIDと一致するものを wSpriteSet から探す
 	ld b, a ; b = picture ID
 	ld de, wSpriteSet
-; Loop to find the index of the sprite's picture ID within the sprite set.
-.getPictureIndexLoop
+.getPictureIndexLoop ; {
 	inc c
 	ld a, [de]
 	inc de
 	cp b ; does the picture ID match?
 	jr nz, .getPictureIndexLoop
-	inc c
+; }
+	inc c	; c = VRAMオフセット
+
 .skipGettingPictureIndex
 	push hl
+
+	; hl = $C2XE
 	inc h
 	ld a, $0e
 	add l
-	ld l, a
-	ld a, c ; a = VRAM slot (zero if sprite slot is not used)
-	ld [hl], a ; $C2XE (VRAM slot)
+	ld l, a 
+	; [$C2XE] = VRAMオフセット
+	ld a, c
+	ld [hl], a
+
 	pop hl
+
+	; 次のスプライトスロットへ
 	ld a, $10
 	add l
 	ld l, a
 	and a
 	jr nz, .storeVRAMSlotsLoop
-	scf
+
+	scf	; キャリーをセット
 	ret
 
 ; **GetSplitMapSpriteSetID**  
