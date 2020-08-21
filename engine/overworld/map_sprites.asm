@@ -459,7 +459,8 @@ InitOutsideMapSprites:
 	ld a, [wNumSprites]
 	push af ; save number of sprites
 
-	ld a, 11 ; 11 sprites in sprite set
+	; スプライトのタイルデータを VRAM にロード
+	ld a, 11
 	ld [wNumSprites], a
 	call LoadMapSpriteTilePatterns
 
@@ -469,10 +470,12 @@ InitOutsideMapSprites:
 
 	ld hl, wSpriteStateData2 + $1e
 	ld b, $0f
-; The VRAM tile pattern slots that LoadMapSpriteTilePatterns set are in the
-; order of the map's sprite set, not the order of the actual sprites loaded
-; for the current map. So, they are not needed and are zeroed by this loop.
+
+; LoadMapSpriteTilePatterns で C2XE にセットされた VRAMオフセットはマップのスプライトセットの順番で並んでおりスプライトが実際にロードされた順番ではない
+; よって C2XE の値は不要なので 0クリアする
 .zeroVRAMSlotsLoop
+; C21E, C22E, ..., C2FE を 0クリアする
+; {
 	xor a
 	ld [hl], a ; $C2XE (VRAM slot)
 	ld a, $10
@@ -480,11 +483,13 @@ InitOutsideMapSprites:
 	ld l, a
 	dec b
 	jr nz, .zeroVRAMSlotsLoop
+; }
+
 .skipLoadingSpriteSet
 	ld hl, wSpriteStateData1 + $10
-; This loop stores the correct VRAM tile pattern slots according the sprite
-; data from the map's header. Since the VRAM tile pattern slots are filled in
-; the order of the sprite set, in order to find the VRAM tile pattern slot
+; このループは、 Map Header からのスプライトデータに従って、正しいVRAMタイルパターンスロットを格納します。
+; C2XEのVRAMオフセットはスプライトセットの順序で埋められるため、正しいVRAMオフセットを見つけるためスプライトIDがスプライトセット内で検索されます。
+; Since the VRAM tile pattern slots are filled in the order of the sprite set, in order to find the VRAM tile pattern slot
 ; for a sprite slot, the picture ID for the sprite is looked up within the
 ; sprite set. The index of the picture ID within the sprite set plus one
 ; (since the Red sprite always has the first VRAM tile pattern slot) is the
