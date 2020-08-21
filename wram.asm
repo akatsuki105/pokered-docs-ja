@@ -2003,8 +2003,9 @@ wOptionsInitialized::
 
 wNewSlotMachineBallTile:: ; d08a
 
-wCoordAdjustmentAmount:: ; d08a
-; how much to add to the X/Y coord
+; d08a  
+; X/Y coord にどれだけ値を加えるか
+wCoordAdjustmentAmount::
 
 wUnusedD08A:: ; d08a
 	ds 1

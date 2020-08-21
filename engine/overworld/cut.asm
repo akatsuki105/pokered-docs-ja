@@ -170,17 +170,34 @@ LoadCutGrassAnimationTilePattern:
 	lb bc, BANK(AnimationTileset2), $01
 	jp CopyVideoData
 
+; **WriteCutOrBoulderDustAnimationOAMBlock**  
+; OAMbuffer(正確には OAMBuffer + 0x90) に いあいぎり や かいりき のアニメーションを書き込む処理  
+; - - -  
+; 主人公の向いている方向や、いあいぎり か かいりき かによって結果が変わってくる  
+; いあいぎり なら　木が切れるアニメーション  
+; かいりき なら 土埃のアニメーション  
 WriteCutOrBoulderDustAnimationOAMBlock:
 	call GetCutOrBoulderDustAnimationOffsets
 	ld a, $9
 	ld de, CutOrBoulderDustAnimationTilesAndAttributes
+	; OAMBufferの 9(a)*4(OAM blockが 2*2なので) -> 36番目に配置する  
+	; OAMは4byteなので 36 * 4 = 144 = 0x90 つまり OAMBuffer + 0x90に配置
 	jp WriteOAMBlock
 
 CutOrBoulderDustAnimationTilesAndAttributes:
 	db $FC,$10,$FD,$10
 	db $FE,$10,$FF,$10
 
+; **GetCutOrBoulderDustAnimationOffsets**  
 ; アニメーションを表示するXY座標を得る関数  
+; - - -  
+; 主人公の向いている方向や、いあいぎり か かいりき かによって結果が変わってくる  
+; いあいぎり なら　木が切れるアニメーション  
+; かいりき なら 土埃のアニメーション  
+; 
+; INPUT:  
+; [wWhichAnimationOffsets] = 0(いあいぎり) or 1(かいりき)  
+; 
 ; OUTPUT:  
 ; b = アニメのX座標  
 ; c = アニメのY座標

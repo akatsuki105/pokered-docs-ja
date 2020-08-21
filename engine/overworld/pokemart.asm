@@ -63,7 +63,7 @@ DisplayPokemartDialogue_:
 	and a
 	jp z, .bagEmpty
 	
-	; 『What would you like to sell?』というテキストを表示
+	; 『What would you like to sell?』
 	ld hl, PokemonSellingGreetingText
 	call PrintText
 
@@ -101,13 +101,13 @@ DisplayPokemartDialogue_:
 
 	; プレイヤーがかばんの特定のアイテムを売ろうとしたとき
 .confirmItemSale
-	; 売ろうとしたアイテムがたいせつなものかチェック
+	; 売ろうとしたアイテムがたいせつなものかチェック　大切なものの場合は -> .unsellableItem
 	call IsKeyItem
 	ld a, [wIsKeyItem]
 	and a
 	jr nz, .unsellableItem
 
-	; アイテムがひでんマシン; 
+	; アイテムがひでんマシン -> .unsellableItem
 	ld a, [wcf91]
 	call IsItemHM
 	jr c, .unsellableItem
@@ -153,16 +153,21 @@ DisplayPokemartDialogue_:
 	inc a
 	ld [wBoughtOrSoldItemInMart], a
 .skipSettingFlag1
+
 	; 売却処理(売却額だけ所持金を増やして、アイテムを減らす)
 	call AddAmountSoldToMoney
 	ld hl, wNumBagItems
 	call RemoveItemFromInventory
 	jp .sellMenuLoop	; 売り物選択に戻る
+
 .unsellableItem
+	; "I can't put a price on that."
 	ld hl, PokemartUnsellableItemText
 	call PrintText
 	jp .returnToMainPokemartMenu
+
 .bagEmpty
+	; "You don't have anything to sell."
 	ld hl, PokemartItemBagEmptyText
 	call PrintText
 	call SaveScreenTilesToBuffer1
@@ -285,17 +290,22 @@ DisplayPokemartDialogue_:
 	ld hl, hMoney
 	ld c, 3 ; length of money in bytes
 	jp StringCmp
+	
 .notEnoughMoney
 	ld hl, PokemartNotEnoughMoneyText
 	call PrintText
 	jr .returnToMainPokemartMenu
+
 .bagFull
 	ld hl, PokemartItemBagFullText
 	call PrintText
 	jr .returnToMainPokemartMenu
+
 .done
+	; "ありがとう ございました"
 	ld hl, PokemartThankYouText
 	call PrintText
+
 	ld a, 1
 	ld [wUpdateSpritesEnabled], a
 	call UpdateSprites
@@ -303,17 +313,17 @@ DisplayPokemartDialogue_:
 	ld [wListScrollOffset], a
 	ret
 
-; 『ゆっくり ごらんになって ください』
+; "ゆっくり ごらんになって ください"
 PokemartBuyingGreetingText:
 	TX_FAR _PokemartBuyingGreetingText
 	db "@"
 
-; 『<ITEM>ですね <PRICE>円に なりますが？』
+; "<ITEM>ですね <PRICE>円に なりますが？"
 PokemartTellBuyPriceText:
 	TX_FAR _PokemartTellBuyPriceText
 	db "@"
 
-; 『はい どうぞ まいど ありがとう ございます』
+; "はい どうぞ まいど ありがとう ございます"
 ; "Here you are! Thank you!"
 PokemartBoughtItemText:
 	TX_FAR _PokemartBoughtItemText
@@ -335,20 +345,22 @@ PokemartTellSellPriceText:
 	TX_FAR _PokemartTellSellPriceText
 	db "@"
 
+; "You don't have anything to sell."
 PokemartItemBagEmptyText:
 	TX_FAR _PokemartItemBagEmptyText
 	db "@"
 
+; "I can't put a price on that."
 PokemartUnsellableItemText:
 	TX_FAR _PokemartUnsellableItemText
 	db "@"
 
-; 『ありがとう ございました』
+; "ありがとう ございました"
 PokemartThankYouText:
 	TX_FAR _PokemartThankYouText
 	db "@"
 
-; 『そのほかに わたくしどもで おちからに なれることは？』
+; "そのほかに わたくしどもで おちからに なれることは？"
 PokemartAnythingElseText:
 	TX_FAR _PokemartAnythingElseText
 	db "@"

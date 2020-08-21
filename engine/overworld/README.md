@@ -37,7 +37,7 @@ player_animations.asm | null
 player_state.asm | null
 poison.asm | マップ上で歩いているときに毒ダメージを与える処理 
 pokecenter.asm | ポケモンセンターでジョーイさんに話しかけたときの処理
-pokemart.asm | null
+pokemart.asm | フレンドリーショップでのアイテム売買の処理
 push_boulder.asm | null
 saffron_guards.asm | ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す処理
 set_blackout_map.asm | null
