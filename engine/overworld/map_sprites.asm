@@ -81,8 +81,8 @@ LoadMapSpriteTilePatterns:
 	jr z, .notAlreadyLoaded
 
 	; 前のスプライトに picture IDが一致するものが見つかった -> .alreadyLoaded
-	ld a, [de]	; c2XD
-	cp [hl]		; c2YE
+	ld a, [de]	; c2${X}D
+	cp [hl]		; c2${Y}E
 	jp z, .alreadyLoaded
 
 	; 次のスロットへ
@@ -155,8 +155,8 @@ LoadMapSpriteTilePatterns:
 	add a
 	add a
 
-	push bc
-	push hl
+	push bc	; depth=0 push ???
+	push hl	; depth=1 push $C2XE
 
 	; hl = SpriteSheetPointerTableの該当エントリ
 	ld hl, SpriteSheetPointerTable
@@ -169,11 +169,11 @@ LoadMapSpriteTilePatterns:
 	inc h
 .noCarry2
 
-	push hl
+	push hl ; depth=2
 	call ReadSpriteSheetData
-	push af
-	push de
-	push bc
+	push af	; depth=3
+	push de ; depth=4
+	push bc ; depth=5
 
 	ld hl, vNPCSprites 	; VRAM base address
 	ld bc, $c0 			; 3面(上下右)スプライトの2bppデータのサイズ 2bppフォーマットの 1タイルが 0x10なので 0x0c * 0x10 
@@ -215,18 +215,18 @@ LoadMapSpriteTilePatterns:
 
 ; この時点で hl = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
 .loadStillTilePattern
-	pop bc	; bc = 2bppデータのバイト長(bc = 0x0c or 0x04)
-	pop de	; de = スプライトの2bppデータのアドレス
-	pop af	; a = ROMバンク番号
+	pop bc	; depth=5 bc = 2bppデータのバイト長(bc = 0x0c or 0x04)
+	pop de	; depth=4 de = スプライトの2bppデータのアドレス
+	pop af	; depth=3 a = ROMバンク番号
 
-	push hl
-	push hl
+	push hl	; depth=3
+	push hl ; depth=4
 
 	; hl = スプライトの2bppデータのアドレス
 	ld h, d
 	ld l, e
 
-	pop de	; de = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
+	pop de	; depth=4 de = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
 	
 	ld b, a
 
@@ -244,60 +244,76 @@ LoadMapSpriteTilePatterns:
 	; de = スプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
 	call FarCopyData2
 
+	; 下半分(歩き姿)
 .skipFirstLoad
-	pop de
-	pop hl
+	pop de	; depth=3 de = 上半分のスプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
+	pop hl	; depth=2 hl = SpriteSheetPointerTableの該当エントリ
+
+	; 1面スプライトのときは、歩き姿は存在しないのでスキップ -> .skipSecondLoad
 	ld a, [hVRAMSlot]
-	cp 11 ; is it a 4-tile sprite?
-	jr nc, .skipSecondLoad ; if so, there is no second block
-	push de
+	cp 11
+	jr nc, .skipSecondLoad
+
+	push de ; depth=2 上半分のスプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
 	call ReadSpriteSheetData
-	push af
+	push af ; depth=3 ROMバンク番号
+
+	; de = スプライトの下半分の2bppデータのアドレス
 	ld a, $c0
 	add e
 	ld e, a
 	jr nc, .noCarry3
 	inc d
 .noCarry3
+
+	; reloading upper half of tile patterns after displaying text?
 	ld a, [wFontLoaded]
-	bit 0, a ; reloading upper half of tile patterns after displaying text?
+	bit 0, a
 	jr nz, .loadWhileLCDOn
-	pop af
-	pop hl
-	set 3, h ; add $800 to hl
+
+; スプライトの下半分(歩き姿)の 2bppタイルデータを VRAMにロード
+	pop af	; depth=3 a = ROMバンク番号
+	pop hl	; depth=2 hl = 上半分のスプライトが格納される VRAMスロット(0x8000-0x8800のどこか)のアドレス
+	set 3, h ; hl += 0x800 これで hl = 下半分のスプライトが格納される VRAMスロット(0x8800-0x9000のどこか)のアドレス
 	push hl
 	ld h, d
 	ld l, e
 	pop de
 	call FarCopyData2 ; load tile pattern data for sprite when walking
+
 	jr .skipSecondLoad
-; When reloading the upper half of tile patterns after displaying text, the LCD
-; will be on, so CopyVideoData (which writes to VRAM only during V-blank) must
-; be used instead of FarCopyData2.
+
+; テキスト表示後にスプライトデータの上半分をリロードしているときLCDは有効なので、 FarCopyData2 ではなく VBlank中に VRAM に書き込む CopyVideoData を使う必要がある  
+; (LCDが有効なときは VBlank以外でVRAMに書き込んではいけない)
 .loadWhileLCDOn
 	pop af
 	pop hl
-	set 3, h ; add $800 to hl
+	set 3, h
 	ld b, a
 	swap c
 	call CopyVideoData ; load tile pattern data for sprite when walking
+
 .skipSecondLoad
 	pop hl
 	pop bc
 	jr .nextSpriteSlot
-.alreadyLoaded ; if the current picture ID has already had its tile patterns loaded
+
+; 対象のスプライトのタイルデータがすでに VRAM にロード済の場合
+.alreadyLoaded 
 	inc de
-	ld a, [de] ; a = VRAM slot for the current picture ID (from $C2YE)
-	ld [hl], a ; store VRAM slot in current wSpriteStateData2 sprite slot (at $C2XE)
+	ld a, [de] ; a = すでにロードされたタイルデータのVRAMオフセット (a = $C2${X}E)
+	ld [hl], a ; 現在のスプライトのVRAMオフセットとしてセット ($C2${Y}E = $C2${X}E)
+
 .nextSpriteSlot
 	ld a, l
 	add $10
 	ld l, a
 	dec c
 	jp nz, .loadTilePatternLoop
+
+; $C2XD には　スプライトIDが格納されているが、この処理を終えればもう不要なので $C2XDを 0クリアする
 	ld hl, wSpriteStateData2 + $0d
 	ld b, $10
-; the pictures ID's stored at $C2XD are no longer needed, so zero them
 .zeroStoredPictureIDLoop
 	xor a
 	ld [hl], a ; $C2XD

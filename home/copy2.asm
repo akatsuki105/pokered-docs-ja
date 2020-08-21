@@ -1,3 +1,6 @@
+; **FarCopyData2**  
+; a::[hl:hl+bc] -> a::[de:de+bc]  
+; - - -  
 ; aバンクのhlが示すアドレスから(aバンクの)deが示すアドレスにbcバイトだけコピー  
 ; wBufferの代わりにhROMBankTempを使う以外はFarCopyDataと同じ
 FarCopyData2::
