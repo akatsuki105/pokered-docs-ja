@@ -1,23 +1,21 @@
 ; **InitMapSprites**  
-; マップ上のスプライトのタイルパターンをロードする関数  
+; マップ上のスプライトのタイルデータをVRAMにロードする関数  
 ; - - -  
-; 外部マップの場合は、いくつかの固定されたスプライトのセットの1つをロードします。
-; 建物などの内部マップでは、この関数は Map Headerで使われている各スプライトの picture IDをロードする  
+; 外部マップの場合は、マップごとに決まったスプライトセットに対応するタイルデータをロードする  
+; 建物などの内部マップでは、 Map Header で使われている各スプライトのスプライトIDに対応するタイルデータをロードする  
 ; 会話時にはテキストのタイルパターンがスプライトのタイルパターンデータを半分上書きしてしまうので、会話終了時にもこの関数が呼ばれる  
-; 
-; Note on notation:
-; $C1X* and $C2X* are used to denote wSpriteStateData1-wSpriteStateData1 + $ff and wSpriteStateData2 + $00-wSpriteStateData2 + $ff sprite slot
-; fields, respectively, within loops. The X is the loop index.
-; If there is an inner loop, Y is the inner loop index, i.e. $C1Y* and $C2Y*
-; denote fields of the sprite slots iterated over in the inner loop.
 InitMapSprites:
+	; 外部マップの場合は `InitOutsideMapSprites` がすべてやってくれて、キャリーを立てて返ってくる
 	call InitOutsideMapSprites
-	ret c ; return if the map is an outside map (already handled by above call)
-; if the map is an inside map (i.e. mapID >= $25)
+	ret c
+	
+	; ここからは内部マップの場合 (i.e. mapID >= $25)
 	ld hl, wSpriteStateData1
 	ld de, wSpriteStateData2 + $0d
-; Loop to copy picture ID's from $C1X0 to $C2XD for LoadMapSpriteTilePatterns.
+
+; LoadMapSpriteTilePatterns の準備として pictureIDを $C1X0 から $C2XDにコピーする
 .copyPictureIDLoop
+; {
 	ld a, [hl] ; $C1X0 (picture ID)
 	ld [de], a ; $C2XD
 	ld a, $10
@@ -27,11 +25,14 @@ InitMapSprites:
 	add l
 	ld l, a
 	jr nz, .copyPictureIDLoop
+; }
+; 下に続く
 
 ; **LoadMapSpriteTilePatterns**  
 ; スプライトの2bppタイルデータを VRAM にロードする関数  
 ; - - -  
 ; 外部マップの場合は、VRAMに `SpriteSets` のスプライトセットと同じ順番でタイルデータを配置 (C2XEにセットされるべきVRAMオフセットはここではセットしない)  
+; 内部マップの場合は、
 ; 詳細は `docs/sprite`参照 
 ;
 ; この関数は InitOutsideMapSprites によって呼ばれるため、 内部マップでも外部マップでも利用される  
@@ -493,8 +494,12 @@ InitOutsideMapSprites:
 .skipLoadingSpriteSet
 	ld hl, wSpriteStateData1 + $10
 ; このループは、 wSpriteSetに従って、正しいVRAMオフセットを C2XE に格納する
-; C2XEのVRAMオフセットは最初スプライトセット(SpriteSets) の順序で埋められており、これでは不適なので正しいVRAMオフセットを見つけるためスプライトIDが wSpriteSet内で検索される
+; C2XEのVRAMオフセットは最初スプライトセット(SpriteSets) の順序で埋められている
+; c21E -> スプライトセットの1番目, c22E -> スプライトセットの2番目, ...
+; 
+; これでは不適なので正しいVRAMオフセットを見つけるためC1X0のスプライトIDに対応する wSpriteSetオフセットを検索する
 ; wSpriteSet のpicture IDのインデックスに +1(主人公のスプライトが常にVRAMスロットの最初に入るため) したものが VRAMオフセットになる
+; c1X0 == N なら c2XE = (wSpriteSetの offset i) + 1 (wSpriteSet[i] == N)
 .storeVRAMSlotsLoop
 	ld c, 0
 

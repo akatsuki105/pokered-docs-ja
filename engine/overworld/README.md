@@ -25,7 +25,7 @@ hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する�
 is_player_just_outside_map.asm | プレイヤーがマップの外側の1タイルにいるかどうかを判定する処理
 item.asm | null
 ledges.asm | 段差飛び降り処理を行う
-map_sprites.asm | null
+map_sprites.asm | マップ上のスプライトのタイルデータをVRAMにロードする処理 
 map_sprite_functions1.asm | null
 missable_objects.asm | null
 movement.asm | null
