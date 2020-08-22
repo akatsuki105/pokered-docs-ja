@@ -1425,51 +1425,95 @@ BattleAnimWriteOAMEntry:
 	ld [hli], a
 	ret
 
+; かいりきなどで、土埃のOAMのXを変化させてスプライトを左右に動かす処理  
 AdjustOAMBlockXPos:
+	; hl = wOAMBuffer + $91 (OAMのX)
 	ld l, e
 	ld h, d
+	; 下に続く
+	; このとき
+	; c = 4  
+	; hl = wOAMBuffer + $91  
+	; [wCoordAdjustmentAmount] = -1(右) or +1(左)  
 
+; **AdjustOAMBlockXPos2**  
+; OAMのXを変化させてスプライトを左右に動かす処理  
+; - - -  
+; INPUT:  
+; c = 動かすOAMの枚数  
+; hl = OAMのX座標  
+; [wCoordAdjustmentAmount] = OAMのX変化量  
 AdjustOAMBlockXPos2:
 	ld de, 4
 .loop
+; {
+	; a = [wOAMBuffer + $91] + [wCoordAdjustmentAmount] = [OAMのX座標] + delta
 	ld a, [wCoordAdjustmentAmount]
 	ld b, a
 	ld a, [hl]
 	add b
+
+	; 新しいOAMのX座標 < 168 -> .skipPuttingEntryOffScreen
 	cp 168
 	jr c, .skipPuttingEntryOffScreen
-; put off-screen if X >= 168
+
+	; 新しいOAMのX座標 >= 168 のときは OAMのY座標 を160にしてスプライトを非表示にする
 	dec hl
 	ld a, 160
-	ld [hli], a
+	ld [hli], a	; [OAMのY座標] = 160
+
 .skipPuttingEntryOffScreen
-	ld [hl], a
-	add hl, de
+	ld [hl], a	; [OAMのX座標] = 新しいOAMのX座標
+	add hl, de	; 次のOAM
 	dec c
 	jr nz, .loop
+; }
 	ret
 
+; かいりきなどで、土埃のOAMのYを変化させてスプライトを上下に動かす処理 
 AdjustOAMBlockYPos:
+	; hl =  wOAMBuffer + $90 (OAMのY)
 	ld l, e
 	ld h, d
+	; 下に続く
+	; このとき
+	; c = 4  
+	; hl = wOAMBuffer + $90  
+	; [wCoordAdjustmentAmount] = +1(上) or -1(下)  
 
+; **AdjustOAMBlockYPos2**  
+; OAMのYを変化させてスプライトを上下に動かす処理  
+; - - -  
+; INPUT:  
+; c = 動かすOAMの枚数  
+; hl = OAMのY座標  
+; [wCoordAdjustmentAmount] = OAMのY変化量 
 AdjustOAMBlockYPos2:
 	ld de, 4
 .loop
+; {
+	; a = [wOAMBuffer + $90] + [wCoordAdjustmentAmount] = [OAMのY座標] + delta
 	ld a, [wCoordAdjustmentAmount]
 	ld b, a
 	ld a, [hl]
 	add b
+
+	; 新しいOAMのY座標 < 112 -> .skipSettingPreviousEntrysAttribute
 	cp 112
 	jr c, .skipSettingPreviousEntrysAttribute
+
+	; 新しいOAMのY座標 >= 112 のときは OAMのY座標 を160にしてスプライトを非表示にする
+	; といいたいが、 dec hlで hlが 前のOAMの attrを指してしまうバグがある 
 	dec hl
-	ld a, 160 ; bug, sets previous OAM entry's attribute
+	ld a, 160
 	ld [hli], a
+
 .skipSettingPreviousEntrysAttribute
-	ld [hl], a
-	add hl, de
+	ld [hl], a	; [OAMのY座標] = 新しいOAMのY座標
+	add hl, de	; 次のOAM
 	dec c
 	jr nz, .loop
+; }
 	ret
 
 AnimationBlinkEnemyMon:

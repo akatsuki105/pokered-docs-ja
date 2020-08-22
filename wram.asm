@@ -2004,7 +2004,7 @@ wOptionsInitialized::
 wNewSlotMachineBallTile:: ; d08a
 
 ; d08a  
-; X/Y coord にどれだけ値を加えるか
+; `AdjustOAMBlockXPos2`や`AdjustOAMBlockYPos2` で OAMの X/Y coord にどれだけ値を加えるか(変化量)
 wCoordAdjustmentAmount::
 
 wUnusedD08A:: ; d08a

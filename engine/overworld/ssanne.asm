@@ -48,9 +48,14 @@ AnimateBoulderDust:
 	ld [wUpdateSpritesEnabled], a
 	jp LoadPlayerSpriteGraphics
 
+; **GetMoveBoulderDustFunctionPointer**  
+; プレイヤーの方向に応じて、de, hlにアドレスを格納  
+; - - -  
 ; OUTPUT:  
-; de = wOAMBuffer + $90(上下) or wOAMBuffer + $91(右左)  
-; hl = AdjustOAMBlockXPos(右左) or AdjustOAMBlockYPos(上下)  
+; プレイヤーの方向が上 de = wOAMBuffer + $90(OAM Y), hl = AdjustOAMBlockYPos, [wCoordAdjustmentAmount] = +1  
+; プレイヤーの方向が下 de = wOAMBuffer + $90(OAM Y), hl = AdjustOAMBlockYPos, [wCoordAdjustmentAmount] = -1  
+; プレイヤーの方向が右 de = wOAMBuffer + $91(OAM X), hl = AdjustOAMBlockXPos, [wCoordAdjustmentAmount] = -1  
+; プレイヤーの方向が左 de = wOAMBuffer + $91(OAM X), hl = AdjustOAMBlockXPos, [wCoordAdjustmentAmount] = +1  
 GetMoveBoulderDustFunctionPointer:
 	; hl = MoveBoulderDustFunctionPointerTable のエントリ(プレイヤーの向いている方向による)
 	ld a, [wSpriteStateData1 + 9] 				; プレイヤーの方向
