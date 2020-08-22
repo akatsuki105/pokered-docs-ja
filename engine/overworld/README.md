@@ -41,7 +41,7 @@ pokemart.asm | フレンドリーショップでのアイテム売買の処理
 push_boulder.asm | null
 saffron_guards.asm | ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す処理
 set_blackout_map.asm | null
-ssanne.asm | null
+ssanne.asm | かいりき の土埃のアニメーション処理
 tileset_header.asm | マップ切り替わり時にタイルセットを更新する処理
 trainers.asm | null
 update_map.asm | ブロックを書き換えたりマップの更新を行う処理

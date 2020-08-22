@@ -805,27 +805,31 @@ HandleFlyWarpOrDungeonWarp::
 LeaveMapAnim::
 	jpba _LeaveMapAnim
 
+; **LoadPlayerSpriteGraphics**  
+; プレイヤーのスプライトの2bppタイルデータをVRAMにロードする  
+; - - -  
+; [wWalkBikeSurfState]の値によって、歩きグラ、自転車グラ、波乗りグラ のどれをロードするか決まる  
+; 
+; INPUT: [wWalkBikeSurfState] = 0(歩きグラ) or 1(自転車グラ) or 2(波乗りグラ)  
 LoadPlayerSpriteGraphics::
-; Load sprite graphics based on whether the player is standing, biking, or surfing.
 
-	; 0: standing
-	; 1: biking
-	; 2: surfing
-
+	; [wWalkBikeSurfState] == 1 -> .ridingBike
 	ld a, [wWalkBikeSurfState]
 	dec a
 	jr z, .ridingBike
 
+	; [hTilesetType] が indoor -> .startWalking
+	; [hTilesetType] が cave か outdoor -> .determineGraphics
 	ld a, [hTilesetType]
 	and a
 	jr nz, .determineGraphics
 	jr .startWalking
 
+	; 自転車が使用可能なマップ -> .determineGraphics
 .ridingBike
-	; If the bike can't be used,
-	; start walking instead.
 	call IsBikeRidingAllowed
 	jr c, .determineGraphics
+	; 自転車が使えないマップの場合は 歩きグラを代わりにロードする
 
 .startWalking
 	xor a
@@ -833,6 +837,9 @@ LoadPlayerSpriteGraphics::
 	ld [wWalkBikeSurfStateCopy], a
 	jp LoadWalkingPlayerSpriteGraphics
 
+; [wWalkBikeSurfState] == 0 -> LoadWalkingPlayerSpriteGraphics  
+; [wWalkBikeSurfState] == 1 -> LoadBikePlayerSpriteGraphics  
+; [wWalkBikeSurfState] == 2 -> LoadSurfingPlayerSpriteGraphics  
 .determineGraphics
 	ld a, [wWalkBikeSurfState]
 	and a
@@ -843,11 +850,12 @@ LoadPlayerSpriteGraphics::
 	jp z, LoadSurfingPlayerSpriteGraphics
 	jp LoadWalkingPlayerSpriteGraphics
 
+; **IsBikeRidingAllowed**  
+; 自転車が使用可能なマップか判定する  
+; - - -  
+; 自転車は、 23番どうろやセキエイ高原(Indigo Plateau)、BikeRidingTilesetsに含まれるタイルセットのマップで使用可能  
+; 自転車が使用可能な場合は、キャリーを立てて return  
 IsBikeRidingAllowed::
-; The bike can be used on Route 23 and Indigo Plateau,
-; or maps with tilesets in BikeRidingTilesets.
-; Return carry if biking is allowed.
-
 	ld a, [wCurMap]
 	cp ROUTE_23
 	jr z, .allowed
@@ -2068,36 +2076,52 @@ RunMapScript::
 .return
 	ret
 
+; 主人公の通常時のスプライトの2bppタイルデータを VRAM にロードする
 LoadWalkingPlayerSpriteGraphics::
 	ld de, RedSprite
 	ld hl, vNPCSprites
 	jr LoadPlayerSpriteGraphicsCommon
 
+; 主人公の波乗り時のスプライトの2bppタイルデータを VRAM にロードする
 LoadSurfingPlayerSpriteGraphics::
 	ld de, SeelSprite
 	ld hl, vNPCSprites
 	jr LoadPlayerSpriteGraphicsCommon
 
+; 主人公の自転車時のスプライトの2bppタイルデータを VRAM にロードする
 LoadBikePlayerSpriteGraphics::
 	ld de, RedCyclingSprite
 	ld hl, vNPCSprites
 
+; **LoadPlayerSpriteGraphicsCommon**  
+; 主人公のスプライトの2bppタイルデータを VRAM にロードする  
+; - - -  
+; 歩きグラ、自転車グラ、波乗りグラの全てに対応している  
+; 
+; INPUT:  
+; de = 主人公のスプライトの2bppタイルデータ  
+; hl = 転送先のVRAMアドレス(0x8000)  
 LoadPlayerSpriteGraphicsCommon::
+	; 立ちモーションのスプライトグラを VRAM(0x8000) にコピー
 	push de
 	push hl
 	lb bc, BANK(RedSprite), $0c
 	call CopyVideoData
 	pop hl
 	pop de
+
+	; de = 移動モーションの 2bppタイルデータのアドレス
 	ld a, $c0
 	add e
 	ld e, a
 	jr nc, .noCarry
 	inc d
 .noCarry
-	set 3, h
+
+	; 移動モーションのスプライトグラを VRAM(0x8800) にコピー
+	set 3, h	; +0x0800
 	lb bc, BANK(RedSprite), $0c
-	jp CopyVideoData
+	jp CopyVideoData ; return
 
 ; **LoadMapHeader**  
 ; Map Header からデータをロードする関数  

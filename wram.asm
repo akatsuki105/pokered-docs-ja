@@ -3186,10 +3186,11 @@ wObtainedHiddenItemsFlags::
 wObtainedHiddenCoinsFlags::
 	ds 2
 
-wWalkBikeSurfState:: ; d700
-; $00 = walking
-; $01 = biking
-; $02 = surfing
+; d700  
+; $00 = walking  
+; $01 = biking  
+; $02 = surfing  
+wWalkBikeSurfState::
 	ds 1
 
 	ds 10

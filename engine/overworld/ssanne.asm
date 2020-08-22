@@ -1,7 +1,7 @@
 ; **AnimateBoulderDust**  
 ; かいりき の土埃のアニメーション処理  
 ; - - -  
-; サントアンヌ号の出航の際の煙のアニメーション処理も行っている?
+; サントアンヌ号の出航の際の煙のアニメーション処理も行っている?  
 AnimateBoulderDust:
 	; かいりきの土埃 (WriteCutOrBoulderDustAnimationOAMBlock で使用)
 	ld a, $1
@@ -20,10 +20,11 @@ AnimateBoulderDust:
 	call LoadSmokeTileFourTimes
 	callba WriteCutOrBoulderDustAnimationOAMBlock
 
+; .loopで 土煙のアニメーション を流す
 	ld c, 8	; アニメーションは8ステップにわけて行う
 .loop
 ; {
-	push bc
+	push bc	; c を退避
 	call GetMoveBoulderDustFunctionPointer
 
 	; 実質　以下3行と同じ
@@ -33,18 +34,22 @@ AnimateBoulderDust:
 	ld bc, .returnAddress
 	push bc
 	ld c, 4
-	jp hl	; 
+	jp hl
 
 .returnAddress
+	; パレットを修正
 	ld a, [rOBP1]
 	xor %01100100
 	ld [rOBP1], a
 	call Delay3
-	pop bc
+
+	pop bc	; c を復帰
 	dec c
 	jr nz, .loop
 ; }
-	pop af
+
+	; [wUpdateSpritesEnabled] を復帰
+	pop af	
 	ld [wUpdateSpritesEnabled], a
 	jp LoadPlayerSpriteGraphics
 

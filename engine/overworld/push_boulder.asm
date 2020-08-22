@@ -83,9 +83,11 @@ PushBoulderRightMovementData:
 	db NPC_MOVEMENT_RIGHT,$FF
 
 DoBoulderDustAnimation:
+	; NPCスプライトがスクリプトによって動かされている -> return
 	ld a, [wd730]
 	bit 0, a
 	ret nz
+
 	callab AnimateBoulderDust
 	call DiscardButtonPresses
 	ld [wJoyIgnore], a
