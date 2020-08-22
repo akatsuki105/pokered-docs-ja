@@ -51,7 +51,7 @@ AnimateBoulderDust:
 	; [wUpdateSpritesEnabled] を復帰
 	pop af	
 	ld [wUpdateSpritesEnabled], a
-	jp LoadPlayerSpriteGraphics
+	jp LoadPlayerSpriteGraphics	; return
 
 ; **GetMoveBoulderDustFunctionPointer**  
 ; プレイヤーの方向に応じて、de, hlにアドレスを格納  
