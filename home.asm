@@ -3333,7 +3333,7 @@ GetSpriteMovementByte1Pointer::
 	ld l, a
 	ret
 
-; returns the sprite movement byte 2 pointer for sprite [H_SPRITEINDEX] in hl
+; [H_SPRITEINDEX]で指定したスプライトオフセットの movement byte 2 を hl に入れて返す
 GetSpriteMovementByte2Pointer::
 	push de
 	ld hl, wMapSpriteData

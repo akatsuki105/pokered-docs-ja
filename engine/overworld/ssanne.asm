@@ -21,7 +21,7 @@ AnimateBoulderDust:
 	callba WriteCutOrBoulderDustAnimationOAMBlock
 
 ; .loopで 土煙のアニメーション を流す
-	ld c, 8	; アニメーションは8ステップにわけて行う
+	ld c, 8	; アニメーションは8ステップにわけて行う 土埃は 8px
 .loop
 ; {
 	push bc	; c を退避

@@ -1269,13 +1269,13 @@ wRightGBMonSpecies:: ; cd5f
 ; in the trade animation, the mon that leaves the right gameboy
 	ds 1
 
-; cd60
+; cd60  
 ; bit 0: is player engaged by trainer (to avoid being engaged by multiple trainers simultaneously)  
-; bit 1: boulder dust animation (from using Strength) pending  
+; bit 1: かいりきのアニメーション再生中    
 ; bit 3: using generic PC  
 ; bit 4: 1 -> .skipMovingSprites  
 ; bit 5: don't play sound when A or B is pressed in menu  
-; bit 6: tried pushing against boulder once (you need to push twice before it will move)  
+; bit 6: 一度かいりきの岩を押してみた状態か (you need to push twice before it will move)  
 wFlags_0xcd60::
 	ds 1
 
@@ -3231,8 +3231,9 @@ wRivalStarter:: ; d715
 wPlayerStarter:: ; d717
 	ds 1
 
-wBoulderSpriteIndex:: ; d718
-; sprite index of the boulder the player is trying to push
+; d718  
+; 主人公が押そうとしているかいりき岩の スプライトのオフセット ($C1X0のX)  
+wBoulderSpriteIndex::
 	ds 1
 
 wLastBlackoutMap:: ; d719

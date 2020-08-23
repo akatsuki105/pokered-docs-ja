@@ -57,7 +57,7 @@ _Joypad::
 	ld [hJoyPressed], a
 	ret
 
-; 受け取ったキー入力を全て捨てる
+; 受け取ったキー入力を全て捨てる  
 DiscardButtonPresses:
 	xor a
 	ld [hJoyHeld], a

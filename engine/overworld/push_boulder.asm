@@ -82,24 +82,35 @@ PushBoulderLeftMovementData:
 PushBoulderRightMovementData:
 	db NPC_MOVEMENT_RIGHT,$FF
 
+; **DoBoulderDustAnimation**  
+; かいりきのアニメーション処理  
+; - - -  
+; 土埃のアニメーション処理 + かいりきフラグのクリア + かいりきのサウンド再生  
 DoBoulderDustAnimation:
 	; NPCスプライトがスクリプトによって動かされている -> return
 	ld a, [wd730]
 	bit 0, a
 	ret nz
-
+	
 	callab AnimateBoulderDust
+	
+	; wFlags_0xcd60 のかいりきフラグをクリアする  
 	call DiscardButtonPresses
-	ld [wJoyIgnore], a
+	ld [wJoyIgnore], a	; DiscardButtonPresses で a = 0になっている
 	call ResetBoulderPushFlags
-	set 7, [hl]
+	set 7, [hl]			; wFlags_0xcd60[7] = 1 ???
+
+	; かいりき岩のスプライトスロットの movement byte 2 に 0x10をセット  
 	ld a, [wBoulderSpriteIndex]
 	ld [H_SPRITEINDEX], a
 	call GetSpriteMovementByte2Pointer
 	ld [hl], $10
-	ld a, SFX_CUT
-	jp PlaySound
 
+	; かいりきのサウンドを再生
+	ld a, SFX_CUT
+	jp PlaySound	; return
+
+; wFlags_0xcd60 のかいりきフラグをクリアする  
 ResetBoulderPushFlags:
 	ld hl, wFlags_0xcd60
 	res 1, [hl]
