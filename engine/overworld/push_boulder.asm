@@ -1,28 +1,40 @@
 TryPushingBoulder:
+	; かいりき状態でない -> return
 	ld a, [wd728]
-	bit 0, a ; using Strength?
+	bit 0, a
 	ret z
+
+	; まだ前回のかいりきによる土埃アニメーションが再生中 -> return
 	ld a, [wFlags_0xcd60]
-	bit 1, a ; has boulder dust animation from previous push played yet?
+	bit 1, a
 	ret nz
+
+	; a = プレイヤーの目の前のスプライトのスプライトオフセット
 	xor a
 	ld [hSpriteIndexOrTextID], a
 	call IsSpriteInFrontOfPlayer
 	ld a, [hSpriteIndexOrTextID]
+
+	; 目の前にスプライト(この場合はかいりきの岩を想定)がなかった -> ResetBoulderPushFlags -> return
 	ld [wBoulderSpriteIndex], a
 	and a
-	jp z, ResetBoulderPushFlags
+	jp z, ResetBoulderPushFlags	; return
+
+	; かいりき岩の $C1X1の 7bit目をクリア
 	ld hl, wSpriteStateData1 + 1
 	ld d, $0
 	ld a, [hSpriteIndexOrTextID]
 	swap a
 	ld e, a
-	add hl, de
-	res 7, [hl]
+	add hl, de	; hl = $C1X1
+	res 7, [hl]	; 7bit目 はスプライトがプレイヤーのほうを見ているときに立つbit
+
+	; movement byte 2 == BOULDER_MOVEMENT_BYTE_2 を確認することで、プレイヤーの目の前のスプライトが かいりき岩であることを確認
 	call GetSpriteMovementByte2Pointer
 	ld a, [hl]
 	cp BOULDER_MOVEMENT_BYTE_2
-	jp nz, ResetBoulderPushFlags
+	jp nz, ResetBoulderPushFlags	; そうでないなら -> ResetBoulderPushFlags
+
 	ld hl, wFlags_0xcd60
 	bit 6, [hl]
 	set 6, [hl] ; indicate that the player has tried pushing
@@ -100,11 +112,11 @@ DoBoulderDustAnimation:
 	call ResetBoulderPushFlags
 	set 7, [hl]			; wFlags_0xcd60[7] = 1 ???
 
-	; かいりき岩のスプライトスロットの movement byte 2 に 0x10をセット  
+	; かいりき岩のスプライトスロットの movement byte 2 に BOULDER_MOVEMENT_BYTE_2 をセット  
 	ld a, [wBoulderSpriteIndex]
 	ld [H_SPRITEINDEX], a
 	call GetSpriteMovementByte2Pointer
-	ld [hl], $10
+	ld [hl], BOULDER_MOVEMENT_BYTE_2
 
 	; かいりきのサウンドを再生
 	ld a, SFX_CUT

@@ -1283,7 +1283,7 @@ DisplayTextID::
 	pop bc
 	pop de
 
-	; hl = wMapSpriteData[hSpriteIndexOrTextID-1]
+	; a = 対象のスプライトのテキストID
 	ld hl, wMapSpriteData ; NPC text entries
 	ld a, [hSpriteIndexOrTextID]
 	dec a				  ; プレイヤーの分デクリメント
@@ -1292,11 +1292,10 @@ DisplayTextID::
 	ld l, a
 	jr nc, .noCarry
 	inc h
-
 .noCarry
-	; a = スプライトのテキストID
+	; この時点で hl = wMapSpriteData[hSpriteIndexOrTextID-1]
 	inc hl
-	ld a, [hl] ; a = text ID of the sprite
+	ld a, [hl] ; a = スプライトの text ID
 	pop hl
 
 ; マップのテキストエントリの中から対象のテキストのアドレスを探す  
@@ -3333,7 +3332,10 @@ GetSpriteMovementByte1Pointer::
 	ld l, a
 	ret
 
-; [H_SPRITEINDEX]で指定したスプライトオフセットの movement byte 2 を hl に入れて返す
+; **GetSpriteMovementByte2Pointer**  
+; [H_SPRITEINDEX]で指定したスプライトオフセットの movement byte 2 を hl に入れて返す  
+; - - -  
+; movement byte 2 は wMapSpriteData から取得する
 GetSpriteMovementByte2Pointer::
 	push de
 	ld hl, wMapSpriteData

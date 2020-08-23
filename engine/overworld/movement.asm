@@ -151,7 +151,7 @@ UpdateNPCSprite:
 	add l
 	ld l, a
 
-	; wCurSpriteMovement2を現在処理中のスプライトの"movement byte 2"に更新
+	; wCurSpriteMovement2 を現在処理中のスプライトの"movement byte 2"に更新
 	ld a, [hl]        ; a = "movement byte 2"
 	ld [wCurSpriteMovement2], a
 
@@ -249,7 +249,7 @@ UpdateNPCSprite:
 	ld [wWastedByteCD3A], a
 	ret
 .next
-	; "movement byte 1" != WALK($fe)
+	; "movement byte 1" != WALK($fe) -> .determineDirection
 	cp WALK
 	jr nz, .determineDirection
 
@@ -277,6 +277,7 @@ UpdateNPCSprite:
 	cp $d3
 	jr z, .moveRight   	; movement byte 2 = $d3 forces right
 
+	; movement byte 2があてはまらない場合は、 bに退避したaからスプライトの方向を決める
 	ld a, b				; bに退避しておいたaを復帰
 
 	; a < $40: down (or left)

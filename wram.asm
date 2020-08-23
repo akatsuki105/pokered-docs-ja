@@ -1461,7 +1461,7 @@ wPredefParentBank::
 wSpriteIndex:: ds 1
 
 ; cf14  
-; 現在処理中のスプライトのmovement byte 2
+; 現在処理中のスプライトの movement byte 2
 wCurSpriteMovement2::
 	ds 1
 
@@ -2836,7 +2836,7 @@ wXOffsetSinceLastSpecialWarp:: ; d4e3
 
 ; d4e4  
 ; スプライトごとに2バイト  
-; [movement byte 2, テキストID]
+; [movement byte 2, テキストID]  
 wMapSpriteData::
 	ds 32
 
@@ -3266,14 +3266,15 @@ wUnusedD71F:: ; d71f
 
 	ds 8
 
-wd728:: ; d728
-; bit 0: using Strength outside of battle
-; bit 1: set by IsSurfingAllowed when surfing's allowed, but the caller resets it after checking the result
-; bit 3: received Old Rod
-; bit 4: received Good Rod
-; bit 5: received Super Rod
-; bit 6: gave one of the Saffron guards a drink
-; bit 7: set by ItemUseCardKey, which is leftover code from a previous implementation of the Card Key
+; d728  
+; bit 0: かいりき状態か  
+; bit 1: set by IsSurfingAllowed when surfing's allowed, but the caller resets it after checking the result  
+; bit 3: ボロの釣竿を受取済か  
+; bit 4: いい釣竿を受取済か  
+; bit 5: すごい釣竿を受取済か  
+; bit 6: ヤマブキシティの警備員にすでに飲み物をわたしているか  
+; bit 7: set by ItemUseCardKey, which is leftover code from a previous implementation of the Card Key  
+wd728::
 	ds 1
 
 	ds 1

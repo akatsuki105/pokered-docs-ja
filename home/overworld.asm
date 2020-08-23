@@ -1083,10 +1083,11 @@ LoadEastWestConnectionsTileMap::
 	jr nz, LoadEastWestConnectionsTileMap
 	ret
 
+; **IsSpriteOrSignInFrontOfPlayer**  
 ; signかスプライトがプレイヤーの目の前に存在しているかを確認する関数  
-; 
+; - - -  
 ; 存在している: it is stored in [hSpriteIndexOrTextID]  
-; 存在していない: [hSpriteIndexOrTextID]を0クリア
+; 存在していない: [hSpriteIndexOrTextID]を 0クリア
 IsSpriteOrSignInFrontOfPlayer::
 	xor a
 	ld [hSpriteIndexOrTextID], a
@@ -1139,8 +1140,11 @@ IsSpriteOrSignInFrontOfPlayer::
 	dec b
 	jr nz, .counterTilesLoop
 
-; 上の関数の一部でもあるが、これ自体が関数として呼び出されるとき(signs are irrelevant)もある
-; 呼び出し元は[hSpriteIndexOrTextID]が0でなければならない
+; **IsSpriteInFrontOfPlayer**  
+; スプライトがプレイヤーの目の前に存在しているかを確認する関数  
+; - - -  
+; 上の関数(`IsSpriteOrSignInFrontOfPlayer`)の一部でもあるが、これ自体が関数として呼び出されるとき(signs are irrelevant)もある  
+; 呼び出し元は[hSpriteIndexOrTextID]が 0 でなければならない  
 IsSpriteInFrontOfPlayer::
 	ld d, $10 ; talking range in pixels (normal range)
 IsSpriteInFrontOfPlayer2::
@@ -2396,7 +2400,7 @@ LoadMapHeader::
 	ld a, [hli]
 	ld [de], a
 
-	; [hLoadSpriteTemp1] = movement byte 2
+	; [hLoadSpriteTemp1] = movement byte 2(スプライトの初期方向)
 	ld a, [hli]
 	ld [hLoadSpriteTemp1], a
 

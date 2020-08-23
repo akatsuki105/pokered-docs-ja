@@ -42,7 +42,7 @@ hMapWidth  EQU $FF8C
 hNorthSouthConnectionStripWidth EQU $FF8B
 hNorthSouthConnectedMapWidth    EQU $FF8C
 
-; DisplayTextIDの引数
+; スプライトのオフセット($c1X0のX) か テキストID(DisplayTextIDの引数) のバッファ
 hSpriteIndexOrTextID EQU $FF8C
 
 hPartyMonIndex EQU $FF8C
