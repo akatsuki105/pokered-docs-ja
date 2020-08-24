@@ -1312,28 +1312,64 @@ CheckForJumpingAndTilePairCollisions::
 	ret nz
 ; if not jumping
 
+; **CheckForTilePairCollisions2**  
+; [wTilePlayerStandingOn] = (8, 9) = プレイヤーの立っている coord  
+; と  
+; hl = TilePairCollisionsLand  
+; にして CheckForTilePairCollisionsに続く  
 CheckForTilePairCollisions2::
 	; [wTilePlayerStandingOn] = (8, 9) = プレイヤーの立っている coord
 	aCoord 8, 9
 	ld [wTilePlayerStandingOn], a
 
+; **CheckForTilePairCollisions**  
+; プレイヤーの立っているタイルと目の前のタイルが、hlで指定した Collistionsテーブル の各エントリのどれかに該当するかチェックする  
+; - - -  
+; プレイヤーのマス == tile1 && 目の前のマス == tile2  
+; または  
+; プレイヤーのマス == tile2 && 目の前のマス == tile1  
+; ならOK  
+; 
+; INPUT:  
+; hl = Collistionsテーブル(TilePairCollisionsLand or TilePairCollisionsWater)  
+; [wTilePlayerStandingOn] = プレイヤーの立っているマスのタイル番号  
+; [wTileInFrontOfPlayer] = プレイヤーの目の前のマスのタイル番号  
+; 
+; OUTPUT: carry = 1(該当するものがある) or 0(ない)  
 CheckForTilePairCollisions::
+	; c = プレイヤーの目の前のマスのタイル番号
 	ld a, [wTileInFrontOfPlayer]
 	ld c, a
+
+; hl で指定した Collistionsテーブル の各エントリをみていき、現在のマップのタイルセットと同じタイルセットIDを持つエントリを探す
 .tilePairCollisionLoop
+; {
+	; a = Collistionsテーブル のエントリのタイルセットID
+	; b = 現在のマップのタイルセットID
 	ld a, [wCurMapTileset] ; tileset number
 	ld b, a
 	ld a, [hli]
+	
+	; hl で指定した Collistionsテーブル の最後までみた -> .noMatch
 	cp $ff
 	jr z, .noMatch
+
+	; タイルセットIDが一致するものが見つかった -> .tilesetMatches
 	cp b
 	jr z, .tilesetMatches
+
+	; 次のテーブルエントリへ
 	inc hl
 .retry
 	inc hl
 	jr .tilePairCollisionLoop
+; }
+
+; プレイヤーの立っているマスのタイルが Collisionsテーブルの tile1 と一致する -> .currentTileMatchesFirstInPair  
+; プレイヤーの立っているマスのタイルが Collisionsテーブルの tile2 と一致する -> .currentTileMatchesSecondInPair  
+; どっちとも一致しない -> .retry (.tilePairCollisionLoop に戻って次の Collisionエントリへ)
 .tilesetMatches
-	ld a, [wTilePlayerStandingOn] ; tile the player is on
+	ld a, [wTilePlayerStandingOn]
 	ld b, a
 	ld a, [hl]
 	cp b
@@ -1343,18 +1379,25 @@ CheckForTilePairCollisions::
 	cp b
 	jr z, .currentTileMatchesSecondInPair
 	jr .retry
+
+; 目の前のタイルが tile2 と一致する -> .foundMatch  
+; 一致しない -> .tilePairCollisionLoop(次の Collisionエントリへ)
 .currentTileMatchesFirstInPair
 	inc hl
 	ld a, [hl]
 	cp c
 	jr z, .foundMatch
 	jr .tilePairCollisionLoop
+
+; 目の前のタイルが tile1 と一致する -> .foundMatch  
+; 一致しない -> .tilePairCollisionLoop(次の Collisionエントリへ)
 .currentTileMatchesSecondInPair
 	dec hl
 	ld a, [hli]
 	cp c
 	inc hl
 	jr nz, .tilePairCollisionLoop
+
 .foundMatch
 	scf
 	ret
@@ -1366,7 +1409,7 @@ CheckForTilePairCollisions::
 ; 各エントリ: タイルセットID, tile 1, tile 2  
 ; 終端記号は 0xff  
 ; 各エントリは、タイルセットにおいて tile 1 と tile 2 の間をプレイヤーは跨げない、つまり tile 1 と tile 2 は互いに壁になっていることを示している  
-; 主に、段差を定義するために使用される?  
+; 主に、段差(ジャンプするやつでなく洞窟などの階段とかで登るような違う高さのマス)を定義するために使用される  
 TilePairCollisionsLand::
 	db CAVERN, $20, $05
 	db CAVERN, $41, $05
@@ -1385,7 +1428,7 @@ TilePairCollisionsLand::
 ; 各エントリ: タイルセットID, tile 1, tile 2  
 ; 終端記号は 0xff  
 ; 各エントリは、タイルセットにおいて tile 1 と tile 2 の間をプレイヤーは跨げない、つまり tile 1 と tile 2 は互いに壁になっていることを示している  
-; 主に、段差を定義するために使用される?  
+; 主に、段差(ジャンプするやつでなく洞窟などの階段とかで登るような違う高さのマス)を定義するために使用される  
 TilePairCollisionsWater::
 	db FOREST, $14, $2E
 	db FOREST, $48, $2E

@@ -422,10 +422,12 @@ CheckForCollisionWhenPushingBoulder:
 ; }
 
 ; .ok
+	; プレイヤーのマスとプレイヤーの2マス前のタイルがまたげないタイル同士である(TilePairCollisionsLandの説明参照) -> .done  
 	ld hl, TilePairCollisionsLand
 	call CheckForTilePairCollisions2
 	ld a, $ff
-	jr c, .done ; if there is an elevation difference between the current tile and the one two steps ahead
+	jr c, .done
+
 	ld a, [wTileInFrontOfBoulderAndBoulderCollisionResult]
 	cp $15 ; stairs tile
 	ld a, $ff
