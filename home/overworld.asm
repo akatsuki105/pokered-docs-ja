@@ -1313,7 +1313,8 @@ CheckForJumpingAndTilePairCollisions::
 ; if not jumping
 
 CheckForTilePairCollisions2::
-	aCoord 8, 9 ; tile the player is on
+	; [wTilePlayerStandingOn] = (8, 9) = プレイヤーの立っている coord
+	aCoord 8, 9
 	ld [wTilePlayerStandingOn], a
 
 CheckForTilePairCollisions::
@@ -1361,11 +1362,11 @@ CheckForTilePairCollisions::
 	and a
 	ret
 
-; FORMAT: tileset number, tile 1, tile 2
-; terminated by 0xFF
-; these entries indicate that the player may not cross between tile 1 and tile 2
-; it's mainly used to simulate differences in elevation
-
+; **TilePairCollisionsLand**  
+; 各エントリ: タイルセットID, tile 1, tile 2  
+; 終端記号は 0xff  
+; 各エントリは、タイルセットにおいて tile 1 と tile 2 の間をプレイヤーは跨げない、つまり tile 1 と tile 2 は互いに壁になっていることを示している  
+; 主に、段差を定義するために使用される?  
 TilePairCollisionsLand::
 	db CAVERN, $20, $05
 	db CAVERN, $41, $05
@@ -1380,6 +1381,11 @@ TilePairCollisionsLand::
 	db FOREST, $5F, $2E
 	db $FF
 
+; **TilePairCollisionsWater**  
+; 各エントリ: タイルセットID, tile 1, tile 2  
+; 終端記号は 0xff  
+; 各エントリは、タイルセットにおいて tile 1 と tile 2 の間をプレイヤーは跨げない、つまり tile 1 と tile 2 は互いに壁になっていることを示している  
+; 主に、段差を定義するために使用される?  
 TilePairCollisionsWater::
 	db FOREST, $14, $2E
 	db FOREST, $48, $2E

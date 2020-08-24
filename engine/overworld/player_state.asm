@@ -380,7 +380,7 @@ GetTileTwoStepsInFrontOfPlayer:
 
 .notFacingLeft
 	cp SPRITE_FACING_RIGHT
-	jr nz, .storeTile　; .notFacingRight
+	jr nz, .storeTile ; .notFacingRight
 
 ; .facingReft
 	; $ffdb[3] = 1
@@ -399,20 +399,29 @@ GetTileTwoStepsInFrontOfPlayer:
 
 CheckForCollisionWhenPushingBoulder:
 	call GetTileTwoStepsInFrontOfPlayer
+
+	; hl = プレイヤーが通行可能なタイルのリストのアドレス
 	ld hl, wTilesetCollisionPtr
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 
+; プレイヤーの2マス前のタイルが通行可能か(かいりき岩を2マス前に押せるかどうかチェック)  
+; 押せる -> loopの下へ  
+; 押せない -> .done  
 .loop
 ; {
 	ld a, [hli]
+	; プレイヤーの2マス前のタイルが通行不能だとわかった -> .done
 	cp $ff
-	jr z, .done ; if the tile two steps ahead is not passable
+	jr z, .done
+
+	; プレイヤーの2マス前のタイルが通行可能だとわかったらループを抜ける
 	cp c
 	jr nz, .loop
 ; }
 
+; .ok
 	ld hl, TilePairCollisionsLand
 	call CheckForTilePairCollisions2
 	ld a, $ff
@@ -422,6 +431,7 @@ CheckForCollisionWhenPushingBoulder:
 	ld a, $ff
 	jr z, .done ; if the tile two steps ahead is stairs
 	call CheckForBoulderCollisionWithSprites
+
 .done
 	ld [wTileInFrontOfBoulderAndBoulderCollisionResult], a
 	ret

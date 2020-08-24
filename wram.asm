@@ -2902,8 +2902,9 @@ wTilesetBlocksPtr::
 wTilesetGfxPtr:: ; d52e
 	ds 2
 
-wTilesetCollisionPtr:: ; d530
-; list of all walkable tiles
+; d530  
+; プレイヤーが通行可能なタイルのリストのアドレスを格納する  
+wTilesetCollisionPtr::
 	ds 2
 
 wTilesetTalkingOverTiles:: ; d532
