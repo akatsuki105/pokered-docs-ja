@@ -1,3 +1,5 @@
+; Map script(おそらくマップ上で定期的に走っている処理)  
+; かいりきの岩を押そうとしているか判定して、押そうとしているなら適した処理を行う
 TryPushingBoulder:
 	; かいりき状態でない -> return
 	ld a, [wd728]
@@ -33,15 +35,19 @@ TryPushingBoulder:
 	call GetSpriteMovementByte2Pointer
 	ld a, [hl]
 	cp BOULDER_MOVEMENT_BYTE_2
-	jp nz, ResetBoulderPushFlags	; そうでないなら -> ResetBoulderPushFlags
+	jp nz, ResetBoulderPushFlags	; そうでないなら -> ResetBoulderPushFlags -> return
 
+	; wFlags_0xcd60[6] = 1 またすでに 1がセットされていた時、つまり岩が動きだす前に、この処理が2回走ってしまった場合は return
 	ld hl, wFlags_0xcd60
 	bit 6, [hl]
-	set 6, [hl] ; indicate that the player has tried pushing
-	ret z ; the player must try pushing twice before the boulder will move
+	set 6, [hl] ; プレイヤーが岩を押そうとした状態であることを示す
+	ret z
+
+	; どの方向キーも押されていないときは return
 	ld a, [hJoyHeld]
 	and D_RIGHT | D_LEFT | D_UP | D_DOWN
 	ret z
+
 	predef CheckForCollisionWhenPushingBoulder
 	ld a, [wTileInFrontOfBoulderAndBoulderCollisionResult]
 	and a ; was there a collision?

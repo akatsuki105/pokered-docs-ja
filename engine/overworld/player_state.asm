@@ -318,48 +318,79 @@ _GetTileAndCoordsInFrontOfPlayer:
 	ld [wTileInFrontOfPlayer], a
 	ret
 
+; **GetTileTwoStepsInFrontOfPlayer**  
+; プレイヤーの2マス目の前のタイル番号などを取得する  
+; - - -  
+; OUTPUT:  
+; a = c = [wTileInFrontOfBoulderAndBoulderCollisionResult] = [wTileInFrontOfPlayer] = プレイヤーの2マス目の前のタイル番号  
+; d = プレイヤーの目の前の16*16タイルのYCoord  
+; e = プレイヤーの目の前の16*16タイルのXCoord  
+; $ffdb = ???  
 GetTileTwoStepsInFrontOfPlayer:
+	; TODO: ???
 	xor a
 	ld [$ffdb], a
+
+	; d = [wYCoord]
+	; e = [wXCoord]
 	ld hl, wYCoord
 	ld a, [hli]
 	ld d, a
 	ld e, [hl]
-	ld a, [wSpriteStateData1 + 9] ; player's sprite facing direction
+
+	; プレイヤーが下を向いていない -> .notFacingDown
+	ld a, [wSpriteStateData1 + 9] ; a = プレイヤーの方向
 	and a ; cp SPRITE_FACING_DOWN
 	jr nz, .notFacingDown
-; facing down
+
+; .facingDown
+	; $ffdb[0] = 1
 	ld hl, $ffdb
 	set 0, [hl]
+	; a = (8, 9+4)
 	aCoord 8, 13
 	inc d
 	jr .storeTile
+
 .notFacingDown
 	cp SPRITE_FACING_UP
 	jr nz, .notFacingUp
-; facing up
+
+; .facingUp
+	; $ffdb[1] = 1
 	ld hl, $ffdb
 	set 1, [hl]
+	; a = (8, 9-4)
 	aCoord 8, 5
 	dec d
 	jr .storeTile
+
 .notFacingUp
 	cp SPRITE_FACING_LEFT
 	jr nz, .notFacingLeft
-; facing left
+
+; .facingLeft
+	; $ffdb[2] = 1
 	ld hl, $ffdb
 	set 2, [hl]
+	; a = (8-4, 9)
 	aCoord 4, 9
 	dec e
 	jr .storeTile
+
 .notFacingLeft
 	cp SPRITE_FACING_RIGHT
-	jr nz, .storeTile
-; facing right
+	jr nz, .storeTile　; .notFacingRight
+
+; .facingReft
+	; $ffdb[3] = 1
 	ld hl, $ffdb
 	set 3, [hl]
+	; a = (8+4, 9)
 	aCoord 12, 9
 	inc e
+
+; 2マス先のタイル番号を格納して return
 .storeTile
 	ld c, a
 	ld [wTileInFrontOfBoulderAndBoulderCollisionResult], a
@@ -372,12 +403,16 @@ CheckForCollisionWhenPushingBoulder:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
 .loop
+; {
 	ld a, [hli]
 	cp $ff
 	jr z, .done ; if the tile two steps ahead is not passable
 	cp c
 	jr nz, .loop
+; }
+
 	ld hl, TilePairCollisionsLand
 	call CheckForTilePairCollisions2
 	ld a, $ff
