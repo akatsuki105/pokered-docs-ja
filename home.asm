@@ -3313,7 +3313,8 @@ SetSpriteMovementBytesToFE::
 	pop hl
 	ret
 
-; sets both movement bytes for sprite [H_SPRITEINDEX] to $FF
+; **SetSpriteMovementBytesToFF**  
+; [H_SPRITEINDEX]のスプライトの movement byte1, 2 を 0xff にする
 SetSpriteMovementBytesToFF::
 	push hl
 	call GetSpriteMovementByte1Pointer
@@ -3323,7 +3324,10 @@ SetSpriteMovementBytesToFF::
 	pop hl
 	ret
 
-; returns the sprite movement byte 1 pointer for sprite [H_SPRITEINDEX] in hl
+; **GetSpriteMovementByte1Pointer**  
+; [H_SPRITEINDEX]で指定したスプライトオフセットの movement byte 1 を hl に入れて返す  
+; - - -  
+; movement byte 1 は $C2X6 から取得する  
 GetSpriteMovementByte1Pointer::
 	ld h, $C2
 	ld a, [H_SPRITEINDEX]
@@ -3499,16 +3503,19 @@ CalcDifference::
 	scf
 	ret
 
-; move the sprite [H_SPRITEINDEX] with the movement pointed to by de
+; [H_SPRITEINDEX]で指定されたスプライトを、deが指すmovementに従って移動させる  
 ; actually only copies the movement data to wNPCMovementDirections for later
 MoveSprite::
 	call SetSpriteMovementBytesToFF
 MoveSprite_::
 	push hl
 	push bc
+
+	; movement byte 1 = 0
 	call GetSpriteMovementByte1Pointer
 	xor a
 	ld [hl], a
+
 	ld hl, wNPCMovementDirections
 	ld c, 0
 
