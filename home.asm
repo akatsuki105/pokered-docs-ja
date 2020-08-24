@@ -3503,8 +3503,13 @@ CalcDifference::
 	scf
 	ret
 
-; [H_SPRITEINDEX]で指定されたスプライトを、deが指すmovementに従って移動させる  
-; actually only copies the movement data to wNPCMovementDirections for later
+; **MoveSprite**  
+; [H_SPRITEINDEX]で指定されたスプライトを、movement dataに従って強制的に移動させる  
+; - - -  
+; Scripted NPCを作成する処理   
+; actually only copies the movement data to wNPCMovementDirections for later  
+; 
+; OUTPUT: de = movement data (e.g. MovementData_1e807)
 MoveSprite::
 	call SetSpriteMovementBytesToFF
 MoveSprite_::
@@ -3520,24 +3525,36 @@ MoveSprite_::
 	ld c, 0
 
 .loop
+; {
+	; [hl++] = [de++]
 	ld a, [de]
 	ld [hli], a
 	inc de
-	inc c
-	cp $FF ; have we reached the end of the movement data?
-	jr nz, .loop
 
+	inc c
+
+	; movement dataを最後までみたらループを抜ける
+	cp $FF
+	jr nz, .loop
+; }
+
+	; [wNPCNumScriptedSteps] = movment dataのエントリ数
 	ld a, c
-	ld [wNPCNumScriptedSteps], a ; number of steps taken
+	ld [wNPCNumScriptedSteps], a
 
 	pop bc
+
+	; `Scripted NPC` のフラグを立てる
 	ld hl, wd730
 	set 0, [hl]
+
 	pop hl
+
+	; すべてのプレイヤーによるキー入力を無効化
 	xor a
 	ld [wOverrideSimulatedJoypadStatesMask], a
 	ld [wSimulatedJoypadStatesEnd], a
-	dec a
+	dec a	; a = 0xff
 	ld [wJoyIgnore], a
 	ld [wWastedByteCD3A], a
 	ret
