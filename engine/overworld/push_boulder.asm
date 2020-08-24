@@ -1,5 +1,9 @@
+; **TryPushingBoulder**  
+; かいりきの岩を押そうとしているか判定する  
+; - - -  
 ; Map script(おそらくマップ上で定期的に走っている処理)  
-; かいりきの岩を押そうとしているか判定して、押そうとしているなら適した処理を行う
+; 
+; OUTPUT: wFlags_0xcd60の bit1 = 1(押すことになった) or 0(ならなかった)  
 TryPushingBoulder:
 	; かいりき状態でない -> return
 	ld a, [wd728]
@@ -48,19 +52,27 @@ TryPushingBoulder:
 	and D_RIGHT | D_LEFT | D_UP | D_DOWN
 	ret z
 
+	; かいりきで岩を押した先に障害物がある場合 -> ResetBoulderPushFlags
 	predef CheckForCollisionWhenPushingBoulder
 	ld a, [wTileInFrontOfBoulderAndBoulderCollisionResult]
-	and a ; was there a collision?
+	and a
 	jp nz, ResetBoulderPushFlags
+
+	; b = 押されている状態のキー入力 [↓, ↑, ←, →, Start, Select, B, A]
 	ld a, [hJoyHeld]
 	ld b, a
-	ld a, [wSpriteStateData1 + 9] ; player's sprite facing direction
+
+; プレイヤーの向いている方向によって分岐
+	ld a, [wSpriteStateData1 + 9] ; $C109 = プレイヤーの方向
 	cp SPRITE_FACING_UP
 	jr z, .pushBoulderUp
 	cp SPRITE_FACING_LEFT
 	jr z, .pushBoulderLeft
 	cp SPRITE_FACING_RIGHT
 	jr z, .pushBoulderRight
+
+; プレイヤーの向いている方向にキーが押されていることをチェック(押されていないならreturn)  
+; 押されているなら de = PushBoulder${Direction}MovementData して .doneへ  
 .pushBoulderDown
 	bit 7, b
 	ret z
@@ -80,10 +92,12 @@ TryPushingBoulder:
 	bit 4, b
 	ret z
 	ld de, PushBoulderRightMovementData
+
+; ここに来たら かいりきの岩を押しはじめたことが確定しているのでサウンドなどを流して return
 .done
 	call MoveSprite
 	ld a, SFX_PUSH_BOULDER
-	call PlaySound
+	call PlaySound	; かいりきの押したときの音を再生
 	ld hl, wFlags_0xcd60
 	set 1, [hl]
 	ret

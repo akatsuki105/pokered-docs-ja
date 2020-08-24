@@ -3499,9 +3499,9 @@ CalcDifference::
 	scf
 	ret
 
-MoveSprite::
 ; move the sprite [H_SPRITEINDEX] with the movement pointed to by de
 ; actually only copies the movement data to wNPCMovementDirections for later
+MoveSprite::
 	call SetSpriteMovementBytesToFF
 MoveSprite_::
 	push hl

@@ -2108,10 +2108,13 @@ RunMapScript::
 	push de
 	push bc
 	callba TryPushingBoulder
+
+	; TryPushingBoulder でかいりきの岩を押すことになったら DoBoulderDustAnimation
 	ld a, [wFlags_0xcd60]
-	bit 1, a ; play boulder dust animation
+	bit 1, a
 	jr z, .afterBoulderEffect
 	callba DoBoulderDustAnimation
+
 .afterBoulderEffect
 	pop bc
 	pop de

@@ -397,6 +397,13 @@ GetTileTwoStepsInFrontOfPlayer:
 	ld [wTileInFrontOfPlayer], a
 	ret
 
+; **CheckForCollisionWhenPushingBoulder**  
+; かいりきで岩を押した先に障害物があるかどうかチェックする  
+; - - -  
+; 障害物: 通行不能タイル、Collisionテーブルのタイル、スプライトなど  
+; Collisionテーブルについては `TilePairCollisionsLand` の説明参照  
+; 
+; OUTPUT: [wTileInFrontOfBoulderAndBoulderCollisionResult] = 0x00(障害物なし) or 0xff(障害物あり)
 CheckForCollisionWhenPushingBoulder:
 	call GetTileTwoStepsInFrontOfPlayer
 
@@ -428,17 +435,22 @@ CheckForCollisionWhenPushingBoulder:
 	ld a, $ff
 	jr c, .done
 
-	ld a, [wTileInFrontOfBoulderAndBoulderCollisionResult]
-	cp $15 ; stairs tile
+	; プレイヤーの2マス前のタイルが階段のとき
+	ld a, [wTileInFrontOfBoulderAndBoulderCollisionResult]	; a = プレイヤーの2マス前のタイル番号
+	cp $15 ; 階段のタイル
 	ld a, $ff
-	jr z, .done ; if the tile two steps ahead is stairs
+	jr z, .done
+
 	call CheckForBoulderCollisionWithSprites
 
+; チェックした結果を格納してreturn
 .done
+	; この時点で a = 0x00(障害物なし) or 0xff(障害物あり)
 	ld [wTileInFrontOfBoulderAndBoulderCollisionResult], a
 	ret
 
-; sets a to $ff if there is a collision and $00 if there is no collision
+; かいりきで岩を押した先にスプライトがあるかどうかチェックする  
+; OUTPUT: a = 0x00(障害物なし) or 0xff(障害物あり)  
 CheckForBoulderCollisionWithSprites:
 	ld a, [wBoulderSpriteIndex]
 	dec a

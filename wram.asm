@@ -1271,7 +1271,7 @@ wRightGBMonSpecies:: ; cd5f
 
 ; cd60  
 ; bit 0: is player engaged by trainer (to avoid being engaged by multiple trainers simultaneously)  
-; bit 1: かいりきのアニメーション再生中    
+; bit 1: かいりきのアニメーション再生を待機中  
 ; bit 3: using generic PC  
 ; bit 4: 1 -> .skipMovingSprites  
 ; bit 5: don't play sound when A or B is pressed in menu  
@@ -3247,9 +3247,10 @@ wDestinationMap:: ; d71a
 wUnusedD71B:: ; d71b
 	ds 1
 
-wTileInFrontOfBoulderAndBoulderCollisionResult:: ; d71c
-; used to store the tile in front of the boulder when trying to push a boulder
-; also used to store the result of the collision check ($ff for a collision and $00 for no collision)
+; d71c  
+; かいりきで岩を押そうとするときに岩の押した先のマスのタイル番号を格納するのに利用される  
+; また、岩を押す先に壁などの障害物がないかをチェックする処理の結果の格納にも利用される (0xffなら障害物あり 0x00なら障害物なし)  
+wTileInFrontOfBoulderAndBoulderCollisionResult::
 	ds 1
 
 wDungeonWarpDestinationMap:: ; d71d
