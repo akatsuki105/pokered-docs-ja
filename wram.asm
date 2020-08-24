@@ -571,9 +571,14 @@ wTrainerHeaderFlagBit:: ; cc55
 
 	ds 1
 
-wNPCMovementScriptPointerTableNum:: ; cc57
-; which NPC movement script pointer is being used
-; 0 if an NPC movement script is not running
+; cc57  
+; どの NPC movment script が実行されているかを表すポインタ  
+; - - -  
+; 0x00: NPC movement scriptが実行されていない  
+; 0x01: PalletMovementScriptPointerTable  
+; 0x02: PewterMuseumGuyMovementScriptPointerTable  
+; 0x03: PewterGymGuyMovementScriptPointerTable  
+wNPCMovementScriptPointerTableNum::
 	ds 1
 
 wNPCMovementScriptBank:: ; cc58
@@ -3360,12 +3365,11 @@ wBeatLorelei:: ; d734
 	ds 2
 
 ; d736  
-; - bit 0: check if the player is standing on a door and make him walk down a step if so
-; - bit 0: プレイヤーがドアに立っているか確認し、そうであるなら下に1歩歩かせる
-; - bit 1: 1ならプレイヤーは今、ドアから下に向かって歩いている状態である
-; - bit 2: standing on a warp
-; - bit 6: 段差をジャンプしているモーション中 / 釣りのモーション中に立つフラグ
-; - bit 7: player sprite spinning due to spin tiles (Rocket hideout / Viridian Gym)
+; bit 0: check if the player is standing on a door and make him walk down a step if so  
+; bit 1: 1ならプレイヤーは今、ドアから下に向かって歩いている状態である  
+; bit 2: standing on a warp  
+; bit 6: 段差をジャンプしているモーション中 / 釣りのモーション中に立つフラグ  
+; bit 7: player sprite spinning due to spin tiles (Rocket hideout / Viridian Gym)  
 wd736::
 	ds 1
 

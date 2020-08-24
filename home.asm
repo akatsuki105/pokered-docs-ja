@@ -2607,20 +2607,27 @@ IsPlayerCharacterBeingControlledByGame::
 	and $80
 	ret
 
+; NPC movement scriptを実行する  
 RunNPCMovementScript::
+	; wd736[0] を0クリア 0クリア前に1がセットされていたら -> .playerStepOutFromDoor
 	ld hl, wd736
 	bit 0, [hl]
 	res 0, [hl]
 	jr nz, .playerStepOutFromDoor
-	ld a, [wNPCMovementScriptPointerTableNum]
+
+	; NPC movement scriptが実行されていない -> return
+	ld a, [wNPCMovementScriptPointerTableNum]	; a = [wNPCMovementScriptPointerTableNum]
 	and a
 	ret z
+
+	; hl = [wNPCMovementScriptPointerTableNum] に対応する .NPCMovementScriptPointerTables のエントリ
 	dec a
 	add a
 	ld d, 0
-	ld e, a
+	ld e, a	; de = 2(a-1)
 	ld hl, .NPCMovementScriptPointerTables
 	add hl, de
+	
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
@@ -2640,6 +2647,7 @@ RunNPCMovementScript::
 	dw PalletMovementScriptPointerTable
 	dw PewterMuseumGuyMovementScriptPointerTable
 	dw PewterGymGuyMovementScriptPointerTable
+
 .playerStepOutFromDoor
 	jpba PlayerStepOutFromDoor
 
