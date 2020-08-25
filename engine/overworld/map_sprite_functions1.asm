@@ -1,28 +1,31 @@
 ; **_UpdateSprites**  
 _UpdateSprites:
+	; a = $C20e
 	ld h, $c1
-	inc h		; h = $c2
-	ld a, $e    ; wSpriteStateData2 + $0e
+	inc h		; h = $C2
+	ld a, $e
 
 ; 各スプライトの更新処理
 ; $c2XeのXの値でどのスプライトを処理しているかわかる(0 <= X < 16)
 .spriteLoop
-	ld l, a		; hl = $c2Xe = (wSpriteStateData2 + $Xe)
+; {
+	; hl = $c2Xe = (wSpriteStateData2 + $Xe)
+	ld l, a
 	sub $e
 	ld c, a
+	; [H_CURRENTSPRITEOFFSET] = X0
 	ld [H_CURRENTSPRITEOFFSET], a
 
-	; $c2Xeが0ならスプライトの更新をスキップ
+	; $c2Xeが 0 ならこのスロットにスプライトはない -> .skipSprite
 	ld a, [hl]
 	and a
 	jr z, .skipSprite
 
-	; レジスタを退避してスプライトの更新処理
+	; スプライトの更新処理
 	push hl
 	push de
 	push bc
 	call .updateCurrentSprite
-	; レジスタを復帰
 	pop bc
 	pop de
 	pop hl
@@ -30,10 +33,12 @@ _UpdateSprites:
 ; スプライトの更新をスキップ
 .skipSprite
 	ld a, l
-	add $10             ; 16バイト足して次のスプライトのデータを指すようにする
-	; すべてのスプライトの更新処理が終わればオーバーフローして$0eに戻っている
+	add $10             ; 次のスプライトスロットを指すようにする
+
+	; すべてのスプライトの更新処理が終わった -> return
 	cp $e               
-	jr nz, .spriteLoop
+	jr nz, .spriteLoop	; すべてのスプライトの更新処理が終わればオーバーフローして$0eに戻っている
+; }
 	ret
 
 ; スプライトの更新処理

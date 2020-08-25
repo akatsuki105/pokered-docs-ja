@@ -183,7 +183,7 @@ UpdateNPCSprite:
 	; b = c1x1
 	ld b, a
 
-	; 会話の準備
+	; フォントデータで歩きモーションのVRAMが上書きされている間はNPCを歩かせない
 	ld a, [wFontLoaded]
 	bit 0, a
 	jp nz, notYetMoving
@@ -215,7 +215,7 @@ UpdateNPCSprite:
 	inc a
 	jr z, .randomMovement  ; value $FE
 
-	; 以後はscripted NPCの動作(.randomMovementまで)
+; 以後はscripted NPCの動作(.randomMovementまで)
 	
 	; [c2x6] + 2 - 1 = [c2X6] + 1
 	dec a
@@ -395,7 +395,7 @@ TryWalking:
 	ld [hl], $3         ; c1x1: set movement status to walking
 
 	; 画像を歩きモーションの画像で更新
-	jp UpdateSpriteImage
+	jp UpdateSpriteImage	; return
 
 ; update the walking animation parameters for a sprite that is currently walking
 UpdateSpriteInWalkingAnimation:

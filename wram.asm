@@ -581,8 +581,9 @@ wTrainerHeaderFlagBit:: ; cc55
 wNPCMovementScriptPointerTableNum::
 	ds 1
 
-wNPCMovementScriptBank:: ; cc58
-; ROM bank of current NPC movement script
+; cc58  
+; 現在の NPC movement script が格納されているROMバンク  
+wNPCMovementScriptBank::
 	ds 1
 
 	ds 2

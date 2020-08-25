@@ -31,6 +31,7 @@
 - [2bpp](./docs/2bpp.md)
 - [バンク](./docs/bank.md)
 - [BCD](./docs/bcd.md)
+- [Boulder](./docs/boulder.md)
 - [カートリッジ](./docs/cartridge.md)
 - [イベント](./docs/event.md)
 - [hidden object](./docs/hidden_object.md)

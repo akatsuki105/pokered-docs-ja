@@ -95,7 +95,7 @@ TryPushingBoulder:
 
 ; ここに来たら かいりきの岩を押しはじめたことが確定しているのでサウンドなどを流して return
 .done
-	call MoveSprite
+	call MoveSprite	; かいりき岩を移動させる
 	ld a, SFX_PUSH_BOULDER
 	call PlaySound	; かいりきの押したときの音を再生
 	ld hl, wFlags_0xcd60
@@ -117,7 +117,7 @@ PushBoulderRightMovementData:
 ; **DoBoulderDustAnimation**  
 ; かいりきのアニメーション処理  
 ; - - -  
-; 土埃のアニメーション処理 + かいりきフラグのクリア + かいりきのサウンド再生  
+; 土埃のアニメーション処理 + かいりきフラグのクリア + 土埃のサウンド再生  
 DoBoulderDustAnimation:
 	; NPCスプライトがスクリプトによって動かされている -> return
 	ld a, [wd730]
@@ -138,7 +138,7 @@ DoBoulderDustAnimation:
 	call GetSpriteMovementByte2Pointer
 	ld [hl], BOULDER_MOVEMENT_BYTE_2
 
-	; かいりきのサウンドを再生
+	; 土埃のサウンドを再生
 	ld a, SFX_CUT
 	jp PlaySound	; return
 

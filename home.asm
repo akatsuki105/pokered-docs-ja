@@ -2631,13 +2631,17 @@ RunNPCMovementScript::
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; [wNPCMovementScriptBank] にバンクスイッチ
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, [wNPCMovementScriptBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
 	ld a, [wNPCMovementScriptFunctionNum]
 	call CallFunctionInTable
+
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
@@ -5191,9 +5195,11 @@ endm
 	ret
 
 
-CallFunctionInTable::
+; **CallFunctionInTable**  
 ; Call function a in jumptable hl.
-; de is not preserved.
+; jumptable hlの 関数aをコールする  
+; deだけは値が変わる可能性がある
+CallFunctionInTable::
 	push hl
 	push de
 	push bc
