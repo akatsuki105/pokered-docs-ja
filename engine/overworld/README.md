@@ -28,7 +28,7 @@ ledges.asm | 段差飛び降り処理を行う
 map_sprites.asm | マップ上のスプライトのタイルデータをVRAMにロードする処理 
 map_sprite_functions1.asm | null
 missable_objects.asm | null
-movement.asm | null
+movement.asm | プレイヤーやNPCの移動処理
 npc_movement.asm | null
 oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を行う
 oam.asm | 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む関数<br/>VBlank中に実行される
