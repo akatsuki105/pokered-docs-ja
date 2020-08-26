@@ -171,7 +171,7 @@ LoadCutGrassAnimationTilePattern:
 	jp CopyVideoData
 
 ; **WriteCutOrBoulderDustAnimationOAMBlock**  
-; OAMbuffer(正確には OAMBuffer + 0x90) に いあいぎり や かいりき のアニメーションを書き込む処理  
+; wOAMBuffer(正確には wOAMBuffer + 0x90) に いあいぎり や かいりき のアニメーションを書き込む処理  
 ; - - -  
 ; 主人公の向いている方向や、いあいぎり か かいりき かによって結果が変わってくる  
 ; いあいぎり なら　木が切れるアニメーション  
@@ -180,8 +180,8 @@ WriteCutOrBoulderDustAnimationOAMBlock:
 	call GetCutOrBoulderDustAnimationOffsets
 	ld a, $9
 	ld de, CutOrBoulderDustAnimationTilesAndAttributes
-	; OAMBufferの 9(a)*4(OAM blockが 2*2なので) -> 36番目に配置する  
-	; OAMは4byteなので 36 * 4 = 144 = 0x90 つまり OAMBuffer + 0x90に配置
+	; wOAMBuffer の 9(a)*4(OAM blockが 2*2なので) -> 36番目に配置する  
+	; OAMは4byteなので 36 * 4 = 144 = 0x90 つまり wOAMBuffer + 0x90に配置
 	jp WriteOAMBlock
 
 CutOrBoulderDustAnimationTilesAndAttributes:

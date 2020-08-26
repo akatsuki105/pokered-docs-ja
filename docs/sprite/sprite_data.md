@@ -73,7 +73,7 @@ sprite image indexは 上位ニブル(XXXX0000) と 下位ニブル(0000YYYY)の
  $C2x3  | X displacement  |  8で初期化 スプライトが初期座標から離れすぎないために設定されていると考えられるがバグがある
  $C2x4  | Y position  |  Y 座標 <br/>16\*16のマスのどこにいるかを表している <br/>一番上のマスにいるときは4となるようになっている <br/>例: 一番上のマスから1マス下にいるときは5になる
  $C2x5  | X position  |  X 座標 <br/>16\*16のマスのどこにいるかを表している <br/>一番左のマスにいるときは4となるようになっている
- $C2x6  | movement byte 1  |  スプライトの動きを決めるデータその1 [movement byte](./../movement_byte.md)参照
+ $C2x6  | movement byte 1  |  スプライトの動きを決めるデータその1 [movement byte](./update.md#movement-byte-1)参照
  $C2x7  | ???  |  草むらにスプライトがいるとき$80になってそれ以外では$0になっている<br/>おそらくスプライトの上に草むらを描画するのに利用
  $C2x8  | delay until next movement  |  次の動きまでのクールタイム <br/>どんどん減って行って, 0になるとC1x1が1にセットされる
  $C2x9  | undefined  |  ???
@@ -107,17 +107,8 @@ VRAMオフセットがわかれば、スプライトのタイルデータがVRAM
 
 #### movement byte 2
 
-優先スプライト方向  
+[movement byte 2](./update.md#movement-byte-2) 参照
 
-この値が 
+## ロード処理
 
-```asm
-DOWN  EQU $D0
-UP    EQU $D1
-LEFT  EQU $D2
-RIGHT EQU $D3
-```
-
-の特定のどれかのとき、 スプライトは `UpdateNPCSprite` の処理で必ずずっとその方向を向かされる(or その方向に移動する) 
-
-この値は Map Header の objects で予め決められており変化することはない
+スプライトのロード処理は `LoadMapHeader` で行われる

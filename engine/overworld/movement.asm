@@ -249,7 +249,7 @@ UpdateNPCSprite:
 	ld [wWastedByteCD3A], a
 	ret
 .next
-	; "movement byte 1" != WALK($fe) -> .determineDirection
+	; "movement byte 1" != WALK($fe) つまり "movement byte 1" == STAY($ff) -> .determineDirection
 	cp WALK
 	jr nz, .determineDirection
 
