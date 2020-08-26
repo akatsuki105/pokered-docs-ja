@@ -1,9 +1,12 @@
+; いあいぎりのアニメーション処理  
 AnimCut:
 	ld a, [wCutTile]
 	cp $52
 	jr z, .grass
+
+; いあいぎりの対象が木
 	ld c, $8
-.cutTreeLoop
+.cutTreeLoop ; {
 	push bc
 	ld hl, wOAMBuffer + $91
 	ld a, 1
@@ -22,10 +25,13 @@ AnimCut:
 	pop bc
 	dec c
 	jr nz, .cutTreeLoop
+; }
 	ret
+
+; いあいぎりの対象が草むら
 .grass
 	ld c, 2
-.cutGrassLoop
+.cutGrassLoop ; {
 	push bc
 	ld c, $8
 	call AnimCutGrass_UpdateOAMEntries
@@ -41,6 +47,7 @@ AnimCut:
 	pop bc
 	dec c
 	jr nz, .cutGrassLoop
+; }
 	ret
 
 AnimCutGrass_UpdateOAMEntries:

@@ -12,8 +12,8 @@ cable_club_npc.asm | null
 card_key.asm | シルフカンパニーでカードキーを利用するときの処理       
 cinnabar_lab.asm | グレンタウンの『ポケモンけんきゅうじょ』で化石を研究員に渡す処理   
 clear_variables.asm | マップが切り替わるときにマップにかかわる変数を初期化する処理
-cut.asm | null
-cut2.asm | null
+cut.asm | いあいぎりを使用したときの処理
+cut2.asm | いあいぎりを使用したときのアニメーション処理
 daycare_exp.asm | 育て屋のポケモンの経験値をインクリメントする処理    
 doors.asm | ドアタイルから強制的に下に歩かせる処理
 elevator.asm | エレベータを揺らす処理       
@@ -38,7 +38,7 @@ player_state.asm | null
 poison.asm | マップ上で歩いているときに毒ダメージを与える処理 
 pokecenter.asm | ポケモンセンターでジョーイさんに話しかけたときの処理
 pokemart.asm | フレンドリーショップでのアイテム売買の処理
-push_boulder.asm | null
+push_boulder.asm | かいりきによる岩を押す処理
 saffron_guards.asm | ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す処理
 set_blackout_map.asm | null
 ssanne.asm | かいりき の土埃のアニメーション処理
