@@ -2594,8 +2594,8 @@ wMapMusicROMBank::
 	ds 1
 
 ; d35d  
-; 現在のマップのBGP, OBP0, OBP1を得るためにFadePal4から差し引かれるオフセット  
-; 通常は0だが、フラッシュが必要な時は6でFadePal4ではなくFadePal2が使用される  
+; `LoadGBPal` で FadePal4 から差し引かれるオフセット  
+; 通常は 0 だが、フラッシュが必要な暗いマップでは ここに 6 が入り、 `LoadGBPal`で FadePal4 ではなく FadePal2 が使用される  
 wMapPalOffset::
 	ds 1
 

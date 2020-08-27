@@ -11,7 +11,7 @@ home/以下のプログラムはBank0に配置されるためバンクスイッ�
  audio.asm  |  null
  copy.asm  |  データコピー用のユーティリティ関数
  copy2.asm  |  データコピー用のユーティリティ関数 <br/>copy.asmとは配置されるアドレスが離れている
- fade.asm  |  null
+ fade.asm  |  画面のfadeout, fadeinさせるためにパレットを変更する処理
  init.asm  |  ゲーム起動時の処理
  joypad.asm  |  キー入力を処理する関数
  overworld.asm  |  null
