@@ -184,8 +184,13 @@ ShowObject2:
 	call MissableObjectFlagAction   ; reset "removed" flag
 	jp UpdateSprites
 
-; removes missable object (items, leg. pokemon, etc.) from the map
-; [wMissableObjectIndex]: index of the missable object to be removed (global index)
+; **HideObject**  
+; missable object (モンボアイコンのアイテムなど) をマップ上から取り除く  
+; - - -  
+; wMissableObjectFlags の missable object の非表示フラグを立てる  
+; モンボアイコンのアイテムなどを拾うなどして消滅させるときにこの処理を呼ぶ  
+; 
+; INPUT: [wMissableObjectIndex] = 取り除く missable object の global offset (MapHS00 を 0として対象の missable object が何番目のアイテムか)
 HideObject:
 	ld hl, wMissableObjectFlags
 	ld a, [wMissableObjectIndex]
@@ -194,7 +199,16 @@ HideObject:
 	call MissableObjectFlagAction   ; set "removed" flag
 	jp UpdateSprites
 
-; FlagAction と全く同じ処理
+; **MissableObjectFlagAction**  
+; hlのビットフィールドのビットcにおいてアクションbを実行する  
+; - - -  
+; `FlagAction` と全く同じ処理  
+; 
+; INPUT:  
+; c = アクション b の対象が hl の何ビット目か  
+; b = bitに対してとるアクション(0 -> クリア, 1 -> セット, 2 -> リード)  
+; 
+; OUTPUT: cレジスタ = アクションの結果(リードなら読み取ったbit)  
 MissableObjectFlagAction:
 
 	push hl

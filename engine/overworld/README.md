@@ -23,7 +23,7 @@ healing_machine.asm | 回復マシンの稼働時のアニメーション+サウ
 hidden_items.asm | 隠しアイテム取得の処理
 hidden_objects.asm | dungeon warp関連の処理とhidden objectに関連する処理
 is_player_just_outside_map.asm | プレイヤーがマップの外側の1タイルにいるかどうかを判定する処理
-item.asm | null
+item.asm | マップ上に落ちているアイテムを拾う処理  
 ledges.asm | 段差飛び降り処理を行う
 map_sprites.asm | マップ上のスプライトのタイルデータをVRAMにロードする処理 
 map_sprite_functions1.asm | null

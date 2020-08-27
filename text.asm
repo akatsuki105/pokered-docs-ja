@@ -61,33 +61,39 @@ _ExclamationText::
 	text "!"
 	done
 
+; "Ground rose up somewhere!"
 _GroundRoseText::
 	text "Ground rose up"
 	line "somewhere!"
 	done
 
+; "This requires STRENGTH to move!"
 _BoulderText::
 	text "This requires"
 	line "STRENGTH to move!"
 	done
 
+; "All your item needs fulfilled! #MON MART"
 _MartSignText::
 	text "All your item"
 	line "needs fulfilled!"
 	cont "#MON MART"
 	done
 
+; "Heal Your #MON! #MON CENTER"
 _PokeCenterSignText::
 	text "Heal Your #MON!"
 	line "#MON CENTER"
 	done
 
+; "<PLAYER> found ${ITEM}!"
 _FoundItemText::
 	text "<PLAYER> found"
 	line "@"
 	TX_RAM wcf4b
 	text "!@@"
 
+; "No more room for items!"
 _NoMoreRoomForItemText::
 	text "No more room for"
 	line "items!"

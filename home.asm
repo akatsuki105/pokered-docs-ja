@@ -1085,22 +1085,27 @@ TextScriptEnd::
 	ld hl, TextScriptEndingChar
 	ret
 
+; "!"
 ExclamationText::
 	TX_FAR _ExclamationText
 	db "@"
 
+; "Ground rose up somewhere!"
 GroundRoseText::
 	TX_FAR _GroundRoseText
 	db "@"
 
+; "This requires STRENGTH to move!"
 BoulderText::
 	TX_FAR _BoulderText
 	db "@"
 
+; "All your item needs fulfilled! #MON MART"
 MartSignText::
 	TX_FAR _MartSignText
 	db "@"
 
+; "Heal Your #MON! #MON CENTER"
 PokeCenterSignText::
 	TX_FAR _PokeCenterSignText
 	db "@"
@@ -5349,7 +5354,7 @@ ReloadMapSpriteTilePatterns::
 	jp UpdateSprites
 
 ; **GiveItem**  
-; bで指定したアイテムをC個プレイヤーに渡し、渡したアイテムの名前をwcf4bに格納する  
+; bに格納したアイテムID で指定したアイテムを C個 プレイヤーに渡し、渡したアイテムの名前を wcf4b に格納する  
 ; 成功時にはキャリーを立てる  
 GiveItem::
 	ld a, b
