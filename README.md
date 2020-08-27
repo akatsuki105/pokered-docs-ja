@@ -41,6 +41,7 @@
 - [マクロ](./docs/macro.md)
 - [Map](./docs/map/README.md)
 - [メニュー](./docs/menu.md)
+- [missable object](./docs/missable_object.md)
 - [pewter guys](./docs/pewter_guys.md)
 - [pic](./docs/pic/README.md)
 - [ポケモン図鑑](./docs/pokedex.md)

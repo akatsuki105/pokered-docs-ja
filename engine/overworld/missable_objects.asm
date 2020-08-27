@@ -31,6 +31,8 @@ MarkTownVisitedAndLoadMissableObjects:
 	ld h, [hl]
 	; fall through
 
+; **LoadMissableObjects**  
+; missable object(マップ上のアイテム)の情報を wMissableObjectList に読み込む  
 LoadMissableObjects:
 	ld l, a
 
@@ -136,46 +138,58 @@ InitializeMissableObjectsFlags:
 	inc hl
 	jr .missableObjectsLoop
 
-; 現在処理中のスプライトが非表示になっているかを確認する  
-; 結果はAレジスタに格納される 0なら表示 0以外なら非表示  
+; **IsObjectHidden**  
+; 現在処理中のスプライトが missable object として非表示になっているかを確認する  
+; 
+; INPUT: [H_CURRENTSPRITEOFFSET] = 対象のスプライトのオフセット  
+; 
+; OUTPUT: a = [$ffe5] = 0(表示) or 1(非表示)
 IsObjectHidden:
 	; b = 現在処理中のスプライト番号
 	ld a, [H_CURRENTSPRITEOFFSET]
 	swap a
 	ld b, a
-	; hl = wMissableObjectList
+
+; wMissableObjectList から [H_CURRENTSPRITEOFFSET] に対応する missable object を探す
 	ld hl, wMissableObjectList
 .loop
-	; いきなり終端記号$FF
+; {
+	; 見つからないなら missable objectではないので常に表示 -> .notHidden
 	ld a, [hli]
 	cp $ff
-	jr z, .notHidden ; not missable -> not hidden
+	jr z, .notHidden ; 最後まで見た
 
 	; 現在処理中のスプライト番号と一致するか確認
 	cp b
-	ld a, [hli]
-	jr nz, .loop			; 一致しないなら次
+	ld a, [hli]	; a = missable object の global offset
+	jr nz, .loop
+; }
 
-	; a = 現在処理中のスプライト番号
-	; wMissableObjectFlagsのcビット目を読みだす
-	ld c, a
+	; c = 対象の missable object の 表示フラグ(0 -> 表示, 1 -> 非表示)
+	ld c, a	; c = missable object の global offset
 	ld b, FLAG_TEST
 	ld hl, wMissableObjectFlags
-	call MissableObjectFlagAction			; 結果はcに入っている
+	call MissableObjectFlagAction			; wMissableObjectFlagsの cビット目 を読みだして 結果を cに格納
 	
-	; cが0以外ならスプライトは非表示になっている
+	; c が 1 ならスプライトは非表示になっている
 	ld a, c
 	and a
 	jr nz, .hidden
 .notHidden
 	xor a
 .hidden
-	ld [$ffe5], a	; 結果を格納
+	ld [$ffe5], a
 	ret
 
-; adds missable object (items, leg. pokemon, etc.) to the map
-; [wMissableObjectIndex]: index of the missable object to be added (global index)
+; **ShowObject**  
+; missable object (モンボアイコンのアイテムなど) をマップ上に表示された状態にする  
+; - - -  
+; wMissableObjectFlags の missable object の非表示フラグをクリアする  
+; 
+; INPUT: [wMissableObjectIndex] = 表示する missable object の global offset (MapHS00 を 0として対象の missable object が何番目のアイテムか)
 ShowObject:
+; **ShowObject2**  
+; `ShowObject` と同じ
 ShowObject2:
 	ld hl, wMissableObjectFlags
 	ld a, [wMissableObjectIndex]
@@ -185,7 +199,7 @@ ShowObject2:
 	jp UpdateSprites
 
 ; **HideObject**  
-; missable object (モンボアイコンのアイテムなど) をマップ上から取り除く  
+; missable object (モンボアイコンのアイテムなど) をマップ上から非表示にする  
 ; - - -  
 ; wMissableObjectFlags の missable object の非表示フラグを立てる  
 ; モンボアイコンのアイテムなどを拾うなどして消滅させるときにこの処理を呼ぶ  

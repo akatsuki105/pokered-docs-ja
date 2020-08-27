@@ -27,7 +27,7 @@ item.asm | マップ上に落ちているアイテムを拾う処理
 ledges.asm | 段差飛び降り処理を行う
 map_sprites.asm | マップ上のスプライトのタイルデータをVRAMにロードする処理 
 map_sprite_functions1.asm | null
-missable_objects.asm | null
+missable_objects.asm | missable objectに関する処理
 movement.asm | プレイヤーやNPCの移動処理
 npc_movement.asm | null
 oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を行う
