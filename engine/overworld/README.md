@@ -45,4 +45,4 @@ ssanne.asm | かいりき の土埃のアニメーション処理
 tileset_header.asm | マップ切り替わり時にタイルセットを更新する処理
 trainers.asm | null
 update_map.asm | ブロックを書き換えたりマップの更新を行う処理
-wild_mons.asm | null
+wild_mons.asm | 現在のマップの野生ポケモンのエンカウントデータを ROM から WRAM にロードする処理

@@ -1,3 +1,9 @@
+; **WildDataPointers**  
+; マップID -> 野生ポケモンテーブルへのポインタ を表したテーブル  
+; - - -  
+; 各エントリは、野生ポケモンテーブルへのポインタだけなので2バイト  
+; マップIDは `constants/map_constants.asm` で定義されており、   
+; 野生ポケモンテーブルは `data/wildPokemon/` で定義されている  
 WildDataPointers:
 	dw NoMons      ; PALLET_TOWN
 	dw NoMons      ; VIRIDIAN_CITY

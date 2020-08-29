@@ -3414,13 +3414,20 @@ wEventFlags::
 wLinkEnemyTrainerName:: ; d887
 ; linked game's trainer name
 
-wGrassRate:: ; d887
+; d887  
+; 現在のマップ(草むら)でのエンカウント率  
+; 高いほどポケモンが出やすい 0ならポケモンは出ない  
+wGrassRate::
 	ds 1
 
-wGrassMons:: ; d888
-	;ds 20
+; d888  
+; 現在のマップの 野生ポケモンのデータ を格納する 20バイトの領域  
+; 各エントリは [Level,ポケモンID] の2バイトで 10エントリ 必ず埋められる  
+; 
+; 現在のマップの 野生ポケモンのデータ = `data/wildPokemon/` のデータ
+wGrassMons::
+	ds 11	; wSerialEnemyDataBlock も含めて 20バイト
 
-	ds 11
 ; Overload wGrassMons
 wSerialEnemyDataBlock:: ; d893
 	ds 9
