@@ -1,6 +1,6 @@
 ; **PewterGuys**  
 ; ニビシティの強制連行イベントのトリガーとなるマスにプレイヤーがいるか判定し、いるならsimulated joypadのキー入力を与える  
-; pewter guyとsimulated joypadについてはドキュメント参照
+; pewter guyとsimulated joypadについてはドキュメント参照  
 PewterGuys:
 	ld hl, wSimulatedJoypadStatesEnd
 

@@ -648,7 +648,7 @@ wAnimPalette:: ; cc79
 	ds 29
 
 ; cc97  
-; wSimulatedJoypadStatesEnd に対応する配列の先頭  
+; scripted NPCなどでスプライトの移動方向をここから格納していく  
 wNPCMovementDirections2::
 
 ; cc97  
@@ -669,8 +669,8 @@ wAddedToParty:: ; ccd3
 ; 1 = added
 
 ; ccd3  
-; wNPCMovementDirections2(cc97) から始まるキー入力の状態を表すリストの終端となるアドレス  
-; ccd3 - cc97 = 61バイト?  
+; ここから simulated joypad の キー入力方向を1マスずつ記録していく  
+; 詳しくは [simulated joypad](docs/simulated_joypad.md)参照  
 ; このアドレスは他の用途でも使用される  
 wSimulatedJoypadStatesEnd::
 
@@ -877,7 +877,8 @@ wInGameTradeReceiveMonSpecies::
 
 	ds 2
 
-; cd37
+; cd37  
+; wNPCMovementDirections2 の何バイト目が処理対象かを示すインデックス
 wNPCMovementDirections2Index::
 
 wUnusedCD37:: ; cd37
@@ -888,7 +889,8 @@ wFilteredBagItemsCount::
 	ds 1
 
 ; cd38  
-; 次に勝手に入力されるキー入力は、wSimulatedJoypadStatesEndにこの値から1を引いた値を足したもの   
+; 次に勝手に入力されるキー入力は、 wSimulatedJoypadStatesEnd にこの値から1を引いた値を足したもの  
+; つまり wSimulatedJoypadStatesEnd + [wSimulatedJoypadStatesIndex] - 1
 ; 0 ならキー入力はシミュレートされていない(ポケモン赤によって勝手にキー入力されている状態ではない)
 wSimulatedJoypadStatesIndex::
 	ds 1
@@ -1021,7 +1023,9 @@ wHiddenObjectFunctionArgument::
 ; which entry from TradeMons to select  
 wWhichTrade::
 
-wTrainerSpriteOffset:: ; cd3d
+; cd3d  
+; トレーナーに関する処理で、処理対象のトレーナーのスプライトオフセットを格納する(0xX0 の形で?)  
+wTrainerSpriteOffset::
 
 wUnusedCD3D:: ; cd3d
 	ds 1
@@ -1102,7 +1106,9 @@ wPlayerSpinWhileMovingUpOrDownAnimFrameDelay:: ; cd3f
 
 wHiddenObjectIndex:: ; cd3f
 
-wTrainerFacingDirection:: ; cd3f
+; cd3f  
+; トレーナーに関する処理で処理対象のトレーナーの向いている方向を格納する  
+wTrainerFacingDirection::
 	ds 1
 
 wHoFMonOrPlayer:: ; cd40

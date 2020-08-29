@@ -3534,12 +3534,12 @@ DisplayYesNoChoice::
 	call DisplayTextBoxID
 	jp LoadScreenTilesFromBuffer1
 
-; **CalcDifference**
-; abs(a-b)を計算する a < b のときはcarryを立てる  
+; **CalcDifference**  
+; abs(a-b)を計算する  a < b のときはcarryを立てる  
 ; - - -  
 ; OUTPUT:  
-; - a = abs(a-b)
-; - carry = 0(a>b) or 1(a<b)
+; a = abs(a-b)  
+; carry = 0(a>b) or 1(a<b)  
 CalcDifference::
 	; a > b なら引くだけで問題ない
 	sub b

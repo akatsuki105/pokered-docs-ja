@@ -1,41 +1,79 @@
+; **_GetSpritePosition1**  
+; $ffeb-$ffee にスプライトの位置データを格納する  
+; - - -  
+; OUTPUT:  
+; [$ffeb] = [c1x4] (screen Y pos)  
+; [$ffec] = [c1x6] (screen X pos)  
+; [$ffed] = [c2x4] (map Y pos)  
+; [$ffee] = [c2x5] (map X pos)  
 _GetSpritePosition1:
+	; hl = c1x4
 	ld hl, wSpriteStateData1
 	ld de, $4
 	ld a, [wSpriteIndex]
 	ld [H_SPRITEINDEX], a
 	call GetSpriteDataPointer
-	ld a, [hli] ; c1x4 (screen Y pos)
+
+	ld a, [hli] ; [$ffeb] = c1x4 (screen Y pos)
 	ld [$ffeb], a
+
 	inc hl
-	ld a, [hl] ; c1x6 (screen X pos)
+
+	ld a, [hl] ; [$ffec] = c1x6 (screen X pos)
 	ld [$ffec], a
+
 	ld de, (wSpriteStateData2 + $4) - (wSpriteStateData1 + $6)
 	add hl, de
-	ld a, [hli] ; c2x4 (map Y pos)
-	ld [$ffed], a
-	ld a, [hl] ; c2x5 (map X pos)
-	ld [$ffee], a
+
+	ld a, [hli] 
+	ld [$ffed], a ; [$ffed] = c2x4 (map Y pos)
+
+	ld a, [hl] 
+	ld [$ffee], a ; [$ffee] = c2x5 (map X pos)
+
 	ret
 
+; **_GetSpritePosition2**  
+; wSavedSpriteXXXX にスプライトの位置データを格納する  
+; - - -  
+; OUTPUT:  
+; [wSavedSpriteScreenY] = [c1x4] (screen Y pos)  
+; [wSavedSpriteScreenX] = [c1x6] (screen X pos)  
+; [wSavedSpriteMapY] = [c2x4] (map Y pos)  
+; [wSavedSpriteMapX] = [c2x5] (map X pos) 
 _GetSpritePosition2:
+	; hl = c1x4
 	ld hl, wSpriteStateData1
 	ld de, $4
 	ld a, [wSpriteIndex]
 	ld [H_SPRITEINDEX], a
 	call GetSpriteDataPointer
+
 	ld a, [hli] ; c1x4 (screen Y pos)
 	ld [wSavedSpriteScreenY], a
 	inc hl
+
 	ld a, [hl] ; c1x6 (screen X pos)
 	ld [wSavedSpriteScreenX], a
+
 	ld de, (wSpriteStateData2 + $4) - (wSpriteStateData1 + $6)
 	add hl, de
+
 	ld a, [hli] ; c2x4 (map Y pos)
 	ld [wSavedSpriteMapY], a
+
 	ld a, [hl] ; c2x5 (map X pos)
 	ld [wSavedSpriteMapX], a
 	ret
 
+; **_SetSpritePosition1**  
+; スプライトスロット(C1XX, C2XX) に _GetSpritePosition1 で取得したスプライトの位置データを格納する  
+; - - -  
+; OUTPUT:  
+; [c1x4] = [$ffeb] (screen Y pos)  
+; [c1x6] = [$ffec] (screen X pos)  
+; [c2x4] = [$ffed] (map Y pos)  
+; [c2x5] = [$ffee] (map X pos)  
 _SetSpritePosition1:
 	ld hl, wSpriteStateData1
 	ld de, $4
@@ -55,6 +93,14 @@ _SetSpritePosition1:
 	ld [hl], a
 	ret
 
+; **_SetSpritePosition2**  
+; スプライトスロット(C1XX, C2XX) に _GetSpritePosition2 で取得したスプライトの位置データを格納する  
+; - - -  
+; OUTPUT:  
+; [c1x4] = [wSavedSpriteScreenY] (screen Y pos)  
+; [c1x6] = [wSavedSpriteScreenX] (screen X pos)  
+; [c2x4] = [wSavedSpriteMapY] (map Y pos)  
+; [c2x5] = [wSavedSpriteMapX] (map X pos)  
 _SetSpritePosition2:
 	ld hl, wSpriteStateData1
 	ld de, 4
@@ -74,88 +120,141 @@ _SetSpritePosition2:
 	ld [hl], a ; c2x5 (map X pos)
 	ret
 
+; **TrainerWalkUpToPlayer**  
+; トレーナーが主人公を見つけたときに、トレーナーを主人公の方に歩かせる処理  
+; - - -  
+; INPUT: [wSpriteIndex] = 処理対象のトレーナースプライトのオフセット  
 TrainerWalkUpToPlayer:
+	; トレーナーの 画面上の Y座標 と X座標 を wTrainerScreenX(Y) にロード
 	ld a, [wSpriteIndex]
 	swap a
 	ld [wTrainerSpriteOffset], a
 	call ReadTrainerScreenPosition
+
 	ld a, [wTrainerFacingDirection]
-	and a ; SPRITE_FACING_DOWN
-	jr z, .facingDown
+
+	; トレーナーの向いている方向で分岐
+	and a ; cp SPRITE_FACING_DOWN
+	jr z, .facingDown	; 下
 	cp SPRITE_FACING_UP
-	jr z, .facingUp
+	jr z, .facingUp		; 上
 	cp SPRITE_FACING_LEFT
-	jr z, .facingLeft
-	jr .facingRight
+	jr z, .facingLeft	; 左
+	jr .facingRight		; 右
+
+; トレーナーが下を向いている時
 .facingDown
+	; 主人公とトレーナーの距離(Y軸、 pixel単位)を計算
 	ld a, [wTrainerScreenY]
-	ld b, a
-	ld a, $3c           ; (fixed) player screen Y pos
+	ld b, a					; b = トレーナーのY座標
+	ld a, $3c				; a = 主人公のY座標
 	call CalcDifference
-	cp $10              ; trainer is right above player
+
+	; トレーナーが主人公の1マス上にいるときは歩かせる必要がないので return
+	cp $10	; 16px = 1マス
 	ret z
+
+	; a = 歩かせる方向, bc = 歩くマス数
 	swap a
 	dec a
-	ld c, a             ; bc = steps yet to go to reach player
+	ld c, a             
 	xor a
-	ld b, a           ; a = direction to go to
+	ld b, a           
+
 	jr .writeWalkScript
+
+; トレーナーが上を向いている時
 .facingUp
+	; 主人公とトレーナーの距離(Y軸、 pixel単位)を計算
 	ld a, [wTrainerScreenY]
 	ld b, a
-	ld a, $3c           ; (fixed) player screen Y pos
+	ld a, $3c           
 	call CalcDifference
-	cp $10              ; trainer is right below player
+
+	; トレーナーが主人公の1マス下にいるときは歩かせる必要がないので return
+	cp $10              
 	ret z
+
+	; a = 歩かせる方向, bc = 歩くマス数
 	swap a
 	dec a
-	ld c, a             ; bc = steps yet to go to reach player
+	ld c, a             
 	ld b, $0
-	ld a, $40           ; a = direction to go to
+	ld a, $40           
+
 	jr .writeWalkScript
+
+; トレーナーが右を向いている時
 .facingRight
+	; 主人公とトレーナーの距離(X軸、 pixel単位)を計算
 	ld a, [wTrainerScreenX]
 	ld b, a
-	ld a, $40           ; (fixed) player screen X pos
+	ld a, $40
 	call CalcDifference
-	cp $10              ; trainer is directly left of player
+
+	; トレーナーが主人公の1マス左にいるときは歩かせる必要がないので return
+	cp $10
 	ret z
+
+	; a = 歩かせる方向, bc = 歩くマス数
 	swap a
 	dec a
-	ld c, a             ; bc = steps yet to go to reach player
+	ld c, a
 	ld b, $0
-	ld a, $c0           ; a = direction to go to
+	ld a, $c0
+
 	jr .writeWalkScript
+
+; トレーナーが左を向いている時
 .facingLeft
+	; 主人公とトレーナーの距離(X軸、 pixel単位)を計算
 	ld a, [wTrainerScreenX]
 	ld b, a
-	ld a, $40           ; (fixed) player screen X pos
+	ld a, $40
 	call CalcDifference
-	cp $10              ; trainer is directly right of player
+
+	; トレーナーが主人公の1マス右にいるときは歩かせる必要がないので return
+	cp $10
 	ret z
+
+	; a = 歩かせる方向, bc = 歩くマス数
 	swap a
 	dec a
-	ld c, a             ; bc = steps yet to go to reach player
+	ld c, a
 	ld b, $0
-	ld a, $80           ; a = direction to go to
+	ld a, $80
+
 .writeWalkScript
+	; この時点で a = 歩かせる方向、 bc = 歩かせるマス数
 	ld hl, wNPCMovementDirections2
 	ld de, wNPCMovementDirections2
-	call FillMemory     ; write the necessary steps to reach player
-	ld [hl], $ff        ; write end of list sentinel
+	call FillMemory     			; write the necessary steps to reach player
+	ld [hl], $ff        			; write end of list sentinel
 	ld a, [wSpriteIndex]
 	ld [H_SPRITEINDEX], a
 	jp MoveSprite_
 
-; input: de = offset within sprite entry
-; output: hl = pointer to sprite data
+; **GetSpriteDataPointer**  
+; 取得したいスプライトデータのポインタ(C1XY)を入手する  
+; - - -  
+; INPUT:  
+; de = 0xC1XY の Y (C1X0 から取得したいデータのオフセット)  
+; hl = 0xC100(wSpriteStateData1)  
+; [H_SPRITEINDEX] = スプライトのオフセット (C1X0 の X)  
+; 
+; OUTPUT: hl = 取得したいスプライトデータのポインタ(C1XY)  
 GetSpriteDataPointer:
+	; hl = 0xC10Y (Y = de)
 	push de
 	add hl, de
+
+	; de = 0x00X0 (X = スプライトのオフセット)
 	ld a, [H_SPRITEINDEX]
 	swap a
 	ld d, $0
 	ld e, a
+
+	; hl = 0xC1XY
 	add hl, de
 	pop de
 	ret
@@ -231,7 +330,14 @@ TrainerEngage:
 	pop hl
 	ret
 
-; reads trainer's Y position to wTrainerScreenY and X position to wTrainerScreenX
+; **ReadTrainerScreenPosition**  
+; トレーナーの 画面上の Y座標 と X座標 を wTrainerScreenX(Y) にロードする  
+; - - -  
+; INPUT: [wTrainerSpriteOffset] = 対象のトレーナーのスプライトオフセット  
+; 
+; OUTPUT:  
+; [wTrainerScreenX] = [c1X6]  
+; [wTrainerScreenY] = [c1X4]  
 ReadTrainerScreenPosition:
 	ld a, [wTrainerSpriteOffset]
 	add $4

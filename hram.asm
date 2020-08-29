@@ -34,7 +34,7 @@ H_DOWNARROWBLINKCNT1 EQU $FF8B  ; TODO: ▼の点滅をカウントするカウ�
 H_DOWNARROWBLINKCNT2 EQU $FF8C  ; TODO: ▼の点滅をカウントするカウンター
 
 H_SPRITEDATAOFFSET EQU $FF8B
-H_SPRITEINDEX      EQU $FF8C
+H_SPRITEINDEX      EQU $FF8C    ; スプライトのオフセットを格納するバッファ (オフセットaなら 0xa0 ではなく 0x0a)
 
 hMapStride EQU $FF8B
 hMapWidth  EQU $FF8C

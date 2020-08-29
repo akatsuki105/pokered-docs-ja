@@ -242,17 +242,17 @@ CalcPositionOfPlayerRelativeToNPC:
 	ld [hNPCPlayerRelativePosFlags], a
 	ret
 
+; **ConvertNPCMovementDirectionsToJoypadMasks**  
 ; wNPCMovementDirections2の方向フォーマット -> JoypadのMaskフォーマット  
 ConvertNPCMovementDirectionsToJoypadMasks:
 	; [wNPCMovementDirections2Index] = [hNPCMovementDirections2Index]
 	ld a, [hNPCMovementDirections2Index]
 	ld [wNPCMovementDirections2Index], a
-	dec a	; a = [hNPCMovementDirections2Index]-1
 
-	; de = wSimulatedJoypadStatesEnd
-	; hl = wNPCMovementDirections2
-	; a = wNPCMovementDirections2[ [hNPCMovementDirections2Index]-1 ]
-	ld de, wSimulatedJoypadStatesEnd
+	dec a	; a = [hNPCMovementDirections2Index]-1
+	ld de, wSimulatedJoypadStatesEnd ; de = wSimulatedJoypadStatesEnd
+
+	; hl = wNPCMovementDirections2 + [hNPCMovementDirections2Index]-1
 	ld hl, wNPCMovementDirections2
 	add l
 	ld l, a
