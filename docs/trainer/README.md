@@ -2,16 +2,20 @@
 
 ## Trainer Header
 
+`Trainer Header` 1つ1つは以下のような構造をしている
+
 ```asm
 TrainerHeaderLabel:
-	dbEventFlagBit EVENT_BEAT_CELADON_GYM_TRAINER_0
-	db ($2 << 4) ; trainer's view range
-	dwEventFlagAddress EVENT_BEAT_CELADON_GYM_TRAINER_0
-	dw CeladonGymBattleText2 ; TextBeforeBattle
-	dw CeladonGymAfterBattleText2 ; TextAfterBattle
-	dw CeladonGymEndBattleText2 ; TextEndBattle
-	dw CeladonGymEndBattleText2 ; TextEndBattle
+	dbEventFlagBit EVENT_ID		; 0  撃破フラグのあるbitを定義(下記参照)
+	db ($2 << 4)				; 1  トレーナーの視界の広さ
+	dwEventFlagAddress EVENT_ID	; 2  撃破フラグのあるアドレスを定義(下記参照)
+	dw BEFORE_BATTLE_TEXT
+	dw AFTER_BATTLE_TEXT
+	dw END_BATTLE_TEXT
+	dw END_BATTLE_TEXT
 ```
+
+実際に定義されている例として、 `scripts/CeladonGym.asm` をみてみる
 
 ```asm
 ; scripts/CeladonGym.asm
@@ -79,5 +83,18 @@ CeladonGymTrainerHeader6:
 	dw CeladonGymEndBattleText8 ; TextEndBattle
 	dw CeladonGymEndBattleText8 ; TextEndBattle
 
-	db $ff
+	db $ff	; 終端記号
 ```
+
+`Trainer Header` はマップごとに定義され、複数存在することもある
+
+$ff が `Trainer Header` の終端記号として使われている
+
+## トレーナーの撃破フラグ
+
+トレーナーの撃破フラグは、他のイベントと同じイベントフラグとして扱われており、イベントIDは `constants/event_constants.asm` で定義されている
+
+撃破フラグを表す bit がどこにあるかは、`Trainer Header` の中で `dbEventFlagBit` と `dwEventFlagAddress` によって示されている
+
+`dwEventFlagAddress` は撃破フラグのあるアドレスを、`dbEventFlagBit` はそのアドレスの何bit目かを示している
+

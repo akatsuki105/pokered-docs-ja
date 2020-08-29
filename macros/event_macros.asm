@@ -228,8 +228,14 @@ ResetEvents: MACRO
 	ENDM
 
 ; **dbEventFlagBit**  
-;\1 = event index  
-;\2 = number of bytes away from the base address (optional, for matching the ROM)  
+; イベントフラグを定義するマクロ  
+; - - -  
+; 実態は `db イベントフラグがdwEventFlagAddressのアドレスの何bit目か` 
+; 
+; イベントフラグ: 特定のトレーナーの撃破フラグなど  
+; 
+; \1 = イベントID (constants/event_constants.asmで定義)  
+; \2 = ベースアドレスから何バイト離れているか(つまりオフセット 任意の引数)  
 dbEventFlagBit: MACRO
 	IF _NARG > 1
 		db ((\1) % 8) + ((\2) * 8)
@@ -238,8 +244,13 @@ dbEventFlagBit: MACRO
 	ENDC
 	ENDM
 
-;\1 = event index
-;\2 = number of bytes away from the base address (optional, for matching the ROM)
+; **dwEventFlagAddress**  
+; イベントフラグのあるアドレスを定義するマクロ  
+; - - -  
+; 実態は `dw イベントフラグが格納されたアドレス`  
+; 
+; \1 = イベントID  
+; \2 = ベースアドレスから何バイト離れているか(つまりオフセット 任意の引数)  
 dwEventFlagAddress: MACRO
 	IF _NARG > 1
 		dw wEventFlags + ((\1) / 8) - (\2)
