@@ -3,6 +3,7 @@ _Route13BattleText2::
 	line "want to scrap!"
 	done
 
+; "My bird combo lost?"
 _Route13EndBattleText2::
 	text "My"
 	line "bird combo lost?"

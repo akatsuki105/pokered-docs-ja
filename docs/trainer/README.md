@@ -6,13 +6,13 @@
 
 ```asm
 TrainerHeaderLabel:
-	dbEventFlagBit EVENT_ID		; 0  撃破フラグのあるbitを定義(下記参照)
-	db ($2 << 4)				; 1  トレーナーの視界の広さ
-	dwEventFlagAddress EVENT_ID	; 2  撃破フラグのあるアドレスを定義(下記参照)
-	dw BEFORE_BATTLE_TEXT
-	dw AFTER_BATTLE_TEXT
-	dw END_BATTLE_TEXT
-	dw END_BATTLE_TEXT
+	dbEventFlagBit EVENT_ID		; 撃破フラグのあるbitを定義(下記参照)
+	db ($2 << 4)				; トレーナーの視界の広さ
+	dwEventFlagAddress EVENT_ID	; 撃破フラグのあるアドレスを定義(下記参照)
+	dw BEFORE_BATTLE_TEXT		; 戦闘開始前のテキスト
+	dw AFTER_BATTLE_TEXT		; 戦闘終了後に話しかけた時のテキスト
+	dw END_BATTLE_TEXT			; 勝利時に戦闘画面で出てくるテキスト
+	dw END_BATTLE_TEXT			; TODO: なぜ2つあるのか???
 ```
 
 実際に定義されている例として、 `scripts/CeladonGym.asm` をみてみる

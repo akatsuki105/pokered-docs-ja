@@ -141,10 +141,12 @@ AgathaBeforeBattleText:
 	TX_FAR _AgathaBeforeBattleText
 	db "@"
 
+; "Oh ho! You're something special, child!"
 AgathaEndBattleText:
 	TX_FAR _AgathaEndBattleText
 	db "@"
 
+; "You win! I see what the old duff sees in you now!"
 AgathaAfterBattleText:
 	TX_FAR _AgathaAfterBattleText
 	db "@"

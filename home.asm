@@ -2711,16 +2711,18 @@ LoadGymLeaderAndCityName::
 ; Trainer Header は wTrainerHeaderPtr にアドレスが格納されている  
 ; Aレジスタの引数に応じて読み取る内容を変える  
 ; 
-; INPUT:  
-; a が  
-;    0 -> flag's bit (into wTrainerHeaderFlagBit)  
-;    2 -> flag's byte ptr (into hl)  
-;    4 -> before battle text (into hl)  
-;    6 -> after battle text (into hl)  
-;    8 -> end battle text (into hl)  
+; OUTPUT:  
+; 呼び出し時 の Aレジスタ が  
+;    0 -> [wTrainerHeaderFlagBit] = 撃破フラグのあるbit  
+;    2 -> hl = 撃破フラグのあるアドレス  
+;    4 -> hl = 戦闘開始前のテキスト  
+;    6 -> hl = 戦闘終了後に話しかけた時のテキスト    
+;    8 -> hl = 勝利時に戦闘画面で出てくるテキスト  
 ReadTrainerHeaderInfo::
 	push de
 	push af
+
+	; hl = Trainer Header から読み出す内容のアドレス
 	ld d, $0
 	ld e, a
 	ld hl, wTrainerHeaderPtr
@@ -2728,32 +2730,55 @@ ReadTrainerHeaderInfo::
 	ld l, [hl]
 	ld h, a
 	add hl, de
+
+	; a != 0  -> .nonZeroOffset
 	pop af
 	and a
-	jr nz, .nonZeroOffset
+	jr nz, .nonZeroOffset	; a == 0 のときだけ読み出し先が違うので分岐
+
+	; a == 0 のとき [wTrainerHeaderFlagBit] = 撃破フラグのあるbit
 	ld a, [hl]
-	ld [wTrainerHeaderFlagBit], a  ; store flag's bit
+	ld [wTrainerHeaderFlagBit], a 
 	jr .done
+
+	; a != 0 のとき hl = Trainer Header から読み出す内容
 .nonZeroOffset
+
+	; a == 2 -> hl = 撃破フラグのあるアドレス
 	cp $2
-	jr z, .readPointer ; read flag's byte ptr
+	jr z, .readPointer
+
+	; a == 4 -> hl = 戦闘開始前のテキスト
 	cp $4
-	jr z, .readPointer ; read before battle text
+	jr z, .readPointer
+
+	; a == 6 -> hl = 戦闘終了後に話しかけた時のテキスト
 	cp $6
-	jr z, .readPointer ; read after battle text
+	jr z, .readPointer
+
+	; a == 8 -> hl = 勝利時に戦闘画面で出てくるテキスト
 	cp $8
-	jr z, .readPointer ; read end battle text
+	jr z, .readPointer
+
+	; a != 0xa -> 何もせず return
 	cp $a
 	jr nz, .done
-	ld a, [hli]        ; read end battle text (2) but override the result afterwards (XXX why, bug?)
+
+	; a == 0xa -> de = 勝利時に戦闘画面で出てくるテキスト(2)
+	; しかし、 deの内容は .done の `pop de` で上書きされているので無駄なコード バグ?
+	ld a, [hli]
 	ld d, [hl]
 	ld e, a
 	jr .done
+
 .readPointer
+	; hl = [hl] = Trainer Header から読み出す内容
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
 .done
+	; return 
 	pop de
 	ret
 

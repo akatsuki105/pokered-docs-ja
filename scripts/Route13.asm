@@ -129,6 +129,7 @@ Route13BattleText2:
 	TX_FAR _Route13BattleText2
 	db "@"
 
+; "My bird combo lost?"
 Route13EndBattleText2:
 	TX_FAR _Route13EndBattleText2
 	db "@"

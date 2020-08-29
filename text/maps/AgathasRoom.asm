@@ -22,12 +22,14 @@ _AgathaBeforeBattleText::
 	cont "trainer fights!"
 	done
 
+; "Oh ho! You're something special, child!"
 _AgathaEndBattleText::
 	text "Oh ho!"
 	line "You're something"
 	cont "special, child!"
 	prompt
 
+; "You win! I see what the old duff sees in you now!"
 _AgathaAfterBattleText::
 	text "You win! I see"
 	line "what the old duff"
@@ -38,6 +40,7 @@ _AgathaAfterBattleText::
 	cont "along now, child!"
 	done
 
+; "Someone's voice: Don't run away!"
 _AgathaDontRunAwayText::
 	text "Someone's voice:"
 	line "Don't run away!"
