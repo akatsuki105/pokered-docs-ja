@@ -1228,7 +1228,7 @@ FadeOutAudio::
 ; **DisplayTextID**  
 ; signメッセージやスプライトのダイアログ表示などで利用される  
 ; - - -  
-; INPUT: [hSpriteIndexOrTextID] = sprite ID or text ID (sprite IDがわたされたときはそのスプライトが保持しているTextIDのテキストを表示する)
+; INPUT: [hSpriteIndexOrTextID] = スプライトのオフセット or text ID (スプライトのオフセット がわたされたときはそのスプライトが保持しているTextIDのテキストを表示する)
 DisplayTextID::
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -1255,7 +1255,7 @@ DisplayTextID::
 
 	ld d, $00
 	ld a, [hSpriteIndexOrTextID] ; text ID
-	ld [wSpriteIndex], a
+	ld [wSpriteIndex], a	; 話しかけたスプライトのスプライトオフセット
 
 	; 特殊なテキスト描画処理でないか検討
 	and a
@@ -1269,13 +1269,13 @@ DisplayTextID::
 	cp TEXT_REPEL_WORE_OFF
 	jp z, DisplayRepelWoreOffText
 
-	; [hSpriteIndexOrTextID] <= スプライトの数 なら hSpriteIndexOrTextIDはspriteIDである
+	; [hSpriteIndexOrTextID] <= スプライトの数 なら hSpriteIndexOrTextID は スプライトのオフセット として -> .spriteHandling
 	ld a, [wNumSprites]
 	ld e, a
 	ld a, [hSpriteIndexOrTextID] ; sprite ID
 	cp e
 	jr z, .spriteHandling
-	jr nc, .skipSpriteHandling
+	jr nc, .skipSpriteHandling	; [hSpriteIndexOrTextID] > スプライトの数 つまり hSpriteIndexOrTextID は テキストID -> .skipSpriteHandling 
 
 ; スプライトのテキストIDを取得
 .spriteHandling
@@ -2666,7 +2666,7 @@ EndNPCMovementScript::
 EmptyFunc2::
 	ret
 
-; stores hl in [wTrainerHeaderPtr]
+; [wTrainerHeaderPtr] = hl  
 StoreTrainerHeaderPointer::
 	ld a, h
 	ld [wTrainerHeaderPtr], a
@@ -2705,13 +2705,19 @@ LoadGymLeaderAndCityName::
 	ld bc, NAME_LENGTH
 	jp CopyData     ; load gym leader name
 
-; reads specific information from trainer header (pointed to at wTrainerHeaderPtr)
-; a: offset in header data
-;    0 -> flag's bit (into wTrainerHeaderFlagBit)
-;    2 -> flag's byte ptr (into hl)
-;    4 -> before battle text (into hl)
-;    6 -> after battle text (into hl)
-;    8 -> end battle text (into hl)
+; **ReadTrainerHeaderInfo**  
+; Trainer Header から 特定の情報を読み取る処理  
+; - - -  
+; Trainer Header は wTrainerHeaderPtr にアドレスが格納されている  
+; Aレジスタの引数に応じて読み取る内容を変える  
+; 
+; INPUT:  
+; a が  
+;    0 -> flag's bit (into wTrainerHeaderFlagBit)  
+;    2 -> flag's byte ptr (into hl)  
+;    4 -> before battle text (into hl)  
+;    6 -> after battle text (into hl)  
+;    8 -> end battle text (into hl)  
 ReadTrainerHeaderInfo::
 	push de
 	push af

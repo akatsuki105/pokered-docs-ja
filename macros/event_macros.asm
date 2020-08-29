@@ -227,8 +227,9 @@ ResetEvents: MACRO
 	endr
 	ENDM
 
-;\1 = event index
-;\2 = number of bytes away from the base address (optional, for matching the ROM)
+; **dbEventFlagBit**  
+;\1 = event index  
+;\2 = number of bytes away from the base address (optional, for matching the ROM)  
 dbEventFlagBit: MACRO
 	IF _NARG > 1
 		db ((\1) % 8) + ((\2) * 8)

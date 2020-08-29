@@ -1464,7 +1464,10 @@ wTextPredefFlag::
 wPredefParentBank::
 	ds 1
 
-wSpriteIndex:: ds 1
+; cf13  
+; スプライトのオフセットが入る  
+wSpriteIndex::
+	ds 1
 
 ; cf14  
 ; 現在処理中のスプライトの movement byte 2
