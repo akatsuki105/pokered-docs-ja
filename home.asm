@@ -3013,21 +3013,34 @@ SaveEndBattleTextPointers::
 	ld [wEndBattleLoseTextPointer + 1], a
 	ret
 
-; loads data of some trainer on the current map and plays pre-battle music
-; [wSpriteIndex]: sprite ID of trainer who is engaged
+; **EngageMapTrainer**  
+; エンカウントしたトレーナーのデータをロードし、エンカウントBGMを流す  
+; - - -  
+; [wEngagedTrainerClass] と [wEngagedTrainerSet] に wMapSpriteExtraData からエンカウントしたトレーナーのデータをセットする  
+; 
+; INPUT: [wSpriteIndex] = エンカウントしたトレーナーのスプライトオフセット  
+; 
+; OUTPUT:  
+; [wEngagedTrainerClass] = trainer class  
+; [wEngagedTrainerSet] = trainer number  
 EngageMapTrainer::
+	; hl = wMapSpriteExtraDataの該当エントリ
 	ld hl, wMapSpriteExtraData
 	ld d, $0
 	ld a, [wSpriteIndex]
 	dec a
 	add a
 	ld e, a
-	add hl, de     ; seek to engaged trainer data
-	ld a, [hli]    ; load trainer class
+	add hl, de
+
+	; [wEngagedTrainerClass] と [wEngagedTrainerSet] に格納
+	ld a, [hli]
 	ld [wEngagedTrainerClass], a
-	ld a, [hl]     ; load trainer mon set
+	ld a, [hl]
 	ld [wEngagedTrainerSet], a
-	jp PlayTrainerMusic
+
+	; トレーナーとのエンカウントBGMを流す
+	jp PlayTrainerMusic	; return
 
 PrintEndBattleText::
 	push hl

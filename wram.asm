@@ -1289,7 +1289,7 @@ wRightGBMonSpecies:: ; cd5f
 	ds 1
 
 ; cd60  
-; bit 0: is player engaged by trainer (to avoid being engaged by multiple trainers simultaneously)  
+; bit 0: プレイヤーがトレーナーに見つかったか (複数のトレーナーに同時に見つかった時は発見されてないことにする)  
 ; bit 1: かいりきのアニメーション再生を待機中  
 ; bit 3: using generic PC  
 ; bit 4: 1 -> .skipMovingSprites  

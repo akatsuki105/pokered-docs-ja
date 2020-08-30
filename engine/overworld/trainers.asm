@@ -262,71 +262,108 @@ GetSpriteDataPointer:
 	pop de
 	ret
 
-; tests if this trainer is in the right position to engage the player and do so if she is.
+; **TrainerEngage**  
+; トレーナーに発見されたか判定して発見されたならエンカウント処理を行う  
+; - - -  
+; エンカウント処理: [wEngagedTrainerClass] と [wEngagedTrainerSet] に trainer class と trainer number をセット
+; 
+; OUTPUT: [wTrainerSpriteOffset] = 0xff or 0x00
 TrainerEngage:
 	push hl
 	push de
+
+	; a = sprite image index (c1X2)
 	ld a, [wTrainerSpriteOffset]
 	add $2
 	ld d, $0
 	ld e, a
 	ld hl, wSpriteStateData1
-	add hl, de
-	ld a, [hl]             ; c1x2: sprite image index
+	add hl, de				; hl = c1X2
+	ld a, [hl]
+
+	; [c1X2] == 0xff ならスプライトは非表示状態なので -> .noEngage
 	sub $ff
-	jr nz, .spriteOnScreen ; test if sprite is on screen
+	jr nz, .spriteOnScreen
 	jp .noEngage
+
 .spriteOnScreen
+
+	; [wTrainerFacingDirection] = トレーナーの向いている方向
 	ld a, [wTrainerSpriteOffset]
 	add $9
 	ld d, $0
 	ld e, a
 	ld hl, wSpriteStateData1
-	add hl, de
-	ld a, [hl]             ; c1x9: facing direction
+	add hl, de				; hl = c1X9
+	ld a, [hl]
 	ld [wTrainerFacingDirection], a
+
 	call ReadTrainerScreenPosition
-	ld a, [wTrainerScreenY]          ; sprite screen Y pos
+
+	; [wTrainerScreenY] == 0x3c つまり プレイヤーと同じX軸にいる -> .linedUpY
+	ld a, [wTrainerScreenY]
 	ld b, a
 	ld a, $3c
 	cp b
 	jr z, .linedUpY
-	ld a, [wTrainerScreenX]          ; sprite screen X pos
+
+	; [wTrainerScreenX] == 0x40 つまり プレイヤーと同じY軸にいる -> .linedUpX
+	ld a, [wTrainerScreenX]
 	ld b, a
 	ld a, $40
 	cp b
 	jr z, .linedUpX
+
+	; プレイヤーとXY軸が被っていない -> .noEngage
 	xor a
 	jp .noEngage
+
+	; プレイヤーと同じX軸にいるとき
 .linedUpY
-	ld a, [wTrainerScreenX]        ; sprite screen X pos
+	; トレーナーのX座標 == プレイヤーのX座標 つまりトレーナーとプレイヤーの座標が完全に重なっている -> .noEngage
+	ld a, [wTrainerScreenX]
 	ld b, a
-	ld a, $40            ; (fixed) player X position
-	call CalcDifference  ; calc distance
-	jr z, .noEngage      ; exact same position as player
+	ld a, $40
+	call CalcDifference
+	jr z, .noEngage
+
+	; トレーナーの視界の中に、プレイヤーが入りうる -> .engage
 	call CheckSpriteCanSeePlayer
 	jr c, .engage
 	xor a
 	jr .noEngage
+
+	; プレイヤーと同じY軸にいる 
 .linedUpX
-	ld a, [wTrainerScreenY]        ; sprite screen Y pos
+	; トレーナーのX座標 == プレイヤーのX座標 つまりトレーナーとプレイヤーの座標が完全に重なっている -> .noEngage
+	ld a, [wTrainerScreenY]
 	ld b, a
-	ld a, $3c            ; (fixed) player Y position
-	call CalcDifference  ; calc distance
-	jr z, .noEngage      ; exact same position as player
+	ld a, $3c
+	call CalcDifference
+	jr z, .noEngage
+
+	; トレーナーの視界の中に、プレイヤーが入りうる -> .engage
 	call CheckSpriteCanSeePlayer
 	jr c, .engage
 	xor a
 	jp .noEngage
+
 .engage
+	; トレーナーがプレイヤーの方を向いている
 	call CheckPlayerIsInFrontOfSprite
+
+	; トレーナーの方を向いていない -> .noEngage
 	ld a, [wTrainerSpriteOffset]
 	and a
 	jr z, .noEngage
+
+	; トレーナーに発見されたので、フラグを立てる
+	; CheckSpriteCanSeePlayer のとき(.engageの時点で成立) に トレーナーがプレイヤーの方を向いている なら、トレーナーに発見
 	ld hl, wFlags_0xcd60
 	set 0, [hl]
-	call EngageMapTrainer
+	call EngageMapTrainer	; エンカウントしたトレーナーのデータをロードし、エンカウントBGMを流す
 	ld a, $ff
+
 .noEngage
 	ld [wTrainerSpriteOffset], a
 	pop de
@@ -415,61 +452,82 @@ CheckSpriteCanSeePlayer:
 	and a	; clear carry
 	ret
 
-; tests if the player is in front of the sprite (rather than behind it)
+; **CheckPlayerIsInFrontOfSprite**  
+; トレーナーがプレイヤーの方を向いているかチェックする  
+; - - -  
+; OUTPUT: [wTrainerSpriteOffset] = 0xff(向いている) or 0x00(背を向けている)
 CheckPlayerIsInFrontOfSprite:
+	; マップが無人発電所　-> .engage
 	ld a, [wCurMap]
 	cp POWER_PLANT
 	jp z, .engage       ; bypass this for power plant to get voltorb fake items to work
+
+	; [wTrainerScreenY] = [c1X4] = トレーナーの画面内のY座標
 	ld a, [wTrainerSpriteOffset]
 	add $4
 	ld d, $0
 	ld e, a
 	ld hl, wSpriteStateData1
-	add hl, de
-	ld a, [hl]          ; c1x4 (sprite screen Y pos)
+	add hl, de			; hl = c1X4
+	ld a, [hl]
 	cp $fc
 	jr nz, .notOnTopmostTile ; special case if sprite is on topmost tile (Y = $fc (-4)), make it come down a block
 	ld a, $c
 .notOnTopmostTile
 	ld [wTrainerScreenY], a
+
+	; [wTrainerScreenX] = [c1X6] = トレーナーの画面内のX座標
 	ld a, [wTrainerSpriteOffset]
 	add $6
 	ld d, $0
 	ld e, a
 	ld hl, wSpriteStateData1
-	add hl, de
-	ld a, [hl]          ; c1x6 (sprite screen X pos)
+	add hl, de			; hl = c1X6
+	ld a, [hl]
 	ld [wTrainerScreenX], a
-	ld a, [wTrainerFacingDirection]       ; facing direction
+
+	ld a, [wTrainerFacingDirection]  ; a = トレーナーが下を向いていない
+
 	cp SPRITE_FACING_DOWN
-	jr nz, .notFacingDown
+	jr nz, .notFacingDown	; トレーナーが下を向いていない -> .notFacingDown
+
+; .facingDown
 	ld a, [wTrainerScreenY]       ; sprite screen Y pos
 	cp $3c
 	jr c, .engage       ; sprite above player
 	jr .noEngage        ; sprite below player
+
 .notFacingDown
 	cp SPRITE_FACING_UP
 	jr nz, .notFacingUp
-	ld a, [wTrainerScreenY]       ; sprite screen Y pos
+
+; .facingUp
+	ld a, [wTrainerScreenY]
 	cp $3c
-	jr nc, .engage      ; sprite below player
-	jr .noEngage        ; sprite above player
+	jr nc, .engage      ; プレイヤーの方をみている
+	jr .noEngage        ; プレイヤーに背を向けている
+
 .notFacingUp
 	cp SPRITE_FACING_LEFT
 	jr nz, .notFacingLeft
-	ld a, [wTrainerScreenX]       ; sprite screen X pos
+
+; .facingLeft
+	ld a, [wTrainerScreenX]
 	cp $40
-	jr nc, .engage      ; sprite right of player
-	jr .noEngage        ; sprite left of player
-.notFacingLeft
-	ld a, [wTrainerScreenX]       ; sprite screen X pos
+	jr nc, .engage      ; プレイヤーの方をみている
+	jr .noEngage        ; プレイヤーに背を向けている
+
+.notFacingLeft	; .facingRight
+	ld a, [wTrainerScreenX]
 	cp $40
-	jr nc, .noEngage    ; sprite right of player
+	jr nc, .noEngage    ; プレイヤーに背を向けている
+
 .engage
 	ld a, $ff
 	jr .done
 .noEngage
 	xor a
+
 .done
 	ld [wTrainerSpriteOffset], a
 	ret
