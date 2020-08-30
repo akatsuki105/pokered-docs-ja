@@ -1,11 +1,22 @@
-; only used for setting bit 2 of wd736 upon entering a new map
+; **IsPlayerStandingOnWarp**  
+; 主人公が warp マスの上にいるかチェックする  
+; - - -  
+; only used for setting bit 2 of wd736 upon entering a new map  
+; 
+; OUTPUT: wd736 の bit2 = 1(いる) or 0(いない)  
 IsPlayerStandingOnWarp:
 	ld a, [wNumberOfWarps]
+
+	; warp が存在しないなら return 
 	and a
 	ret z
-	ld c, a
+
+	ld c, a	; c = warp数
 	ld hl, wWarpEntries
+
+; マップ内の warp に主人公の coord と一致するものがあるかみていく
 .loop
+; {
 	ld a, [wYCoord]
 	cp [hl]
 	jr nz, .nextWarp1
@@ -14,27 +25,36 @@ IsPlayerStandingOnWarp:
 	cp [hl]
 	jr nz, .nextWarp2
 	inc hl
-	ld a, [hli] ; target warp
+	ld a, [hli]
 	ld [wDestinationWarpID], a
-	ld a, [hl] ; target map
+	ld a, [hl]
 	ld [hWarpDestinationMap], a
 	ld hl, wd736
-	set 2, [hl] ; standing on warp flag
+	set 2, [hl]
 	ret
+
 .nextWarp1
 	inc hl
 .nextWarp2
 	inc hl
 	inc hl
 	inc hl
+
+	; warp を全部みたが主人公のcoordと一致するものはなかった
 	dec c
 	jr nz, .loop
+; }
+
 	ret
 
+; **CheckForceBikeOrSurf**  
+; 主人公がいるマップ上のマスが 自転車 か 波乗り を強制されるマスかチェックし、そうならフラグを立てて ForceBikeOrSurf にジャンプ  
 CheckForceBikeOrSurf:
 	ld hl, wd732
 	bit 5, [hl]
 	ret nz
+
+; ここから ForcedBikeOrSurfMaps の中に現在の主人公のcoordと一致するものがあるかチェック 
 	ld hl, ForcedBikeOrSurfMaps
 	ld a, [wYCoord]
 	ld b, a
@@ -43,40 +63,61 @@ CheckForceBikeOrSurf:
 	ld a, [wCurMap]
 	ld d, a
 .loop
-	ld a, [hli]
+	ld a, [hli] ; a = MapID
+
+	; 該当するものなし -> return
 	cp $ff
-	ret z ;if we reach FF then it's not part of the list
-	cp d ;compare to current map
+	ret z
+
+	; 一致しない場合は次のエントリへ
+	cp d
 	jr nz, .incorrectMap
 	ld a, [hli]
-	cp b ;compare y-coord
+	cp b
 	jr nz, .incorrectY
 	ld a, [hli]
-	cp c ;compare x-coord
-	jr nz, .loop ; incorrect x-coord, check next item
+	cp c
+	jr nz, .loop
+
+	; ここに来た時点で 現在のエントリが プレイヤーの 現在のマップのcoord と一致 
+
+	; 現在のマップが SEAFOAM_ISLANDS_B3F -> .forceSurfing
 	ld a, [wCurMap]
 	cp SEAFOAM_ISLANDS_B3F
 	ld a, $2
-	ld [wSeafoamIslandsB3FCurScript], a
+	ld [wSeafoamIslandsB3FCurScript], a ; [wSeafoamIslandsB3FCurScript] = SEAFOAM_ISLANDS_B3F
 	jr z, .forceSurfing
+
+	; 現在のマップが SEAFOAM_ISLANDS_B4F -> .forceSurfing
 	ld a, [wCurMap]
 	cp SEAFOAM_ISLANDS_B4F
 	ld a, $2
-	ld [wSeafoamIslandsB4FCurScript], a
+	ld [wSeafoamIslandsB4FCurScript], a ; [wSeafoamIslandsB4FCurScript] = SEAFOAM_ISLANDS_B4F
 	jr z, .forceSurfing
-	;force bike riding
+
+	; SEAFOAM_ISLANDS_B3F でも SEAFOAM_ISLANDS_B4F ないなら ROUTE_16 か ROUTE_18 なので自転車
+
+; .forceBike
+	;　フラグを立てて -> ForceBikeOrSurf
+	; wd732[5] = 1  
 	ld hl, wd732
 	set 5, [hl]
 	ld a, $1
+	; [wWalkBikeSurfState], [wWalkBikeSurfStateCopy] = 1  
 	ld [wWalkBikeSurfState], a
 	ld [wWalkBikeSurfStateCopy], a
 	jp ForceBikeOrSurf
+
+; 次のループへ
 .incorrectMap
 	inc hl
 .incorrectY
 	inc hl
 	jr .loop
+
 .forceSurfing
+	; フラグを立てて -> ForceBikeOrSurf
+	; [wWalkBikeSurfState], [wWalkBikeSurfStateCopy] = 2
 	ld a, $2
 	ld [wWalkBikeSurfState], a
 	ld [wWalkBikeSurfStateCopy], a

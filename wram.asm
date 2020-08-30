@@ -2814,12 +2814,15 @@ wObjectDataPointerTemp:: ; d3a9
 wMapBackgroundTile::
 	ds 1
 
-wNumberOfWarps:: ; d3ae
-; number of warps in current map
+; d3ae  
+; 現在のマップの warp の数
+wNumberOfWarps::
 	ds 1
 
-wWarpEntries:: ; d3af
-; current map warp entries
+; d3af  
+; 現在のマップの warp のデータが格納されている  
+; 各エントリは [y, x, destination warp id, destination map] の4バイト  
+wWarpEntries::
 	ds 128
 
 wDestinationWarpID:: ; d42f
