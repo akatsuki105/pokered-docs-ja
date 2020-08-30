@@ -226,13 +226,16 @@ TrainerWalkUpToPlayer:
 
 .writeWalkScript
 	; この時点で a = 歩かせる方向、 bc = 歩かせるマス数
+
+	; wNPCMovementDirections2 から bcバイトだけ、歩かせる方向を書き込むことで scripted NPC にプレイヤーの方に歩かせるように
 	ld hl, wNPCMovementDirections2
 	ld de, wNPCMovementDirections2
-	call FillMemory     			; write the necessary steps to reach player
-	ld [hl], $ff        			; write end of list sentinel
+	call FillMemory
+	ld [hl], $ff	; wNPCMovementDirections2 の終端記号
+
 	ld a, [wSpriteIndex]
 	ld [H_SPRITEINDEX], a
-	jp MoveSprite_
+	jp MoveSprite_	; このとき de = wNPCMovementDirections2
 
 ; **GetSpriteDataPointer**  
 ; 取得したいスプライトデータのポインタ(C1XY)を入手する  
@@ -357,42 +360,59 @@ ReadTrainerScreenPosition:
 	ld [wTrainerScreenX], a
 	ret
 
-; checks if the sprite is properly lined up with the player with respect to the direction it's looking. Also checks the distance between player and sprite
-; note that this does not necessarily mean the sprite is seeing the player, he could be behind it's back
-; a: distance player to sprite
+; **CheckSpriteCanSeePlayer**  
+; トレーナーの視界の中に、プレイヤーが入りうるか判定する  
+; - - -  
+; まず処理対象のトレーナーの視界の中にプレイヤーがいるかと2者間の距離をチェックし、トレーナーがプレイヤーのほうを向いたら発見したことになるかを判定する  
+; 
+; INPUT: a = プレイヤーとトレーナー間の距離(16pxのマス目単位)  
+; OUTPUT: carry = 1(トレーナーがプレイヤーのほうを向いたら発見したことになる) or 0(そうでない)  
 CheckSpriteCanSeePlayer:
-	ld b, a
-	ld a, [wTrainerEngageDistance] ; how far the trainer can see
+	; トレーナーの視界より遠くにプレイヤーがいる -> .notInLine
+	ld b, a							; プレイヤーとトレーナー間の距離
+	ld a, [wTrainerEngageDistance] 	; トレーナーの視界の範囲
 	cp b
 	jr nc, .checkIfLinedUp
-	jr .notInLine         ; player too far away
+	jr .notInLine         ; プレイヤーが遠すぎる
+
+	; トレーナーとプレイヤーが直線上にいるかチェックする(直線上: 2点を結ぶ直線がマス目のグリッドに添う)
 .checkIfLinedUp
-	ld a, [wTrainerFacingDirection]         ; sprite facing direction
+	ld a, [wTrainerFacingDirection] ; a = トレーナーの方向 
+
+	; トレーナーの向いている方向が上下なら X軸距離 が 0 つまり Y軸 が一致することをチェック
 	cp SPRITE_FACING_DOWN
 	jr z, .checkXCoord
 	cp SPRITE_FACING_UP
 	jr z, .checkXCoord
+
+	; トレーナーの向いている方向が左右なら Y軸距離 が 0 つまり X軸 が一致することをチェック
 	cp SPRITE_FACING_LEFT
 	jr z, .checkYCoord
 	cp SPRITE_FACING_RIGHT
 	jr z, .checkYCoord
+
 	jr .notInLine
+
 .checkXCoord
+	; Y軸 が一致 -> .inLine 不一致 -> .notInLine
 	ld a, [wTrainerScreenX]         ; sprite screen X position
 	ld b, a
 	cp $40
 	jr z, .inLine
 	jr .notInLine
+
 .checkYCoord
+	; X軸 が一致 -> .inLine 不一致 -> .notInLine
 	ld a, [wTrainerScreenY]         ; sprite screen Y position
 	ld b, a
 	cp $3c
 	jr nz, .notInLine
+
 .inLine
-	scf
+	scf		; set carry
 	ret
 .notInLine
-	and a
+	and a	; clear carry
 	ret
 
 ; tests if the player is in front of the sprite (rather than behind it)

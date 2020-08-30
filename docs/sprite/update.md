@@ -76,8 +76,7 @@ wSpriteStateData1 と wSpriteStateData2 に格納されているスプライト�
 
 ## Scripted NPC
 
-NPCは基本ランダムウォークだが、たまに動きが一定つまりプログラム化されたNPCも存在する
+トレーナーがこちらを見つけて歩いてくるときの移動はこちらへ一直線とプログラム化されているものである
 
-そのようなNPCを`Scripted NPC`と便宜上呼ぶ
+このようなプログラム化された移動をする状態のNPCを `Scripted NPC` と便宜上呼ぶ
 
-関連: `MoveSprite`

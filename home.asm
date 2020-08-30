@@ -3552,12 +3552,14 @@ CalcDifference::
 	ret
 
 ; **MoveSprite**  
-; [H_SPRITEINDEX]で指定されたスプライトを、movement dataに従って強制的に移動させる  
+; スプライトを、 movement data に従って強制的に移動させる準備  
 ; - - -  
-; Scripted NPCを作成する処理   
-; actually only copies the movement data to wNPCMovementDirections for later  
+; 処理の内容は、  
+; wNPCMovementDirections に de で指定した movement data を配置していく処理
 ; 
-; OUTPUT: de = movement data (e.g. MovementData_1e807)
+; INPUT:  
+; [H_SPRITEINDEX] = 対象のスプライトのオフセット  
+; de = movement dataのアドレス (e.g. wNPCMovementDirections2)
 MoveSprite::
 	call SetSpriteMovementBytesToFF
 MoveSprite_::
@@ -3572,6 +3574,7 @@ MoveSprite_::
 	ld hl, wNPCMovementDirections
 	ld c, 0
 
+; wNPCMovementDirections に de で指定した movement data をコピーしていく
 .loop
 ; {
 	; [hl++] = [de++]
@@ -3586,7 +3589,7 @@ MoveSprite_::
 	jr nz, .loop
 ; }
 
-	; [wNPCNumScriptedSteps] = movment dataのエントリ数
+	; [wNPCNumScriptedSteps] = movment data のエントリ数
 	ld a, c
 	ld [wNPCNumScriptedSteps], a
 

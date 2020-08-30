@@ -648,7 +648,12 @@ wAnimPalette:: ; cc79
 	ds 29
 
 ; cc97  
-; scripted NPCなどでスプライトの移動方向をここから格納していく  
+; scripted NPC のためのスプライトの移動方向をここから格納していく  
+; 
+; 例えば　上 -> 右 と動くなら  
+; [cc97] = NPC_MOVEMENT_UP  
+; [cc98] = NPC_MOVEMENT_RIGHT  
+; [cc99] = 0xff  
 wNPCMovementDirections2::
 
 ; cc97  
@@ -1072,7 +1077,9 @@ wPlayerSpinWhileMovingUpOrDownAnimMaxY:: ; cd3e
 
 wHiddenObjectFunctionRomBank:: ; cd3e
 
-wTrainerEngageDistance:: ; cd3e
+; cd3e  
+; トレーナーの視界の長さ(16*16のマス単位)
+wTrainerEngageDistance::
 	ds 1
 
 wHUDGraphicsTiles:: ; cd3f
