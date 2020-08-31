@@ -320,16 +320,34 @@ IsPlayerStandingOnDoorTileOrWarpTile:
 
 INCLUDE "data/warp_tile_ids.asm"
 
+; **PrintSafariZoneSteps**  
+; 主人公がサファリゾーン内にいる場合に、左上に残り歩数と残りボール数を描画する  
+; - - -  
+; ![example](https://imgur.com/DL91wpQ.png)
 PrintSafariZoneSteps:
+	; [wCurMap] < SAFARI_ZONE_EAST なら終了
+	; サファリゾーンのマップIDは全て SAFARI_ZONE_EAST 以上なので [wCurMap] < SAFARI_ZONE_EAST の時点でサファリゾーンにいないとわかる
 	ld a, [wCurMap]
 	cp SAFARI_ZONE_EAST
 	ret c
+
+	; [wCurMap] >= CERULEAN_CAVE_2F でも終了
+	; サファリゾーンのマップIDは全て CERULEAN_CAVE_2F 未満 なので [wCurMap] >= CERULEAN_CAVE_2F の時点でサファリゾーンにいないとわかる
 	cp CERULEAN_CAVE_2F
 	ret nc
+
+	; ここに来た時点で主人公の現在のマップはサファリゾーンのどこか
+
+	; ここから残り歩数と残りボール数を描画していく
+	; ref: https://imgur.com/DL91wpQ.png
+
+	; 残り歩数と残りボール数を描画するためのテキストボックス
 	coord hl, 0, 0
 	ld b, 3
 	ld c, 7
 	call TextBoxBorder
+
+	; 残り歩数/500 を描画
 	coord hl, 1, 1
 	ld de, wSafariSteps
 	lb bc, 2, 3
@@ -337,6 +355,8 @@ PrintSafariZoneSteps:
 	coord hl, 4, 1
 	ld de, SafariSteps
 	call PlaceString
+
+	; BALL × N を描画
 	coord hl, 1, 3
 	ld de, SafariBallText
 	call PlaceString
@@ -350,7 +370,7 @@ PrintSafariZoneSteps:
 	coord hl, 6, 3
 	ld de, wNumSafariBalls
 	lb bc, 1, 2
-	jp PrintNumber
+	jp PrintNumber	; return
 
 SafariSteps:
 	db "/500@"
