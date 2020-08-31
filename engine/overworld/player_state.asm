@@ -125,11 +125,19 @@ CheckForceBikeOrSurf:
 
 INCLUDE "data/force_bike_surf.asm"
 
+; **IsPlayerFacingEdgeOfMap**  
+; プレイヤーがマップの端っこにいるか調べる  
+; - - -  
+; 端っこ = マップを長方形とみなしたときの境界部分  
+; 
+; OUTPUT: carry = 1(端っこにいる) or 0(いない)  
 IsPlayerFacingEdgeOfMap:
 	push hl
 	push de
 	push bc
-	ld a, [wSpriteStateData1 + 9] ; player sprite's facing direction
+	
+	; hl = .functionPointerTable の 主人公の向いている方向 に対応するエントリ
+	ld a, [wSpriteStateData1 + 9] ; 主人公の向いている方向
 	srl a
 	ld c, a
 	ld b, $0
@@ -138,13 +146,19 @@ IsPlayerFacingEdgeOfMap:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; b = Ycoord, c = Xcoord
 	ld a, [wYCoord]
 	ld b, a
 	ld a, [wXCoord]
 	ld c, a
+
+	; call .facing${direction}
+	; マップの端っこにいるか調べる
 	ld de, .asm_c41e
 	push de
 	jp hl
+
 .asm_c41e
 	pop bc
 	pop de
@@ -157,26 +171,30 @@ IsPlayerFacingEdgeOfMap:
 	dw .facingLeft
 	dw .facingRight
 
+; マップの一番下にいるか
 .facingDown
 	ld a, [wCurMapHeight]
-	add a
+	add a	; 32*32 -> 16*16
 	dec a
 	cp b
-	jr z, .setCarry
+	jr z, .setCarry	; マップの縦長-1 に等しいなら主人公はマップの一番下にいる
 	jr .resetCarry
 
+; マップの一番上にいるか
 .facingUp
 	ld a, b
 	and a
 	jr z, .setCarry
 	jr .resetCarry
 
+; マップの一番左にいるか
 .facingLeft
 	ld a, c
 	and a
 	jr z, .setCarry
 	jr .resetCarry
 
+; マップの一番右にいるか
 .facingRight
 	ld a, [wCurMapWidth]
 	add a
@@ -184,6 +202,7 @@ IsPlayerFacingEdgeOfMap:
 	cp c
 	jr z, .setCarry
 	jr .resetCarry
+
 .resetCarry
 	and a
 	ret
@@ -191,15 +210,26 @@ IsPlayerFacingEdgeOfMap:
 	scf
 	ret
 
+; **IsWarpTileInFrontOfPlayer**  
+; 主人公の目の前のタイルのタイル番号が warp として使われるタイルのタイル番号かどうか調べる  
+; - - -  
+; warp として使われるタイルのタイル番号はあらかじめ決められておりそれに該当するか調べる  
+; 
+; OUTPUT:  
+; carry = 1(warpタイルだった) or 0(ではない)  
 IsWarpTileInFrontOfPlayer:
 	push hl
 	push de
 	push bc
-	call _GetTileAndCoordsInFrontOfPlayer
+	call _GetTileAndCoordsInFrontOfPlayer ; [wTileInFrontOfPlayer] = 目の前のタイル番号
+
+	; 現在のマップがサントアンヌ号の船主 -> .ssAnne
 	ld a, [wCurMap]
 	cp SS_ANNE_BOW
 	jr z, .ssAnne5
-	ld a, [wSpriteStateData1 + 9] ; player sprite's facing direction
+
+	; hl = .warpTileListPointers の 主人公の方向 に応じたエントリ (.facing${direction}WarpTiles)
+	ld a, [wSpriteStateData1 + 9] ; 主人公の方向
 	srl a
 	ld c, a
 	ld b, 0
@@ -208,33 +238,34 @@ IsWarpTileInFrontOfPlayer:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; 目の前のタイルが warp タイルのリストに該当するかチェック
 	ld a, [wTileInFrontOfPlayer]
 	ld de, $1
-	call IsInArray
+	call IsInArray ; 該当するなら carry = 1
+
 .done
 	pop bc
 	pop de
 	pop hl
 	ret
 
+; 主人公の向いている方向に応じた warp タイルの種類のリスト
 .warpTileListPointers:
 	dw .facingDownWarpTiles
 	dw .facingUpWarpTiles
 	dw .facingLeftWarpTiles
 	dw .facingRightWarpTiles
-
 .facingDownWarpTiles
 	db $01,$12,$17,$3D,$04,$18,$33,$FF
-
 .facingUpWarpTiles
 	db $01,$5C,$FF
-
 .facingLeftWarpTiles
 	db $1A,$4B,$FF
-
 .facingRightWarpTiles
 	db $0F,$4E,$FF
 
+; サントアンヌ号の船主だけは、 warp タイルが特殊($15)
 .ssAnne5
 	ld a, [wTileInFrontOfPlayer]
 	cp $15
@@ -242,15 +273,25 @@ IsWarpTileInFrontOfPlayer:
 	scf
 	jr .done
 .notSSAnne5Warp
-	and a
+	and a	; carry = 0
 	jr .done
 
+; **IsPlayerStandingOnDoorTileOrWarpTile**  
+; プレイヤーが、ドアタイルかwarpタイルの上に立っているかを調べる  
+; - - -  
+; OUTPUT: carry = 1(いる) or 0(いない)  
+; 
+; warpタイルの上にいるときは wd736のbit2をクリアしている  
 IsPlayerStandingOnDoorTileOrWarpTile:
 	push hl
 	push de
 	push bc
+
+	; プレイヤーがドアタイルにいる -> .done
 	callba IsPlayerStandingOnDoorTile
 	jr c, .done
+
+	; hl = 現在のタイルセットの warp タイルのリスト (WarpTileIDPointers の現在のマップのタイルセットに応じたエントリ)
 	ld a, [wCurMapTileset]
 	add a
 	ld c, a
@@ -260,12 +301,17 @@ IsPlayerStandingOnDoorTileOrWarpTile:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; プレイヤーが warpマス の上に立っているか
 	ld de, $1
 	aCoord 8, 9
 	call IsInArray
+
+	; 立っているなら wd736のbit2をクリアする
 	jr nc, .done
 	ld hl, wd736
 	res 2, [hl]
+
 .done
 	pop bc
 	pop de
@@ -313,15 +359,17 @@ SafariBallText:
 	db "BALL×× @"
 
 ; **GetTileAndCoordsInFrontOfPlayer**  
-; 
-; プレイヤーの目の前の座標とタイルアドレスを得る  
+; プレイヤーの目の前の座標とタイル番号を得る  
+; - - -  
 ; OUTPUT:  
-; - d: 目の前のY座標(16*16単位)
-; - e: 目の前のX座標(16*16単位)
-; - [wTileInFrontOfPlayer]: プレイヤーの目の前のBGマップのタイルアドレス
+; d = 目の前の Ycoord(16*16単位)  
+; e = 目の前の Xcoord(16*16単位)  
+; [wTileInFrontOfPlayer] = プレイヤーの目の前のタイルのタイル番号  
 GetTileAndCoordsInFrontOfPlayer:
 	call GetPredefRegisters
 
+; **_GetTileAndCoordsInFrontOfPlayer**  
+; GetTileAndCoordsInFrontOfPlayer と同じ処理  
 _GetTileAndCoordsInFrontOfPlayer:
 	ld a, [wYCoord]
 	ld d, a

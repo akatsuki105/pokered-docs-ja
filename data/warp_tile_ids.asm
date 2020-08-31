@@ -1,3 +1,7 @@
+; **WarpTileIDPointers**  
+; タイルセットで warp タイルとして使われているタイル番号のリストのアドレスを格納したテーブル  
+; - - -  
+; タイルセットID -> タイル番号のリストのアドレス  
 WarpTileIDPointers:
 	dw OverworldWarpTileIDs
 	dw RedsHouse1WarpTileIDs

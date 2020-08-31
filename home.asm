@@ -5272,7 +5272,7 @@ CallFunctionInTable::
 	ret
 
 
-; **DungeonTilesets**  
+; **IsInArray**  
 ; 配列hlからaの値を探す 配列は終端が必ず$ff  
 ; 配列の各要素のサイズはdeで表される  
 ; 

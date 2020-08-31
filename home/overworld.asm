@@ -2735,8 +2735,14 @@ ResetUsingStrengthOutOfBattleBit:
 	res 0, [hl]
 	ret
 
+; **ForceBikeOrSurf**  
+; [wWalkBikeSurfState] に応じて VRAM に 主人公のグラをロードし、 BGMを適したものにする  
+; - - -  
+; INPUT: [wWalkBikeSurfState] = 0(歩きグラ) or 1(自転車グラ) or 2(波乗りグラ)
 ForceBikeOrSurf::
+	; far-call LoadPlayerSpriteGraphics
 	ld b, BANK(RedSprite)
 	ld hl, LoadPlayerSpriteGraphics
 	call Bankswitch
+
 	jp PlayDefaultMusic ; update map/player state?

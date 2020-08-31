@@ -1,3 +1,7 @@
+; **PlayDefaultMusic**  
+; 主人公の状態に応じた BGM を流す  
+; - - -  
+; INPUT: [wWalkBikeSurfState] = 主人公の状態(0(歩き) or 1(自転車) or 2(波乗り))
 PlayDefaultMusic::
 	call WaitForSoundToFinish
 	xor a
@@ -18,6 +22,10 @@ PlayDefaultMusicFadeOutCurrent::
 	ld c, 8
 	ld d, c
 
+; **PlayDefaultMusicCommon**  
+; 主人公の状態に応じた BGM を流す  
+; - - -  
+; INPUT: [wWalkBikeSurfState] = 主人公の状態(0(歩き) or 1(自転車) or 2(波乗り))
 PlayDefaultMusicCommon::
 	ld a, [wWalkBikeSurfState]
 	and a
