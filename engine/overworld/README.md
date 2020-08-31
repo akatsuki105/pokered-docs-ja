@@ -34,7 +34,7 @@ oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を�
 oam.asm | 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む関数<br/>VBlank中に実行される
 pewter_guys.asm | ニビシティの強制連行イベント処理  
 player_animations.asm | null
-player_state.asm | null
+player_state.asm | プレイヤーがマップ上でwarpパネルにいたり、かいりき岩の前にいたりなどの特定の条件を満たした状態かを判定する処理など
 poison.asm | マップ上で歩いているときに毒ダメージを与える処理 
 pokecenter.asm | ポケモンセンターでジョーイさんに話しかけたときの処理
 pokemart.asm | フレンドリーショップでのアイテム売買の処理
