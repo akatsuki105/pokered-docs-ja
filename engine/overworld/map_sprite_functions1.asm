@@ -68,13 +68,15 @@ UpdateNonPlayerSprite:
 .unequal
 	jp UpdateNPCSprite
 
+; **DetectCollisionBetweenSprites**  
 ; 現在処理中のスプライトが他のスプライトと衝突することになるかどうか他のスプライトを1つ1つ見ていくことで確認する  
-; 現在処理中のスプライトのオフセットはiでラベル付けされる(e.g. $c1i0)  
+; - - -  
+; この関数内でのiとjについて
+; 現在処理中のスプライトのオフセット(H_CURRENTSPRITEOFFSET)はiでラベル付けされる(e.g. $c1i0)  
 ; 1つ1つ確認しているスプライトのオフセットはj(e.g. $c1j0)  
 ;
-; スプライトのY座標([$c1k4])はスプライトがgridにすっぽりおさまるように配置されているときには$fc, $0c, $1c, $2c, ... $7cの
-; どれかの値になることに注意  
-; Y座標から4を引くのは、比較を容易にするために、$10の倍数に合わせて調整するため
+; スプライトのY座標([$c1k4])はスプライトが grid にすっぽりおさまるように配置されているときには$fc, $0c, $1c, $2c, ... $7cのどれかの値になることに注意  
+; Y座標から4を引くのは、比較を容易にするために、$10の倍数に合わせて調整するため  
 DetectCollisionBetweenSprites:
 	nop
 
@@ -84,12 +86,12 @@ DetectCollisionBetweenSprites:
 	add wSpriteStateData1 % $100
 	ld l, a
 
-	; オフセットiのスプライトが有効でないなら戻る
+	; 処理対象ののスプライトが有効でない -> return
 	ld a, [hl] ; a = [$c1i0] (picture) (0 if slot is unused)
-	and a ; is this sprite slot slot used?
-	ret z ; return if not used
+	and a
+	ret z
 
-	; hl = $c1i3
+	; hl = スプライトのY座標変化($c1i3)
 	ld a, l
 	add 3
 	ld l, a
@@ -97,28 +99,28 @@ DetectCollisionBetweenSprites:
 	ld a, [hli] ; a = [$c1i3] (delta Y) (-1, 0, or 1)
 	call SetSpriteCollisionValues
 
-	; a = Y座標
+	; a = スプライトのY座標
 	ld a, [hli] ; a = [$C1i4] (Y screen coordinate)
 	add 4 ; グリッドに合わせる
 
-	; 次の3行のコードで南に移動するならaレジスタに+7 北に移動するならaレジスタから-7している
+	; a に Y方向の移動を加味する (+7(下に移動) or -7(上に移動))
 	add b
 	and $f0
 	or c
 
-	ld [$ff90], a ; store Y coordinate adjusted for direction of movement
+	ld [$ff90], a ; [$ff90] = 移動を加味したスプライトのY座標
 
 	; 次はX方向
 	ld a, [hli] ; a = [$c1i5] (delta X) (-1, 0, or 1)
 	call SetSpriteCollisionValues
 	ld a, [hl] ; a = [$C1i6] (X screen coordinate)
 
-	; 次の3行のコードで東に移動するならaレジスタに+7 西に移動するならaレジスタから-7している
+	; a に X方向の移動を加味する (+7(右に移動) or -7(左に移動))
 	add b
 	and $f0
 	or c
 
-	ld [$ff91], a ; store X coordinate adjusted for direction of movement
+	ld [$ff91], a ; [$ff91] = 移動を加味したスプライトのX座標
 
 	; hl = $C1id
 	ld a, l
@@ -127,77 +129,83 @@ DetectCollisionBetweenSprites:
 
 	xor a
 	ld [hld], a ; [$c1id] = 0
-	ld [hld], a ; [$c1ic] = 0 (directions in which collisions occurred)
+	ld [hld], a ; [$c1ic] = 0 (どの方向に移動した時にスプライトの衝突が起きたか)
 
-	; [$ff91] = [$c1id] = adjusted X coordinate
+	; [$c1id] = 移動を加味したスプライトのX座標 ([$ff91])
 	ld a, [$ff91]
 	ld [hld], a
-	; [$ff90] = [$c1ia] = adjusted Y coordinate
+	; [$c1ia] = 移動を加味したスプライトのY座標 ([$ff90])
 	ld a, [$ff90]
 	ld [hl], a
 
-	xor a ; zero the loop counter
+	xor a ; ループカウンタを0で初期化
 
+; スプライトスロット(c1XX)の他のスプライトを1つ1つみていき、処理対象のスプライトと衝突が起きるスプライトがあるかチェックする
 .loop
 	ld [$ff8f], a ; store loop counter
+	
+	; みているスプライトが処理対象のスプライト -> 次のスプライトへ
 	swap a
 	ld e, a
 	ld a, [H_CURRENTSPRITEOFFSET]
-	cp e ; does the loop sprite match the current sprite?
-	jp z, .next ; go to the next sprite if they match
+	cp e
+	jp z, .next
 
+	; みているスプライトが使われてないスプライト -> 次のスプライトへ
 	ld d, h
 	ld a, [de] ; a = [$c1j0] (picture) (0 if slot is unused)
-	and a ; is this sprite slot slot used?
-	jp z, .next ; go the next sprite if not used
+	and a
+	jp z, .next
 
+	; みているスプライトが現在非表示のスプライト -> 次のスプライトへ
 	inc e
 	inc e
 	ld a, [de] ; a = [$c1j2] ($ff means the sprite is offscreen)
 	inc a
-	jp z, .next ; go the next sprite if offscreen
+	jp z, .next
 
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add 10
 	ld l, a
 
-	inc e
-	ld a, [de] ; a = [$c1j3] (delta Y)
+	; delta Y -> pixel単位の座標変化
+	inc e		; de = $c1j3
+	ld a, [de]	; a = delta Y
 	call SetSpriteCollisionValues
 
+	; a = みているスプライトのY座標
 	inc e
 	ld a, [de] ; a = [$C1j4] (Y screen coordinate)
-	add 4 ; align with multiple of $10
+	add 4
 
-; The effect of the following 3 lines is to
-; add 7 to a if moving south or
-; subtract 7 from a if moving north.
+	; みているスプライトのY座標にY方向の移動を加味する (+7(下に移動) or -7(上に移動))
 	add b
 	and $f0
-	or c
+	or c	; a = 移動を加味したみているスプライトのY座標
 
-	sub [hl] ; subtract the adjusted Y coordinate of sprite i ([$c1ia]) from that of sprite j
+	sub [hl] ; a = みているスプライトのY座標 - 処理対象のスプライトのY座標($c1ia)
 
-; calculate the absolute value of the difference to get the distance
+; $[ff90] = みているスプライトと処理対象のスプライトのY方向の距離
+; carry = 1() or 0()
 	jr nc, .noCarry1
 	cpl
 	inc a
 .noCarry1
-	ld [$ff90], a ; store the distance between the two sprites' adjusted Y values
+	ld [$ff90], a ; みているスプライトと処理対象のスプライトのY方向の距離(px単位)
 
-; Use the carry flag set by the above subtraction to determine which sprite's
-; Y coordinate is larger. This information is used later to set [$c1ic],
-; which stores which direction the collision occurred in.
-; The following 5 lines set the lowest 2 bits of c, which are later shifted left by 2.
-; If sprite i's Y is larger, set lowest 2 bits of c to 10.
-; If sprite j's Y is larger or both are equal, set lowest 2 bits of c to 01.
+; 上の引き算の処理で生じたcarryから みているスプライトと処理対象のスプライトのどちらのY座標が大きいかわかる  
+; この情報は、衝突が起きる方向を格納する [$c1ic] の値を求めるために利用される  
+; 
+; 次の5行の処理は cレジスタ を 左に2シフトし、下位2bit を 10 or 01 にする  
+; 処理対象のスプライトのほうがY座標が大きい、つまり下にいる -> 10
+; みているスプラプトの方がY座標が大きいか同じ、つまり同じ場所か下にいる -> 01
 	push af
 	rl c
 	pop af
 	ccf
 	rl c
 
-; If sprite i's delta Y is 0, then b = 7, else b = 9.
+	; b = 7(処理対象のスプライトの delta Y が 0) or 9(処理対象のスプライトの delta Y が 1 or -1)
 	ld b, 7
 	ld a, [hl] ; a = [$c1ia] (adjusted Y coordinate)
 	and $f
@@ -346,23 +354,27 @@ DetectCollisionBetweenSprites:
 	jp nz, .loop
 	ret
 
-; aレジスタのXかYの座標変化量(delta X/Y)を見てbとcに値を格納
+; **SetSpriteCollisionValues**  
+; aレジスタの XかY の座標変化量(delta)を見て bとc に値を格納
 ; 
-; b = delta X/Y  
-; c = 0 if (delta X/Y == 0)  
-; c = 7 if (delta X/Y == 1)  
-; c = 9 if (delta X/Y == -1)  
+; INPUT: a = XかY の座標変化量(delta)
+; 
+; OUTPUT:  
+; b = delta  
+; c = 0 if (delta == 0)  
+; c = 7 if (delta == 1)  
+; c = 9 if (delta == -1)  
 SetSpriteCollisionValues:
-	; delta X/Yが0
+	; delta が0
 	and a
 	ld b, 0
 	ld c, 0
 	jr z, .done ; aが0なら.done
-	; delta X/Yが-1
+	; delta が-1
 	ld c, 9
 	cp -1
 	jr z, .ok
-	; delta X/Yが1
+	; delta が1
 	ld c, 7
 	ld a, 0
 .ok
