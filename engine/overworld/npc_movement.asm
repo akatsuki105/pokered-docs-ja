@@ -70,7 +70,7 @@ _EndNPCMovementScript:
 	ret
 
 ; **PalletMovementScriptPointerTable**  
-; マサラタウンのオーキド博士の強制連行イベントの movement script のアドレスを格納したテーブル  
+; マサラタウンのオーキド博士の強制連行イベントの NPC movement script のアドレスを格納したテーブル  
 PalletMovementScriptPointerTable:
 	dw PalletMovementScript_OakMoveLeft			; 0: オーキドを左
 	dw PalletMovementScript_PlayerMoveLeft		; 1: 主人公を左
@@ -182,7 +182,7 @@ PalletMovementScript_WalkToLab:
 	swap a
 	ld [wNPCMovementScriptSpriteOffset], a
 
-	; simulated joypad として 主人公のオーキド研究所まで歩いていく移動データを与える
+	; simulated joypad として 主人公にオーキド研究所まで歩いていく移動データを与える
 	xor a
 	ld [wSpriteStateData2 + $06], a
 	ld hl, wSimulatedJoypadStatesEnd
@@ -223,45 +223,64 @@ RLEList_PlayerWalkToLab:
 	db D_DOWN, $06		; ↓ ↓ ↓ ↓ ↓ ↓
 	db $FF
 
+; オーキド研究所まで歩いていく処理が終わったのを確認して simulated joypad や scripted NPCのフラグをクリア
+; [wNPCMovementScriptFunctionNum] == 4 に対応  
 PalletMovementScript_Done:
+	; オーキド研究所まで歩いていく処理の途中なら return
 	ld a, [wSimulatedJoypadStatesIndex]
 	and a
 	ret nz
+
+	; 主人公の家の隣にいるオーキド博士を非表示にする
 	ld a, HS_PALLET_TOWN_OAK
 	ld [wMissableObjectIndex], a
 	predef HideObject
+
+	; フラグを削除
 	ld hl, wd730
 	res 7, [hl]
 	ld hl, wd72e
 	res 7, [hl]
 	jp EndNPCMovementScript
 
+; **PewterMuseumGuyMovementScriptPointerTable**  
+; ニビシティでの美術館までの強制連行イベントの NPC movement script のアドレスを格納したテーブル
 PewterMuseumGuyMovementScriptPointerTable:
-	dw PewterMovementScript_WalkToMuseum
-	dw PewterMovementScript_Done
+	dw PewterMovementScript_WalkToMuseum	; 0
+	dw PewterMovementScript_Done			; 1
 
+; **PewterMovementScript_WalkToMuseum**  
+; [wNPCMovementScriptFunctionNum] == 0 に対応 
 PewterMovementScript_WalkToMuseum:
+	; Music_MuseumGuy を再生
 	ld a, BANK(Music_MuseumGuy)
 	ld [wAudioROMBank], a
 	ld [wAudioSavedROMBank], a
 	ld a, MUSIC_MUSEUM_GUY
 	ld [wNewSoundID], a
 	call PlaySound
+
 	ld a, [wSpriteIndex]
 	swap a
 	ld [wNPCMovementScriptSpriteOffset], a
+
 	call StartSimulatingJoypadStates
+	
+	; simulated joypad として ニビ科学博物館まで歩いていく移動データを与える
 	ld hl, wSimulatedJoypadStatesEnd
 	ld de, RLEList_PewterMuseumPlayer
 	call DecodeRLEList
 	dec a
 	ld [wSimulatedJoypadStatesIndex], a
+
+	; simulated joypad として ニビ科学博物館まで歩いていく移動データを与える
 	xor a
 	ld [wWhichPewterGuy], a
 	predef PewterGuys
 	ld hl, wNPCMovementDirections2
 	ld de, RLEList_PewterMuseumGuy
 	call DecodeRLEList
+	
 	ld hl, wd72e
 	res 7, [hl]
 	ld a, $1
@@ -292,6 +311,8 @@ PewterMovementScript_Done:
 	res 7, [hl]
 	jp EndNPCMovementScript
 
+; **PewterGymGuyMovementScriptPointerTable**  
+; ニビシティでのジムまでの強制連行イベントの NPC movement script のアドレスを格納したテーブル
 PewterGymGuyMovementScriptPointerTable:
 	dw PewterMovementScript_WalkToGym
 	dw PewterMovementScript_Done

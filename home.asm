@@ -2667,6 +2667,8 @@ RunNPCMovementScript::
 .playerStepOutFromDoor
 	jpba PlayerStepOutFromDoor
 
+; **EndNPCMovementScript**  
+; scripted NPC と simulated joypad に関する変数やフラグをクリア 
 EndNPCMovementScript::
 	jpba _EndNPCMovementScript
 
