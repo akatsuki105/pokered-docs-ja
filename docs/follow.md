@@ -12,7 +12,7 @@ NPCによってプレイヤーが特定の場所へ歩いて連行されるイ�
 
 ## マサラタウンで、オーキド博士に研究所に連行されるイベント
 
-<img src="https://imgur.com/G9DHlDk.gif" width="200px" height="180px" />
+<img src="https://imgur.com/9HnxODN.gif" width="200px" height="180px" />
 
 `scripts/PalletTown.asm` で `engine/overworld/npc_movement.asm` に格納された `NPC movement script` を呼び出している
 
