@@ -20,7 +20,7 @@ NPCによってプレイヤーが特定の場所へ歩いて連行されるイ�
 
 ## ニビシティでのジムまでの強制連行イベント
 
-<img src="./image/follow/pewter_gym_guy.gif?raw=true" width="200px">
+<img src="./image/follow/pewter_gym_guy.gif" width="200px">
 
 `engine/overworld/npc_movement.asm` と `engine/overworld/pewter_guys.asm` で処理が定義されている
 
