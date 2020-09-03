@@ -12,7 +12,7 @@ NPCによってプレイヤーが特定の場所へ歩いて連行されるイ�
 
 ## マサラタウンで、オーキド博士に研究所に連行されるイベント
 
-<img src="https://imgur.com/G9DHlDk.gif" width="200px" height="180px">
+<img src="https://imgur.com/G9DHlDk.gif" width="200px" height="180px" />
 
 `scripts/PalletTown.asm` で `engine/overworld/npc_movement.asm` に格納された `NPC movement script` を呼び出している
 
@@ -20,7 +20,7 @@ NPCによってプレイヤーが特定の場所へ歩いて連行されるイ�
 
 ## ニビシティでのジムまでの強制連行イベント
 
-<img src="./image/follow/pewter_gym_guy.gif" width="200px">
+<img src="./image/follow/pewter_gym_guy.gif" width="200px" />
 
 `engine/overworld/npc_movement.asm` と `engine/overworld/pewter_guys.asm` で処理が定義されている
 
@@ -28,7 +28,7 @@ NPCによってプレイヤーが特定の場所へ歩いて連行されるイ�
 
 ## ニビシティでの美術館までの強制連行イベント
 
-<img src="./image/follow/pewter_musium_guy.gif" width="200px">
+<img src="./image/follow/pewter_musium_guy.gif" width="200px" />
 
 ニビシティでのジムまでの強制連行イベントと同様
 
