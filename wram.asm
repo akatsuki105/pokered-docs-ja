@@ -895,7 +895,7 @@ wFilteredBagItemsCount::
 
 ; cd38  
 ; 次に勝手に入力されるキー入力は、 wSimulatedJoypadStatesEnd にこの値から1を引いた値を足したもの  
-; つまり wSimulatedJoypadStatesEnd + [wSimulatedJoypadStatesIndex] - 1
+; つまり wSimulatedJoypadStatesEnd + [wSimulatedJoypadStatesIndex] - 1  
 ; 0 ならキー入力はシミュレートされていない(ポケモン赤によって勝手にキー入力されている状態ではない)
 wSimulatedJoypadStatesIndex::
 	ds 1
@@ -910,8 +910,7 @@ wWastedByteCD3A::
 	ds 1
 
 ; cd3b  
-; bitが1の場所に該当するキー入力は実際のボタンを押すと勝手に入力されたボタンをオーバーライドできる  
-; XXX is it ever not 0?  
+; bitが1の場所に該当するキー入力は実際のボタンを押すと simulated joypad で入力されたボタンをオーバーライドできる  
 wOverrideSimulatedJoypadStatesMask::
 	ds 1
 
@@ -1463,9 +1462,9 @@ wTilePlayerStandingOn:: ; cf0e
 ; cf0f
 wNPCNumScriptedSteps:: ds 1
 
-wNPCMovementScriptFunctionNum:: ; cf10
-; which script function within the pointer table indicated by
-; wNPCMovementScriptPointerTableNum
+; cf10  
+; which script function within the pointer table indicated by wNPCMovementScriptPointerTableNum  
+wNPCMovementScriptFunctionNum::
 	ds 1
 
 ; cf11  
@@ -3347,11 +3346,11 @@ wd72e::
 	ds 1
 
 ; d730  
-; - bit 0: NPCスプライトがスクリプトによって動かされているか  
+; - bit 0: NPCスプライトがスクリプトによって動かされているか(scripted NPC)  
 ; - bit 1: ???
 ; - bit 5: キー入力を無視する  
 ; - bit 6: テキスト出力時に文字ごとに遅延を生じさせるか  
-; - bit 7: キー入力がゲーム内で勝手に入れられている場合、またはNPCの動きがスクリプト化されている場合にフラグが立つ
+; - bit 7: キー入力がゲーム内で勝手に入れられているか(simulated joypad)  
 wd730::
 	ds 1
 
@@ -3371,13 +3370,14 @@ wd730::
 wd732::
 	ds 1
 
-wFlags_D733:: ; d733
-; bit 0: running a test battle
-; bit 1: prevent music from changing when entering new map
-; bit 2: skip the joypad check in CheckWarpsNoCollision (used for the forced warp down the waterfall in the Seafoam Islands)
-; bit 3: trainer wants to battle
-; bit 4: use variable [wCurMapScript] instead of the provided index for next frame's map script (used to start battle when talking to trainers)
-; bit 7: used fly out of battle
+; d733  
+; bit 0: running a test battle  
+; bit 1: このフラグが立っている時はマップが変わってもBGMを変えない  
+; bit 2: skip the joypad check in CheckWarpsNoCollision (used for the forced warp down the waterfall in the Seafoam Islands)  
+; bit 3: trainer wants to battle  
+; bit 4: use variable [wCurMapScript] instead of the provided index for next frame's map script (used to start battle when talking to trainers)  
+; bit 7: used fly out of battle  
+wFlags_D733::
 	ds 1
 
 wBeatLorelei:: ; d734

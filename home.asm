@@ -2612,7 +2612,14 @@ IsPlayerCharacterBeingControlledByGame::
 	and $80
 	ret
 
+; **RunNPCMovementScript**  
 ; NPC movement scriptを実行する  
+; - - -  
+; NPC movement script については [update.md](docs/sprite/update.md)参照  
+; 
+; INPUT:  
+; [wNPCMovementScriptPointerTableNum] = 実行対象の NPC movement script を含んだテーブルのオフセット  
+; [wNPCMovementScriptFunctionNum] = NPC movement script のテーブルから NPC movement script を選ぶオフセット  
 RunNPCMovementScript::
 	; wd736[0] を0クリア 0クリア前に1がセットされていたら -> .playerStepOutFromDoor
 	ld hl, wd736
@@ -3202,7 +3209,7 @@ FuncTX_PokemonCenterPC::
 	jr bankswitchAndContinue
 
 **StartSimulatingJoypadStates**  
-; ユーザーが勝手に動けないようにする  
+; フラグを立ててsimulated joypad状態にする  
 StartSimulatingJoypadStates::
 	; ユーザーが勝手に動けないようにする
 	xor a
@@ -3210,7 +3217,7 @@ StartSimulatingJoypadStates::
 
 	ld [wSpriteStateData2 + $06], a ; playerの "movement byte 1" = 0
 
-	; プレイヤーがScripted NPCのように勝手に動かされていることを示すフラグを立てる
+	; simulated joypadのフラグを立てる
 	ld hl, wd730
 	set 7, [hl]
 	ret
@@ -3332,35 +3339,56 @@ _GetPointerWithinSpriteStateData:
 	ld l, a
 	ret
 
-; decodes a $ff-terminated RLEncoded list
-; each entry is a pair of bytes <byte value> <repetitions>
-; the final $ff will be replicated in the output list and a contains the number of bytes written
-; de = input list
-; hl = output list
+; **DecodeRLEList**  
+; ランレングス圧縮された $ff が終端記号のリストを解答する  
+; - - -  
+; 対象のエントリは, \<byte value\> \<repetitions\> のペアで 2バイト  
+; 
+; INPUT:  
+; de = 圧縮されたリスト  
+; hl = 解凍されたデータを入れるリスト  
+; 
+; OUTPUT: a = 解凍されたデータを入れるリストのバイト数(終端記号の$ff含む)
 DecodeRLEList::
+	; [wRLEByteCount] をクリア
 	xor a
-	ld [wRLEByteCount], a     ; count written bytes here
+	ld [wRLEByteCount], a
+
+; 圧縮されたリストを1エントリずつ解凍していく
 .listLoop
+; {	
+	; a = byte value
 	ld a, [de]
+	
+	; 最後までみたら -> .endOfList
 	cp $ff
 	jr z, .endOfList
-	ld [hRLEByteValue], a ; store byte value to be written
+
+	ld [hRLEByteValue], a
+
+	; a = repetitions
 	inc de
 	ld a, [de]
+
+	; [wRLEByteCount] += 反復回数
 	ld b, $0
-	ld c, a                      ; number of bytes to be written
+	ld c, a
 	ld a, [wRLEByteCount]
 	add c
-	ld [wRLEByteCount], a     ; update total number of written bytes
+	ld [wRLEByteCount], a
+
+	; hl に解凍したデータを書き込んでいく
 	ld a, [hRLEByteValue]
-	call FillMemory              ; write a c-times to output
+	call FillMemory
 	inc de
 	jr .listLoop
+; }
+
 .endOfList
 	ld a, $ff
-	ld [hl], a                   ; write final $ff
+	ld [hl], a
 	ld a, [wRLEByteCount]
-	inc a                        ; include sentinel in counting
+	inc a	; a = 解凍されたデータを入れるリストのバイト数(終端記号の$ff含む)
 	ret
 
 ; sets movement byte 1 for sprite [H_SPRITEINDEX] to $FE and byte 2 to [hSpriteMovementByte2]

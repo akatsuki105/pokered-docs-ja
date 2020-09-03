@@ -38,6 +38,3 @@ wSimulatedJoypadStatesEnd + 3   -> D_UP
 wSimulatedJoypadStatesIndex -> 4
 ```
 
-## 関連
-
-- [pewter guy](./pewter_guys.md)

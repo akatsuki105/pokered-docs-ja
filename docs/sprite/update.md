@@ -80,3 +80,6 @@ wSpriteStateData1 と wSpriteStateData2 に格納されているスプライト�
 
 このようなプログラム化された移動をする状態のNPCを `Scripted NPC` と便宜上呼ぶ
 
+## NPC movement script
+
+[こちら](./movement_script.md)を参照

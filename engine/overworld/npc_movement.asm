@@ -38,19 +38,28 @@ PlayerStepOutFromDoor:
 	res 0, [hl]
 	res 1, [hl]
 
-	; キー入力のシミュレートをしているときにたつフラグをクリア
+	; simulated joypadフラグをクリア
 	ld hl, wd730
 	res 7, [hl]
 	ret
 
+; **_EndNPCMovementScript**  
+; scripted NPC と simulated joypad に関する変数やフラグをクリア  
 _EndNPCMovementScript:
+	; simulated joypadフラグをクリア
 	ld hl, wd730
 	res 7, [hl]
+	
+	; NPCのプログラム動作が初期化されているときに立つフラグをセット
 	ld hl, wd72e
 	res 7, [hl]
+	
+	; ドアフラグを消す
 	ld hl, wd736
 	res 0, [hl]
 	res 1, [hl]
+	
+	; 変数を初期化
 	xor a
 	ld [wNPCMovementScriptSpriteOffset], a
 	ld [wNPCMovementScriptPointerTableNum], a
@@ -60,71 +69,120 @@ _EndNPCMovementScript:
 	ld [wSimulatedJoypadStatesEnd], a
 	ret
 
+; **PalletMovementScriptPointerTable**  
+; マサラタウンのオーキド博士の強制連行イベントの movement script のアドレスを格納したテーブル  
 PalletMovementScriptPointerTable:
-	dw PalletMovementScript_OakMoveLeft
-	dw PalletMovementScript_PlayerMoveLeft
-	dw PalletMovementScript_WaitAndWalkToLab
-	dw PalletMovementScript_WalkToLab
-	dw PalletMovementScript_Done
+	dw PalletMovementScript_OakMoveLeft			; 0: オーキドを左
+	dw PalletMovementScript_PlayerMoveLeft		; 1: 主人公を左
+	dw PalletMovementScript_WaitAndWalkToLab	; 2
+	dw PalletMovementScript_WalkToLab			; 3
+	dw PalletMovementScript_Done				; 4
 
+; **PalletMovementScript_OakMoveLeft**  
+; オーキド博士による連行イベントで、オーキドの初期位置が右のときにオーキド博士を左に移動させる  
+; - - -  
+; 初期位置右: https://imgur.com/6bac8HE.png  
+; 初期位置左: https://imgur.com/CTFq90R.png  
+; 
+; [wNPCMovementScriptFunctionNum] == 0 に対応 
+; 
+; INPUT:  
+; [wSpriteIndex] = オーキド博士のスプライトのオフセット  
 PalletMovementScript_OakMoveLeft:
-	ld a, [wXCoord]
+	; [wNumStepsToTake] = オーキド博士が初期位置まであるく歩数
+	ld a, [wXCoord] 		; $a(左) or $b(右)
 	sub $a
-	ld [wNumStepsToTake], a
+	ld [wNumStepsToTake], a ; $0(左) or $1(右)
+
+	; 左にいるときは歩く必要なし -> .playerOnLeftTile
 	jr z, .playerOnLeftTile
-; The player is on the right tile of the northern path out of Pallet Town and
-; Prof. Oak is below.
-; Make Prof. Oak step to the left.
+
+	; 右(https://imgur.com/6bac8HE)にいるときは オーキド博士を左に1歩移動させる
+	; Make Prof. Oak step to the left.
+
+	; wNPCMovementDirections2 に 左移動の movement data を配置
 	ld b, 0
 	ld c, a
 	ld hl, wNPCMovementDirections2
 	ld a, NPC_MOVEMENT_LEFT
 	call FillMemory
-	ld [hl], $ff
+	ld [hl], $ff	; wNPCMovementDirections2 の終端記号
+
+	; [H_SPRITEINDEX] = オーキド博士のスプライトのオフセット
 	ld a, [wSpriteIndex]
 	ld [H_SPRITEINDEX], a
+
+	; movement dataどおりにオーキド博士を一マス左に移動させる
 	ld de, wNPCMovementDirections2
 	call MoveSprite
+
+	; [wNPCMovementScriptFunctionNum] を PalletMovementScript_PlayerMoveLeft に  
 	ld a, $1
 	ld [wNPCMovementScriptFunctionNum], a
 	jr .done
-; The player is on the left tile of the northern path out of Pallet Town and
-; Prof. Oak is below.
-; Prof. Oak is already where he needs to be.
+
+	; この時点でオーキド博士は初期位置(左)にいる
 .playerOnLeftTile
+	; [wNPCMovementScriptFunctionNum] を PalletMovementScript_WalkToLab に  
 	ld a, $3
 	ld [wNPCMovementScriptFunctionNum], a
+
 .done
+	; マップが変わってもBGMを変わらないようにする
 	ld hl, wFlags_D733
 	set 1, [hl]
 	ld a, $fc
 	ld [wJoyIgnore], a
 	ret
 
+; **PalletMovementScript_PlayerMoveLeft**  
+; PalletMovementScript_OakMoveLeft でオーキド博士を左に動かした後に主人公も続いて左に動かす処理  
+; - - -  
+; [wNPCMovementScriptFunctionNum] == 1 に対応  
+; https://imgur.com/9MBdCpd.gif
 PalletMovementScript_PlayerMoveLeft:
+	; wd730 がセットされていたら、オーキド博士がまだ左に動いているのでreturn 
 	ld a, [wd730]
-	bit 0, a ; is an NPC being moved by a script?
-	ret nz ; return if Oak is still moving
+	bit 0, a
+	ret nz
+
+	; wNPCMovementDirections2 に入っている 左方向の入力を simulate joypadの入力として wSimulatedJoypadStatesEnd に配置
 	ld a, [wNumStepsToTake]
 	ld [wSimulatedJoypadStatesIndex], a
 	ld [hNPCMovementDirections2Index], a
 	predef ConvertNPCMovementDirectionsToJoypadMasks
+	; simulated joypadの移動として主人公を左に移動
 	call StartSimulatingJoypadStates
+
+	; [wNPCMovementScriptFunctionNum] = PalletMovementScript_WaitAndWalkToLab
 	ld a, $2
 	ld [wNPCMovementScriptFunctionNum], a
 	ret
 
+; **PalletMovementScript_WaitAndWalkToLab**  
+; `PalletMovementScript_WalkToLab` とほぼ同じ  
+; - - -  
+; [wNPCMovementScriptFunctionNum] == 2 に対応  
+; プレイヤーが `PalletMovementScript_PlayerMoveLeft` で左に移動し終えたのを確認して、 `PalletMovementScript_WalkToLab`
 PalletMovementScript_WaitAndWalkToLab:
 	ld a, [wSimulatedJoypadStatesIndex]
-	and a ; is the player done moving left yet?
+	and a
 	ret nz
 
+; **PalletMovementScript_WalkToLab**  
+; オーキド博士と一緒にオーキド研究所まで歩いていく処理  
+; - - -  
+; [wNPCMovementScriptFunctionNum] == 3 に対応  
 PalletMovementScript_WalkToLab:
+	; プレイヤーが勝手に動けないように
 	xor a
 	ld [wOverrideSimulatedJoypadStatesMask], a
+
 	ld a, [wSpriteIndex]
 	swap a
 	ld [wNPCMovementScriptSpriteOffset], a
+
+	; simulated joypad として 主人公のオーキド研究所まで歩いていく移動データを与える
 	xor a
 	ld [wSpriteStateData2 + $06], a
 	ld hl, wSimulatedJoypadStatesEnd
@@ -132,13 +190,18 @@ PalletMovementScript_WalkToLab:
 	call DecodeRLEList
 	dec a
 	ld [wSimulatedJoypadStatesIndex], a
+
+	; scripted NPC として オーキド博士にオーキド研究所まで歩いていく移動データを与える
 	ld hl, wNPCMovementDirections2
 	ld de, RLEList_ProfOakWalkToLab
 	call DecodeRLEList
+	
 	ld hl, wd72e
 	res 7, [hl]
 	ld hl, wd730
 	set 7, [hl]
+
+	; [wNPCMovementScriptFunctionNum] = PalletMovementScript_Done
 	ld a, $4
 	ld [wNPCMovementScriptFunctionNum], a
 	ret
@@ -153,11 +216,11 @@ RLEList_ProfOakWalkToLab:
 	db $FF
 
 RLEList_PlayerWalkToLab:
-	db D_UP, $02
-	db D_RIGHT, $03
-	db D_DOWN, $05
-	db D_LEFT, $01
-	db D_DOWN, $06
+	db D_UP, $02		; ↑ ↑
+	db D_RIGHT, $03		; → → →
+	db D_DOWN, $05		; ↓ ↓ ↓ ↓ ↓
+	db D_LEFT, $01		; ←
+	db D_DOWN, $06		; ↓ ↓ ↓ ↓ ↓ ↓
 	db $FF
 
 PalletMovementScript_Done:
