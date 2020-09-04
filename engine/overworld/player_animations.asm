@@ -1,28 +1,40 @@
 EnterMapAnim:
 	call InitFacingDirectionList
-	ld a, $ec
+
+	; 
+	ld a, $ec ; $f0 -> Y=15*16px = Y = 15coord
 	ld [wSpriteStateData1 + 4], a ; player's sprite Y screen position
 	call Delay3
 	push hl
 	call GBFadeInFromWhite
+
+	; そらをとぶ を使ってマップに入ってきた -> .flyAnimation
 	ld hl, wFlags_D733
-	bit 7, [hl] ; used fly out of battle?
+	bit 7, [hl]
 	res 7, [hl]
 	jr nz, .flyAnimation
+
 	ld a, SFX_TELEPORT_ENTER_1
 	call PlaySound
+
+	; dungeon warp を使ってマップに入ってきた -> .dungeonWarpAnimation
 	ld hl, wd732
-	bit 4, [hl] ; used dungeon warp?
+	bit 4, [hl]
 	res 4, [hl]
 	pop hl
 	jr nz, .dungeonWarpAnimation
+
+	; 
 	call PlayerSpinWhileMovingDown
 	ld a, SFX_TELEPORT_ENTER_2
 	call PlaySound
+
+	; 入ってきたマップの足下に テレポート床か穴 があった -> .done
 	call IsPlayerStandingOnWarpPadOrHole
 	ld a, b
 	and a
 	jr nz, .done
+
 ; if the player is not standing on a warp pad or hole
 	ld hl, wPlayerSpinInPlaceAnimFrameDelay
 	xor a
@@ -36,8 +48,10 @@ EnterMapAnim:
 	call PlayerSpinInPlace
 .restoreDefaultMusic
 	call PlayDefaultMusic
+
 .done
 	jp RestoreFacingDirectionAndYScreenPos
+	
 .dungeonWarpAnimation
 	ld c, 50
 	call DelayFrames
@@ -63,10 +77,10 @@ EnterMapAnim:
 	call LoadPlayerSpriteGraphics
 	jr .restoreDefaultMusic
 
-FlyAnimationEnterScreenCoords:
 ; y, x pairs
 ; This is the sequence of screen coordinates used by the overworld
 ; Fly animation when the player is entering a map.
+FlyAnimationEnterScreenCoords:
 	db $05, $98
 	db $0F, $90
 	db $18, $88
@@ -257,29 +271,46 @@ LoadBirdSpriteGraphics:
 	lb bc, BANK(BirdSprite), $0c
 	jp CopyVideoData
 
+; **InitFacingDirectionList**  
+; プレイヤーの状態を保存し、 `wFacingDirectionList` を初期化する
+; - - -  
+; OUTPUT:  
+; [wSavedPlayerFacingDirection] = プレイヤーの方向  
+; [wSavedPlayerScreenY] = プレイヤーのY座標  
+; hl = wFacingDirectionList(下) or wFacingDirectionList+1(左) or wFacingDirectionList+2(上) or wFacingDirectionList+3(右)  
 InitFacingDirectionList:
-	ld a, [wSpriteStateData1 + 2] ; player's sprite facing direction (image index is locked to standing images)
+	; [wSavedPlayerFacingDirection] = プレイヤーの sprite image index
+	ld a, [wSpriteStateData1 + 2] ; sprite image index(c1x2)
 	ld [wSavedPlayerFacingDirection], a
-	ld a, [wSpriteStateData1 + 4] ; player's sprite Y screen position
+
+	; [wSavedPlayerScreenY] = プレイヤーのY座標
+	ld a, [wSpriteStateData1 + 4]
 	ld [wSavedPlayerScreenY], a
+
+	; PlayerSpinningFacingOrder -> wFacingDirectionList にコピー (spinデータを init)
 	ld hl, PlayerSpinningFacingOrder
 	ld de, wFacingDirectionList
 	ld bc, 4
 	call CopyData
-	ld a, [wSpriteStateData1 + 2] ; player's sprite facing direction (image index is locked to standing images)
+
+; wFacingDirectionList をプレイヤーの向いている方向にセットする
+	ld a, [wSpriteStateData1 + 2] ; a = プレイヤーの現在向いている方向 (c1x2 プレイヤーなのでVRAMオフセット0, 立っているのでanime frameも0)
 	ld hl, wFacingDirectionList
-; find the place in the list that matches the current facing direction
-.loop
+.loop ; {
 	cp [hl]
 	inc hl
 	jr nz, .loop
-	dec hl
+; }
+	dec hl	; hl = wFacingDirectionList(下) or wFacingDirectionList+1(左) or wFacingDirectionList+2(上) or wFacingDirectionList+3(右)
+
 	ret
 
+; **PlayerSpinningFacingOrder**  
+; プレイヤーが、テレポートなどでスピンしながらマップ移動するときのスピンの順番  
+; - - -  
+; db SPRITE_FACING_DOWN, SPRITE_FACING_LEFT, SPRITE_FACING_UP, SPRITE_FACING_RIGHT
 PlayerSpinningFacingOrder:
-; The order of the direction the player's sprite is facing when teleporting
-; away. Creates a spinning effect.
-	db SPRITE_FACING_DOWN, SPRITE_FACING_LEFT, SPRITE_FACING_UP, SPRITE_FACING_RIGHT
+	db SPRITE_FACING_DOWN, SPRITE_FACING_LEFT, SPRITE_FACING_UP, SPRITE_FACING_RIGHT	; ↓ ← ↑ →
 
 SpinPlayerSprite:
 ; copy the current value from the list into the sprite data and rotate the list
@@ -347,38 +378,54 @@ GetPlayerTeleportAnimFrameDelay:
 	inc a
 	ret
 
+; **IsPlayerStandingOnWarpPadOrHole**  
+; プレイヤーが現在 dungeon warp のタイルとして使われるタイルの上に乗っているか  
+; - - -  
+; OUTPUT: b = [wStandingOnWarpPadOrHole] = ID (0(乗ってない) or .warpPadAndHoleDataで設定された乗っているタイルのID)  
 IsPlayerStandingOnWarpPadOrHole:
 	ld b, 0
 	ld hl, .warpPadAndHoleData
 	ld a, [wCurMapTileset]
-	ld c, a
+	ld c, a	; c = [wCurMapTileset]
+
+; .warpPadAndHoleDataの中からプレイヤーの立っているタイル番号と同じものがあるかみていく
 .loop
+; {
 	ld a, [hli]
+
+	; 見つからなかった -> .done
 	cp $ff
 	jr z, .done
+
+	; タイルセットが違う
 	cp c
 	jr nz, .nextEntry
+
+	; 見つかった -> .foundMatch
 	aCoord 8, 9
 	cp [hl]
 	jr z, .foundMatch
+
 .nextEntry
 	inc hl
 	inc hl
 	jr .loop
+; }
+
 .foundMatch
 	inc hl
-	ld b, [hl]
+	ld b, [hl] ; b = ID
 .done
 	ld a, b
 	ld [wStandingOnWarpPadOrHole], a
 	ret
 
-; format: db tileset id, tile id, value to be put in [wStandingOnWarpPadOrHole]
+; db タイルセットID, タイル番号, [wStandingOnWarpPadOrHole]に格納されるID
 .warpPadAndHoleData:
-	db FACILITY, $20, 1 ; warp pad
-	db FACILITY, $11, 2 ; hole
-	db CAVERN,   $22, 2 ; hole
-	db INTERIOR, $55, 1 ; warp pad
+	db FACILITY, $20, 1 ; テレポート床
+	db FACILITY, $11, 2 ; 穴
+	db CAVERN,   $22, 2 ; 穴
+	db INTERIOR, $55, 1 ; テレポート床
 	db $FF
 
 FishingAnim:
@@ -462,14 +509,17 @@ FishingAnim:
 	ld [hl], a
 	ret
 
+; "Not even a nibble!" (釣りでポケモンが食いつかなかった)
 NoNibbleText:
 	TX_FAR _NoNibbleText
 	db "@"
 
+; "Looks like there's nothing here."
 NothingHereText:
 	TX_FAR _NothingHereText
 	db "@"
 
+; "Oh! It's a bite!" (釣りでヒットした)
 ItsABiteText:
 	TX_FAR _ItsABiteText
 	db "@"

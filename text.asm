@@ -43,15 +43,18 @@ _TrainerNameText::
 	TX_RAM wcd6d
 	text ": @@"
 
+; "Not even a nibble!"
 _NoNibbleText::
 	text "Not even a nibble!"
 	prompt
 
+; "Looks like there's nothing here."
 _NothingHereText::
 	text "Looks like there's"
 	line "nothing here."
 	prompt
 
+; "Oh! It's a bite!"
 _ItsABiteText::
 	text "Oh!"
 	line "It's a bite!"

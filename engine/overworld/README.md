@@ -29,7 +29,7 @@ map_sprites.asm | マップ上のスプライトのタイルデータをVRAMに�
 map_sprite_functions1.asm | null
 missable_objects.asm | missable objectに関する処理
 movement.asm | プレイヤーやNPCの移動処理
-npc_movement.asm | null
+npc_movement.asm | NPC movement script などスプライトの特殊な移動に関する処理
 oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を行う
 oam.asm | 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む関数<br/>VBlank中に実行される
 pewter_guys.asm | ニビシティの強制連行イベント処理の処理の一部  
@@ -40,7 +40,7 @@ pokecenter.asm | ポケモンセンターでジョーイさんに話しかけた
 pokemart.asm | フレンドリーショップでのアイテム売買の処理
 push_boulder.asm | かいりきによる岩を押す処理
 saffron_guards.asm | ヤマブキシティのゲートの"のどが渇いた警備員"にドリンクを渡す処理
-set_blackout_map.asm | null
+set_blackout_map.asm | 目の前が真っ暗になったり、『あなをほる』や『テレポート』で戻る先のマップを登録する処理
 ssanne.asm | かいりき の土埃のアニメーション処理
 tileset_header.asm | マップ切り替わり時にタイルセットを更新する処理
 trainers.asm | トレーナーに見つかったかの判定と、見つかったときの処理

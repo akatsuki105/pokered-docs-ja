@@ -1189,10 +1189,11 @@ wSlotMachineWheel3BottomTile:: ; cd47
 
 wSlotMachineWheel3MiddleTile:: ; cd48
 
-wFacingDirectionList:: ; cd48
+; cd48  
 ; 4 bytes (also, the byte before the start of the list (cd47) is used a temp
 ;          variable when the list is rotated)
 ; used when spinning the player's sprite
+wFacingDirectionList::
 	ds 1
 
 wSlotMachineWheel3TopTile:: ; cd49
@@ -3376,7 +3377,7 @@ wd732::
 ; bit 2: skip the joypad check in CheckWarpsNoCollision (used for the forced warp down the waterfall in the Seafoam Islands)  
 ; bit 3: trainer wants to battle  
 ; bit 4: use variable [wCurMapScript] instead of the provided index for next frame's map script (used to start battle when talking to trainers)  
-; bit 7: used fly out of battle  
+; bit 7: フィールド上で空をとぶを使った時にセットされる
 wFlags_D733::
 	ds 1
 
