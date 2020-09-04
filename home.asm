@@ -3405,6 +3405,8 @@ SetSpriteMovementBytesToFE::
 	ret
 
 ; **SetSpriteMovementBytesToFF**  
+; スプライトをその場から動かなくさせる処理  
+; - - -  
 ; [H_SPRITEINDEX]のスプライトの movement byte1, 2 を 0xff にする
 SetSpriteMovementBytesToFF::
 	push hl

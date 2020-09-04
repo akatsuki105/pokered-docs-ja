@@ -24,9 +24,11 @@ NPCによってプレイヤーが特定の場所へ歩いて連行されるイ�
 
 `engine/overworld/npc_movement.asm` と `engine/overworld/pewter_guys.asm` で処理が定義されている
 
-`engine/overworld/pewter_guys.asm` の `PewterGuys`関数 では、プレイヤーに強制連行の simulated joypad 入力を与えている
+`engine/overworld/npc_movement.asm` での `NPC movement script` で決められた場所からの連行処理を行うように `scripted NPC` と `simulated joypad`が設定される
 
-## ニビシティでの美術館までの強制連行イベント
+`engine/overworld/pewter_guys.asm`  の `PewterGuys` では、連行イベントの開始時の主人公のマスに応じて、上記の決められた場所に主人公が移動するように `simulated joypad` に追加の移動処理を付け加える
+
+## ニビシティでのニビ科学博物館までの強制連行イベント
 
 <img src="https://imgur.com/xn1PQTE.gif" width="200px" />
 

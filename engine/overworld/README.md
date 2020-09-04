@@ -32,7 +32,7 @@ movement.asm | プレイヤーやNPCの移動処理
 npc_movement.asm | null
 oaks_aide.asm | 関所にいるオーキド博士の助手との会話処理を行う
 oam.asm | 現在、可視化する必要がある スプライト(人や岩など)のOAMデータ を決定して、それを wOAMBuffer に書き込む関数<br/>VBlank中に実行される
-pewter_guys.asm | ニビシティの強制連行イベント処理  
+pewter_guys.asm | ニビシティの強制連行イベント処理の処理の一部  
 player_animations.asm | null
 player_state.asm | プレイヤーがマップ上でwarpパネルにいたり、かいりき岩の前にいたりなどの特定の条件を満たした状態かを判定する処理など
 poison.asm | マップ上で歩いているときに毒ダメージを与える処理 

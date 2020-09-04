@@ -244,13 +244,15 @@ PalletMovementScript_Done:
 	jp EndNPCMovementScript
 
 ; **PewterMuseumGuyMovementScriptPointerTable**  
-; ニビシティでの美術館までの強制連行イベントの NPC movement script のアドレスを格納したテーブル
+; ニビシティでのニビ科学博物館までの強制連行イベントの NPC movement script のアドレスを格納したテーブル
 PewterMuseumGuyMovementScriptPointerTable:
 	dw PewterMovementScript_WalkToMuseum	; 0
 	dw PewterMovementScript_Done			; 1
 
 ; **PewterMovementScript_WalkToMuseum**  
-; [wNPCMovementScriptFunctionNum] == 0 に対応 
+; ニビ科学博物館までの強制連行を行うように scripted NPC と simulated joypadの値を設定する  
+; - - -  
+; [wNPCMovementScriptFunctionNum] == 0 に対応  
 PewterMovementScript_WalkToMuseum:
 	; Music_MuseumGuy を再生
 	ld a, BANK(Music_MuseumGuy)
@@ -260,29 +262,32 @@ PewterMovementScript_WalkToMuseum:
 	ld [wNewSoundID], a
 	call PlaySound
 
+	; [wNPCMovementScriptSpriteOffset] = [wSpriteIndex]*0x10
 	ld a, [wSpriteIndex]
 	swap a
 	ld [wNPCMovementScriptSpriteOffset], a
 
 	call StartSimulatingJoypadStates
 	
-	; simulated joypad として ニビ科学博物館まで歩いていく移動データを与える
+	; simulated joypad として ニビ科学博物館まで歩いていく movement data を与える
 	ld hl, wSimulatedJoypadStatesEnd
 	ld de, RLEList_PewterMuseumPlayer
 	call DecodeRLEList
 	dec a
 	ld [wSimulatedJoypadStatesIndex], a
-
-	; simulated joypad として ニビ科学博物館まで歩いていく移動データを与える
 	xor a
 	ld [wWhichPewterGuy], a
 	predef PewterGuys
+
+	; scripted NPC として ニビ科学博物館まで歩いていく movement data を与える
 	ld hl, wNPCMovementDirections2
 	ld de, RLEList_PewterMuseumGuy
 	call DecodeRLEList
-	
+
 	ld hl, wd72e
 	res 7, [hl]
+	
+	; [wNPCMovementScriptFunctionNum] = PewterMovementScript_Done
 	ld a, $1
 	ld [wNPCMovementScriptFunctionNum], a
 	ret
@@ -314,21 +319,31 @@ PewterMovementScript_Done:
 ; **PewterGymGuyMovementScriptPointerTable**  
 ; ニビシティでのジムまでの強制連行イベントの NPC movement script のアドレスを格納したテーブル
 PewterGymGuyMovementScriptPointerTable:
-	dw PewterMovementScript_WalkToGym
-	dw PewterMovementScript_Done
+	dw PewterMovementScript_WalkToGym 	; 0
+	dw PewterMovementScript_Done		; 1
 
+; **PewterMovementScript_WalkToGym**  
+; ニビジムまでの強制連行を行うように scripted NPC と simulated joypadの値を設定する  
+; - - -  
+; [wNPCMovementScriptFunctionNum] == 0 に対応 
 PewterMovementScript_WalkToGym:
+	; Music_MuseumGuy を再生
 	ld a, BANK(Music_MuseumGuy)
 	ld [wAudioROMBank], a
 	ld [wAudioSavedROMBank], a
 	ld a, MUSIC_MUSEUM_GUY
 	ld [wNewSoundID], a
 	call PlaySound
+
+	; [wNPCMovementScriptSpriteOffset] = [wSpriteIndex]*0x10
 	ld a, [wSpriteIndex]
 	swap a
 	ld [wNPCMovementScriptSpriteOffset], a
+
 	xor a
 	ld [wSpriteStateData2 + $06], a
+	
+	; simulated joypad として ニビジム まで歩いていく movement data を与える
 	ld hl, wSimulatedJoypadStatesEnd
 	ld de, RLEList_PewterGymPlayer
 	call DecodeRLEList
@@ -337,13 +352,18 @@ PewterMovementScript_WalkToGym:
 	ld a, 1
 	ld [wWhichPewterGuy], a
 	predef PewterGuys
+	
+	; scripted NPC として ニビジム まで歩いていく movement data を与える
 	ld hl, wNPCMovementDirections2
 	ld de, RLEList_PewterGymGuy
 	call DecodeRLEList
+
 	ld hl, wd72e
 	res 7, [hl]
 	ld hl, wd730
 	set 7, [hl]
+
+	; [wNPCMovementScriptFunctionNum] = PewterMovementScript_Done
 	ld a, $1
 	ld [wNPCMovementScriptFunctionNum], a
 	ret
@@ -366,27 +386,44 @@ RLEList_PewterGymGuy:
 	db NPC_MOVEMENT_RIGHT, $03
 	db $FF
 
+; **FreezeEnemyTrainerSprite**  
+; スプライトを動かなくさせる処理  
+; - - -  
+; INPUT: [wSpriteIndex] = 対象のスプライトのオフセット
 FreezeEnemyTrainerSprite:
+	; ポケモンタワーの7Fでは、戦闘を行ったロケット団はその場から消えるため、以降の処理を行う必要はない
 	ld a, [wCurMap]
 	cp POKEMON_TOWER_7F
 	ret z ; the Rockets on Pokemon Tower 7F leave after battling, so don't freeze them
+
 	ld hl, RivalIDs
 	ld a, [wEngagedTrainerClass]
 	ld b, a
+
+; RivalIDs を順にみていって、戦闘の相手がライバルでないことを確認する
 .loop
+; {
 	ld a, [hli]
+
+	; RivalIDs を最後までみたなら相手はライバルではない -> .notRival
 	cp $ff
 	jr z, .notRival
+
+	; 戦闘の相手がライバルだった場合も、その場から去るため以降の処理を行う必要はない
 	cp b
-	ret z ; the rival leaves after battling, so don't freeze him
+	ret z
+
 	jr .loop
+; }
+
 .notRival
+	; movement byte1, 2 を 0xff にしてスプライトを動かなくする
 	ld a, [wSpriteIndex]
 	ld [H_SPRITEINDEX], a
 	jp SetSpriteMovementBytesToFF
 
 RivalIDs:
-	db OPP_SONY1
-	db OPP_SONY2
-	db OPP_SONY3
+	db OPP_SONY1	; $19
+	db OPP_SONY2	; $2A
+	db OPP_SONY3	; $2B
 	db $ff
