@@ -96,13 +96,20 @@ FlyAnimationEnterScreenCoords:
 
 PlayerSpinWhileMovingDown:
 	ld hl, wPlayerSpinWhileMovingUpOrDownAnimDeltaY
+	
+	; [wPlayerSpinWhileMovingUpOrDownAnimDeltaY] = 0x10
 	ld a, $10
-	ld [hli], a ; wPlayerSpinWhileMovingUpOrDownAnimDeltaY
+	ld [hli], a
+
+	; [wPlayerSpinWhileMovingUpOrDownAnimMaxY] = 0x3c
 	ld a, $3c
-	ld [hli], a ; wPlayerSpinWhileMovingUpOrDownAnimMaxY
+	ld [hli], a
+
+	; [wPlayerSpinWhileMovingUpOrDownAnimFrameDelay] = 0x03 (SGBなら 0x02)
 	call GetPlayerTeleportAnimFrameDelay
-	ld [hl], a ; wPlayerSpinWhileMovingUpOrDownAnimFrameDelay
-	jp PlayerSpinWhileMovingUpOrDown
+	ld [hl], a
+
+	jp PlayerSpinWhileMovingUpOrDown ; このとき [hl] = 0x03 方向としては下向きとして扱われる(0: 下, 4: 上, 8: 左, $c: 右 なので)
 
 _LeaveMapAnim:
 	call InitFacingDirectionList
@@ -312,30 +319,43 @@ InitFacingDirectionList:
 PlayerSpinningFacingOrder:
 	db SPRITE_FACING_DOWN, SPRITE_FACING_LEFT, SPRITE_FACING_UP, SPRITE_FACING_RIGHT	; ↓ ← ↑ →
 
+; **SpinPlayerSprite**  
+; sprite image indexをプレイヤーが回転するようにし、wFacingDirectionListの中身を前にずらす(前方向に回転させる)  
+; - - -  
+; data[3] <- data[0] <- data[1] <- data[2] <- data[3] <- data[0] <- ...
+; 
+; INPUT: [hl] = sprite image index(プレイヤーのスピン処理で向いている方向を変えるのに利用)
 SpinPlayerSprite:
-; copy the current value from the list into the sprite data and rotate the list
 	ld a, [hl]
 	ld [wSpriteStateData1 + 2], a ; player's sprite facing direction (image index is locked to standing images)
+
 	push hl
+
+	; wFacingDirectionListを前方向に回転(data[3] <- data[0] <- data[1] <- data[2] <- data[3] <- data[0])
 	ld hl, wFacingDirectionList
 	ld de, wFacingDirectionList - 1
 	ld bc, 4
 	call CopyData
 	ld a, [wFacingDirectionList - 1]
 	ld [wFacingDirectionList + 3], a
+
 	pop hl
 	ret
 
 PlayerSpinInPlace:
 	call SpinPlayerSprite
+
+	; [wPlayerSpinInPlaceAnimFrameDelay]%4 > 0 -> .skipPlayingSound
 	ld a, [wPlayerSpinInPlaceAnimFrameDelay]
 	ld c, a
 	and $3
 	jr nz, .skipPlayingSound
-; when the last delay was a multiple of 4, play a sound if there is one
+
+	; [wPlayerSpinInPlaceAnimFrameDelay]%4 == 0 のときは スピンサウンドを流す
 	ld a, [wPlayerSpinInPlaceAnimSoundID]
 	cp $ff
 	call nz, PlaySound
+
 .skipPlayingSound
 	ld a, [wPlayerSpinInPlaceAnimFrameDelayDelta]
 	add c
@@ -370,7 +390,8 @@ RestoreFacingDirectionAndYScreenPos:
 	ld [wSpriteStateData1 + 2], a
 	ret
 
-; if SGB, 2 frames, else 3 frames
+
+; OUTPUT: a = 3 frames (if SGB, 2 frames)
 GetPlayerTeleportAnimFrameDelay:
 	ld a, [wOnSGB]
 	xor $1

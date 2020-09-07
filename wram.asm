@@ -1018,7 +1018,8 @@ wFlyAnimUsingCoordList:: ; cd3d
 
 wPlayerSpinInPlaceAnimFrameDelay:: ; cd3d
 
-wPlayerSpinWhileMovingUpOrDownAnimDeltaY:: ; cd3d
+; cd3d
+wPlayerSpinWhileMovingUpOrDownAnimDeltaY::
 
 ; cd3d  
 wHiddenObjectFunctionArgument::
@@ -1072,7 +1073,8 @@ wFlyAnimCounter:: ; cd3e
 
 wPlayerSpinInPlaceAnimFrameDelayDelta:: ; cd3e
 
-wPlayerSpinWhileMovingUpOrDownAnimMaxY:: ; cd3e
+; cd3e
+wPlayerSpinWhileMovingUpOrDownAnimMaxY::
 
 wHiddenObjectFunctionRomBank:: ; cd3e
 
@@ -1190,9 +1192,8 @@ wSlotMachineWheel3BottomTile:: ; cd47
 wSlotMachineWheel3MiddleTile:: ; cd48
 
 ; cd48  
-; 4 bytes (also, the byte before the start of the list (cd47) is used a temp
-;          variable when the list is rotated)
-; used when spinning the player's sprite
+; ここから4バイトほどプレイヤーの方向データが入り、プレイヤーをスピンさせるときに利用される  
+; また、1つ前の cd47 は一時的なバッファとしてプレイヤーの回転処理の際に利用される  
 wFacingDirectionList::
 	ds 1
 
