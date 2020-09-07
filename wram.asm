@@ -1016,7 +1016,8 @@ wChangeBoxSavedMapTextPointer:: ; cd3d
 
 wFlyAnimUsingCoordList:: ; cd3d
 
-wPlayerSpinInPlaceAnimFrameDelay:: ; cd3d
+; cd3d  
+wPlayerSpinInPlaceAnimFrameDelay::
 
 ; cd3d
 wPlayerSpinWhileMovingUpOrDownAnimDeltaY::
@@ -1110,7 +1111,10 @@ wFlyAnimBirdSpriteImageIndex:: ; cd3f
 
 wPlayerSpinInPlaceAnimFrameDelayEndValue:: ; cd3f
 
-wPlayerSpinWhileMovingUpOrDownAnimFrameDelay:: ; cd3f
+; cd3f  
+; プレイヤーをスピンさせる(方向転換させる)処理のディレイ間隔  
+; スピンさせる(方向転換させる)処理: 1回転ではなく、 ↓ から ← や ← から ↑ への1方向転換  
+wPlayerSpinWhileMovingUpOrDownAnimFrameDelay::
 
 wHiddenObjectIndex:: ; cd3f
 

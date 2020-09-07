@@ -1,7 +1,7 @@
 EnterMapAnim:
 	call InitFacingDirectionList
 
-	; 
+	; プレイヤーを非表示?
 	ld a, $ec ; $f0 -> Y=15*16px = Y = 15coord
 	ld [wSpriteStateData1 + 4], a ; player's sprite Y screen position
 	call Delay3
@@ -24,7 +24,9 @@ EnterMapAnim:
 	pop hl
 	jr nz, .dungeonWarpAnimation
 
-	; 
+	; この時点でプレイヤーはテレポートやあなぬけのひもを使ってワープしてきたので着地処理を行う (https://imgur.com/9N7Ber9.gif)
+
+	; 降下処理
 	call PlayerSpinWhileMovingDown
 	ld a, SFX_TELEPORT_ENTER_2
 	call PlaySound
@@ -35,17 +37,19 @@ EnterMapAnim:
 	and a
 	jr nz, .done
 
-; if the player is not standing on a warp pad or hole
+	; この時点でプレイヤーはテレポート床や穴の上にいない
+	; プレイヤーを着地地点でスピンさせる(https://imgur.com/lLnNDTD.gif)
 	ld hl, wPlayerSpinInPlaceAnimFrameDelay
 	xor a
-	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelay
+	ld [hli], a		; [wPlayerSpinInPlaceAnimFrameDelay] = 0
 	inc a
-	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelayDelta
+	ld [hli], a		; [wPlayerSpinInPlaceAnimFrameDelayDelta] = 1
 	ld a, $8
-	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelayEndValue
-	ld [hl], $ff ; wPlayerSpinInPlaceAnimSoundID
+	ld [hli], a		; [wPlayerSpinInPlaceAnimFrameDelayEndValue] = 8
+	ld [hl], $ff 	; [wPlayerSpinInPlaceAnimSoundID] = 0xff
 	ld hl, wFacingDirectionList
 	call PlayerSpinInPlace
+
 .restoreDefaultMusic
 	call PlayDefaultMusic
 
@@ -53,16 +57,22 @@ EnterMapAnim:
 	jp RestoreFacingDirectionAndYScreenPos
 	
 .dungeonWarpAnimation
+	; 画面真っ白の状態で 50フレーム待機
 	ld c, 50
 	call DelayFrames
+	; 落ちてくるアニメーション
 	call PlayerSpinWhileMovingDown
 	jr .done
+
 .flyAnimation
 	pop hl
+
+	; プレイヤーのスプライトを鳥にする
 	ld de, BirdSprite
 	ld hl, vNPCSprites
 	lb bc, BANK(BirdSprite), $0c
 	call CopyVideoData
+
 	call LoadBirdSpriteGraphics
 	ld a, SFX_FLY
 	call PlaySound
@@ -94,6 +104,10 @@ FlyAnimationEnterScreenCoords:
 	db $3C, $48
 	db $3C, $40
 
+; PlayerSpinWhileMovingDown  
+; プレイヤーをスピンしながら降下させる処理  
+; - - -  
+; あなぬけのひも や テレポート で利用  
 PlayerSpinWhileMovingDown:
 	ld hl, wPlayerSpinWhileMovingUpOrDownAnimDeltaY
 	
@@ -106,10 +120,11 @@ PlayerSpinWhileMovingDown:
 	ld [hli], a
 
 	; [wPlayerSpinWhileMovingUpOrDownAnimFrameDelay] = 0x03 (SGBなら 0x02)
+	; 方向としては下向きとして扱われる(0: 下, 4: 上, 8: 左, $c: 右 なので)
 	call GetPlayerTeleportAnimFrameDelay
 	ld [hl], a
 
-	jp PlayerSpinWhileMovingUpOrDown ; このとき [hl] = 0x03 方向としては下向きとして扱われる(0: 下, 4: 上, 8: 左, $c: 右 なので)
+	jp PlayerSpinWhileMovingUpOrDown ; ret
 
 _LeaveMapAnim:
 	call InitFacingDirectionList
@@ -343,10 +358,11 @@ SpinPlayerSprite:
 	ret
 
 ; **PlayerSpinInPlace**  
-; プレイヤーのスプライトをスピンさせる処理  
+; プレイヤーのスプライトをその場でスピンさせる処理  
 ; - - -  
-; この関数1回の処理でスピンアニメーションの1フレーム間を担当する  
-; スピンアニメーションが全部で Nフレーム のときは N回関数がループする
+; 1回の処理では、1方向転換分を担当し、ループ実行によって回転終了までを担当する  
+; 回転終了に近くにつれて、徐々にスピンは遅くなっていく  
+; ![example](https://imgur.com/lLnNDTD.gif)  
 PlayerSpinInPlace:
 	call SpinPlayerSprite
 
@@ -362,37 +378,49 @@ PlayerSpinInPlace:
 	call nz, PlaySound
 
 .skipPlayingSound
-	; Delayタイムを進める([wPlayerSpinInPlaceAnimFrameDelay] += [wPlayerSpinInPlaceAnimFrameDelayDelta])
+	; Delay時間を増やしてスピンが遅くなっていくようにする
 	ld a, [wPlayerSpinInPlaceAnimFrameDelayDelta]
 	add c
-	ld [wPlayerSpinInPlaceAnimFrameDelay], a
-	ld c, a
+	ld [wPlayerSpinInPlaceAnimFrameDelay], a	; [wPlayerSpinInPlaceAnimFrameDelay] += [wPlayerSpinInPlaceAnimFrameDelayDelta]
+	ld c, a	; c = [wPlayerSpinInPlaceAnimFrameDelay]
 
 	; Delayが終了 -> return
 	ld a, [wPlayerSpinInPlaceAnimFrameDelayEndValue]
 	cp c
 	ret z
 
-	; Delay処理してもう一度
+	; [wPlayerSpinInPlaceAnimFrameDelay]フレーム だけDelay処理してもう一度
 	call DelayFrames
 	jr PlayerSpinInPlace
 
+; **PlayerSpinWhileMovingUpOrDown**  
+; プレイヤーを下方向に移動させつつスピンさせる  
+; - - -  
+; 1回の処理では、1方向転換分を担当し、ループ実行によって回転し初めから回転終了の全期間を担当する  
 PlayerSpinWhileMovingUpOrDown:
 	call SpinPlayerSprite
+	
+	; プレイヤーのY座標を wPlayerSpinWhileMovingUpOrDownAnimDeltaY の分だけずらす
 	ld a, [wPlayerSpinWhileMovingUpOrDownAnimDeltaY]
 	ld c, a
-	ld a, [wSpriteStateData1 + 4] ; player's sprite Y screen position
+	ld a, [wSpriteStateData1 + 4] 	; $c104 = プレイヤーのY座標
 	add c
-	ld [wSpriteStateData1 + 4], a
-	ld c, a
+	ld [wSpriteStateData1 + 4], a	; [$c104] += [wPlayerSpinWhileMovingUpOrDownAnimDeltaY]
+	ld c, a	; c = [$c104]
+
+	; プレイヤーのY座標が [wPlayerSpinWhileMovingUpOrDownAnimMaxY] まで降りてきたら終了
 	ld a, [wPlayerSpinWhileMovingUpOrDownAnimMaxY]
 	cp c
 	ret z
+
+	; [wPlayerSpinWhileMovingUpOrDownAnimFrameDelay]フレーム だけ delay
 	ld a, [wPlayerSpinWhileMovingUpOrDownAnimFrameDelay]
 	ld c, a
 	call DelayFrames
+
 	jr PlayerSpinWhileMovingUpOrDown
 
+; [wSavedPlayerScreenY] と [wSavedPlayerFacingDirection] に保存した値を $c102 と $c104に戻す
 RestoreFacingDirectionAndYScreenPos:
 	ld a, [wSavedPlayerScreenY]
 	ld [wSpriteStateData1 + 4], a

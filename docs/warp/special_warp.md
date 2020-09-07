@@ -2,16 +2,26 @@
 
 warpの中でも特別な扱いを受けているwarp
 
-3種類に大別できる
-
-<dl>
-  <dt>fly warp</dt>
-  <dd>ワープパネル、『あなぬけのひも』、『あなをほる』、『テレポート』、『そらをとぶ』によるマップ移動</dd>
-  <dt>dungeon warp</dt>
-  <dd>『ポケモンやしき』や『ふたごじま』、『チャンピオンロード』での穴によるマップ移動や『ふたごじま』の水流によるマップ移動</dd>
-  <dt>その他</dt>
-  <dd>主人公の部屋や通信部屋へのマップ移動</dd>
-</dl>
+fly warp, dungeon warp, その他 の3種類に大別できる
 
 special warpのwarp情報は `data/special_warp.asm` で定義されている
 
+## Fly warp
+
+ワープパネル、『あなぬけのひも』、『あなをほる』、『テレポート』、『そらをとぶ』によるマップ移動
+
+そらをとぶ  
+![そらをとぶ](https://imgur.com/8krS55b.gif)
+
+テレポート  
+![テレポート](https://imgur.com/61Qy0fW.gif)
+
+## Dungeon warp
+
+![dungeon warp](https://imgur.com/SElCtgR.gif)
+
+『ポケモンやしき』や『ふたごじま』、『チャンピオンロード』での穴によるマップ移動や『ふたごじま』の水流によるマップ移動
+
+## その他
+
+主人公の部屋や通信部屋へのマップ移動

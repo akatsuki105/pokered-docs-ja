@@ -11,8 +11,8 @@ vFrontPic EQU vChars2   ; $9000
 vBackPic  EQU vFrontPic + 7 * 7 * $10 ; $9490
 
 ; Overworld
-vNPCSprites  EQU vChars0    ; 0x8000
-vNPCSprites2 EQU vChars1    ; 0x8800
+vNPCSprites  EQU vChars0    ; 0x8000 NPCの立ち2bppタイルデータがあるVRAMアドレス
+vNPCSprites2 EQU vChars1    ; 0x8800 NPCの歩き2bppタイルデータがあるVRAMアドレス
 vTileset     EQU vChars2    ; 0x9000
 
 ; Title
