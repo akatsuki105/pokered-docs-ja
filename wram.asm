@@ -1119,14 +1119,16 @@ wHiddenObjectIndex:: ; cd3f
 wTrainerFacingDirection::
 	ds 1
 
-wHoFMonOrPlayer:: ; cd40
-; show mon or show player?
-; 0 = mon
-; 1 = player
+; cd40  
+; show mon or show player?  
+; 0 = mon  
+; 1 = player  
+wHoFMonOrPlayer::
 
 wSlotMachineWheel3Offset:: ; cd40
 
-wPlayerSpinInPlaceAnimSoundID:: ; cd40
+; cd40
+wPlayerSpinInPlaceAnimSoundID::
 
 wHiddenObjectY:: ; cd40
 

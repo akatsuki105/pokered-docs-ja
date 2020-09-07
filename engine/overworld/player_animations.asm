@@ -342,6 +342,11 @@ SpinPlayerSprite:
 	pop hl
 	ret
 
+; **PlayerSpinInPlace**  
+; プレイヤーのスプライトをスピンさせる処理  
+; - - -  
+; この関数1回の処理でスピンアニメーションの1フレーム間を担当する  
+; スピンアニメーションが全部で Nフレーム のときは N回関数がループする
 PlayerSpinInPlace:
 	call SpinPlayerSprite
 
@@ -357,13 +362,18 @@ PlayerSpinInPlace:
 	call nz, PlaySound
 
 .skipPlayingSound
+	; Delayタイムを進める([wPlayerSpinInPlaceAnimFrameDelay] += [wPlayerSpinInPlaceAnimFrameDelayDelta])
 	ld a, [wPlayerSpinInPlaceAnimFrameDelayDelta]
 	add c
 	ld [wPlayerSpinInPlaceAnimFrameDelay], a
 	ld c, a
+
+	; Delayが終了 -> return
 	ld a, [wPlayerSpinInPlaceAnimFrameDelayEndValue]
 	cp c
 	ret z
+
+	; Delay処理してもう一度
 	call DelayFrames
 	jr PlayerSpinInPlace
 
