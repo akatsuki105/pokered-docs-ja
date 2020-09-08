@@ -16,9 +16,16 @@ special warpのwarp情報は `data/special_warp.asm` で定義されている
 テレポート  
 ![テレポート](https://imgur.com/61Qy0fW.gif)
 
+テレポート床  
+![teleport](https://imgur.com/RSlqEVW.gif)
+
 ## Dungeon warp
 
-![dungeon warp](https://imgur.com/SElCtgR.gif)
+ポケモンやしき  
+![pokemon mansion](https://imgur.com/SElCtgR.gif)
+
+ふたごじま  
+![seaform island](https://imgur.com/s5btejo.gif)
 
 『ポケモンやしき』や『ふたごじま』、『チャンピオンロード』での穴によるマップ移動や『ふたごじま』の水流によるマップ移動
 

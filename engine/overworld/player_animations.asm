@@ -147,14 +147,20 @@ PlayerSpinWhileMovingDown:
 
 	jp PlayerSpinWhileMovingUpOrDown ; ret
 
+; **_LeaveMapAnim**  
+; 主人公が、特殊な方法でマップを出る時のアニメーション  
 _LeaveMapAnim:
 	call InitFacingDirectionList
+
+	; 
 	call IsPlayerStandingOnWarpPadOrHole
 	ld a, b
 	and a
 	jr z, .playerNotStandingOnWarpPadOrHole
+
 	dec a
 	jp nz, LeaveMapThroughHoleAnim
+
 .spinWhileMovingUp
 	ld a, SFX_TELEPORT_EXIT_1
 	call PlaySound
@@ -486,7 +492,7 @@ GetPlayerTeleportAnimFrameDelay:
 ; **IsPlayerStandingOnWarpPadOrHole**  
 ; プレイヤーが現在 dungeon warp のタイルとして使われるタイルの上に乗っているか  
 ; - - -  
-; OUTPUT: b = [wStandingOnWarpPadOrHole] = ID (0(乗ってない) or .warpPadAndHoleDataで設定された乗っているタイルのID)  
+; OUTPUT: b = [wStandingOnWarpPadOrHole] = 0(乗ってない) or 1(テレポート床) or 2(穴)  
 IsPlayerStandingOnWarpPadOrHole:
 	ld b, 0
 	ld hl, .warpPadAndHoleData
@@ -525,7 +531,7 @@ IsPlayerStandingOnWarpPadOrHole:
 	ld [wStandingOnWarpPadOrHole], a
 	ret
 
-; db タイルセットID, タイル番号, [wStandingOnWarpPadOrHole]に格納されるID
+; db タイルセットID, タイル番号, 種類(1: テレポート床, 2: 穴)
 .warpPadAndHoleData:
 	db FACILITY, $20, 1 ; テレポート床
 	db FACILITY, $11, 2 ; 穴
