@@ -153,8 +153,8 @@ PlayMusic::
 
 ; **PlaySound**  
 ; 
-; INPUT:
-; - a = musicID ($ffならoffにして音楽を止める)
+; INPUT:  
+; a = musicID ($ffならoffにして音楽を止める)
 PlaySound::
 	push hl
 	push de

@@ -773,6 +773,10 @@ HandleBlackOut::
 	call PlayDefaultMusicFadeOutCurrent
 	jp SpecialEnterMap
 
+; **StopMusic**  
+; BGMを止める  
+; - - -  
+; INPUT: a = fadeoutに何フレーム要するか
 StopMusic::
 	ld [wAudioFadeOutControl], a
 	ld a, $ff

@@ -1205,8 +1205,8 @@ FadeOutAudio::
 	ret
 
 .fadeOutComplete
-	; b = [wAudioFadeOutControl] = 次に再生する音楽のID
 	; [wAudioFadeOutControl] = 0
+	; b = 次に再生する音楽のID (0にする前の[wAudioFadeOutControl])
 	ld a, [wAudioFadeOutControl]
 	ld b, a
 	xor a

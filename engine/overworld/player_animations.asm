@@ -1,7 +1,7 @@
 ; **EnterMapAnim**  
 ; 主人公が、特殊な方法でマップに入ってきた時のアニメーション  
 ; - - -  
-; 特殊な方法: そらをとぶ、 dungeon warp、 スピンしながら...
+; 特殊な方法: そらをとぶ、 dungeon warp、 テレポート...
 EnterMapAnim:
 	call InitFacingDirectionList
 
@@ -149,68 +149,94 @@ PlayerSpinWhileMovingDown:
 
 ; **_LeaveMapAnim**  
 ; 主人公が、特殊な方法でマップを出る時のアニメーション  
+; - - -  
+; 特殊な方法: そらをとぶ、 dungeon warp、 テレポート...
 _LeaveMapAnim:
 	call InitFacingDirectionList
 
-	; 
+	; プレイヤーが現在 テレポート床か穴 のタイルの上に乗っているか確認
 	call IsPlayerStandingOnWarpPadOrHole
+
+	; 乗っていない -> .playerNotStandingOnWarpPadOrHole
 	ld a, b
 	and a
 	jr z, .playerNotStandingOnWarpPadOrHole
 
+	; 穴 -> LeaveMapThroughHoleAnim
 	dec a
 	jp nz, LeaveMapThroughHoleAnim
 
+; テレポート床のとき(https://imgur.com/RSlqEVW.gif)
 .spinWhileMovingUp
 	ld a, SFX_TELEPORT_EXIT_1
 	call PlaySound
 	ld hl, wPlayerSpinWhileMovingUpOrDownAnimDeltaY
+
+	; プレイヤーを上昇させるアニメーション
 	ld a, -$10
-	ld [hli], a ; wPlayerSpinWhileMovingUpOrDownAnimDeltaY
+	ld [hli], a		; [wPlayerSpinWhileMovingUpOrDownAnimDeltaY] = -0x10 (1コマごとに16px上昇) 
 	ld a, $ec
-	ld [hli], a ; wPlayerSpinWhileMovingUpOrDownAnimMaxY
+	ld [hli], a		; [wPlayerSpinWhileMovingUpOrDownAnimMaxY] = 0xec (見えなくなるまで上昇)
 	call GetPlayerTeleportAnimFrameDelay
-	ld [hl], a ; wPlayerSpinWhileMovingUpOrDownAnimFrameDelay
+	ld [hl], a		; [wPlayerSpinWhileMovingUpOrDownAnimFrameDelay] = 0x03 (SGBなら 0x02)
 	call PlayerSpinWhileMovingUpOrDown
+
+	; テレポート先が普通の床なら 10フレーム待機
 	call IsPlayerStandingOnWarpPadOrHole
 	ld a, b
 	dec a
 	jr z, .playerStandingOnWarpPad
-; if not standing on a warp pad, there is an extra delay
 	ld c, 10
 	call DelayFrames
+
+	; 画面を真っ白にして終了
 .playerStandingOnWarpPad
 	call GBFadeOutToWhite
-	jp RestoreFacingDirectionAndYScreenPos
+	jp RestoreFacingDirectionAndYScreenPos	; return
+
+; 普通の床
 .playerNotStandingOnWarpPadOrHole
-	ld a, $4
+	; 現在のBGMを止める
+	ld a, $4	; 4フレームかけて止める
 	call StopMusic
+
+	; TODO: wd732[6] が立っている時は そらをとぶ 
 	ld a, [wd732]
-	bit 6, a ; is the last used pokemon center the destination?
+	bit 6, a
 	jr z, .flyAnimation
-; if going to the last used pokemon center
+
+	; この時点で、マップをでる手段が テレポートやあなぬけのひも
+	; プレイヤーをその場でスピンさせ始める
 	ld hl, wPlayerSpinInPlaceAnimFrameDelay
 	ld a, 16
-	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelay
+	ld [hli], a ; [wPlayerSpinInPlaceAnimFrameDelay] = 16 (最初はゆっくり)
 	ld a, -1
-	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelayDelta
+	ld [hli], a ; [wPlayerSpinInPlaceAnimFrameDelayDelta] = -1 (回転速度をあげる)
 	xor a
-	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelayEndValue
+	ld [hli], a ; wPlayerSpinInPlaceAnimFrameDelayEndValue = 0 (回転速度がMAXになるまで)
 	ld [hl], SFX_TELEPORT_EXIT_2 ; wPlayerSpinInPlaceAnimSoundID
 	ld hl, wFacingDirectionList
 	call PlayerSpinInPlace
-	jr .spinWhileMovingUp
+
+	; テレポート同様に上に飛ばす
+	jr .spinWhileMovingUp	; return
+
 .flyAnimation
 	call LoadBirdSpriteGraphics
+
+	; 鳥がはばたきはじめるアニメーション
 	ld hl, wFlyAnimUsingCoordList
-	ld a, $ff ; is not using coord list (flap in place)
-	ld [hli], a ; wFlyAnimUsingCoordList
+	ld a, $ff
+	ld [hli], a ; [wFlyAnimUsingCoordList] = 0xff
 	ld a, 8
-	ld [hli], a ; wFlyAnimCounter
-	ld [hl], $c ; wFlyAnimBirdSpriteImageIndex
+	ld [hli], a ; [wFlyAnimCounter] = 8
+	ld [hl], $c ; [wFlyAnimBirdSpriteImageIndex] = 0x0c
 	call DoFlyAnimation
+
 	ld a, SFX_FLY
 	call PlaySound
+
+	; 画面右に飛んでいく
 	ld hl, wFlyAnimUsingCoordList
 	xor a ; is using coord list
 	ld [hli], a ; wFlyAnimUsingCoordList
@@ -219,21 +245,26 @@ _LeaveMapAnim:
 	ld [hl], $c ; wFlyAnimBirdSpriteImageIndex (facing right)
 	ld de, FlyAnimationScreenCoords1
 	call DoFlyAnimation
+
 	ld c, 40
 	call DelayFrames
+
+	; 画面左に飛んでいく
 	ld hl, wFlyAnimCounter
 	ld a, 11
 	ld [hli], a ; wFlyAnimCounter
 	ld [hl], $8 ; wFlyAnimBirdSpriteImageIndex (facing left)
 	ld de, FlyAnimationScreenCoords2
 	call DoFlyAnimation
-	call GBFadeOutToWhite
-	jp RestoreFacingDirectionAndYScreenPos
 
+	call GBFadeOutToWhite
+	jp RestoreFacingDirectionAndYScreenPos	; return
+
+; **FlyAnimationScreenCoords1**  
+; 主人公が そらをとぶ でマップから画面右に飛びたつ処理のアニメーションの座標  
+; - - -  
+; 各エントリ = [y, x]  
 FlyAnimationScreenCoords1:
-; y, x pairs
-; This is the sequence of screen coordinates used by the first part
-; of the Fly overworld animation.
 	db $3C, $48
 	db $3C, $50
 	db $3B, $58
@@ -247,10 +278,11 @@ FlyAnimationScreenCoords1:
 	db $2A, $98
 	db $27, $A0
 
+; **FlyAnimationScreenCoords2**  
+; 主人公が そらをとぶ でマップから画面左に飛びたつ処理のアニメーションの座標  
+; - - -  
+; 各エントリ = [y, x]  
 FlyAnimationScreenCoords2:
-; y, x pairs
-; This is the sequence of screen coordinates used by the second part
-; of the Fly overworld animation.
 	db $1A, $90
 	db $19, $80
 	db $17, $70
@@ -408,8 +440,14 @@ SpinPlayerSprite:
 ; **PlayerSpinInPlace**  
 ; プレイヤーのスプライトをその場でスピンさせる処理  
 ; - - -  
-; 1回の処理では、1方向転換分を担当し、ループ実行によって回転終了までを担当する  
+; 1回の処理では、1コマ(1方向転換分)を担当し、ループ実行によって回転終了までを担当する  
 ; 回転終了に近くにつれて、徐々にスピンは遅くなっていく  
+; 
+; INPUT:  
+; [wPlayerSpinInPlaceAnimFrameDelay] = 1コマあたりのフレーム数  
+; [wPlayerSpinInPlaceAnimFrameDelayDelta] = 1コマごとに 1コマのフレーム数にくわえる値 (回転の速度調整のため)  
+; [wPlayerSpinInPlaceAnimFrameDelayEndValue] = 1コマあたりのフレーム数がこの値になったら回転終了  
+; 
 ; ![example](https://imgur.com/lLnNDTD.gif)  
 PlayerSpinInPlace:
 	call SpinPlayerSprite
@@ -442,9 +480,15 @@ PlayerSpinInPlace:
 	jr PlayerSpinInPlace
 
 ; **PlayerSpinWhileMovingUpOrDown**  
-; プレイヤーを下方向に移動させつつスピンさせる  
+; プレイヤーを降下(上昇)させつつスピンさせる  
 ; - - -  
-; 1回の処理では、1方向転換分を担当し、ループ実行によって回転し初めから回転終了の全期間を担当する  
+; 1回の処理では、1コマ分を担当し、ループ実行によってアニメーション全期間を担当する  
+; ぶっちゃけ速すぎてスピンしているようには見えない  
+; 
+; INPUT:  
+; [wPlayerSpinWhileMovingUpOrDownAnimDeltaY] = 1コマごとの移動px (マイナスなら上昇)  
+; [wPlayerSpinWhileMovingUpOrDownAnimMaxY] = このpxまで降下(or 上昇)させる  
+; [wPlayerSpinWhileMovingUpOrDownAnimFrameDelay] = 1コマ何フレームか  
 PlayerSpinWhileMovingUpOrDown:
 	call SpinPlayerSprite
 	
@@ -490,7 +534,7 @@ GetPlayerTeleportAnimFrameDelay:
 	ret
 
 ; **IsPlayerStandingOnWarpPadOrHole**  
-; プレイヤーが現在 dungeon warp のタイルとして使われるタイルの上に乗っているか  
+; プレイヤーが現在 テレポート床か穴 のタイルの上に乗っているか  
 ; - - -  
 ; OUTPUT: b = [wStandingOnWarpPadOrHole] = 0(乗ってない) or 1(テレポート床) or 2(穴)  
 IsPlayerStandingOnWarpPadOrHole:

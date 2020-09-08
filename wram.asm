@@ -1118,7 +1118,8 @@ wNameOfPlayerMonToBeTraded:: ; cd3f
 ; `DoFlyAnimation` による そらをとぶ のアニメーションで、各コマごとに $c102 に格納される値  
 wFlyAnimBirdSpriteImageIndex::
 
-wPlayerSpinInPlaceAnimFrameDelayEndValue:: ; cd3f
+; cd3f
+wPlayerSpinInPlaceAnimFrameDelayEndValue::
 
 ; cd3f  
 ; プレイヤーをスピンさせる(方向転換させる)処理のディレイ間隔  
@@ -1677,11 +1678,9 @@ wTileInFrontOfPlayer::
 	ds 1
 
 ; cfc7  
-; PlaySoundを呼び出す前に`desired fade counter reload value`をここに格納する(新しいBGMを流すため現在のBGMをfade-outさせる目的)  
-; 
-; ここに0を格納するとfade-outせず、すぐに次のBGMの再生が始まる  
-; 
-; この変数はfade-outが起きた後に再生されるBGMのSound IDを格納するという利用法もある  
+; `PlaySound` で新しいBGMを流すため現在のBGMを fade-out させるのにかかるフレーム数を格納する  
+; ここに 0 を格納するとfade-outせず、すぐに次のBGMの再生が始まる  
+; fade-out が終わった後はここに次に再生されるBGMの Sound ID が格納される  
 ; 
 ; `FadeOutAudio`はVBlankが来るたびにこの値が0でないかチェックし、0でないなら現在のBGMをfade-outさせる  
 ; BGMのfade-outが終了すると、この変数を0クリアして格納されたSound IDに対応するBGMの再生を始める  
