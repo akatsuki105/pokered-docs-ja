@@ -1014,7 +1014,11 @@ wTradingWhichPlayerMon:: ; cd3d
 
 wChangeBoxSavedMapTextPointer:: ; cd3d
 
-wFlyAnimUsingCoordList:: ; cd3d
+; cd3d  
+; `DoFlyAnimation` で 鳥 に羽ばたきながら移動させるか、その場で羽ばたかせるかを決める
+; 0x00: 移動する  
+; 0xff: その場で羽ばたく  
+wFlyAnimUsingCoordList::
 
 ; cd3d  
 wPlayerSpinInPlaceAnimFrameDelay::
@@ -1070,7 +1074,10 @@ wTradedEnemyMonSpecies:: ; cd3e
 
 wTradingWhichEnemyMon:: ; cd3e
 
-wFlyAnimCounter:: ; cd3e
+; cd3e  
+; `DoFlyAnimation` による そらをとぶ のアニメーションがあと何ループか記録している変数  
+; 0 になったらアニメーションは終わる  
+wFlyAnimCounter::
 
 wPlayerSpinInPlaceAnimFrameDelayDelta:: ; cd3e
 
@@ -1107,7 +1114,9 @@ wSlotMachineWheel2Offset:: ; cd3f
 
 wNameOfPlayerMonToBeTraded:: ; cd3f
 
-wFlyAnimBirdSpriteImageIndex:: ; cd3f
+; cd3f  
+; `DoFlyAnimation` による そらをとぶ のアニメーションで、各コマごとに $c102 に格納される値  
+wFlyAnimBirdSpriteImageIndex::
 
 wPlayerSpinInPlaceAnimFrameDelayEndValue:: ; cd3f
 

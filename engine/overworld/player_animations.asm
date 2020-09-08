@@ -1,3 +1,7 @@
+; **EnterMapAnim**  
+; 主人公が、特殊な方法でマップに入ってきた時のアニメーション  
+; - - -  
+; 特殊な方法: そらをとぶ、 dungeon warp、 スピンしながら...
 EnterMapAnim:
 	call InitFacingDirectionList
 
@@ -54,8 +58,9 @@ EnterMapAnim:
 	call PlayDefaultMusic
 
 .done
-	jp RestoreFacingDirectionAndYScreenPos
+	jp RestoreFacingDirectionAndYScreenPos	; return
 	
+; dungeon warp でマップに入ってきた時
 .dungeonWarpAnimation
 	; 画面真っ白の状態で 50フレーム待機
 	ld c, 50
@@ -64,34 +69,50 @@ EnterMapAnim:
 	call PlayerSpinWhileMovingDown
 	jr .done
 
+; そらをとぶ でマップに入ってきた時
 .flyAnimation
 	pop hl
 
 	; プレイヤーのスプライトを鳥にする
+	; LoadBirdSpriteGraphicsと重複してるので不要？ {
 	ld de, BirdSprite
 	ld hl, vNPCSprites
 	lb bc, BANK(BirdSprite), $0c
-	call CopyVideoData
-
+	call CopyVideoData ; }
 	call LoadBirdSpriteGraphics
+
+	; 空を飛ぶサウンド
 	ld a, SFX_FLY
 	call PlaySound
+
+	; wFlyAnimUsingCoordList に各種変数を配置
 	ld hl, wFlyAnimUsingCoordList
-	xor a ; is using coord list
-	ld [hli], a ; wFlyAnimUsingCoordList
+	
+	; [wFlyAnimUsingCoordList] = 0 (アニメーションで鳥を動かすように)
+	xor a
+	ld [hli], a
+	
+	; [wFlyAnimCounter] = 12 (アニメーションは全部で 12コマ)
 	ld a, 12
-	ld [hli], a ; wFlyAnimCounter
-	ld [hl], $8 ; wFlyAnimBirdSpriteImageIndex (facing right)
+	ld [hli], a
+	
+	; [wFlyAnimBirdSpriteImageIndex] = 8 (右を向いている)
+	ld [hl], $8
+	
+	; 鳥が降り立つアニメーションを流す
 	ld de, FlyAnimationEnterScreenCoords
 	call DoFlyAnimation
+
+	; 主人公のスプライトを元に戻す
 	call LoadPlayerSpriteGraphics
 	jr .restoreDefaultMusic
 
-; y, x pairs
-; This is the sequence of screen coordinates used by the overworld
-; Fly animation when the player is entering a map.
+; **FlyAnimationEnterScreenCoords**  
+; 主人公が そらをとぶ でマップに降り立つ時のアニメーションの座標  
+; - - -  
+; 各エントリ = [y, x]  
 FlyAnimationEnterScreenCoords:
-	db $05, $98
+	db $05, $98	; wFlyAnimCounter = 1
 	db $0F, $90
 	db $18, $88
 	db $20, $80
@@ -102,7 +123,7 @@ FlyAnimationEnterScreenCoords:
 	db $39, $58
 	db $3B, $50
 	db $3C, $48
-	db $3C, $40
+	db $3C, $40	; wFlyAnimCounter = 12
 
 ; PlayerSpinWhileMovingDown  
 ; プレイヤーをスピンしながら降下させる処理  
@@ -259,35 +280,56 @@ LeaveMapThroughHoleAnim:
 	ld [wUpdateSpritesEnabled], a ; enable UpdateSprites
 	jp RestoreFacingDirectionAndYScreenPos
 
+; **DoFlyAnimation**  
+; そらをとぶ で鳥がとぶアニメーション  
+; - - -  
+; 関数1回で 1コマ を担当 ループ処理によってアニメーションを作る  
+; 
+; INPUT: de = 鳥の座標のテーブルのアドレス(各エントリ = [y, x])
+; ![そらをとぶ](https://imgur.com/8krS55b.gif)
 DoFlyAnimation:
+	; 鳥のスプライトを立っている状態と羽を出している状態で切り替えて羽ばたいているように見せる
 	ld a, [wFlyAnimBirdSpriteImageIndex]
-	xor $1 ; make the bird flap its wings
+	xor $1	; ここで切り替えている
 	ld [wFlyAnimBirdSpriteImageIndex], a
 	ld [wSpriteStateData1 + 2], a
 	call Delay3
+
+	; [wFlyAnimUsingCoordList] == 0xff なら 鳥をその場で羽ばたかせる処理をさせる -> .skipCopyingCoords
 	ld a, [wFlyAnimUsingCoordList]
 	cp $ff
-	jr z, .skipCopyingCoords ; if the bird is flapping its wings in place
+	jr z, .skipCopyingCoords
+
+	; 鳥スプライトの座標に de で指定したテーブルの座標を書き込む
 	ld hl, wSpriteStateData1 + 4
+	; Y座標を更新 ([$c104] = [de++])
 	ld a, [de]
 	inc de
 	ld [hli], a
+	; X座標を更新 ([$c106] = [de++])
 	inc hl
 	ld a, [de]
 	inc de
 	ld [hl], a
+
 .skipCopyingCoords
+	; [wFlyAnimCounter]を減らして 0 になったら終了 そうでないならもう一度call
 	ld a, [wFlyAnimCounter]
 	dec a
 	ld [wFlyAnimCounter], a
 	jr nz, DoFlyAnimation
 	ret
 
+; **LoadBirdSpriteGraphics**  
+; VRAM上の主人公の2bppタイルデータを鳥の2bppデータで上書きし、主人公の見た目を鳥にする
 LoadBirdSpriteGraphics:
+	; 主人公の立ち姿のところに鳥
 	ld de, BirdSprite
 	ld hl, vNPCSprites
 	lb bc, BANK(BirdSprite), $0c
 	call CopyVideoData
+
+	; 主人公の歩き姿のところに羽ばたく鳥
 	ld de, BirdSprite + $c0 ; moving animation sprite
 	ld hl, vNPCSprites2
 	lb bc, BANK(BirdSprite), $0c
@@ -420,7 +462,11 @@ PlayerSpinWhileMovingUpOrDown:
 
 	jr PlayerSpinWhileMovingUpOrDown
 
-; [wSavedPlayerScreenY] と [wSavedPlayerFacingDirection] に保存した値を $c102 と $c104に戻す
+; [wSavedPlayerScreenY] と [wSavedPlayerFacingDirection] に保存した値を復帰  
+; 
+; OUTPUT:  
+; [$c102] = [wSavedPlayerFacingDirection]  
+; [$c104] = [wSavedPlayerScreenY]  
 RestoreFacingDirectionAndYScreenPos:
 	ld a, [wSavedPlayerScreenY]
 	ld [wSpriteStateData1 + 4], a
