@@ -22,10 +22,10 @@ special warpのwarp情報は `data/special_warp.asm` で定義されている
 ## Dungeon warp
 
 ポケモンやしき  
-![pokemon mansion](https://imgur.com/SElCtgR.gif)
+<img src="https://imgur.com/SElCtgR.gif" alt="pokemon mansion" width="240" />
 
 ふたごじま  
-![seaform island](https://imgur.com/s5btejo.gif)
+<img src="https://imgur.com/s5btejo.gif" alt="seaform island" width="240" />
 
 『ポケモンやしき』や『ふたごじま』、『チャンピオンロード』での穴によるマップ移動や『ふたごじま』の水流によるマップ移動
 
