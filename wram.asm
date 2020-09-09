@@ -1712,8 +1712,8 @@ wLastMusicSoundID:: ; cfca
 
 ; cfcb  
 ; $00 = スプライトを表示しなくして、そのあと$ffに変化する  
-; $01 = 有効化  
-; $ff = 無効化  
+; $01 = `UpdateSprites` を有効化  
+; $ff = `UpdateSprites` を無効化  
 ; それ以外の値は取らない
 wUpdateSpritesEnabled::
 	ds 1

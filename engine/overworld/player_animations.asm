@@ -296,27 +296,42 @@ FlyAnimationScreenCoords2:
 
 	db $F0, $00
 
+; **LeaveMapThroughHoleAnim**  
+; プレイヤーが穴から落ちてマップを出る時のアニメーション  
+; - - -  
+; ![hole](https://imgur.com/SElCtgR.gif)
 LeaveMapThroughHoleAnim:
+	; `UpdateSprites` を無効化
 	ld a, $ff
-	ld [wUpdateSpritesEnabled], a ; disable UpdateSprites
-	; shift upper half of player's sprite down 8 pixels and hide lower half
-	ld a, [wOAMBuffer + 0 * 4 + 2]
+	ld [wUpdateSpritesEnabled], a
+
+	; プレイヤーのスプライトを8px下にずらして落下していることを表現する
+	; {
+	; プレイヤーの下半身を上半身のタイルで上書きする
+	ld a, [wOAMBuffer + 0 * 4 + 2] 
 	ld [wOAMBuffer + 2 * 4 + 2], a
 	ld a, [wOAMBuffer + 1 * 4 + 2]
 	ld [wOAMBuffer + 3 * 4 + 2], a
+	; その後上半身(上の方)を消す
+	; これによりプレイヤーの下半身は非表示になり、上半身が8px下にいくので落下しているように見える
 	ld a, $a0
 	ld [wOAMBuffer + 0 * 4], a
 	ld [wOAMBuffer + 1 * 4], a
+	; }
+
 	ld c, 2
 	call DelayFrames
-	; hide upper half of player's sprite
+
+	; 上半身(下の方)を消す
 	ld a, $a0
 	ld [wOAMBuffer + 2 * 4], a
 	ld [wOAMBuffer + 3 * 4], a
+
+	; 終了
 	call GBFadeOutToWhite
 	ld a, $1
 	ld [wUpdateSpritesEnabled], a ; enable UpdateSprites
-	jp RestoreFacingDirectionAndYScreenPos
+	jp RestoreFacingDirectionAndYScreenPos	; return
 
 ; **DoFlyAnimation**  
 ; そらをとぶ で鳥がとぶアニメーション  

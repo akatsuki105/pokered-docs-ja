@@ -1,77 +1,92 @@
 ; マップ上にテキストボックスが存在するとき、
-; マップが表示されているのは Y <= $60つまり上から96pxまでであることを示している
+; マップが表示されているのは Y <= $60 つまり上から96pxまでであることを示している
 MAP_TILESET_SIZE EQU $60
 
 ; **UpdatePlayerSprite**  
-; プレイヤーの方向転換やアニメーション画像の変化を実行する関数  
+; プレイヤーのスプライトの見た目を更新する関数    
 ; - - -  
-; 0xC10X や 0xC20X を更新する
+; c10x,c20xのプレイヤーの方向や、animation frame counterをみて最終的に c102 を更新することで見た目を更新する  
+; 
+; また 歩きモーション中なら animation frame counter をインクリメントする  
 UpdatePlayerSprite:
 	ld a, [wSpriteStateData2]
 	and a
 	jr z, .checkIfTextBoxInFrontOfSprite
+
+	; c200 = 0xff
 	cp $ff
 	jr z, .disableSprite
+
+	; c200 = 0x01
 	dec a
 	ld [wSpriteStateData2], a
 	jr .disableSprite
-; プレイヤーが立っている左下の背景タイルが$5F($5Fより大きいとテキストボックスに隠れる)より大きいかどうかを確認して、
-; テキストボックスがスプライトの前にあるかどうかをチェック
+
+; プレイヤーが立っている左下の背景タイルが$5F($5Fより大きいとテキストボックスに隠れる)より大きいかどうかを確認して、テキストボックスがスプライトの前にあるかどうかをチェック
 .checkIfTextBoxInFrontOfSprite
-	aCoord 8, 9						; a = プレイヤーがいる位置(基本的にプレイヤーは画面真ん中(64px, 72px)にいる)
+	aCoord 8, 9						; a = プレイヤーがいる位置
 	ld [hTilePlayerStandingOn], a
 	cp MAP_TILESET_SIZE
-	jr c, .lowerLeftTileIsMapTile
-; プレイヤーを非表示
+	jr c, .lowerLeftTileIsMapTile	; (8, 9) < MAP_TILESET_SIZE
+	; プレイヤーがテキストボックスに隠れる場合はそのまま下に続いて .disableSprite
+
+; プレイヤーを非表示にする
 .disableSprite
 	ld a, $ff
 	ld [wSpriteStateData1 + 2], a
 	ret
+
+; プレイヤーがテキストボックスに隠れない
 .lowerLeftTileIsMapTile
 	; TODO: ???
 	call DetectCollisionBetweenSprites
-	ld h, wSpriteStateData1 / $100
+	ld h, wSpriteStateData1 / $100 ; h = c1
 
-	; wWalkCounter > 0 なら.movingへ
+	; プレイヤーが歩きモーション中 なら.movingへ
 	ld a, [wWalkCounter]
 	and a
 	jr nz, .moving
 
-	ld a, [wPlayerMovingDirection]
-
-; .checkIfDown
+; プレイヤーが歩き始めた -> a に歩き始めた方向を入れて .next
+; 歩き始めない -> .calcImageIndex
+	ld a, [wPlayerMovingDirection]	; a = 0 or 歩き始めた方向
+; .checkIfDown		; プレイヤーが下に歩き始めた
 	bit PLAYER_DIR_BIT_DOWN, a
 	jr z, .checkIfUp
 	xor a ; ld a, SPRITE_FACING_DOWN (SPRITE_FACING_DOWNは0なので)
 	jr .next
-.checkIfUp
+.checkIfUp			; プレイヤーが上に歩き始めた
 	bit PLAYER_DIR_BIT_UP, a
 	jr z, .checkIfLeft
 	ld a, SPRITE_FACING_UP
 	jr .next
-.checkIfLeft
+.checkIfLeft		; プレイヤーが左に歩き始めた
 	bit PLAYER_DIR_BIT_LEFT, a
 	jr z, .checkIfRight
 	ld a, SPRITE_FACING_LEFT
 	jr .next
-.checkIfRight
+.checkIfRight		; プレイヤーが右に歩き始めた
 	bit PLAYER_DIR_BIT_RIGHT, a
 	jr z, .notMoving
 	ld a, SPRITE_FACING_RIGHT
 	jr .next
-.notMoving
+.notMoving			; プレイヤーは歩いていない
 	; animation countersを0クリア
 	xor a
 	ld [wSpriteStateData1 + 7], a
 	ld [wSpriteStateData1 + 8], a
 	jr .calcImageIndex
+
 .next
+	; この時点でプレイヤーは歩き始めており、  a = 歩き始めた方向
 	ld [wSpriteStateData1 + 9], a	; 向いている方向を変更
 
-	; フォントがロードされているので歩行できない
+	; フォントがロードされているので歩きモーションに移れない
 	ld a, [wFontLoaded]
 	bit 0, a
 	jr nz, .notMoving
+
+; 歩きモーションを更新する処理
 .moving
 	; プレイヤーがスピンタイルに乗ってスピンしている
 	ld a, [wd736]
@@ -90,7 +105,7 @@ UpdatePlayerSprite:
 	cp 4
 	jr nz, .calcImageIndex
 
-	; intra-animation-frame counterが4なので0にリセット
+	; intra-animation-frame counterが 4 なので 0 にリセット
 	; プレイヤーのanimation frame counterをインクリメント
 	xor a
 	ld [hl], a
@@ -99,6 +114,8 @@ UpdatePlayerSprite:
 	inc a
 	and $3
 	ld [hl], a
+
+; sprite image index を更新して画面上のスプライトの見た目が変わるようにする
 .calcImageIndex
 	; $c1x2 = c1x8 + c1x9
 	ld a, [wSpriteStateData1 + 8]
@@ -139,6 +156,9 @@ UnusedReadSpriteDataFunction:
 ; - - -  
 ; NPCの移動 = wSpriteStateData1 と wSpriteStateData2 を更新すること  
 ; こうしておくことで VBlank中に OAMに状態が反映されて移動処理が実現する  
+; 
+; 歩きモーション中なら歩きモーションを1コマすすめる  
+; 止まっている状態ならスプライトを歩かせ始める   
 UpdateNPCSprite:
 	; a = 処理中のスプライト番号 
 	ld a, [H_CURRENTSPRITEOFFSET]
@@ -188,15 +208,17 @@ UpdateNPCSprite:
 	bit 0, a
 	jp nz, notYetMoving
 
-	; スプライトがクールタイム中か、歩行中か
+	; NPCがクールタイム中か、歩行中か
 	ld a, b
 	cp $2
 	jp z, UpdateSpriteMovementDelay  ; c1x1 == 2
 	cp $3
 	jp z, UpdateSpriteInWalkingAnimation  ; c1x1 == 3
 
+; ここにきた時はNPCが止まっている状態の時
+
 	; プレイヤーが歩きモーション中なら返る
-	; すでにCheckSpriteAvailabilityで確認しているので余計なコード
+	; すでに CheckSpriteAvailability で確認しているので余計なコード
 	ld a, [wWalkCounter]
 	and a
 	ret nz
@@ -336,14 +358,20 @@ ChangeFacingDirection:
 	ld de, $0
 	; そのまま下の処理に(TryWalking)
 
+; **TryWalking**  
 ; 止まっている状態から歩行を始める関数  
-; - b: 方向(1, 2, 4, 8)
-; - c: 新しく向く方向(0, 4, 8, $c)
-; - d: Y移動量
-; - e: X移動量
-; - hl: スプライトが歩く先にあるスプライトのタイルへのポインタ
+; - - -  
+; c1XX, c2XXを更新して、スプライトが歩き始めた状態にする  
 ; 
-; 成功時にはCフラグがクリア、失敗時にはセットされる
+; INPUT:  
+; [H_CURRENTSPRITEOFFSET] = 対象のスプライト
+; b = 方向(1, 2, 4, 8)  
+; c = 新しく向く方向(0, 4, 8, $c)  
+; d = Y方向にどう移動するか(-1(上) or 0(不動) or 1(上))  
+; e = X方向にどう移動するか(-1(左) or 0(不動) or 1(右))  
+; hl = スプライトが歩く先にあるスプライトのタイルへのポインタ  
+; 
+; OUTPUT: carry = 0(成功) or 1(失敗)  
 TryWalking:
 	push hl
 
@@ -377,7 +405,7 @@ TryWalking:
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
-	ld a, [hl]          ; c2x4: Y position
+	ld a, [hl]          ; [c2x4] += Y移動量
 	add d
 	ld [hli], a         ; update Y position
 	ld a, [hl]          ; c2x5: X position

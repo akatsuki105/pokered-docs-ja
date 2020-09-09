@@ -1,4 +1,11 @@
 ; **_UpdateSprites**  
+; スプライトの更新処理を行う関数  
+; - - -  
+; c1X0のすべてのスプライトの1コマ分の更新処理を行う  
+; 
+; 更新処理:  
+; プレイヤーの場合は、現在の状況に応じて1コマ進める  
+; NPCの場合は、NPCの 移動方向決定+移動開始の1コマ または 歩きモーションを1コマ進める処理 を行う  
 _UpdateSprites:
 	; a = $C20e
 	ld h, $c1
@@ -48,10 +55,10 @@ _UpdateSprites:
 	jp nz, UpdateNonPlayerSprite
 	jp UpdatePlayerSprite
 
-; **UpdateNonPlayerSprite**
-;  
+; **UpdateNonPlayerSprite**  
 ; NPCスプライトの移動処理を行う関数  
-; a: $c2Xe の値
+; - - -  
+; a = $c2Xe の値
 UpdateNonPlayerSprite:
 	; UpdateSpriteImageで利用するためにスプライト番号を$ff93に保存
 	dec a
