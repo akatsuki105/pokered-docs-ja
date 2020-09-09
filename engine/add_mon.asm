@@ -4,7 +4,7 @@
 ; この関数では [wMonDataLocation] が通常とは異なる使われ方をすることに注意  
 ; 
 ; INPUT:  
-; [wcf91] = 加える対象のポケモンの内部ID  
+; [wcf91] = 加える対象のポケモンID  
 ; 
 ; OUTPUT:  
 ; carry = 手持ちに加えることに成功したときにセットされる  
@@ -340,9 +340,26 @@ _AddPartyMon:
 	scf	; キャリーを立てる
 	ret
 
+; **LoadMovePPs**
+; de で示したアドレス以降に hl で指定した技のIDリストのPPを書き込んでいく  
+; - - -  
+; PP最大値増加アイテムの影響はここでは無視  
+; 
+; INPUT:  
+; de = この次のアドレスからPPを格納していく(e.g. (wPartyMon1PP)-1)  
+; hl = ここから技のIDが続く (e.g. wPartyMon1Moves)  
 LoadMovePPs:
 	call GetPredefRegisters
-	; fallthrough
+	; 下に続く
+
+; **AddPartyMon_WriteMovePP**  
+; de で示したアドレス以降に hl で指定した技のIDリストのPPを書き込んでいく  
+; - - -  
+; PP最大値増加アイテムの影響はここでは無視  
+; 
+; INPUT:  
+; de = この次のアドレスからPPを格納していく(e.g. (wPartyMon1PP)-1)  
+; hl = ここから技のIDが続く (e.g. wPartyMon1Moves)  
 AddPartyMon_WriteMovePP:
 	ld b, NUM_MOVES
 .pploop
@@ -375,6 +392,7 @@ AddPartyMon_WriteMovePP:
 	jr nz, .pploop ; there are still moves to read
 	ret
 
+; ケーブルクラブで使われる関数なので無視  
 ; adds enemy mon [wcf91] (at position [wWhichPokemon] in enemy list) to own party
 ; used in the cable club trade center
 _AddEnemyMonToPlayerParty:
@@ -440,19 +458,27 @@ _AddEnemyMonToPlayerParty:
 
 _MoveMon:
 	ld a, [wMoveMonType]
+
+	; box -> party
 	and a   ; BOX_TO_PARTY
 	jr z, .checkPartyMonSlots
+
+	; daycare -> party
 	cp DAYCARE_TO_PARTY
 	jr z, .checkPartyMonSlots
+	
+	; party -> daycare
 	cp PARTY_TO_DAYCARE
 	ld hl, wDayCareMon
 	jr z, .findMonDataSrc
-	; else it's PARTY_TO_BOX
+	
+; .checkBoxMonSlots	; party -> box
 	ld hl, wNumInBox
 	ld a, [hl]
 	cp MONS_PER_BOX
 	jr nz, .partyOrBoxNotFull
 	jr .boxFull
+
 .checkPartyMonSlots
 	ld hl, wPartyCount
 	ld a, [hl]

@@ -21,7 +21,7 @@ display_text_id_init.asm | null
 evolution.asm | null
 evolve_trade.asm | null
 evos_moves.asm | null
-experience.asm | null
+experience.asm | 経験値からレベルを算出したりなど、経験値に関わる計算を行う
 flag_action.asm | フラグアクションに関する処理
 game_corner_slots.asm | null
 game_corner_slots2.asm | null

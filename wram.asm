@@ -1640,11 +1640,13 @@ wListMenuID::
 ; else it will remove the mon from the party
 wRemoveMonFromBox::
 
-wMoveMonType:: ; cf95
-; 0 = move from box to party
-; 1 = move from party to box
-; 2 = move from daycare to party
-; 3 = move from party to daycare
+; cf95  
+; `MoveMon` の移動処理のタイプを決める変数  
+; 0 = box -> party  
+; 1 = party -> box  
+; 2 = daycare -> party  
+; 3 = party -> daycare  
+wMoveMonType::
 	ds 1
 
 ; cf96

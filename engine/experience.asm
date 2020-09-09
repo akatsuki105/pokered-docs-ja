@@ -1,5 +1,8 @@
 ; **CalcLevelFromExperience**  
 ; 現在の経験値に基づいたポケモンのレベルを計算する  
+; - - -  
+; INPUT: [wLoadedMonSpecies] = 対象のポケモンID  
+; OUTPUT: d = レベル  
 CalcLevelFromExperience:
 	ld a, [wLoadedMonSpecies]
 	ld [wd0b5], a
@@ -30,7 +33,7 @@ CalcLevelFromExperience:
 
 ; **CalcExperience**  
 ; Dレジスタで指定したレベルになるのに必要な経験値の合計を計算する  
-; 
+; - - -  
 ; OUTPUT: [hExperience] = 経験値量
 CalcExperience:
 	ld a, [wMonHGrowthRate] ; Pokemon Headerの経験値パターン
@@ -140,7 +143,10 @@ CalcExperience:
 	ld [hExperience], a
 	ret
 
-; [FF95-FF98] = (Dレジスタ)*(Dレジスタ) (ビッグエンディアン)
+; **CalcDSquared**  
+; [FF95-FF98] = (Dレジスタ)*(Dレジスタ) (ビッグエンディアン)  
+; - - -  
+; 0xff95-0xff98の4バイトにビッグエンディアンの形式で (Dレジスタ)*(Dレジスタ) を格納する  
 CalcDSquared:
 	xor a
 	ld [H_MULTIPLICAND], a

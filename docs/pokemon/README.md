@@ -17,3 +17,10 @@
 
 [Pokemon Data](./pokemon_data.md)参照
 
+## Pokemon ID
+
+[Pokemon ID](./pokemon_id.md)参照
+
+## 手持ちのポケモン
+
+[手持ちのポケモン](./party.md)参照
