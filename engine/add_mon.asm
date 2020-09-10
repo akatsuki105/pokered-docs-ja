@@ -572,6 +572,7 @@ _MoveMon:
 ; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 ; de = 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 .copyMonData
+	; ポケモンのデータを移動先にコピー
 	push hl
 	push de
 	ld bc, wBoxMon2 - wBoxMon1	; box_struct_length
@@ -579,6 +580,7 @@ _MoveMon:
 	pop de
 	pop hl
 
+	; 移動元が手持ちの場合は XXXBoxLevel を XXXLevel で上書き
 	ld a, [wMoveMonType]
 	and a ; BOX_TO_PARTY
 	jr z, .findOTdest
@@ -586,11 +588,11 @@ _MoveMon:
 	jr z, .findOTdest
 	ld bc, wBoxMon2 - wBoxMon1
 	add hl, bc
-	ld a, [hl] ; hl = Level
+	ld a, [hl] ; a = [XXXLevel]
 	inc de
 	inc de
 	inc de
-	ld [de], a ; de = BoxLevel
+	ld [de], a ; [XXXBoxLevel] = a
 
 .findOTdest
 	ld a, [wMoveMonType]

@@ -2,14 +2,11 @@
 
 ここではポケモンのデータのうち動的に変わるデータ(`Pokemon Data`)についての解説を行う
 
-[`wram.asm`](../../wram.asm)で定義されている
+## PCボックスのポケモン
 
-## box_struct
-
-ボックス内のポケモンが保持しているデータ
+ボックス内のポケモンが保持している Pokemon Data は `box_struct` というデータ構造に従う
 
 ```asm
-
 box_struct: MACRO
 \1Species::    db
 \1HP::         dw
@@ -29,8 +26,7 @@ box_struct: MACRO
 \1SpecialExp:: dw
 \1DVs::        ds 2
 \1PP::         ds NUM_MOVES
-ENDM
-
+END
 ```
 
 #### DV
@@ -49,14 +45,15 @@ ENDM
 
 に注意
 
-## party_struct
+WRAM上で、PCボックスのポケモンがどのように扱われているのかについては [PCボックスのポケモン](./box.md)参照
 
-パーティ内のポケモンが保持しているデータ
+## 手持ちのポケモン
+
+手持ちのポケモンが保持している Pokemon Data は `party_struct` というデータ構造に従う
 
 基本的にはボックスのポケモンと同じ情報を保持しているが、加えてレベルや努力力計算されたステータス情報を保持する
 
 ```asm
-
 party_struct: MACRO
 	box_struct \1
 \1Level::      db
@@ -67,12 +64,19 @@ party_struct: MACRO
 \1Speed::      dw
 \1Special::    dw
 ENDM
-
 ```
 
-## battle_struct
+WRAM上で、手持ちのポケモンがどのように扱われているのかについては[手持ちのポケモン](./party.md)参照
 
-戦闘中のポケモンが保持しているデータ
+## 育て屋のポケモン
+
+育て屋に預けているポケモンが保持している Pokemon Data はPCボックスのポケモンと同じ `box_struct` というデータ構造に従う
+
+WRAM上で、手持ちのポケモンがどのように扱われているのかについては[育て屋のポケモン](./daycare.md)参照
+
+## 戦闘中のポケモン
+
+戦闘中のポケモンが保持している Pokemon Data は `battle_struct` というデータ構造に従う
 
 技のPPなど戦闘中に必要なデータを保持する
 

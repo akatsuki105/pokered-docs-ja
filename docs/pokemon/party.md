@@ -1,4 +1,4 @@
-# 手持ちのポケモン
+# 手持ち
 
 手持ちのポケモンのデータは、 WRAMの `wPartyDataStart` で管理されている
 
@@ -6,7 +6,7 @@
 
 - wPartyCount 手持ちの[Pokemon ID](./pokemon_id.md)
 - wPartyMons 手持ちの [`Pokemon Data`](./pokemon_data.md)
-- wPartyMonOT 手持ちの種族名
+- wPartyMonOT 手持ちのポケモンの元々の親名
 - wPartyMonNicks 手持ちのポケモンのニックネーム
 
 にわけられる
@@ -36,8 +36,6 @@ wPartyMon6:: party_struct wPartyMon6 ; d247
 
 手持ちのポケモンの[`Pokemon Data`](./pokemon_data.md)を格納した要素数6のテーブル
 
-`party_struct`マクロについては[`party_struct`](./pokemon_data.md#party_struct)参照
-
 ## wPartyMonOT & wPartyMonNicks
 
 ```asm
@@ -46,9 +44,9 @@ wPartyMonOT:: ds NAME_LENGTH * 6
 wPartyMonNicks:: ds NAME_LENGTH * 6
 ```
 
-wPartyMonOT には手持ちのポケモンの種族を文字列として格納する
+wPartyMonOT にはポケモンの元々の親名を文字列として格納する
 
 wPartyMonNicks には手持ちのポケモンのニックネームを文字列として格納する。  
 ニックネームを付けない場合は、種族名が入る。
 
-11 は終端記号を含むポケモンの名前・種族名の最大文字数(英語版なので日本語版より多い)
+11 は終端記号を含むプレイヤー・ポケモンの名前の最大文字数(英語版なので日本語版より多い)

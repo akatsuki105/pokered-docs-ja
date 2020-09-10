@@ -3564,7 +3564,7 @@ wBoxMon1:: box_struct wBoxMon1 ; da96
 wBoxMon2:: ds box_struct_length * (MONS_PER_BOX + -1) ; dab7
 
 ; dd2a  
-; 220バイトの領域  
+; 220バイトの領域でポケモンの親(最初のトレーナー)を格納  
 wBoxMonOT::    ds NAME_LENGTH * MONS_PER_BOX
 
 ; de06  
