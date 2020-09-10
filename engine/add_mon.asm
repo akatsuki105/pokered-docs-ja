@@ -458,22 +458,9 @@ _AddEnemyMonToPlayerParty:
 
 ; **_MoveMon**  
 ; ポケモンを別のデータスロットに移動させる処理  
-; - - -  
-; [wMoveMonType] の値によって処理内容が分岐  
-; 
-; BOX_TO_PARTY のとき  
-; PCボックスから手持ちへの移動  
-; wBoxXXX -> wPartyXXX 
-; 
-; PARTY_TO_BOX のとき  
-; 手持ちからPCボックスへの移動  
-; wPartyXXX -> wBoxXXX  
-; 
-; DAYCARE_TO_PARTY のとき  
-; 育て屋から手持ちへの移動
-; 
-; PARTY_TO_DAYCARE のとき  
-; 手持ちから育て屋への移動  
+; - - -   
+; INPUT: [wMoveMonType] = BOX_TO_PARTY or PARTY_TO_BOX or DAYCARE_TO_PARTY or PARTY_TO_DAYCARE (移動元と移動先)  
+; OUTPUT: carry = 0(成功) or 1(移動先がいっぱいで失敗)  
 _MoveMon:
 	; [wMoveMonType] によって分岐
 	ld a, [wMoveMonType]
@@ -528,12 +515,15 @@ _MoveMon:
 	jr z, .copySpecies
 	ld a, [wcf91]	; Pokemon ID
 
+; ここでは ポケモンIDをコピー
 .copySpecies
 	; 移動先のポケモンIDスロット(wPartySpecies or wBoxSpecies) にポケモンIDをコピー
 	ld [hli], a
 	ld [hl], $ff         ; 終端記号
 
-; hl = 移動先の wPartyMons(wBoxMons) のエントリ
+; ここからは Pokemon Data をコピー
+
+	; hl = 移動先の wPartyMons(wBoxMons) のエントリ
 .findMonDataDest
 	ld a, [wMoveMonType]
 	dec a
@@ -553,7 +543,7 @@ _MoveMon:
 	ld e, l
 	ld d, h	; de = 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 
-; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
+	; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 	ld a, [wMoveMonType]
 	and a
 	ld hl, wBoxMons
@@ -568,9 +558,9 @@ _MoveMon:
 	ld a, [wWhichPokemon]
 	call AddNTimes
 
-; この時点で  
-; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
-; de = 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
+	; この時点で  
+	; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
+	; de = 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 .copyMonData
 	; ポケモンのデータを移動先にコピー
 	push hl
@@ -594,6 +584,7 @@ _MoveMon:
 	inc de
 	ld [de], a ; [XXXBoxLevel] = a
 
+; ここからは OT(最初のトレーナー名) をコピーする
 .findOTdest
 	ld a, [wMoveMonType]
 	cp PARTY_TO_DAYCARE
@@ -626,6 +617,8 @@ _MoveMon:
 	ld bc, NAME_LENGTH
 	call CopyData
 	ld a, [wMoveMonType]
+
+; ここからは ポケモンの名前をコピーする
 .findNickDest
 	cp PARTY_TO_DAYCARE
 	ld de, wDayCareMonName
@@ -680,6 +673,7 @@ _MoveMon:
 	add hl, bc
 	ld b, $1
 	call CalcStats
+
 .done
-	and a
+	and a	; キャリーをクリア
 	ret
