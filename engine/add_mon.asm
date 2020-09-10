@@ -456,23 +456,37 @@ _AddEnemyMonToPlayerParty:
 	and a
 	ret                  ; return success
 
+; **_MoveMon**  
+; ポケモンを別のデータスロットに移動させる処理  
+; - - -  
+; [wMoveMonType] の値によって処理内容が分岐  
+; 
+; BOX_TO_PARTY のとき  
+; PCボックスから手持ちへの移動。 wBoxSpecies -> wPartySpecies  
+; 
+; PARTY_TO_BOX のとき  
+; 手持ちからPCボックスへの移動。 wPartySpecies -> wBoxSpecies  
+; 
+; DAYCARE_TO_PARTY のとき  
+; 育て屋から手持ちへの移動
+; 
+; PARTY_TO_DAYCARE のとき  
+; 手持ちから育て屋への移動  
 _MoveMon:
+	; [wMoveMonType] によって分岐
 	ld a, [wMoveMonType]
-
-	; box -> party
-	and a   ; BOX_TO_PARTY
+	and a   ; BOX_TO_PARTY		; BOX_TO_PARTY -> .checkPartyMonSlots
 	jr z, .checkPartyMonSlots
-
-	; daycare -> party
-	cp DAYCARE_TO_PARTY
+	cp DAYCARE_TO_PARTY			; DAYCARE_TO_PARTY -> .checkPartyMonSlots
 	jr z, .checkPartyMonSlots
-	
-	; party -> daycare
-	cp PARTY_TO_DAYCARE
+	cp PARTY_TO_DAYCARE			; PARTY_TO_DAYCARE -> .findMonDataSrc
 	ld hl, wDayCareMon
 	jr z, .findMonDataSrc
-	
-; .checkBoxMonSlots	; party -> box
+	; fallthrough				; PARTY_TO_BOX -> fallthrough
+
+	; 移動先がPCボックスのとき、
+	; PCボックスに空きがある -> .boxFull
+	; PCボックスに空きがない -> .partyOrBoxNotFull
 	ld hl, wNumInBox
 	ld a, [hl]
 	cp MONS_PER_BOX
@@ -480,27 +494,44 @@ _MoveMon:
 	jr .boxFull
 
 .checkPartyMonSlots
+	; 移動先が手持ちのとき、
+	; 手持ちに空きがある -> .boxFull
+	; 手持ちに空きがない -> .partyOrBoxNotFull
 	ld hl, wPartyCount
 	ld a, [hl]
 	cp PARTY_LENGTH
 	jr nz, .partyOrBoxNotFull
+
 .boxFull
+	; 移動先のデータスロットに空きスロットがないとき、キャリーを立てて return 
 	scf
 	ret
+
 .partyOrBoxNotFull
+	; 移動先に空きスロットがあるとき
+
+	; wNumInBox または wPartyCount をインクリメント
 	inc a
-	ld [hl], a           ; increment number of mons in party/box
+	ld [hl], a
+
+	; hl = 移動先の wPartySpecies(wBoxSpecies) のエントリ
 	ld c, a
 	ld b, 0
 	add hl, bc
+
+	; a = 移動対象のポケモンID
 	ld a, [wMoveMonType]
 	cp DAYCARE_TO_PARTY
 	ld a, [wDayCareMon]
 	jr z, .copySpecies
-	ld a, [wcf91]
+	ld a, [wcf91]	; Pokemon ID
+
 .copySpecies
-	ld [hli], a          ; write new mon ID
-	ld [hl], $ff         ; write new sentinel
+	; 移動先のポケモンIDスロット(wPartySpecies or wBoxSpecies) にポケモンIDをコピー
+	ld [hli], a
+	ld [hl], $ff         ; 終端記号
+
+; hl = 移動先の wPartyMons(wBoxMons) のエントリ
 .findMonDataDest
 	ld a, [wMoveMonType]
 	dec a
@@ -508,13 +539,13 @@ _MoveMon:
 	ld bc, wPartyMon2 - wPartyMon1 ; $2c
 	ld a, [wPartyCount]
 	jr nz, .addMonOffset
-	; if it's PARTY_TO_BOX
 	ld hl, wBoxMons
 	ld bc, wBoxMon2 - wBoxMon1 ; $21
 	ld a, [wNumInBox]
 .addMonOffset
 	dec a
 	call AddNTimes
+
 .findMonDataSrc
 	push hl
 	ld e, l

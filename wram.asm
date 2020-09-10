@@ -2524,9 +2524,7 @@ wPartyDataStart::
 ; 現在の手持ちの数  
 ; 直下のwPartySpeciesと合わせてlist(各エントリにポケモンの内部ID=1バイト)を形成している  
 wPartyCount::   ds 1
-; d164  
-; 各エントリにはポケモンの内部ID(1バイト)が格納される
-wPartySpecies:: ds PARTY_LENGTH
+wPartySpecies:: ds PARTY_LENGTH	; d164 各エントリにはポケモンID(1バイト)が格納される [ID, ID, ID, ID, ID, ID]
 wPartyEnd::     ds 1 ; d16a
 
 ; 手持ちのポケモンのPokemon Dataのテーブル(要素数6)
@@ -3544,7 +3542,10 @@ wDayCareInUse::
 wDayCareMonName:: ds NAME_LENGTH ; da49
 wDayCareMonOT::   ds NAME_LENGTH ; da54
 
-wDayCareMon:: box_struct wDayCareMon ; da5f
+; da5f  
+; 育て屋に預けているポケモンの `Pokemon Data`  
+; `box_struct` と同じ構造
+wDayCareMon:: box_struct wDayCareMon
 
 wMainDataEnd::
 
@@ -3556,7 +3557,7 @@ wBoxDataStart::
 ; ボックスに入っているポケモンの数 e.g. 2匹- > 2  
 ; 直下のwBoxSpeciesと合わせてlist(各エントリ1バイト)を形成している
 wNumInBox::  ds 1
-wBoxSpecies:: ds MONS_PER_BOX + 1
+wBoxSpecies:: ds MONS_PER_BOX + 1	; 各エントリにはポケモンID(1バイト)が格納される [ID, ID, ID, ID, ...]
 
 wBoxMons::
 wBoxMon1:: box_struct wBoxMon1 ; da96
