@@ -102,6 +102,17 @@ ENDM
 
 ```
 
+## Pokemon Dataの移動
+
+Pokemon Data をいろんなデータスロット間で移動させる処理
+
+処理の本体は `_MoveMon` で行われている
+
+処理の流れとしては、
+
+1. 移動先に空きスロットがあるか調べる
+2. 移動先の空きスロットのアドレスを取得
+
 ## 関連
 
 - [Pokemon Header](./pokemon_header.md)

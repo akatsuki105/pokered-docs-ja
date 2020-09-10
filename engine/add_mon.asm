@@ -462,10 +462,12 @@ _AddEnemyMonToPlayerParty:
 ; [wMoveMonType] の値によって処理内容が分岐  
 ; 
 ; BOX_TO_PARTY のとき  
-; PCボックスから手持ちへの移動。 wBoxSpecies -> wPartySpecies  
+; PCボックスから手持ちへの移動  
+; wBoxXXX -> wPartyXXX 
 ; 
 ; PARTY_TO_BOX のとき  
-; 手持ちからPCボックスへの移動。 wPartySpecies -> wBoxSpecies  
+; 手持ちからPCボックスへの移動  
+; wPartyXXX -> wBoxXXX  
 ; 
 ; DAYCARE_TO_PARTY のとき  
 ; 育て屋から手持ちへの移動
@@ -547,9 +549,11 @@ _MoveMon:
 	call AddNTimes
 
 .findMonDataSrc
-	push hl
+	push hl	; push 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 	ld e, l
-	ld d, h
+	ld d, h	; de = 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
+
+; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 	ld a, [wMoveMonType]
 	and a
 	ld hl, wBoxMons
@@ -563,13 +567,18 @@ _MoveMon:
 .addMonOffset2
 	ld a, [wWhichPokemon]
 	call AddNTimes
+
+; この時点で  
+; hl = 移動元の wPartyMons(wBoxMons, wDayCareMon) のエントリ
+; de = 移動先の wPartyMons(wBoxMons, wDayCareMon) のエントリ
 .copyMonData
 	push hl
 	push de
-	ld bc, wBoxMon2 - wBoxMon1
+	ld bc, wBoxMon2 - wBoxMon1	; box_struct_length
 	call CopyData
 	pop de
 	pop hl
+
 	ld a, [wMoveMonType]
 	and a ; BOX_TO_PARTY
 	jr z, .findOTdest
@@ -582,6 +591,7 @@ _MoveMon:
 	inc de
 	inc de
 	ld [de], a ; de = BoxLevel
+
 .findOTdest
 	ld a, [wMoveMonType]
 	cp PARTY_TO_DAYCARE
