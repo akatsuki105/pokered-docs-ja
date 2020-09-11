@@ -679,7 +679,8 @@ wAddedToParty:: ; ccd3
 ; このアドレスは他の用途でも使用される  
 wSimulatedJoypadStatesEnd::
 
-wParentMenuItem:: ; ccd3
+; ccd3
+wParentMenuItem::
 
 wCanEvolveFlags:: ; ccd3
 ; 1 flag for each party member indicating whether it can evolve
@@ -1308,7 +1309,7 @@ wRightGBMonSpecies:: ; cd5f
 ; cd60  
 ; bit 0: プレイヤーがトレーナーに見つかったか (複数のトレーナーに同時に見つかった時は発見されてないことにする)  
 ; bit 1: かいりきのアニメーション再生を待機中  
-; bit 3: using generic PC  
+; bit 3: 普通のPCを使っているか (0ならマサキのパソコンを使用している)  
 ; bit 4: 1 -> .skipMovingSprites  
 ; bit 5: don't play sound when A or B is pressed in menu  
 ; bit 6: 一度かいりきの岩を押してみた状態か (you need to push twice before it will move)  
@@ -2963,13 +2964,15 @@ wBoxItems:: ; d53b
 	ds PC_ITEM_CAPACITY * 2
 	ds 1 ; end
 
-wCurrentBoxNum:: ; d5a0
-; bits 0-6: box number
-; bit 7: whether the player has changed boxes before
+; d5a0  
+; bits 0-6: box number  
+; bit 7: whether the player has changed boxes before  
+wCurrentBoxNum::
 	ds 2
 
-wNumHoFTeams:: ; d5a2
-; number of HOF teams
+; d5a2  
+; number of HOF teams  
+wNumHoFTeams::
 	ds 1
 
 wUnusedD5A3:: ; d5a3

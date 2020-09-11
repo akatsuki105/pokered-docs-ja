@@ -87,9 +87,10 @@ aCoord: MACRO
 	ENDC
 ENDM
 
-;\1 = X
-;\2 = Y
-;\3 = which tilemap (optional)
+; ld (X, Y), a  
+;\1 = X  
+;\2 = Y  
+;\3 = which tilemap (optional)  
 Coorda: MACRO
 	validateCoords \1, \2
 	IF _NARG >= 3

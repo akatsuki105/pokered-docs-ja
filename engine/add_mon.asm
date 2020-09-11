@@ -458,7 +458,9 @@ _AddEnemyMonToPlayerParty:
 
 ; **_MoveMon**  
 ; ポケモンを別のデータスロットに移動させる処理  
-; - - -   
+; - - -  
+; 移動した後のデータクリアはここではしない  
+; 
 ; INPUT: [wMoveMonType] = BOX_TO_PARTY or PARTY_TO_BOX or DAYCARE_TO_PARTY or PARTY_TO_DAYCARE (移動元と移動先)  
 ; OUTPUT: carry = 0(成功) or 1(移動先がいっぱいで失敗)  
 _MoveMon:

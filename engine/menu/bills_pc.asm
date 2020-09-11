@@ -1,15 +1,32 @@
+; **DisplayPCMainMenu**  
+; PCのメニューを画面に表示する  
+; - - -  
+; メニューのテキストボックスを表示して、カーソルを一番上に表示するところまでを行う  
+; ゲームの進行状況によって表示内容が変わる  
+; 
+; ![image](https://imgur.com/VvdxXV8.png)
 DisplayPCMainMenu::
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
+
+	; BillsPCMenu などで使うので現在のPCを開く前の画面の状況を保存
 	call SaveScreenTilesToBuffer2
+
+	; 殿堂入りしたことがある -> .leaguePCAvailable
 	ld a, [wNumHoFTeams]
 	and a
 	jr nz, .leaguePCAvailable
+
+	; ポケモン図鑑取得イベントを消化していない -> .noOaksPC
 	CheckEvent EVENT_GOT_POKEDEX
 	jr z, .noOaksPC
+
+	; 上と同じ処理??
 	ld a, [wNumHoFTeams]
 	and a
 	jr nz, .leaguePCAvailable
+
+; 表示するメニューの項目数によってテキストボックスの大きさを変える
 	coord hl, 0, 0
 	ld b, 8
 	ld c, 14
@@ -23,11 +40,16 @@ DisplayPCMainMenu::
 	coord hl, 0, 0
 	ld b, 10
 	ld c, 14
+
+	; テキストボックスを描画
 .next
 	call TextBoxBorder
+
 	call UpdateSprites
 	ld a, 3
 	ld [wMaxMenuItem], a
+
+	; メニューの1番上の項目に "BILL's PC" か "SOMEONE's PC" を配置 (マサキとのイベントを消化済みかで変わる)
 	CheckEvent EVENT_MET_BILL
 	jr nz, .metBill
 	coord hl, 2, 2
@@ -38,6 +60,8 @@ DisplayPCMainMenu::
 	ld de, BillsPCText
 .next2
 	call PlaceString
+
+	; メニューの2番目の項目に<Player>'s PC
 	coord hl, 2, 4
 	ld de, wPlayerName
 	call PlaceString
@@ -45,11 +69,15 @@ DisplayPCMainMenu::
 	ld h, b
 	ld de, PlayersPCText
 	call PlaceString
+
+	; 次の項目に "PROF.OAK's PC" (図鑑取得済みのみ)
 	CheckEvent EVENT_GOT_POKEDEX
 	jr z, .noOaksPC2
 	coord hl, 2, 6
 	ld de, OaksPCText
 	call PlaceString
+
+	; 次の項目に "Pokemon LEAGUE" (殿堂入りしたことがある場合のみ)
 	ld a, [wNumHoFTeams]
 	and a
 	jr z, .noLeaguePC
@@ -58,6 +86,8 @@ DisplayPCMainMenu::
 	coord hl, 2, 8
 	ld de, PKMNLeaguePCText
 	call PlaceString
+
+; 自分の状況に応じて適した位置に "LOG OFF"
 	coord hl, 2, 10
 	ld de, LogOffPCText
 	jr .next3
@@ -72,6 +102,8 @@ DisplayPCMainMenu::
 	ld de, LogOffPCText
 .next3
 	call PlaceString
+
+; メニューにカーソルを配置
 	ld a, A_BUTTON | B_BUTTON
 	ld [wMenuWatchedKeys], a
 	ld a, 2
@@ -81,20 +113,24 @@ DisplayPCMainMenu::
 	xor a
 	ld [wCurrentMenuItem], a
 	ld [wLastMenuItem], a
+
+	; 終了
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
-SomeonesPCText:   db "SOMEONE's PC@"
-BillsPCText:      db "BILL's PC@"
-PlayersPCText:    db "'s PC@"
-OaksPCText:       db "PROF.OAK's PC@"
-PKMNLeaguePCText: db $4a, "LEAGUE@"
-LogOffPCText:     db "LOG OFF@"
+SomeonesPCText:   db "SOMEONE's PC@"	; "SOMEONE's PC"  
+BillsPCText:      db "BILL's PC@"		; "BILL's PC"
+PlayersPCText:    db "'s PC@"			; "'s PC"
+OaksPCText:       db "PROF.OAK's PC@"	; "PROF.OAK's PC"
+PKMNLeaguePCText: db $4a, "LEAGUE@"		; "Pokemon LEAGUE"
+LogOffPCText:     db "LOG OFF@"			; "LOG OFF"
 
 BillsPC_::
+	; テキスト表示に遅延を設定
 	ld hl, wd730
 	set 6, [hl]
+
 	xor a
 	ld [wParentMenuItem], a
 	inc a               ; MONSTER_NAME
@@ -102,23 +138,35 @@ BillsPC_::
 	call LoadHpBarAndStatusTilePatterns
 	ld a, [wListScrollOffset]
 	push af
+	
+	; 普通のPC(ポケセンのPCなど)で "BILL's PC" を選んだ場合 -> BillsPCMenu
 	ld a, [wFlags_0xcd60]
-	bit 3, a ; accessing Bill's PC through another PC?
+	bit 3, a
 	jr nz, BillsPCMenu
-; accessing it directly
+
+	; マサキのパソコンを使った場合 "Switch on!"
 	ld a, SFX_TURN_ON_PC
 	call PlaySound
 	ld hl, SwitchOnText
 	call PrintText
 
+; **BillsPCMenu**  
+; ![image](https://imgur.com/Deb4PTH.png)
 BillsPCMenu:
+	; [wCurrentMenuItem] = [wParentMenuItem]
 	ld a, [wParentMenuItem]
 	ld [wCurrentMenuItem], a
+
+	; VRAM にモンスターボールの 2bppデータ を転送
 	ld hl, vChars2 + $780
 	ld de, PokeballTileGraphics
 	lb bc, BANK(PokeballTileGraphics), $01
 	call CopyVideoData
+
+	; DisplayPCMainMenu で保存した PCのメインメニューのテキストボックスが存在しない画面を復帰
 	call LoadScreenTilesFromBuffer2DisableBGTransfer
+
+	; テキストボックスとマサキのPCボックスのメニューを表示
 	coord hl, 0, 0
 	ld b, 10
 	ld c, 12
@@ -126,53 +174,73 @@ BillsPCMenu:
 	coord hl, 2, 2
 	ld de, BillsPCMenuText
 	call PlaceString
+
 	ld hl, wTopMenuItemY
 	ld a, 2
-	ld [hli], a ; wTopMenuItemY
+	ld [hli], a ; [wTopMenuItemY] = 2
 	dec a
-	ld [hli], a ; wTopMenuItemX
+	ld [hli], a ; [wTopMenuItemX] = 1
 	inc hl
 	inc hl
 	ld a, 4
-	ld [hli], a ; wMaxMenuItem
+	ld [hli], a ; [wMaxMenuItem] = 4
 	ld a, A_BUTTON | B_BUTTON
-	ld [hli], a ; wMenuWatchedKeys
+	ld [hli], a ; [wMenuWatchedKeys] = A_BUTTON | B_BUTTON
 	xor a
-	ld [hli], a ; wLastMenuItem
-	ld [hli], a ; wPartyAndBillsPCSavedMenuItem
+	ld [hli], a ; [wLastMenuItem] = 0
+	ld [hli], a ; [wPartyAndBillsPCSavedMenuItem] = 0
 	ld hl, wListScrollOffset
-	ld [hli], a ; wListScrollOffset
-	ld [hl], a ; wMenuWatchMovingOutOfBounds
-	ld [wPlayerMonNumber], a
+	ld [hli], a ; [wListScrollOffset] = 0
+	ld [hl], a ; [wMenuWatchMovingOutOfBounds] = 0
+	ld [wPlayerMonNumber], a	; [wPlayerMonNumber] = 0
+
+	; "What?"
 	ld hl, WhatText
 	call PrintText
+
+	; 画面右下に現在のボックス番号のためのテキストボックスを表示
 	coord hl, 9, 14
 	ld b, 2
 	ld c, 9
 	call TextBoxBorder
+
+	; a = ボックス番号
 	ld a, [wCurrentBoxNum]
 	and $7f
+
+	; ボックス番号が 1桁 -> .singleDigitBoxNum
 	cp 9
 	jr c, .singleDigitBoxNum
-; two digit box num
+
+; ボックス番号を描画
+	; 二桁のとき
 	sub 9
 	coord hl, 17, 16
-	ld [hl], "1"
-	add "0"
+	ld [hl], "1"		; 2桁目
+	add "0"				; 1桁目 数値 -> 文字コード
 	jr .next
 .singleDigitBoxNum
-	add "1"
+	; 一桁のとき
+	add "1"	; 数値 -> 文字コード
 .next
 	Coorda 18, 16
+
+	; "BOX No."
 	coord hl, 10, 16
 	ld de, BoxNoPCText
 	call PlaceString
+
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	call Delay3
+
+	; ユーザーがメニューを選ぶのを待つ
 	call HandleMenuInput
+
+	; b button -> ExitBillsPC
 	bit 1, a
-	jp nz, ExitBillsPC ; b button
+	jp nz, ExitBillsPC
+
 	call PlaceUnfilledArrowMenuCursor
 	ld a, [wCurrentMenuItem]
 	ld [wParentMenuItem], a
@@ -338,6 +406,13 @@ DisplayMonListMenu:
 	ld [wPartyAndBillsPCSavedMenuItem], a
 	ret
 
+; **BillsPCMenuText**  
+; - - -  
+; "WITHDRAW POKEMON"  
+; "DEPOSIT POKEMON"  
+; "RELEASE POKEMON"  
+; "CHANGE BOX"  
+; "SEE YA!"  
 BillsPCMenuText:
 	db   "WITHDRAW ", $4a
 	next "DEPOSIT ",  $4a
@@ -346,6 +421,7 @@ BillsPCMenuText:
 	next "SEE YA!"
 	db "@"
 
+; "BOX No."
 BoxNoPCText:
 	db "BOX No.@"
 
@@ -457,10 +533,12 @@ StatsCancelPCText:
 	db   "STATS"
 	next "CANCEL@"
 
+; "Switch on!"
 SwitchOnText:
 	TX_FAR _SwitchOnText
 	db "@"
 
+; "What?"
 WhatText:
 	TX_FAR _WhatText
 	db "@"

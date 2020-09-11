@@ -10,7 +10,7 @@ battle/ | [battle](./battle/README.md)
 items/ | [items](./items/README.md)
 menu/ | [menu](./menu/README.md)
 overworld/ | [overworld](./overworld/README.md)
-add_mon.asm | null
+add_mon.asm | Pokemon Data を新しい手持ちやPCなどのデータスロットに加える処理
 bcd.asm | BCDフォーマットの数値計算を行う処理
 black_out.asm | 『めのまえが まっくらに なった！』ときのゲームの状態を更新する処理
 cable_club.asm | null

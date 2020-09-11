@@ -1743,11 +1743,13 @@ _CantCarryMoreText::
 	line "any more items."
 	prompt
 
+; "What do you want to toss away?"
 _WhatToTossText::
 	text "What do you want"
 	line "to toss away?"
 	done
 
+; "How many?"
 _TossHowManyText::
 	text "How many?"
 	done
@@ -1760,10 +1762,12 @@ _AccessedHoFPCText::
 	line "OF FAME List."
 	prompt
 
+; "Switch on!"
 _SwitchOnText::
 	text "Switch on!"
 	prompt
 
+; "What?"
 _WhatText::
 	text "What?"
 	done

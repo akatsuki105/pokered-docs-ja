@@ -4565,13 +4565,23 @@ AddEnemyMonToPlayerParty::
 	ld [MBC1RomBank], a
 	ret
 
+; **MoveMon**  
+; ポケモンを別のデータスロットに移動させる処理  
+; - - -  
+; 移動した後のデータクリアはここではしない  
+; 
+; INPUT: [wMoveMonType] = BOX_TO_PARTY or PARTY_TO_BOX or DAYCARE_TO_PARTY or PARTY_TO_DAYCARE
+; OUTPUT: carry = 0(成功) or 1(移動先がいっぱいで失敗)  
 MoveMon::
+	; バンクを退避
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, BANK(_MoveMon)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+	; 処理の本体
 	call _MoveMon
+	; バンクを復帰
 	pop bc
 	ld a, b
 	ld [H_LOADEDROMBANK], a
