@@ -397,8 +397,10 @@ wCurrentMenuItem::
 wTileBehindCursor::
 	ds 1
 
-wMaxMenuItem:: ; cc28
-; id of the bottom menu item
+; cc28  
+; menuの一番下の項目のID  
+; e.g. 2択menuなら Yes No の2つなので 0, 1 なので 1になる
+wMaxMenuItem::
 	ds 1
 
 ; cc29  
@@ -408,7 +410,6 @@ wMenuWatchedKeys::
 	ds 1
 
 ; cc2a  
-; id of previously selected menu item  
 ; 最後に選択されたメニューアイテムのID  
 ; 選択された場所を記録しておいて次に開いたときにそこにカーソルを合わせたいときに使う?  
 wLastMenuItem::
@@ -2381,7 +2382,27 @@ wVBlankSavedROMBank:: ; d122
 wIsKeyItem:: ; d124
 	ds 1
 
-wTextBoxID:: ; d125
+; d125  
+; `DisplayTextBoxID_` で描画するテキストボックスのタイプを格納する  
+; MESSAGE_BOX                       EQU $01  
+; FIELD_MOVE_MON_MENU               EQU $04  
+; JP_MOCHIMONO_MENU_TEMPLATE        EQU $05  
+; USE_TOSS_MENU_TEMPLATE            EQU $06  
+; JP_SAVE_MESSAGE_MENU_TEMPLATE     EQU $08  
+; JP_SPEED_OPTIONS_MENU_TEMPLATE    EQU $09  
+; BATTLE_MENU_TEMPLATE              EQU $0b  
+; SWITCH_STATS_CANCEL_MENU_TEMPLATE EQU $0c  
+; LIST_MENU_BOX                     EQU $0d  
+; BUY_SELL_QUIT_MENU_TEMPLATE       EQU $0e  
+; MONEY_BOX_TEMPLATE                EQU $0f  
+; MON_SPRITE_POPUP                  EQU $11  
+; JP_AH_MENU_TEMPLATE               EQU $12  
+; MONEY_BOX                         EQU $13  
+; TWO_OPTION_MENU                   EQU $14  
+; BUY_SELL_QUIT_MENU                EQU $15  
+; JP_POKEDEX_MENU_TEMPLATE          EQU $1a  
+; SAFARI_BATTLE_MENU_TEMPLATE       EQU $1b  
+wTextBoxID::
 	ds 1
 
 wCurrentMapScriptFlags:: ds 1 ; not exactly sure what this is used for, but it seems to be used as a multipurpose temp flag value
@@ -2402,7 +2423,9 @@ wListCount::
 wLinkState:: ; d12b
 	ds 1
 
-wTwoOptionMenuID:: ; d12c
+; d12c  
+; bit7 = select second menu item by default?  
+wTwoOptionMenuID::
 	ds 1
 
 ; d12d  
@@ -3376,7 +3399,7 @@ wd72e::
 ; - bit 0: NPCスプライトがスクリプトによって動かされているか(scripted NPC)  
 ; - bit 1: ???
 ; - bit 5: キー入力を無視する  
-; - bit 6: テキスト出力時に文字ごとに遅延を生じさせるか  
+; - bit 6: 1なら テキスト出力時に文字ごとに遅延を生じない  
 ; - bit 7: キー入力がゲーム内で勝手に入れられているか(simulated joypad)  
 wd730::
 	ds 1

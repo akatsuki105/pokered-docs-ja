@@ -1512,6 +1512,8 @@ DisplayPlayerBlackedOutText::
 	ld [wd732], a
 	jp HoldTextDisplayOpen
 
+; "\<PLAYER\> is out of useable #MON!"  
+; "\<PLAYER\> blacked out!"  
 PlayerBlackedOutText::
 	TX_FAR _PlayerBlackedOutText
 	db "@"
@@ -1634,9 +1636,12 @@ AddItemToInventory::
 ; **DisplayListMenuID**  
 ; menuのテキストボックスを表示し各種menu変数に適切な値を設定する  
 ; - - - 
+; この関数では listのテキストボックスだけで中身は表示しない  
+; menu については menu.md参照  
+; 
 ; INPUT:  
-; - [wListMenuID] = list menu ID
-; - [wListPointer] = listのポインタ(2バイト)
+; [wListMenuID] = list menu ID  
+; [wListPointer] = listのポインタ(2バイト)  
 DisplayListMenuID::
 	; 自動的なBG転送を無効化
 	xor a
@@ -1644,40 +1649,36 @@ DisplayListMenuID::
 
 	ld a, 1
 	ld [hJoy7], a ; joypad state update flag
-	
-	; トキワシティの老人のポケモン捕獲バトル or サファリゾーンのバトルか
+
+; 通常バトルなら バンク 1 に	
+; トキワシティの老人のポケモン捕獲バトル or サファリゾーンのバトル なら BANK(DisplayBattleMenu) にスイッチ
 	ld a, [wBattleType]
-	and a ; is it the Old Man battle?
+	and a
 	jr nz, .specialBattleType
-
-	; 通常のバトルのときはバンク1にスイッチ
-	ld a, $01 ; hardcoded bank
+	ld a, $01
 	jr .bankswitch
-
-	; DisplayBattleMenuのあるバンクにスイッチ
-.specialBattleType ; Old Man battle
+.specialBattleType
 	ld a, BANK(DisplayBattleMenu)
-
 .bankswitch
 	call BankswitchHome
 
 	; テキスト表示時の遅延をoff
 	ld hl, wd730
-	set 6, [hl] ; turn off letter printing delay
+	set 6, [hl]
 	
 	; リストに関する変数を0クリア
 	xor a
 	ld [wMenuItemToSwap], a ; どのアイテムもセレクトで順番入れ替えのために選択されている状態にない
 	ld [wListCount], a		; listの要素数が0
 
-	; hl = リストのポインタ
+	; hl = menuの項目を表す list のポインタ
 	ld a, [wListPointer]
 	ld l, a
 	ld a, [wListPointer + 1]
-	ld h, a ; hl = address of the list
+	ld h, a
 
-	; listの最初のエントリはlistのエントリの数を表す
-	ld a, [hl] ; the first byte is the number of entries in the list
+	; [wListCount] = menu の項目数
+	ld a, [hl]			; list の最初のエントリは項目数
 	ld [wListCount], a
 
 	; 選択メニューのテキストボックスを表示
@@ -1719,7 +1720,7 @@ DisplayListMenuID::
 	ld a, A_BUTTON | B_BUTTON | SELECT
 	ld [wMenuWatchedKeys], a
 	ld c, 10
-	call DelayFrames
+	call DelayFrames	; return
 
 DisplayListMenuIDLoop::
 	; 自動的なBG転送を無効化 
@@ -2581,11 +2582,11 @@ IsKeyItem::
 	ret
 
 ; **DisplayTextBoxID**  
-; 引数で与えたText Box IDに対応するテキストボックスを表示する  
+; 引数で与えたTextBox IDに対応するテキストボックスを表示する  
 ; - - - 
 ; INPUT:  
-; - [wTextBoxID] = Text Box ID
-; - b, c = カーソルのy, x (2択メニューのみで引数として与える)  
+; [wTextBoxID] = TextBox ID  
+; b, c = カーソルのy, x (2択メニューのみで引数として与える)  
 DisplayTextBoxID::
 	ld a, [H_LOADEDROMBANK]
 	push af

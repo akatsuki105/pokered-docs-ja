@@ -2468,6 +2468,8 @@ _PokemonFaintedText::
 	line "fainted!"
 	done
 
+; "\<PLAYER\> is out of useable #MON!"  
+; "\<PLAYER\> blacked out!"  
 _PlayerBlackedOutText::
 	text "<PLAYER> is out of"
 	line "useable #MON!"

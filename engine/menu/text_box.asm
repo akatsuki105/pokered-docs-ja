@@ -1,4 +1,9 @@
-; function to draw various text boxes
+; **DisplayTextBoxID_**  
+; 様々なテキストボックスを描画する関数  
+; - - -  
+; INPUT:  
+; [wTextBoxID] = TextBoxID  
+; hl = ???
 DisplayTextBoxID_:
 	ld a, [wTextBoxID]
 	cp TWO_OPTION_MENU
@@ -338,41 +343,51 @@ DoBuySellQuitMenu:
 	scf
 	ret
 
-; displays a menu with two options to choose from
-; b = Y of upper left corner of text region
-; c = X of upper left corner of text region
-; hl = address where the text box border should be drawn
+; **DisplayTwoOptionMenu**  
+; 2択menuを描画する
+; - - -  
+; 2択menuは
+; 
+; INPUT:  
+; b = 一番上(ID 0)の項目のカーソルの位置の Ycoords  
+; c = 一番上(ID 0)の項目のカーソルの位置の Xcoords  
+; hl = テキストボックスのボーダーが描画されるべきアドレス  
 DisplayTwoOptionMenu:
 	push hl
+
+	; テキスト描画の遅延を無効化
 	ld a, [wd730]
 	set 6, a ; no printing delay
 	ld [wd730], a
 
-; pointless because both values are overwritten before they are read
+	; この3行は無駄な処理
 	xor a
 	ld [wChosenMenuItem], a
 	ld [wMenuExitMethod], a
 
 	ld a, A_BUTTON | B_BUTTON
-	ld [wMenuWatchedKeys], a
+	ld [wMenuWatchedKeys], a	; [wMenuWatchedKeys] = A_BUTTON | B_BUTTON
 	ld a, $1
-	ld [wMaxMenuItem], a
+	ld [wMaxMenuItem], a		; [wMaxMenuItem] = 1 (Yes, Noの2つなので)
 	ld a, b
-	ld [wTopMenuItemY], a
+	ld [wTopMenuItemY], a		; [wTopMenuItemY] = b
 	ld a, c
-	ld [wTopMenuItemX], a
+	ld [wTopMenuItemX], a		; [wTopMenuItemX] = c
 	xor a
-	ld [wLastMenuItem], a
-	ld [wMenuWatchMovingOutOfBounds], a
+	ld [wLastMenuItem], a		; [wLastMenuItem] = 0
+	ld [wMenuWatchMovingOutOfBounds], a	; [wMenuWatchMovingOutOfBounds] = 0
+
+; [wCurrentMenuItem] = 0(カーソルが1つめ) or 1(カーソルが2つめ)
 	push hl
 	ld hl, wTwoOptionMenuID
-	bit 7, [hl] ; select second menu item by default?
+	bit 7, [hl] 
 	res 7, [hl]
-	jr z, .storeCurrentMenuItem
+	jr z, .storeCurrentMenuItem	; wTwoOptionMenuID の bit7がセットされていたらカーソルの初期値は No
 	inc a
 .storeCurrentMenuItem
 	ld [wCurrentMenuItem], a
 	pop hl
+
 	push hl
 	push hl
 	call TwoOptionMenu_SaveScreenTiles
@@ -475,19 +490,24 @@ DisplayTwoOptionMenu:
 	scf
 	ret
 
-; Some of the wider/taller two option menus will not have the screen areas
-; they cover be fully saved/restored by the two functions below.
-; The bottom and right edges of the menu may remain after the function returns.
-
+; **TwoOptionMenu_SaveScreenTiles**  
+; 2択menuのタイルを wBuffer に保存する  
+; - - -  
+; 2択menu左上から6×5タイル(x×y)分のタイルが保存される  
+; 2択menuの種類によっては全部保存しきれないものもある  
+; その場合は、保存しきれなかった右下のタイルは関数終了後も画面に残り続けるので大丈夫  
 TwoOptionMenu_SaveScreenTiles:
 	ld de, wBuffer
-	lb bc, 5, 6
+	lb bc, 5, 6	; 5*6 = 30(wBufferのサイズ)
 .loop
+	; [de++] = [hl++] 1行分保存
 	ld a, [hli]
 	ld [de], a
 	inc de
 	dec c
 	jr nz, .loop
+
+	; hl を次の行に
 	push bc
 	ld bc, SCREEN_WIDTH - 6
 	add hl, bc
@@ -495,6 +515,7 @@ TwoOptionMenu_SaveScreenTiles:
 	ld c, $6
 	dec b
 	jr nz, .loop
+
 	ret
 
 TwoOptionMenu_RestoreScreenTiles:
