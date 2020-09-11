@@ -126,16 +126,22 @@ OaksPCText:       db "PROF.OAK's PC@"	; "PROF.OAK's PC"
 PKMNLeaguePCText: db $4a, "LEAGUE@"		; "Pokemon LEAGUE"
 LogOffPCText:     db "LOG OFF@"			; "LOG OFF"
 
+; **BillsPC_**  
+; PCで "BILL's PC" を選んだときの処理
 BillsPC_::
 	; テキスト表示に遅延を設定
 	ld hl, wd730
 	set 6, [hl]
 
-	xor a
+	; [wParentMenuItem] = BILL's PC
+	xor a							; BILL's PC
 	ld [wParentMenuItem], a
-	inc a               ; MONSTER_NAME
+	; [wNameListType] = MONSTER_NAME
+	inc a               			; MONSTER_NAME
 	ld [wNameListType], a
 	call LoadHpBarAndStatusTilePatterns
+
+	; push [wListScrollOffset](マサキのPCはメインメニューの一番上なので おそらく0)
 	ld a, [wListScrollOffset]
 	push af
 	
@@ -241,9 +247,14 @@ BillsPCMenu:
 	bit 1, a
 	jp nz, ExitBillsPC
 
+	; ユーザーが選んだメニュー項目のカーソルを ▶︎ から ▷ にする
 	call PlaceUnfilledArrowMenuCursor
+
+	; a = [wParentMenuItem] = [wCurrentMenuItem]
 	ld a, [wCurrentMenuItem]
 	ld [wParentMenuItem], a
+
+	; 選んだメニュー項目によって分岐
 	and a
 	jp z, BillsPCWithdraw ; withdraw
 	cp $1
@@ -252,43 +263,63 @@ BillsPCMenu:
 	jp z, BillsPCRelease ; release
 	cp $3
 	jp z, BillsPCChangeBox ; change box
+	; SEE YA!
 
+; マサキのPCのメニューで Bボタンを押したか "SEE YA!" を選んだ場合の処理
 ExitBillsPC:
+	; 普通のPC(ポケセンのPCなど)で "BILL's PC" を選んだ場合 -> .next
 	ld a, [wFlags_0xcd60]
-	bit 3, a ; accessing Bill's PC through another PC?
+	bit 3, a
 	jr nz, .next
-; accessing it directly
+
+	; マサキのパソコンを使った場合はサウンドをつける
 	call LoadTextBoxTilePatterns
 	ld a, SFX_TURN_OFF_PC
 	call PlaySound
 	call WaitForSoundToFinish
+
 .next
 	ld hl, wFlags_0xcd60
 	res 5, [hl]
+
+	; DisplayPCMainMenu で保存した PCのメインメニューのテキストボックスが存在しない画面を復帰
 	call LoadScreenTilesFromBuffer2
+
+	; BillsPC_ で退避した値を戻す
 	pop af
 	ld [wListScrollOffset], a
+
+	; 遅延を戻す
 	ld hl, wd730
 	res 6, [hl]
 	ret
 
+; マサキのPCでポケモンを預けるを選んだ場合
 BillsPCDeposit:
+	; 手持ち数が2匹以上 -> .partyLargeEnough
 	ld a, [wPartyCount]
 	dec a
 	jr nz, .partyLargeEnough
+
+	; 手持ちが一匹しかいない -> BillsPCMenu
 	ld hl, CantDepositLastMonText
-	call PrintText
+	call PrintText		; "You can't deposit the last #MON!"
 	jp BillsPCMenu
+
 .partyLargeEnough
+	; ボックスに空きがある -> .boxNotFull
 	ld a, [wNumInBox]
 	cp MONS_PER_BOX
 	jr nz, .boxNotFull
+
+	; ボックスがいっぱい -> BillsPCMenu
 	ld hl, BoxFullText
-	call PrintText
+	call PrintText		; "Oops! This Box is full of #MON."
 	jp BillsPCMenu
+
 .boxNotFull
 	ld hl, wPartyCount
-	call DisplayMonListMenu
+	call DisplayMonListMenu	; hl = wPartyCount
 	jp c, BillsPCMenu
 	call DisplayDepositWithdrawMenu
 	jp nc, BillsPCMenu
@@ -337,7 +368,7 @@ BillsPCWithdraw:
 	jp BillsPCMenu
 .partyNotFull
 	ld hl, wNumInBox
-	call DisplayMonListMenu
+	call DisplayMonListMenu	; hl = wNumInBox
 	jp c, BillsPCMenu
 	call DisplayDepositWithdrawMenu
 	jp nc, BillsPCMenu
@@ -367,7 +398,7 @@ BillsPCRelease:
 	jp BillsPCMenu
 .loop
 	ld hl, wNumInBox
-	call DisplayMonListMenu
+	call DisplayMonListMenu ; hl = wNumInBox
 	jp c, BillsPCMenu
 	ld hl, OnceReleasedText
 	call PrintText
@@ -389,16 +420,27 @@ BillsPCChangeBox:
 	callba ChangeBox
 	jp BillsPCMenu
 
+; **DisplayMonListMenu**  
+; - - -  
+; INPUT: hl = wPartyCount or wNumInBox
 DisplayMonListMenu:
+	; [wListPointer] = hl (wPartyCount or wNumInBox)
 	ld a, l
 	ld [wListPointer], a
 	ld a, h
 	ld [wListPointer + 1], a
+
+	; ポケモンのリストなので価格は表示しないようにする
 	xor a
 	ld [wPrintItemPrices], a
+
+	; [wListMenuID] = ポケモンのリスト
 	ld [wListMenuID], a
-	inc a                ; MONSTER_NAME
+
+	; [wNameListType] = MONSTER_NAME
+	inc a
 	ld [wNameListType], a
+
 	ld a, [wPartyAndBillsPCSavedMenuItem]
 	ld [wCurrentMenuItem], a
 	call DisplayListMenuID
@@ -551,14 +593,17 @@ MonWasStoredText:
 	TX_FAR _MonWasStoredText
 	db "@"
 
+; "You can't deposit the last #MON!"
 CantDepositLastMonText:
 	TX_FAR _CantDepositLastMonText
 	db "@"
 
+; "Oops! This Box is full of #MON."
 BoxFullText:
 	TX_FAR _BoxFullText
 	db "@"
 
+; "\<Pokemon\> is taken out. Got \<Pokemon\>."
 MonIsTakenOutText:
 	TX_FAR _MonIsTakenOutText
 	db "@"

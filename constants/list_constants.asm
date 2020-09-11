@@ -7,6 +7,7 @@ PRICEDITEMLISTMENU EQU $02 ; Pokemart buy menu / Pokemart buy/sell choose quanti
 ITEMLISTMENU       EQU $03 ; スタートメニューのかばん / ショップでの売り物一覧
 SPECIALLISTMENU    EQU $04 ; list of special "items" e.g. floor list in elevators / list of badges
 
+; GetName でどのカテゴリの名前を取得するかを決める変数。 wNameListType に格納される
 MONSTER_NAME  EQU 1
 MOVE_NAME     EQU 2
 ; ???_NAME    EQU 3

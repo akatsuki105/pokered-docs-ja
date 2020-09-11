@@ -4685,7 +4685,8 @@ WriteOAMBlock::
 ; 
 ; OUTPUT:  
 ; a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]  
-; [wCurrentMenuItem] = 選択されたメニューアイテム
+; [wCurrentMenuItem] = 選択されたメニューアイテム  
+; [wMenuCursorLocation] = カーソルのあるタイルのアドレス  
 HandleMenuInput::
 	; 選択メニューがポケモン選択メニュー(手持ちポケモン一覧など)のときに選択しているポケモン以外のアニメーションを無効にする?
 	xor a
@@ -4959,17 +4960,22 @@ PlaceMenuCursor::
 	ld [wLastMenuItem], a
 	ret
 
-; This is used to mark a menu cursor other than the one currently being
-; manipulated. In the case of submenus, this is used to show the location of
-; the menu cursor in the parent menu. In the case of swapping items in list,
-; this is used to mark the item that was first chosen to be swapped.
+; **PlaceUnfilledArrowMenuCursor**  
+; 現在有効ではないカーソルを ▷ とする  
+; - - -  
+; ネストしたメニューの場合は、親メニューのメニューカーソルの場所を示すために使用  
+; アイテムの入れ替えの場合には、これは最初に選んだアイテムを保存するために使用  
+; 
+; OUTPUT: [wMenuCursorLocation]の示すwTileMapのタイル = ▷
 PlaceUnfilledArrowMenuCursor::
 	ld b, a
+	; hl = [wMenuCursorLocation]
 	ld a, [wMenuCursorLocation]
 	ld l, a
 	ld a, [wMenuCursorLocation + 1]
 	ld h, a
-	ld [hl], $ec ; outline of right arrow
+	; [wMenuCursorLocation]の示すアドレス = ▷
+	ld [hl], $ec ; 白抜きの三角 
 	ld a, b
 	ret
 

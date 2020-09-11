@@ -1785,16 +1785,19 @@ _MonWasStoredText::
 	text "."
 	prompt
 
+; "You can't deposit the last #MON!"
 _CantDepositLastMonText::
 	text "You can't deposit"
 	line "the last #MON!"
 	prompt
 
+; "Oops! This Box is full of #MON."
 _BoxFullText::
 	text "Oops! This Box is"
 	line "full of #MON."
 	prompt
 
+; "\<Pokemon\> is taken out. Got \<Pokemon\>."
 _MonIsTakenOutText::
 	TX_RAM wcf4b
 	text " is"
@@ -1804,11 +1807,14 @@ _MonIsTakenOutText::
 	text "."
 	prompt
 
+; "What? There are no #MON here!"
 _NoMonText::
 	text "What? There are"
 	line "no #MON here!"
 	prompt
 
+; "You can't take any more #MON."  
+; "Deposit #MON first."
 _CantTakeMonText::
 	text "You can't take"
 	line "any more #MON."
@@ -1817,6 +1823,7 @@ _CantTakeMonText::
 	line "first."
 	prompt
 
+; "Release which #MON?"
 _ReleaseWhichMonText::
 	text "Release which"
 	line "#MON?"

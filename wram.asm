@@ -414,13 +414,11 @@ wMenuWatchedKeys::
 wLastMenuItem::
 	ds 1
 
-wPartyAndBillsPCSavedMenuItem:: ; cc2b
-; It is mainly used by the party menu to remember the cursor position while the
-; menu isn't active.
-; It is also used to remember the cursor position of mon lists (for the
-; withdraw/deposit/release actions) in Bill's PC so that it doesn't get lost
-; when you choose a mon from the list and a sub-menu is shown. It's reset when
-; you return to the main Bill's PC menu.
+; cc2b
+; It is mainly used by the party menu to remember the cursor position while the menu isn't active.
+; It is also used to remember the cursor position of mon lists (for the withdraw/deposit/release actions) in Bill's PC so that it doesn't get lost when you choose a mon from the list and a sub-menu is shown. 
+; It's reset when you return to the main Bill's PC menu.
+wPartyAndBillsPCSavedMenuItem::
 	ds 1
 
 wBagSavedMenuItem:: ; cc2c
@@ -443,7 +441,7 @@ wPlayerMonNumber:: ; cc2f
 	ds 1
 
 ; cc30  
-; wTileMapにおいてメニューカーソルの現在の位置に対応するアドレス  
+; メニューカーソルの現在の位置に対応するwTileMapのアドレス  
 ; e.g. メニューカーソルが(1, 1)(8px単位)にあったら wTileMapの(1, 1)のアドレス
 wMenuCursorLocation::
 	ds 2
@@ -679,7 +677,8 @@ wAddedToParty:: ; ccd3
 ; このアドレスは他の用途でも使用される  
 wSimulatedJoypadStatesEnd::
 
-; ccd3
+; ccd3  
+; ネストしたメニューがあるとき、現在操作中のメニューから見た親メニューのオフセット  
 wParentMenuItem::
 
 wCanEvolveFlags:: ; ccd3
@@ -2226,7 +2225,16 @@ wSpriteDecodeTable1Ptr::
 ; ポケモンの種類(ID)を一時的に格納する場所として使われる他、戦闘に関するデータを保持したりする  
 wd0b5:: ds 1
 
-; d0b6
+; d0b6  
+; GetName でどのカテゴリの名前を取得するかを決める変数  
+; 
+; MONSTER_NAME  EQU 1  
+; MOVE_NAME     EQU 2  
+; ???_NAME      EQU 3  
+; ITEM_NAME     EQU 4  
+; PLAYEROT_NAME EQU 5  
+; ENEMYOT_NAME  EQU 6  
+; TRAINER_NAME  EQU 7  
 wNameListType::
 	ds 1
 
