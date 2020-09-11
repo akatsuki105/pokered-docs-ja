@@ -2424,6 +2424,7 @@ wLinkState:: ; d12b
 	ds 1
 
 ; d12c  
+; bit0-3: TwoOptionMenuStringsの対象エントリ(0~7)を指定する  
 ; bit7 = select second menu item by default?  
 wTwoOptionMenuID::
 	ds 1

@@ -1,7 +1,7 @@
 ; **TextBoxBorder**  
 ; テキストボックスを描画する  
 ; - - -  
-; cレジスタ(width) * bレジスタ(height)分の文字が入るテキストボックスの枠を hl から描画する
+; c(width) × b(height)分の文字が入るテキストボックスの枠を hl から描画する
 TextBoxBorder::
 
 	; ボックスの上枠 ┌--------┐ 

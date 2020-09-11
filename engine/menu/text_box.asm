@@ -6,8 +6,11 @@
 ; hl = ???
 DisplayTextBoxID_:
 	ld a, [wTextBoxID]
+
+	; 2択menu -> DisplayTwoOptionMenu
 	cp TWO_OPTION_MENU
 	jp z, DisplayTwoOptionMenu
+
 	ld c, a
 	ld hl, TextBoxFunctionTable
 	ld de, 3
@@ -262,6 +265,7 @@ SwitchStatsCancelText:
 	next "STATS"
 	next "CANCEL@"
 
+; "アッ!"
 JapaneseAhText:
 	db "アッ!@"
 
@@ -386,28 +390,34 @@ DisplayTwoOptionMenu:
 	inc a
 .storeCurrentMenuItem
 	ld [wCurrentMenuItem], a
-	pop hl
+	pop hl	; hl = テキストボックスのボーダーが描画されるべきアドレス
 
-	push hl
-	push hl
+	push hl	; push テキストボックスのボーダーが描画されるべきアドレス
+	push hl	; push テキストボックスのボーダーが描画されるべきアドレス
 	call TwoOptionMenu_SaveScreenTiles
+
+; hl = TwoOptionMenuStrings の対象エントリ (TwoOptionMenuStrings[i])
 	ld a, [wTwoOptionMenuID]
 	ld hl, TwoOptionMenuStrings
 	ld e, a
-	ld d, $0
-	ld a, $5
+	ld d, $0	; de = [wTwoOptionMenuID]
+	ld a, $5	; TwoOptionMenuStringsの各エントリのサイズ
 .menuStringLoop
 	add hl, de
 	dec a
-	jr nz, .menuStringLoop
-	ld a, [hli]
+	jr nz, .menuStringLoop	; hl = TwoOptionMenuStrings + 5*[wTwoOptionMenuID]
+
+	ld a, [hli]	; c = X
 	ld c, a
-	ld a, [hli]
+	ld a, [hli]	; b = Y
 	ld b, a
 	ld e, l
-	ld d, h
-	pop hl
-	push de
+	ld d, h		; de = hl = TwoOptionMenuStrings[i][02] = 1つ目の選択肢の上に空白タイルを置くか
+
+	pop hl	; hl = テキストボックスのボーダーが描画されるべきアドレス
+	push de	; push TwoOptionMenuStrings[i][02]
+
+; 2択menuのテキストボックスを描画 (`call TextBoxBorder` or `call CableClub_TextBoxBorder`)
 	ld a, [wTwoOptionMenuID]
 	cp TRADE_CANCEL_MENU
 	jr nz, .notTradeCancelMenu
@@ -415,30 +425,39 @@ DisplayTwoOptionMenu:
 	jr .afterTextBoxBorder
 .notTradeCancelMenu
 	call TextBoxBorder
+
 .afterTextBoxBorder
 	call UpdateSprites
-	pop hl
+
+; bc = 文字の描画を始めるアドレス(20+2 or 2*20+2)
+	pop hl	; hl = TwoOptionMenuStrings[i][02] = 1つ目の選択肢の上に空白タイルを置くか
 	ld a, [hli]
-	and a ; put blank line before first menu item?
+	and a
 	ld bc, 20 + 2
 	jr z, .noBlankLine
-	ld bc, 2 * 20 + 2
+	ld bc, 2 * 20 + 2	; 1つ目の選択肢の上に空白タイルを置く場合
 .noBlankLine
+
+	; 2択menuのテキストを描画
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
 	ld d, a
-	pop hl
-	add hl, bc
+	pop hl	; hl = テキストボックスのボーダーが描画されるべきアドレス
+	add hl, bc	; hl = 文字の描画を始めるアドレス
 	call PlaceString
+
+	; テキスト描画の遅延を有効化
 	ld hl, wd730
-	res 6, [hl] ; turn on the printing delay
+	res 6, [hl]
+
+	; 2択menuが "No/Yes" でない -> .notNoYesMenu
 	ld a, [wTwoOptionMenuID]
 	cp NO_YES_MENU
 	jr nz, .notNoYesMenu
+
 ; No/Yes menu
-; this menu type ignores the B button
-; it only seems to be used when confirming the deletion of a save file
+; この2択menuでは Bボタンを無視するようにする  
 	xor a
 	ld [wTwoOptionMenuID], a
 	ld a, [wFlags_0xcd60]
@@ -458,6 +477,7 @@ DisplayTwoOptionMenu:
 	ld a, SFX_PRESS_AB
 	call PlaySound
 	jr .pressedAButton
+	
 .notNoYesMenu
 	xor a
 	ld [wTwoOptionMenuID], a
@@ -537,11 +557,17 @@ TwoOptionMenu_RestoreScreenTiles:
 	call UpdateSprites
 	ret
 
-; Format:
-; 00: byte width
-; 01: byte height
-; 02: byte put blank line before first menu item
-; 03: word text pointer
+; **TwoOptionMenuStrings**  
+; 2択menu の 幅,高さ,pointer などを格納したテーブル  
+; - - -  
+; 各エントリは5byte  
+; 00: テキストのとるタイル幅(+2したものがテキストボックス幅)  
+; 01: テキストのとるタイル高さ(+2したものがテキストボックス高さ)  
+; 02: 1つ目の選択肢の上に空白タイルを置くか(0:置かない, 1:置く)  
+; 03-04: 2択menuのテキストのアドレス(2byte)  
+; 
+; 01は基本 1つ目 + 空白 + 2つ目 で3になる 02が1なら 空白 + 1つ目 + 空白 + 2つ目 で4  
+; 02については 0: https://imgur.com/rJQSNz1.png, 1: https://imgur.com/wRa62p9.png
 TwoOptionMenuStrings:
 	db 4,3,0
 	dw .YesNoMenu
@@ -560,24 +586,38 @@ TwoOptionMenuStrings:
 	db 4,3,0
 	dw .NoYesMenu
 
+; "NO/YES"  
+; セーブデータの削除の確認でのみ使われる
 .NoYesMenu
 	db   "NO"
 	next "YES@"
+
+; "YES/NO"
 .YesNoMenu
 	db   "YES"
 	next "NO@"
+
+; "NORTH/WEST"
 .NorthWestMenu
 	db   "NORTH"
 	next "WEST@"
+
+; "SOUTH/EAST"
 .SouthEastMenu
 	db   "SOUTH"
 	next "EAST@"
+
+; "NORTH/EAST"
 .NorthEastMenu
 	db   "NORTH"
 	next "EAST@"
+
+; "TRADE/CANCEL"
 .TradeCancelMenu
 	db   "TRADE"
 	next "CANCEL@"
+
+; "HEAL/CANCEL"
 .HealCancelMenu
 	db   "HEAL"
 	next "CANCEL@"
