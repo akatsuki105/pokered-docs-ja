@@ -4,7 +4,7 @@
 ; メニューのテキストボックスを表示して、カーソルを一番上に表示するところまでを行う  
 ; ゲームの進行状況によって表示内容が変わる  
 ; 
-; ![image](https://imgur.com/VvdxXV8.png)
+; ![image](https://imgur.com/DrqGbC6.png)
 DisplayPCMainMenu::
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
@@ -514,6 +514,13 @@ HMMoveArray:
 	db FLASH
 	db -1
 
+; **DisplayDepositWithdrawMenu**  
+; 画像右下の DEPOSIT/STATS/CANCEL の menu を表示  
+; - - -  
+; WITHDRAW/STATS/CANCEL のときもある  
+; 
+; OUTPUT: carry = 1(deposit or withdrawをした) or 0(しなかった)
+; ![deposit](https://imgur.com/VvLg5kR.png)  
 DisplayDepositWithdrawMenu:
 	; テキストボックスの枠を描画
 	coord hl, 9, 10
@@ -521,7 +528,7 @@ DisplayDepositWithdrawMenu:
 	ld c, 9
 	call TextBoxBorder
 
-; 
+; 1項目目の DEPOSIT(WITHDRAW) を描画
 	ld a, [wParentMenuItem]
 	and a
 	ld de, DepositPCText
@@ -531,21 +538,30 @@ DisplayDepositWithdrawMenu:
 	coord hl, 11, 12
 	call PlaceString
 
+	; 2,3項目目の "STATS/CANCEL" を描画
 	coord hl, 11, 14
 	ld de, StatsCancelPCText
 	call PlaceString
+
+	; (10, 12) にカーソル設置
 	ld hl, wTopMenuItemY
 	ld a, 12
 	ld [hli], a ; wTopMenuItemY
 	ld a, 10
 	ld [hli], a ; wTopMenuItemX
+
+	; 1項目目にカーソルを置き、menu は全部で3項目
 	xor a
-	ld [hli], a ; wCurrentMenuItem
+	ld [hli], a
 	inc hl
 	ld a, 2
-	ld [hli], a ; wMaxMenuItem
+	ld [hli], a
+
+	; (上下方向キーのぞいて)ABボタンのみ有効
 	ld a, A_BUTTON | B_BUTTON
 	ld [hli], a ; wMenuWatchedKeys
+	
+	; その他の変数を初期化
 	xor a
 	ld [hl], a ; wLastMenuItem
 	ld hl, wListScrollOffset
@@ -553,21 +569,30 @@ DisplayDepositWithdrawMenu:
 	ld [hl], a ; wMenuWatchMovingOutOfBounds
 	ld [wPlayerMonNumber], a
 	ld [wPartyAndBillsPCSavedMenuItem], a
+
 .loop
+	; Bボタン -> .exit
 	call HandleMenuInput
 	bit 1, a ; pressed B?
 	jr nz, .exit
+
+	; DEPOSIT(WITHDRAW) を選択 -> .choseDepositWithdraw
 	ld a, [wCurrentMenuItem]
 	and a
 	jr z, .choseDepositWithdraw
+	; STATS を選択 -> .viewStats
 	dec a
 	jr z, .viewStats
+	; CANCEL を選択 -> .exit(fallthrough)
+
 .exit
 	and a
 	ret
+
 .choseDepositWithdraw
 	scf
 	ret
+
 .viewStats
 	call SaveScreenTilesToBuffer1
 	ld a, [wParentMenuItem]
@@ -587,7 +612,7 @@ DisplayDepositWithdrawMenu:
 
 DepositPCText:  db "DEPOSIT@"	; "DEPOSIT"
 WithdrawPCText: db "WITHDRAW@"	; "WITHDRAW"
-StatsCancelPCText:
+StatsCancelPCText:	; "STATS/CANCEL"
 	db   "STATS"
 	next "CANCEL@"
 

@@ -43,6 +43,7 @@
 - [Map](./docs/map/README.md)
 - [メニュー](./docs/menu.md)
 - [missable object](./docs/missable_object.md)
+- [PC](./docs/pc/README.md)
 - [pic](./docs/pic/README.md)
 - [ポケモン図鑑](./docs/pokedex.md)
 - [Pokemon](./docs/pokemon/README.md)
