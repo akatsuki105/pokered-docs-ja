@@ -608,38 +608,49 @@ InitializeSpriteScreenPosition:
 	ld [hl], a      ; c1x6 (screen X position)
 	ret
 
-; スプライトが非表示か、何もできない状態であるか確認する
-; 何もできない状態 = 主人公が歩きモーション中のときとかが該当する
+; **CheckSpriteAvailability**  
+; スプライトが有効か確認する  
+; - - -  
+; スプライトが無効: スプライトが非表示か、プレイヤーの歩きモーション中  
+; 
+; スプライトが有効なら、 UpdateSpriteImage を行う  
+; 
+; スプライトが非表示であるべきなら、c1x2 を 0xff にして実際に非表示にする  
+; ・画面外にいる  
+; ・テキストボックスで隠れる  
+; ・missable object として非表示    
+; 
+; INPUT: [H_CURRENTSPRITEOFFSET] = 対象のスプライト  
+; 
+; OUTPUT: carry = 0(有効) or 1(not 有効)  
 CheckSpriteAvailability:
-	; スプライトが非表示状態か確認
+	; スプライトが missable objects として非表示 -> .spriteInvisible
 	predef IsObjectHidden
 	ld a, [$ffe5]
 	and a
-	jp nz, .spriteInvisible			; スプライトは非表示
+	jp nz, .spriteInvisible
 
-	; a = [$c2X6] = "movement byte 1" ($ff:動かない, $fe:ランダムに歩く, それ以外は未使用) 
-	ld h, wSpriteStateData2 / $100	; h = $c2
+	; [$c2X6] < $fe -> .skipXVisibilityTest
+	ld h, wSpriteStateData2 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
 	ld l, a
 	ld a, [hl]
-
 	cp $fe
-	jr c, .skipXVisibilityTest ; "movement byte 1" < $fe (スプライトの動きがプログラム化されているときなど)
+	jr c, .skipXVisibilityTest
 
-	; b = [$c2X4] = スプライトのY座標
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
-	ld b, [hl]
-
+	ld b, [hl]					; b = [$c2X4] = スプライトのYcoord
 	ld a, [wYCoord]
 	cp b
 	jr z, .skipYVisibilityTest	; プレイヤーとスプライトのY座標が一致
-	jr nc, .spriteInvisible ; スプライトがプレイヤーより画面上で上にいる
+	jr nc, .spriteInvisible ; スプライトが画面より上側
 	add $8                  ; screen is 9 tiles high
 	cp b
-	jr c, .spriteInvisible  ; スプライトがプレイヤーより画面上で下にいる
+	jr c, .spriteInvisible  ; スプライトが画面より下側
+
 .skipYVisibilityTest
 	inc l
 	ld b, [hl]      ; c2x5: X pos (+4)
@@ -674,17 +685,18 @@ CheckSpriteAvailability:
 	cp d
 	jr c, .spriteVisible    ; スプライトがいるグリッド(16*16px)の右上のタイル(8*8px)がテキストボックスに隠れてい"ない"
 
-; スプライトを画面非表示にする
+; スプライトが画面非表示判定を受けた時にここにくる  
+; c1x2 を 0xff にして画面非表示にする  
 .spriteInvisible
-	; a = c1X2 = スプライトのイメージ番号($ffなら画面非表示)
+	; c1X2 = $ff = 画面非表示
 	ld h, wSpriteStateData1 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $2
 	ld l, a
-	; c1X2 = $ff
 	ld [hl], $ff       ; c1x2
 	scf
 	jr .done
+
 ; スプライトを画面に表示する
 .spriteVisible
 	ld c, a
@@ -692,9 +704,9 @@ CheckSpriteAvailability:
 	; a = wWalkCounter == 0 つまりプレイヤーが現在歩きモーション中でないことを確認
 	ld a, [wWalkCounter]
 	and a
-	jr nz, .done           ; if player is currently walking, we're done
+	jr nz, .done ; プレイヤーが歩きモーション中なら UpdateSpriteImage を行わない
 
-	call UpdateSpriteImage ; c1X2を更新
+	call UpdateSpriteImage
 
 	; hl = c2X7
 	inc h
@@ -715,32 +727,31 @@ CheckSpriteAvailability:
 .done
 	ret
 
-; $c1X2を更新する
+; **UpdateSpriteImage**  
+; $c1X2を更新する  
+; - - -  
+; 歩きモーションのカウンタとスプライトの方向の更新を c1X2 に反映する  
+; 
+; INPUT: [H_CURRENTSPRITEOFFSET] = 対象のスプライト  
 UpdateSpriteImage:
-	; hl = $c1X8
+	; b = 新しい $c1X2
 	ld h, $c1
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $8
 	ld l, a
-
-	; a = スプライトの方向
-	; b = 歩きモーションカウンタ
-	ld a, [hli]        ; c1x8: walk animation frame
+	ld a, [hli]
+	ld b, a				; b = 歩きモーションカウンタ
+	ld a, [hl]         	; a = スプライトの方向
+	add b						; b = 歩きモーションカウンタ(c1x8) + スプライトの方向(c1x9) = $C1x2の下位ニブル
 	ld b, a
-	ld a, [hl]         ; c1x9: facing direction
-	; b = a + b
+	ld a, [hSpriteVRAMOffset]  	; VRAMオフセット = $C1x2の上位ニブル
 	add b
 	ld b, a
 
-	ld a, [hSpriteVRAMOffset]  ; current sprite offset (VRAMオフセット)
-	add b
-	ld b, a
-
-	; hl = $c1X2 = スプライトのイメージ番号
+	; c1X2を更新
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $2
 	ld l, a
-
 	ld [hl], b         ; c1x2: sprite to display
 	ret
 
@@ -861,33 +872,34 @@ CanWalkOntoTile:
 	scf                ; set carry (marking failure to walk)
 	ret
 
-; 現在のスプライトが表示されている場所のアドレスのポインタを計算する  
-; これは常に、すべてのスプライトがスナップされる2x2タイルブロック(16*16)の左下のタイルとなる  
-; hlに結果(ポインタ)が格納されて返る
+; **GetTileSpriteStandsOn**  
+; 現在のスプライトが表示されているタイルのアドレスを計算する  
+; - - -  
+; このゲームではスプライトは2×2のタイルで構成されているが、返るのは左下のタイルアドレス   
 ; 
-; 例:  
-; 例えばスクリーン左上から見て左3タイル目、上から4タイル目( (x, y)=(3,4) )の位置にスプライトが立っているなら、
-; wTileMap + 20*(4 + 1) + 3のアドレスがhlに格納されて返る(yが+1されているのはコードを参照)
+; INPUT: [H_CURRENTSPRITEOFFSET] = 対象のスプライト  
+; OUTPUT: hl = 左下のタイルアドレス  
 GetTileSpriteStandsOn:
 	; a = c1x4 = スプライトのY座標
+	; bc = スプライトのYTile * 4
 	ld h, wSpriteStateData1 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
 	ld a, [hli]
-
 	add $4          ; タイルブロックに合わせる(Y座標は常に4px分加算されているので+4して+8にしてタイルに合わせる)
-	and $f0         ; TODO: in case object is currently moving
-	srl a           ; screen Y tile * 4
+	and $f0         ; スプライトを動いていないものとして扱う
+	srl a           ; スプライトのYTile(8*8px) * 4
 	ld c, a
 	ld b, $0
 
 	; a = c1X6 = スプライトのX座標
+	; de = スプライトのXTile
 	inc l
 	ld a, [hl]      ; c1x6: screen X position
 	srl a
 	srl a
-	srl a            ; screen X tile
+	srl a            ; a = スプライトのXTile(8*8px)
 	add SCREEN_WIDTH ; screen X tile + 20
 	ld d, $0
 	ld e, a
@@ -895,7 +907,7 @@ GetTileSpriteStandsOn:
 	; hl = wTileMapの始点
 	coord hl, 0, 0
 
-	; wTileMap + 20*(screen Y tile + 1) + screen X tile
+	; wTileMap + 20*(YTile + 1) + XTile
 	; hlに現在処理中のスプライトが存在している画面のバッファアドレスが入る
 	add hl, bc
 	add hl, bc

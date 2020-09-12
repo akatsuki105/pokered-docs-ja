@@ -181,17 +181,24 @@ BillsPCMenu:
 	ld de, BillsPCMenuText
 	call PlaceString
 
+	; カーソルの初期位置は (1, 2)
 	ld hl, wTopMenuItemY
 	ld a, 2
 	ld [hli], a ; [wTopMenuItemY] = 2
 	dec a
 	ld [hli], a ; [wTopMenuItemX] = 1
+
+	; menuの項目数は 5
 	inc hl
 	inc hl
 	ld a, 4
 	ld [hli], a ; [wMaxMenuItem] = 4
+
+	; (上下方向キーのぞいて)ABボタンのみ有効
 	ld a, A_BUTTON | B_BUTTON
-	ld [hli], a ; [wMenuWatchedKeys] = A_BUTTON | B_BUTTON
+	ld [hli], a
+
+	; その他変数を初期化
 	xor a
 	ld [hli], a ; [wLastMenuItem] = 0
 	ld [hli], a ; [wPartyAndBillsPCSavedMenuItem] = 0
@@ -240,13 +247,14 @@ BillsPCMenu:
 	ld [H_AUTOBGTRANSFERENABLED], a
 	call Delay3
 
-	; ユーザーがメニューを選ぶのを待つ
+	; ユーザーがmenuの項目でA/Bボタンを押すのを待つ
 	call HandleMenuInput
 
-	; b button -> ExitBillsPC
+	; Bボタン -> ExitBillsPC
 	bit 1, a
 	jp nz, ExitBillsPC
 
+	; Aボタン
 	; ユーザーが選んだメニュー項目のカーソルを ▶︎ から ▷ にする
 	call PlaceUnfilledArrowMenuCursor
 
@@ -318,9 +326,11 @@ BillsPCDeposit:
 	jp BillsPCMenu
 
 .boxNotFull
+	; 預けるポケモンの list menu のテキストボックスを表示
 	ld hl, wPartyCount
-	call DisplayMonListMenu	; hl = wPartyCount
+	call DisplayMonListMenu
 	jp c, BillsPCMenu
+
 	call DisplayDepositWithdrawMenu
 	jp nc, BillsPCMenu
 	ld a, [wcf91]
@@ -421,6 +431,7 @@ BillsPCChangeBox:
 	jp BillsPCMenu
 
 ; **DisplayMonListMenu**  
+; ポケモンの list menuのテキストボックスを表示  
 ; - - -  
 ; INPUT: hl = wPartyCount or wNumInBox
 DisplayMonListMenu:
@@ -441,6 +452,7 @@ DisplayMonListMenu:
 	inc a
 	ld [wNameListType], a
 
+	; ポケモンの list menuのテキストボックスを表示
 	ld a, [wPartyAndBillsPCSavedMenuItem]
 	ld [wCurrentMenuItem], a
 	call DisplayListMenuID
@@ -503,18 +515,22 @@ HMMoveArray:
 	db -1
 
 DisplayDepositWithdrawMenu:
+	; テキストボックスの枠を描画
 	coord hl, 9, 10
 	ld b, 6
 	ld c, 9
 	call TextBoxBorder
+
+; 
 	ld a, [wParentMenuItem]
-	and a ; was the Deposit or Withdraw item selected in the parent menu?
+	and a
 	ld de, DepositPCText
 	jr nz, .next
-	ld de, WithdrawPCText
+	ld de, WithdrawPCText	; de = DepositPCText(ポケモンを預ける場合) or WithdrawPCText(引き出す場合)
 .next
 	coord hl, 11, 12
 	call PlaceString
+
 	coord hl, 11, 14
 	ld de, StatsCancelPCText
 	call PlaceString
@@ -569,8 +585,8 @@ DisplayDepositWithdrawMenu:
 	call LoadGBPal
 	jr .loop
 
-DepositPCText:  db "DEPOSIT@"
-WithdrawPCText: db "WITHDRAW@"
+DepositPCText:  db "DEPOSIT@"	; "DEPOSIT"
+WithdrawPCText: db "WITHDRAW@"	; "WITHDRAW"
 StatsCancelPCText:
 	db   "STATS"
 	next "CANCEL@"

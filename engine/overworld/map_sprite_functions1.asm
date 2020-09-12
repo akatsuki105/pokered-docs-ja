@@ -60,7 +60,7 @@ _UpdateSprites:
 ; - - -  
 ; a = $c2Xe の値
 UpdateNonPlayerSprite:
-	; UpdateSpriteImageで利用するためにスプライト番号を$ff93に保存
+	; UpdateSpriteImage で利用するためにスプライト番号を$ff93に保存
 	dec a
 	swap a
 	ld [hSpriteVRAMOffset], a  ; $10 * sprite#  = VRAMオフセット

@@ -1055,7 +1055,13 @@ INCLUDE "home/audio.asm"
 
 
 ; **UpdateSprites**  
-; _UpdateSprites を呼び出している
+; スプライトの更新処理を行う関数  
+; - - -  
+; c1X0のすべてのスプライトの1コマ分の更新処理を行う  
+; 
+; 更新処理:  
+; プレイヤーの場合は、現在の状況に応じて1コマ進める  
+; NPCの場合は、NPCの 移動方向決定+移動開始の1コマ または 歩きモーションを1コマ進める処理 を行う 
 UpdateSprites::
 	; wUpdateSpritesEnabledが$00か$ffのときは何もしない
 	ld a, [wUpdateSpritesEnabled]
@@ -1634,9 +1640,9 @@ AddItemToInventory::
 	ret
 
 ; **DisplayListMenuID**  
-; menuのテキストボックスを表示し各種menu変数に適切な値を設定する  
-; - - - 
-; この関数では listのテキストボックスだけで中身は表示しない  
+; list menuのテキストボックスを表示  
+; - - -  
+; この関数では listのテキストボックスの白部分だけで枠や中身は表示しない  
 ; menu については menu.md参照  
 ; 
 ; INPUT:  
@@ -1681,15 +1687,14 @@ DisplayListMenuID::
 	ld a, [hl]			; list の最初のエントリは項目数
 	ld [wListCount], a
 
-	; 選択メニューのテキストボックスを表示
+	; list menuのテキストボックスを表示
 	ld a, LIST_MENU_BOX
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; draw the menu text box
 
-	; テキストボックスに隠れたスプライトを無効化する
-	call UpdateSprites
+	call UpdateSprites	; テキストボックスに隠れたスプライトを非表示にする
 	
-	; ここから.skipMovingSpritesまでのコードは意味がなさそうに見える
+; ここから.skipMovingSpritesまでのコードは意味がなさそうに見える
 	coord hl, 4, 2 ; coordinates of upper left corner of menu text box
 	lb de, 9, 14 ; height and width of menu text box
 	ld a, [wListMenuID]
@@ -1699,24 +1704,24 @@ DisplayListMenuID::
 
 .skipMovingSprites
 	; menuのwrappingを無効に
-	ld a, 1	; もしlistのエントリが2個未満ならmenuのアイテムのIDの最大値は1
+	ld a, 1
 	ld [wMenuWatchMovingOutOfBounds], a
 	
-	; listのエントリ数(wListPointerのリストのエントリ数)が2未満 -> .setMenuVariables
+	; [wMaxMenuItem] = a(a <= 1) or 2 つまり [wMaxMenuItem]は最大で2
 	ld a, [wListCount]
-	cp 2 ; does the list have less than 2 entries?
+	cp 2
 	jr c, .setMenuVariables
-
-	ld a, 2 ; もしlistが最低でも2個以上のエントリを持つならmenuのアイテムのIDの最大値は2
-
-	; メニューに関する変数を設定
-	; カーソルの座標、どのボタンに対して反応するかなど
+	ld a, 2
 .setMenuVariables
 	ld [wMaxMenuItem], a
+
+	; カーソルの位置を (5, 4) に
 	ld a, 4
 	ld [wTopMenuItemY], a
 	ld a, 5
 	ld [wTopMenuItemX], a
+
+	; (上下方向キーのぞいて)A/B/Selectボタンのみ有効
 	ld a, A_BUTTON | B_BUTTON | SELECT
 	ld [wMenuWatchedKeys], a
 	ld c, 10
@@ -2583,10 +2588,11 @@ IsKeyItem::
 
 ; **DisplayTextBoxID**  
 ; 引数で与えたTextBox IDに対応するテキストボックスを表示する  
-; - - - 
+; - - -  
 ; INPUT:  
 ; [wTextBoxID] = TextBox ID  
 ; b, c = カーソルのy, x (2択メニューのみで引数として与える)  
+; hl = テキストボックスのボーダーが描画されるべきアドレス  
 DisplayTextBoxID::
 	ld a, [H_LOADEDROMBANK]
 	push af

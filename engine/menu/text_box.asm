@@ -20,7 +20,7 @@ DisplayTextBoxID_:
 	call SearchTextBoxTable
 	jr c, .functionTableMatch
 
-	; SearchTextBoxTable に [wTextBoxID]が当てはまるものがある -> .coordTableMatch
+	; TextBoxCoordTable に [wTextBoxID]が当てはまるものがある -> .coordTableMatch
 	ld hl, TextBoxCoordTable
 	ld de, 5
 	call SearchTextBoxTable
