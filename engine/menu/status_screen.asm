@@ -62,7 +62,9 @@ DrawHP_:
 	ret
 
 
-; Predef 0x37
+; **StatusScreen**  
+; Predef 0x37  
+; INPUT: [wMonDataLocation] = 
 StatusScreen:
 	call LoadMonData
 	ld a, [wMonDataLocation]

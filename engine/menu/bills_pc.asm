@@ -594,16 +594,21 @@ DisplayDepositWithdrawMenu:
 	ret
 
 .viewStats
-	call SaveScreenTilesToBuffer1
+	; a = PLAYER_PARTY_DATA(deposit) or BOX_DATA(withdraw)
+	call SaveScreenTilesToBuffer1	; statsから戻るときのために退避
 	ld a, [wParentMenuItem]
 	and a
-	ld a, PLAYER_PARTY_DATA
+	ld a, PLAYER_PARTY_DATA	; deposit
 	jr nz, .next2
-	ld a, BOX_DATA
+	ld a, BOX_DATA			; withdraw
+
 .next2
+	; stats画面
 	ld [wMonDataLocation], a
 	predef StatusScreen
 	predef StatusScreen2
+
+	; stats画面から元に戻る
 	call LoadScreenTilesFromBuffer1
 	call ReloadTilesetTilePatterns
 	call RunDefaultPaletteCommand

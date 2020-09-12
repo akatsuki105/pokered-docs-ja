@@ -1642,7 +1642,7 @@ AddItemToInventory::
 ; **DisplayListMenuID**  
 ; list menuのテキストボックスを表示  
 ; - - -  
-; この関数では listのテキストボックスの白部分だけで枠や中身は表示しない  
+; この関数では listのテキストボックスの枠や中身も表示する  
 ; menu については menu.md参照  
 ; 
 ; INPUT:  
@@ -1725,65 +1725,87 @@ DisplayListMenuID::
 	ld a, A_BUTTON | B_BUTTON | SELECT
 	ld [wMenuWatchedKeys], a
 	ld c, 10
-	call DelayFrames	; return
+	call DelayFrames	; fallthrough
 
+; **DisplayListMenuIDLoop**  
+; - - -  
 DisplayListMenuIDLoop::
-	; 自動的なBG転送を無効化 
+	; list menuをテキストボックス内に表示 
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
-
 	call PrintListMenuEntries
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a ; enable transfer
 	call Delay3
+
+	; 
 	ld a, [wBattleType]
 	and a ; is it the Old Man battle?
 	jr z, .notOldManBattle
+
 .oldManBattle
+	; モンスターボール×50 にカーソルを合わせ選択されたことにする -> .buttonAPressed
+
+	; モンスターボール×50 にカーソル
 	ld a, "▶"
-	Coorda 5, 4 ; place menu cursor in front of first menu entry
+	Coorda 5, 4
 	ld c, 80
 	call DelayFrames
 	xor a
 	ld [wCurrentMenuItem], a
+
+	; [wMenuCursorLocation] = (5, 4)
 	coord hl, 5, 4
 	ld a, l
 	ld [wMenuCursorLocation], a
 	ld a, h
 	ld [wMenuCursorLocation + 1], a
 	jr .buttonAPressed
+
 .notOldManBattle
 	call LoadGBPal
 	call HandleMenuInput
 	push af
 	call PlaceMenuCursor
 	pop af
-	bit 0, a ; was the A button pressed?
+	bit 0, a
 	jp z, .checkOtherKeys
+	; Aボタン -> .buttonAPressed(fallthrough)
+
 .buttonAPressed
+	; 選択した項目のカーソルを白抜き▷に
 	ld a, [wCurrentMenuItem]
 	call PlaceUnfilledArrowMenuCursor
 
-; pointless because both values are overwritten before they are read
+	; この3行は無駄なコード
 	ld a, $01
 	ld [wMenuExitMethod], a
 	ld [wChosenMenuItem], a
 
 	xor a
 	ld [wMenuWatchMovingOutOfBounds], a
+
+	; c = 選んだ項目の list menu全体でのオフセット
 	ld a, [wCurrentMenuItem]
 	ld c, a
 	ld a, [wListScrollOffset]
 	add c
 	ld c, a
+
+	; list menu の空白の領域を選択(バグ対策?) -> ExitListMenu
 	ld a, [wListCount]
 	and a ; is the list empty?
-	jp z, ExitListMenu ; if so, exit the menu
+	jp z, ExitListMenu
+
+	; やめるなどの一番下の番兵を選択 -> ExitListMenu
 	dec a
-	cp c ; did the player select Cancel?
-	jp c, ExitListMenu ; if so, exit the menu
+	cp c
+	jp c, ExitListMenu
+
+	; [wWhichPokemon] = 選んだ項目の list menu全体でのオフセット
 	ld a, c
 	ld [wWhichPokemon], a
+	
 	ld a, [wListMenuID]
 	cp ITEMLISTMENU
 	jr nz, .skipMultiplying
