@@ -1,9 +1,11 @@
 ; **DisplayTextBoxID_**  
 ; 様々なテキストボックスを描画する関数  
 ; - - -  
+; 使いまわされる定型分的なテキストボックスとテキストなら中のテキストも描画する  
+; 
 ; INPUT:  
 ; [wTextBoxID] = TextBoxID  
-; hl = ???
+; hl = テキストボックスのボーダーが描画されるべきアドレス  
 DisplayTextBoxID_:
 	ld a, [wTextBoxID]
 
@@ -11,53 +13,83 @@ DisplayTextBoxID_:
 	cp TWO_OPTION_MENU
 	jp z, DisplayTwoOptionMenu
 
+	; TextBoxFunctionTable に [wTextBoxID]が当てはまるものがある -> .functionTableMatch
 	ld c, a
 	ld hl, TextBoxFunctionTable
 	ld de, 3
 	call SearchTextBoxTable
 	jr c, .functionTableMatch
+
+	; SearchTextBoxTable に [wTextBoxID]が当てはまるものがある -> .coordTableMatch
 	ld hl, TextBoxCoordTable
 	ld de, 5
 	call SearchTextBoxTable
 	jr c, .coordTableMatch
+
+	; TextBoxTextAndCoordTable に [wTextBoxID]が当てはまるものがある -> .textAndCoordTableMatch
 	ld hl, TextBoxTextAndCoordTable
 	ld de, 9
 	call SearchTextBoxTable
 	jr c, .textAndCoordTableMatch
+
+	; 当てはまるものなし -> return
 .done
 	ret
+
 .functionTableMatch
+	; hl = address of function
 	ld a, [hli]
 	ld h, [hl]
-	ld l, a ; hl = address of function
+	ld l, a
+
+	; call hl でテキストボックスを描画
 	ld de, .done
 	push de
-	jp hl ; jump to the function
+	jp hl
+
 .coordTableMatch
+	; TextBoxBorder の実行に必要な引数を取得して テキストボックスを描画
 	call GetTextBoxIDCoords
 	call GetAddressOfScreenCoords
 	call TextBoxBorder
 	ret
+	
 .textAndCoordTableMatch
+	; まずテキストボックスを描画
 	call GetTextBoxIDCoords
 	push hl
 	call GetAddressOfScreenCoords
 	call TextBoxBorder
 	pop hl
+
 	call GetTextBoxIDText
+
+	; wd730 を退避
 	ld a, [wd730]
 	push af
+
+	; 定型分は即時に文字が描画される必要がある
 	ld a, [wd730]
-	set 6, a ; no pauses between printing each letter
+	set 6, a
 	ld [wd730], a
+
+	; 定型分を描画
 	call PlaceString
+
+	; wd730 を復帰
 	pop af
 	ld [wd730], a
 	call UpdateSprites
 	ret
 
-; function to search a table terminated with $ff for a byte matching c in increments of de
-; sets carry flag if a match is found and clears carry flag if not
+; **SearchTextBoxTable**  
+; hlで指定した 終端記号0xffの エントリサイズがdeのテーブルから エントリが c に合うものを探す関数  
+; - - -  
+; エントリの最初の 1byte が c に合うものを探す  
+; 
+; OUTPUT:  
+; hl = 該当エントリの2byte目(TextBoxの次のバイト)  
+; carry = 1(見つかった) or 0(見つからない)  
 SearchTextBoxTable:
 	dec de
 .loop
@@ -73,30 +105,41 @@ SearchTextBoxTable:
 .notFound
 	ret
 
-; function to load coordinates from the TextBoxCoordTable or the TextBoxTextAndCoordTable
-; INPUT:
-; hl = address of coordinates
-; OUTPUT:
-; b = height
-; c = width
-; d = row of upper left corner
-; e = column of upper left corner
+; **GetTextBoxIDCoords**  
+; TextBoxCoordTable か TextBoxTextAndCoordTable の該当エントリからテキストボックスの座標プロパティを取り出す  
+; - - -  
+; INPUT:  
+; hl = 該当エントリの2バイト目(TextBoxCoordTable[i][1] or TextBoxTextAndCoordTable[i][1])  
+; 
+; OUTPUT:  
+; b = テキストボックスの高さ  
+; c = テキストボックスの幅  
+; d = y0(左上)   
+; e = x0(左上)  
 GetTextBoxIDCoords:
-	ld a, [hli] ; column of upper left corner
+	ld a, [hli] ; x0(左上)
 	ld e, a
-	ld a, [hli] ; row of upper left corner
+	ld a, [hli] ; y0(左上)
 	ld d, a
-	ld a, [hli] ; column of lower right corner
+	ld a, [hli] ; x1(右下)
 	sub e
 	dec a
 	ld c, a     ; c = width
-	ld a, [hli] ; row of lower right corner
+	ld a, [hli] ; y1(右下)
 	sub d
 	dec a
 	ld b, a     ; b = height
 	ret
 
-; function to load a text address and text coordinates from the TextBoxTextAndCoordTable
+; **GetTextBoxIDText**  
+; TextBoxTextAndCoordTable から テキストのアドレスと coordを取得する  
+; - - -  
+; INPUT:  
+; hl = 該当エントリの2バイト目(TextBoxTextAndCoordTable[i][1])  
+; 
+; OUTPUT:  
+; de = テキストのアドレス  
+; hl = テキストの始まる coordの wTileMap でのタイルアドレス
 GetTextBoxIDText:
 	ld a, [hli]
 	ld e, a
@@ -111,12 +154,15 @@ GetTextBoxIDText:
 	pop de ; restore text address
 	ret
 
-; function to point hl to the screen coordinates
-; INPUT:
-; d = row
-; e = column
-; OUTPUT:
-; hl = address of upper left corner of text box
+; **GetAddressOfScreenCoords**  
+; hl が画面のタイルアドレスを指すようにする  
+; - - -  
+; INPUT:  
+; d = Ycoord  
+; e = Xcoord  
+; 
+; OUTPUT:  
+; hl = de のcoordの wTileMap でのタイルアドレス  
 GetAddressOfScreenCoords:
 	push bc
 	coord hl, 0, 0
@@ -133,40 +179,38 @@ GetAddressOfScreenCoords:
 	add hl, de
 	ret
 
-; Format:
-; 00: text box ID
-; 01-02: function address
+; **TextBoxFunctionTable**  
+; TextBoxID -> 描画関数 への mapping  
+; - - -  
+; 各エントリは 3byte で終端記号は0xff  
+; TextBoxID(1byte) -> addr(2byte)  
 TextBoxFunctionTable:
 	dbw MONEY_BOX, DisplayMoneyBox
 	dbw BUY_SELL_QUIT_MENU, DoBuySellQuitMenu
 	dbw FIELD_MOVE_MON_MENU, DisplayFieldMoveMonMenu
 	db $ff ; terminator
 
-; Format:
-; 00: text box ID
-; 01: column of upper left corner
-; 02: row of upper left corner
-; 03: column of lower right corner
-; 04: row of lower right corner
+; **TextBoxCoordTable**  
+; TextBoxID -> 描画範囲 への mapping  
+; - - -  
+; `db TextBoxID x0, y0, x1, y1` (16*16のマス単位, 左上 -> 右下) 
 TextBoxCoordTable:
 	db MESSAGE_BOX,       0, 12, 19, 17
 	db $03,               0,  0, 19, 14
 	db $07,               0,  0, 11,  6
-	db LIST_MENU_BOX,     4,  2, 19, 12
+	db LIST_MENU_BOX,     4,  2, 19, 12	; (4, 2) -> (19, 12)
 	db $10,               7,  0, 19, 17
-	db MON_SPRITE_POPUP,  6,  4, 14, 13
+	db MON_SPRITE_POPUP,  6,  4, 14, 13	; (6, 4) -> (14, 13) https://imgur.com/0TKpIiz.png
 	db $ff ; terminator
 
-; Format:
-; 00: text box ID
-; 01: column of upper left corner
-; 02: row of upper left corner
-; 03: column of lower right corner
-; 04: row of lower right corner
-; 05-06: address of text
-; 07: column of beginning of text
-; 08: row of beginning of text
-; table of window positions and corresponding text [key, start column, start row, end column, end row, text pointer [2 bytes], text column, text row]
+; **TextBoxTextAndCoordTable**  
+; TextBoxID -> 使いまわされるテキストボックスとテキスト内容 のmapping
+; - - -  
+; フォーマット:  
+; db TextBoxID  
+; db x0,y0,x1,y1  
+; dw Textのアドレス  
+; db Textの描画を始めるcoord  
 TextBoxTextAndCoordTable:
 	db JP_MOCHIMONO_MENU_TEMPLATE
 	db 0,0,14,17   ; text box coordinates
@@ -222,36 +266,44 @@ TextBoxTextAndCoordTable:
 	db 11,8,19,17  ; text box coordinates
 	dw JapanesePokedexMenu
 	db 12,10 ; text coordinates
+	; note that there is no terminator
 
-; note that there is no terminator
-
+; "BUY SELL QUIT"
 BuySellQuitText:
 	db   "BUY"
 	next "SELL"
 	next "QUIT@@"
 
+; "USE TOSS"
 UseTossText:
 	db   "USE"
 	next "TOSS@"
 
+; "きろく メッセージ"
 JapaneseSaveMessageText:
 	db   "きろく"
 	next "メッセージ@"
 
+; "はやい おそい"
 JapaneseSpeedOptionsText:
 	db   "はやい"
 	next "おそい@"
 
+; "MONEY"
 MoneyText:
 	db "MONEY@"
 
+; "もちもの"
 JapaneseMochimonoText:
 	db "もちもの@"
 
+; "つづきから さいしょから"
 JapaneseMainMenuText:
 	db   "つづきから"
 	next "さいしょから@"
 
+; "FIGHT PKMN"  
+; "ITEM RUN"  
 BattleMenuText:
 	db   "FIGHT ",$E1,$E2
 	next "ITEM  RUN@"
@@ -348,14 +400,16 @@ DoBuySellQuitMenu:
 	ret
 
 ; **DisplayTwoOptionMenu**  
-; 2択menuを描画する
+; 2択menuを描画する  
 ; - - -  
-; 2択menuは
-; 
 ; INPUT:  
 ; b = 一番上(ID 0)の項目のカーソルの位置の Ycoords  
 ; c = 一番上(ID 0)の項目のカーソルの位置の Xcoords  
 ; hl = テキストボックスのボーダーが描画されるべきアドレス  
+; [wTwoOptionMenuID] = 表示する2択menu の種類  
+; 
+; OUTPUT:  
+; [wMenuExitMethod] = CHOSE_FIRST_ITEM or CHOSE_SECOND_ITEM  
 DisplayTwoOptionMenu:
 	push hl
 
@@ -370,9 +424,9 @@ DisplayTwoOptionMenu:
 	ld [wMenuExitMethod], a
 
 	ld a, A_BUTTON | B_BUTTON
-	ld [wMenuWatchedKeys], a	; [wMenuWatchedKeys] = A_BUTTON | B_BUTTON
+	ld [wMenuWatchedKeys], a	; (上下方向キーのぞいて)ABボタンのみ有効
 	ld a, $1
-	ld [wMaxMenuItem], a		; [wMaxMenuItem] = 1 (Yes, Noの2つなので)
+	ld [wMaxMenuItem], a		; menu を 2択に
 	ld a, b
 	ld [wTopMenuItemY], a		; [wTopMenuItemY] = b
 	ld a, c
@@ -392,9 +446,10 @@ DisplayTwoOptionMenu:
 	ld [wCurrentMenuItem], a
 	pop hl	; hl = テキストボックスのボーダーが描画されるべきアドレス
 
-	push hl	; push テキストボックスのボーダーが描画されるべきアドレス
-	push hl	; push テキストボックスのボーダーが描画されるべきアドレス
-	call TwoOptionMenu_SaveScreenTiles
+	; 2択 menu から元に戻るために 2択menu が出る前の状態を退避
+	push hl
+	push hl
+	call TwoOptionMenu_SaveScreenTiles	
 
 ; hl = TwoOptionMenuStrings の対象エントリ (TwoOptionMenuStrings[i])
 	ld a, [wTwoOptionMenuID]
@@ -457,65 +512,88 @@ DisplayTwoOptionMenu:
 	jr nz, .notNoYesMenu
 
 ; No/Yes menu
+; セーブデータの削除の確認でのみ使われる
 ; この2択menuでは Bボタンを無視するようにする  
+	; [wTwoOptionMenuID] = [wFlags_0xcd60] = 0
 	xor a
 	ld [wTwoOptionMenuID], a
 	ld a, [wFlags_0xcd60]
-	push af
+
+	push af ; push 0
+
+	; A/Bボタンが押された時にサウンドをならさない
 	push hl
 	ld hl, wFlags_0xcd60
 	bit 5, [hl]
-	set 5, [hl] ; don't play sound when A or B is pressed in menu
+	set 5, [hl]
 	pop hl
+
 .noYesMenuInputLoop
-	call HandleMenuInput
-	bit 1, a ; A button pressed?
-	jr nz, .noYesMenuInputLoop ; try again if A was not pressed
-	pop af
-	pop hl
-	ld [wFlags_0xcd60], a
+; {
+	call HandleMenuInput	; No/Yesの2択でユーザー入力(A/B)を待つ
+	bit 1, a
+	jr nz, .noYesMenuInputLoop ; Bボタンは無視
+; }
+
+	; Aボタンが押された場合 -> .pressedAButton
+	pop af	; af = 0
+	pop hl	; hl = テキストボックスのボーダーが描画されるべきアドレス
+	ld [wFlags_0xcd60], a	; [wFlags_0xcd60] = 0
 	ld a, SFX_PRESS_AB
 	call PlaySound
 	jr .pressedAButton
-	
+
+; "No/Yes" menu以外は文言は違えど処理は同じなので 2択menuが "No/Yes" でないときにここにくる
 .notNoYesMenu
 	xor a
-	ld [wTwoOptionMenuID], a
+	ld [wTwoOptionMenuID], a	; [wTwoOptionMenuID] = 0
+
+	; 2択menuでユーザー入力(A/B)を待つ
 	call HandleMenuInput
-	pop hl
-	bit 1, a ; A button pressed?
-	jr nz, .choseSecondMenuItem ; automatically choose the second option if B is pressed
+
+	pop hl	; hl = テキストボックスのボーダーが描画されるべきアドレス
+
+	; Bボタンが押された時は強制的に2番目の択を選んだことにする
+	bit 1, a
+	jr nz, .choseSecondMenuItem
+
+	; Aボタンが押された時
 .pressedAButton
+	; [wChosenMenuItem]のオフセットが0以上 つまり 2番目の択を選んだ -> .choseSecondMenuItem
 	ld a, [wCurrentMenuItem]
 	ld [wChosenMenuItem], a
 	and a
 	jr nz, .choseSecondMenuItem
-; chose first menu item
+
+	; 1番目の択を選んだ
 	ld a, CHOSE_FIRST_ITEM
 	ld [wMenuExitMethod], a
 	ld c, 15
 	call DelayFrames
-	call TwoOptionMenu_RestoreScreenTiles
+	call TwoOptionMenu_RestoreScreenTiles 	; 2択前に画面を戻す
 	and a
 	ret
+
 .choseSecondMenuItem
+	; この3行は必要?
 	ld a, 1
 	ld [wCurrentMenuItem], a
 	ld [wChosenMenuItem], a
+
 	ld a, CHOSE_SECOND_ITEM
 	ld [wMenuExitMethod], a
 	ld c, 15
 	call DelayFrames
-	call TwoOptionMenu_RestoreScreenTiles
+	call TwoOptionMenu_RestoreScreenTiles	; 2択前に画面を戻す
 	scf
 	ret
 
 ; **TwoOptionMenu_SaveScreenTiles**  
-; 2択menuのタイルを wBuffer に保存する  
+; 2択menu で上書きされるタイルを wBuffer に保存する  
 ; - - -  
 ; 2択menu左上から6×5タイル(x×y)分のタイルが保存される  
 ; 2択menuの種類によっては全部保存しきれないものもある  
-; その場合は、保存しきれなかった右下のタイルは関数終了後も画面に残り続けるので大丈夫  
+; その場合は、保存しきれなかった右下のタイルは関数終了後も画面に残り続けるので大丈夫?  
 TwoOptionMenu_SaveScreenTiles:
 	ld de, wBuffer
 	lb bc, 5, 6	; 5*6 = 30(wBufferのサイズ)
@@ -538,6 +616,10 @@ TwoOptionMenu_SaveScreenTiles:
 
 	ret
 
+; **TwoOptionMenu_RestoreScreenTiles**  
+; 2択menu で上書きされたタイルを上書きされる前の状態に戻す  
+; - - -  
+; 上書きされる前のタイルは TwoOptionMenu_SaveScreenTiles で wBuffer に退避している
 TwoOptionMenu_RestoreScreenTiles:
 	ld de, wBuffer
 	lb bc, 5, 6

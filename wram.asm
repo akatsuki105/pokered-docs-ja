@@ -1311,7 +1311,7 @@ wRightGBMonSpecies:: ; cd5f
 ; bit 1: かいりきのアニメーション再生を待機中  
 ; bit 3: 普通のPCを使っているか (0ならマサキのパソコンを使用している)  
 ; bit 4: 1 -> .skipMovingSprites  
-; bit 5: don't play sound when A or B is pressed in menu  
+; bit 5: 1なら menu で A/Bボタンが押された時にサウンドをならさない  
 ; bit 6: 一度かいりきの岩を押してみた状態か (you need to push twice before it will move)  
 wFlags_0xcd60::
 	ds 1
@@ -2424,7 +2424,7 @@ wLinkState:: ; d12b
 	ds 1
 
 ; d12c  
-; bit0-3: TwoOptionMenuStringsの対象エントリ(0~7)を指定する  
+; bit0-3: TwoOptionMenuStrings の対象エントリ(0~7)を指定する  
 ; bit7 = select second menu item by default?  
 wTwoOptionMenuID::
 	ds 1
@@ -2438,15 +2438,15 @@ wOutOfBattleBlackout:: ; d12d
 	ds 1
 
 ; d12e  
-; ユーザーがメニューからどのように抜けたかを記録している
+; ユーザーが menu からどのように抜けたかを記録している
 ; 
 ; buy/sell/quitメニューの場合  
-; - $01 = ユーザーがAボタンでアイテムを選択した
-; - $02 = ユーザーがBボタンでキャンセルした
+; $01 = ユーザーがAボタンでアイテムを選択した  
+; $02 = ユーザーがBボタンでキャンセルした  
 ; 
 ; 2択メニューの場合:  
-; - $01 = 上のアイテムでAボタンを押した
-; - $02 = Bボタンを押したか、下のアイテムでAボタンを押した
+; $01 = 上のアイテムでAボタンを押した  
+; $02 = Bボタンを押したか、下のアイテムでAボタンを押した  
 wMenuExitMethod::
 	ds 1
 
