@@ -1738,9 +1738,9 @@ DisplayListMenuIDLoop::
 	ld [H_AUTOBGTRANSFERENABLED], a ; enable transfer
 	call Delay3
 
-	; 
+	; トキワシティの老人によるポケモン捕獲デモ -> .notOldManBattle
 	ld a, [wBattleType]
-	and a ; is it the Old Man battle?
+	and a
 	jr z, .notOldManBattle
 
 .oldManBattle
@@ -1805,12 +1805,14 @@ DisplayListMenuIDLoop::
 	; [wWhichPokemon] = 選んだ項目の list menu全体でのオフセット
 	ld a, c
 	ld [wWhichPokemon], a
-	
+
+	; list menuの内容が アイテム以外 -> .skipMultiplying
 	ld a, [wListMenuID]
 	cp ITEMLISTMENU
 	jr nz, .skipMultiplying
-; if it's an item menu
-	sla c ; item entries are 2 bytes long, so multiply by 2
+
+; アイテムのlist menuのとき
+	sla c ; itemの各エントリは2byteなので ×2
 .skipMultiplying
 	ld a, [wListPointer]
 	ld l, a

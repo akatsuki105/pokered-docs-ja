@@ -26,4 +26,4 @@ menu のどの項目を選択しているかを識別するために項目に割
 
 ## list menu
 
-[list.md](./list.md) 参照
+[list menu](./list_menu.md) 参照

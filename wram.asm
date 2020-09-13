@@ -1592,6 +1592,8 @@ wItemList::
 	ds 16
 
 ; cf8b  
+; listの先頭のアドレスを格納する  
+; e.g. OldManItemList, wPartyCount
 wListPointer::
 	ds 2
 
