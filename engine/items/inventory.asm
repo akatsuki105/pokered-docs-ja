@@ -142,15 +142,15 @@ AddItemToInventory_:
 	ld [wItemQuantity], a ; [wItemQuantity]を関数が呼ばれたときの値に戻す
 	ret
 
-; function to remove an item (in varying quantities) from the player's bag or PC box  
+; プレイヤーのかばんかPCから指定した個数だけ指定したアイテムを削除する関数  
 ; INPUT:  
-; - hl = address of inventory (either wNumBagItems or wNumBoxItems)  
-; - [wWhichPokemon] = index (within the inventory) of the item to remove  
-; - [wItemQuantity] = quantity to remove  
+; HL = 削除対象のインベントリのポインタ(wNumBagItems(かばん) または wNumBoxItems(PC))  
+; [wRemoveItemIndex] = 削除する対象のアイテムがインベントリの何番目にあるか  
+; [wItemQuantity] = 削除する個数  
 RemoveItemFromInventory_:
 	push hl
 	inc hl
-	ld a, [wWhichPokemon] ; index (within the inventory) of the item being removed
+	ld a, [wRemoveItemIndex] ; index (within the inventory) of the item being removed
 	sla a
 	add l
 	ld l, a

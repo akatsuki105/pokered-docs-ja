@@ -1612,6 +1612,17 @@ wItemPrices::
 wcf91:: ds 1
 
 ; cf92  
+; RemoveItemFromInventory の対象のオフセット(かばんの先頭を0, 1, 2, 3, 4, ...)  
+wRemoveItemIndex::
+
+; cf92  
+; list menu で選択した項目のoffset (画面表示中のものではなく、list全体でのoffset)
+wListMenuOffset::
+
+; cf92
+wFourTempCtr::
+
+; cf92  
 ; どのポケモンがセレクトされているか  
 wWhichPokemon::
 	ds 1

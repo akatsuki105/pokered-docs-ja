@@ -47,7 +47,7 @@ UsedCut:
 	ld a, 1
 	ld [wActionResultOrTookBattleTurn], a ; used cut
 
-	; 居合切りの際に、ポケモンの名前をテキストとして出すので名前(ニックネーム)を取得する
+	; 居合切りの際に、ポケモンの名前をテキストとして出すので名前を取得する
 	ld a, [wWhichPokemon]
 	ld hl, wPartyMonNicks
 	call GetPartyMonName

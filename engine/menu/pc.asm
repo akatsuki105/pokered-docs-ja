@@ -114,7 +114,7 @@ AccessedMyPCText:
 	TX_FAR _AccessedMyPCText
 	db "@"
 
-; かばんからhItemToRemoveID経由で渡されたアイテムIDと一致するアイテムを1つ取り除く
+; かばんから hItemToRemoveID 経由で渡されたアイテムIDと一致するアイテムを1つ取り除く
 RemoveItemByID:
 	ld hl, wBagItems
 	ld a, [hItemToRemoveID]
@@ -123,31 +123,33 @@ RemoveItemByID:
 	; ループカウンタを初期化
 	xor a
 	ld [hItemToRemoveIndex], a
-.loop
-	; a = 次のアイテムID
-	ld a, [hli]
 
-	; かばんの底(『やめる』？)に到達
-	cp -1 ; reached terminator?
+; かばんの中に削除対象のアイテムIDと一致するものがあるか調べる
+.loop
+; {
+	ld a, [hli]	; a = アイテムID
+
+	; かばんの底(『やめる』？)に到達 -> return
+	cp -1
 	ret z
 
 	; Remove対象のアイテム発見 
 	cp b
 	jr z, .foundItem
 
-	inc hl 	; アイテムID -> アイテムの個数
-
-	; ループカウンタをインクリメント
+	; 次のループ
+	inc hl
 	ld a, [hItemToRemoveIndex]
 	inc a
 	ld [hItemToRemoveIndex], a
-
 	jr .loop
+; }
+
 .foundItem
 	; 見つけたアイテムをかばんから1つ削除
 	ld a, $1
 	ld [wItemQuantity], a
 	ld a, [hItemToRemoveIndex]
-	ld [wWhichPokemon], a
+	ld [wRemoveItemIndex], a
 	ld hl, wNumBagItems
 	jp RemoveItemFromInventory

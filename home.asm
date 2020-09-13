@@ -274,13 +274,13 @@ DrawHPBar::
 ; - - -  
 ; 
 ; INPUT:  
-; - [wWhichPokemon] = パーティやボックスのポケモンのインデックス
-; - [wMonDataLocation] = source (00: プレイヤーのパーティ/01: エネミーのパーティ/02: 現在のbox/03: 育て屋)
+; [wWhichPokemon] = パーティやボックスのポケモンのインデックス  
+; [wMonDataLocation] = source (00: プレイヤーのパーティ/01: エネミーのパーティ/02: 現在のbox/03: 育て屋)  
 ; 
 ; OUTPUT:  
-; - [wcf91] = pokemon ID
-; - wLoadedMon = base address of pokemon data
-; - wMonHeader = base address of base stats
+; [wcf91] = pokemon ID  
+; wLoadedMon = base address of pokemon data  
+; wMonHeader = base address of base stats  
 LoadMonData::
 	jpab LoadMonData_
 
@@ -704,17 +704,15 @@ GetPartyMonName2::
 	ld hl, wPartyMonNicks
 
 ; **GetPartyMonName**  
-; ポケモンの名前を取得する
-; - - - 
-; 種族名でもニックネームでもどちらでもOK 
+; ポケモンの名前を取得する  
+; - - -  
+; INPUT:  
+; a = 対象のポケモンのインデックス  
+; hl = ポケモンの名前リスト(wBoxMonNicks or wPartyMonNicks or wDayCareMonName)  
 ; 
-; INPUT: 
-; - a = 対象のポケモンのインデックス
-; - hl = ポケモンの名前リスト e.g. wBoxMonNicks
-; 
-; OUTPUT:
-; - de = ポケモンの名前のポインタ
-; - [wcd6d] = ポケモンの名前の文字列データ
+; OUTPUT:  
+; de = ポケモンの名前のポインタ  
+; [wcd6d] = ポケモンの名前の文字列データ  
 GetPartyMonName::
 	push hl
 	push bc
@@ -1602,10 +1600,10 @@ AddAmountSoldToMoney::
 	jp WaitForSoundToFinish
 
 ; プレイヤーのかばんかPCから指定した個数だけ指定したアイテムを削除する関数  
-; INPUT:
-; - HL = 削除対象のインベントリのポインタ(wNumBagItems(かばん) または wNumBoxItems(PC))
-; - [wWhichPokemon] = 削除する対象のアイテムがインベントリの何番目にあるか
-; - [wItemQuantity] = 削除する個数
+; INPUT:  
+; HL = 削除対象のインベントリのポインタ(wNumBagItems(かばん) または wNumBoxItems(PC))  
+; [wRemoveItemIndex] = 削除する対象のアイテムがインベントリの何番目にあるか  
+; [wItemQuantity] = 削除する個数  
 RemoveItemFromInventory::
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -1818,9 +1816,9 @@ DisplayListMenuIDLoop::
 	cp c
 	jp c, ExitListMenu
 
-	; [wWhichPokemon] = 選んだ項目の list menu全体でのオフセット
+	; [wListMenuOffset] = 選んだ項目の list menu全体でのオフセット
 	ld a, c
-	ld [wWhichPokemon], a
+	ld [wListMenuOffset], a
 
 	; list menuの内容が アイテム以外 -> .skipMultiplying
 	ld a, [wListMenuID]
@@ -1880,7 +1878,7 @@ DisplayListMenuIDLoop::
 	jr z, .getPokemonName
 	ld hl, wBoxMonNicks ; box pokemon names
 .getPokemonName
-	ld a, [wWhichPokemon]
+	ld a, [wListMenuOffset]
 	call GetPartyMonName
 .storeChosenEntry ; store the menu entry that the player chose and return
 	ld de, wcd6d
@@ -2146,37 +2144,34 @@ PrintListMenuEntries::
 	ld d, a
 	inc de
 
-	; a = [wListScrollOffset] = 現在画面一番上に表示されているアイテムのメニューでのオフセット
-	; [wListMenuID] != ITEMLISTMENU => .skipMultiplying
+; de = menu画面一番上のアイテムの list のエントリ
 	ld a, [wListScrollOffset]
 	ld c, a
 	ld a, [wListMenuID]
 	cp ITEMLISTMENU
 	ld a, c
-	jr nz, .skipMultiplying
-	
-	; かばんかshopの売り物はエントリがリストの各エントリが2バイトなので2倍する
-	sla a 	; a *= 2
-	sla c	; c *= 2
+	jr nz, .skipMultiplying	; [wListMenuID] != ITEMLISTMENU => .skipMultiplying
+	sla a 	; a *= 2	アイテムリストの各エントリは2バイトなので2倍する
+	sla c	; c *= 2	アイテムリストの各エントリは2バイトなので2倍する
 .skipMultiplying
-	; de = 現在画面一番上に表示されているアイテムのポインタ
 	add e
 	ld e, a
 	jr nc, .noCarry
 	inc d
 .noCarry
-	coord hl, 6, 4 ; coordinates of first list entry name
+
+	coord hl, 6, 4 ; (6, 4) = 1項目目のcoord
 	ld b, 4 ; list menuに1度に表示できるのは4アイテムまで
 .loop
-	; [wWhichPokemon] = 4
+	; [wFourTempCtr] = 4
 	ld a, b
-	ld [wWhichPokemon], a
+	ld [wFourTempCtr], a
 
-	; [wd11e] = 現在画面一番上に表示されているアイテムのID
+	; [wd11e] = menu画面一番上のアイテムのID
 	ld a, [de]
 	ld [wd11e], a
 
-	; 『現在画面一番上に表示されているアイテム』が『やめる』の場合 => .printCancelMenuItem
+	; 現在画面一番上に表示されているアイテム が『やめる』の場合 => .printCancelMenuItem
 	cp $ff
 	jp z, .printCancelMenuItem
 
@@ -2186,24 +2181,17 @@ PrintListMenuEntries::
 	push hl
 	push de
 
-	; list menuがPCBoxのポケモン選択のlist menuの場合
+; ここから .placeNameString までで、 list menu に表示するアイテムの名前を取得している
 	ld a, [wListMenuID]
 	and a
-	jr z, .pokemonPCMenu
-
-	; list menuが技選択のlist menu
+	jr z, .pokemonPCMenu	; list menuが ポケモン選択リスト の場合 -> .pokemonPCMenu
 	cp MOVESLISTMENU
-	jr z, .movesMenu
-
-	; アイテム選択のlist menuを処理
+	jr z, .movesMenu		; list menuが 技選択リスト の場合 -> .movesMenu
 .itemMenu
 	call GetItemName
 	jr .placeNameString
-
-	; ポケモン選択のlist menuを処理
 .pokemonPCMenu
 	push hl
-
 	; hl = wPartyMonNicks or wBoxMonNicks
 	ld hl, wPartyCount
 	ld a, [wListPointer]
@@ -2211,27 +2199,23 @@ PrintListMenuEntries::
 	ld hl, wPartyMonNicks
 	jr z, .getPokemonName
 	ld hl, wBoxMonNicks ; box pokemon names
-
 .getPokemonName
-	; a = 4 - [wWhichPokemon]
-	ld a, [wWhichPokemon]
+	; a = 4 - [wFourTempCtr]
+	ld a, [wFourTempCtr]
 	ld b, a
 	ld a, 4	; list menuなのでmax4(パーティ選択ではなくPCBoxのポケモン選択)
 	sub b
-
-	; a = [wListScrollOffset] + 4 - [wWhichPokemon] = ポケモンのlist menuでのオフセット
+	; a = [wListScrollOffset] + 4 - [wFourTempCtr] = ポケモンのlist menuでのオフセット
 	ld b, a
 	ld a, [wListScrollOffset]
 	add b
-	
 	call GetPartyMonName	; hl += NAME_LENGTH * a
 	pop hl
 	jr .placeNameString
-
-	; 技選択のlist menuを処理
 .movesMenu
 	call GetMoveName
 
+; この時点で
 	; de => 名前のポインタ
 	; hl => リストの配置先のタイルアドレス
 .placeNameString
@@ -2281,8 +2265,8 @@ PrintListMenuEntries::
 .next
 	ld [wMonDataLocation], a
 	
-	; b = 4 - [wWhichPokemon]
-	ld hl, wWhichPokemon
+	; b = 4 - [wFourTempCtr]
+	ld hl, wFourTempCtr
 	ld a, [hl]
 	ld b, a
 	ld a, $04

@@ -394,17 +394,18 @@ BillsPCWithdraw:
 	jp BillsPCMenu
 
 .partyNotFull
+	; 引き出すポケモンの list menu のテキストボックスを表示
 	ld hl, wNumInBox
 	call DisplayMonListMenu	; hl = wNumInBox
-	jp c, BillsPCMenu
+	jp c, BillsPCMenu	; キャンセルされたとき -> BillsPCMenu
 
 	call DisplayDepositWithdrawMenu
-	jp nc, BillsPCMenu
+	jp nc, BillsPCMenu	; キャンセルされたとき -> BillsPCMenu
 
-	ld a, [wWhichPokemon]
+	ld a, [wListMenuOffset]
 	ld hl, wBoxMonNicks
 	call GetPartyMonName
-	
+
 	ld a, [wcf91]
 	call GetCryData
 	call PlaySoundWaitForCurrent
