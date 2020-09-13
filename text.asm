@@ -1777,6 +1777,7 @@ _DepositWhichMonText::
 	line "#MON?"
 	done
 
+; "${wcf4b} was stored in Box ${wBoxNumString}."
 _MonWasStoredText::
 	TX_RAM wcf4b
 	text " was"

@@ -302,7 +302,7 @@ ExitBillsPC:
 	res 6, [hl]
 	ret
 
-; マサキのPCでポケモンを預けるを選んだ場合
+; マサキのPCでポケモンを deposit を選んだ場合
 BillsPCDeposit:
 	; 手持ち数が2匹以上 -> .partyLargeEnough
 	ld a, [wPartyCount]
@@ -329,20 +329,24 @@ BillsPCDeposit:
 	; 預けるポケモンの list menu のテキストボックスを表示
 	ld hl, wPartyCount
 	call DisplayMonListMenu
-	jp c, BillsPCMenu
+	jp c, BillsPCMenu	; キャンセルされたとき -> BillsPCMenu
 
 	call DisplayDepositWithdrawMenu
-	jp nc, BillsPCMenu
+	jp nc, BillsPCMenu	; キャンセルされたとき -> BillsPCMenu
+
+	; 鳴き声を出しながら、ポケモンのデータを手持ちからPCBoxに移動する
 	ld a, [wcf91]
 	call GetCryData
 	call PlaySoundWaitForCurrent
 	ld a, PARTY_TO_BOX
 	ld [wMoveMonType], a
-	call MoveMon
+	call MoveMon			; コピー
 	xor a
 	ld [wRemoveMonFromBox], a
-	call RemovePokemon
+	call RemovePokemon		; コピー元の削除
 	call WaitForSoundToFinish
+
+; [wBoxNumString] = ボックス番号(文字列)
 	ld hl, wBoxNumString
 	ld a, [wCurrentBoxNum]
 	and $7f
@@ -358,33 +362,49 @@ BillsPCDeposit:
 .next
 	ld [hli], a
 	ld [hl], "@"
+
+	; "${wcf4b} was stored in Box ${wBoxNumString}."
 	ld hl, MonWasStoredText
 	call PrintText
+	
+	; 戻る
 	jp BillsPCMenu
 
+; マサキのPCでポケモンを withdraw を選んだ場合
 BillsPCWithdraw:
+	; PCBoxの中身が空 かチェック
 	ld a, [wNumInBox]
 	and a
 	jr nz, .boxNotEmpty
-	ld hl, NoMonText
+
+	; PCBoxの中身が空 -> 戻る
+	ld hl, NoMonText	; "What? There are no #MON here!"
 	call PrintText
 	jp BillsPCMenu
+
 .boxNotEmpty
+	; 手持ちがいっぱい かチェック
 	ld a, [wPartyCount]
 	cp PARTY_LENGTH
 	jr nz, .partyNotFull
-	ld hl, CantTakeMonText
+
+	; 手持ちがいっぱい -> 戻る
+	ld hl, CantTakeMonText	; "You can't take any more #MON. Deposit #MON first."
 	call PrintText
 	jp BillsPCMenu
+
 .partyNotFull
 	ld hl, wNumInBox
 	call DisplayMonListMenu	; hl = wNumInBox
 	jp c, BillsPCMenu
+
 	call DisplayDepositWithdrawMenu
 	jp nc, BillsPCMenu
+
 	ld a, [wWhichPokemon]
 	ld hl, wBoxMonNicks
 	call GetPartyMonName
+	
 	ld a, [wcf91]
 	call GetCryData
 	call PlaySoundWaitForCurrent
@@ -431,7 +451,7 @@ BillsPCChangeBox:
 	jp BillsPCMenu
 
 ; **DisplayMonListMenu**  
-; ポケモンの list menuのテキストボックスを表示  
+; ポケモンの list menuを表示しプレイヤーの選択を待つ  
 ; - - -  
 ; INPUT: hl = wPartyCount or wNumInBox
 DisplayMonListMenu:
@@ -452,12 +472,12 @@ DisplayMonListMenu:
 	inc a
 	ld [wNameListType], a
 
-	; ポケモンの list menuのテキストボックスを表示
+	; ポケモンの list menuを表示しプレイヤーの選択を待つ
 	ld a, [wPartyAndBillsPCSavedMenuItem]
 	ld [wCurrentMenuItem], a
 	call DisplayListMenuID
 	ld a, [wCurrentMenuItem]
-	ld [wPartyAndBillsPCSavedMenuItem], a
+	ld [wPartyAndBillsPCSavedMenuItem], a	; [wPartyAndBillsPCSavedMenuItem] = 選んだポケモンの menu ID
 	ret
 
 ; **BillsPCMenuText**  
@@ -635,6 +655,7 @@ DepositWhichMonText:
 	TX_FAR _DepositWhichMonText
 	db "@"
 
+; "${wcf4b} was stored in Box ${wBoxNumString}."
 MonWasStoredText:
 	TX_FAR _MonWasStoredText
 	db "@"
@@ -654,10 +675,12 @@ MonIsTakenOutText:
 	TX_FAR _MonIsTakenOutText
 	db "@"
 
+; "What? There are no #MON here!"
 NoMonText:
 	TX_FAR _NoMonText
 	db "@"
 
+; "You can't take any more #MON. Deposit #MON first."
 CantTakeMonText:
 	TX_FAR _CantTakeMonText
 	db "@"

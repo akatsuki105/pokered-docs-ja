@@ -376,8 +376,11 @@ PlayCry::
 	call PlaySound
 	jp WaitForSoundToFinish
 
+; **GetCryData**  
+; 鳴き声のデータをロードする  
+; - - -  
+; INPUT: a = ポケモンID  
 GetCryData::
-; Load cry data for monster a.
 	dec a
 	ld c, a
 	ld b, 0
@@ -1640,14 +1643,16 @@ AddItemToInventory::
 	ret
 
 ; **DisplayListMenuID**  
-; list menuのテキストボックスを表示  
+; list menuのテキストボックスを表示して DisplayListMenuIDLoop  
 ; - - -  
 ; この関数では listのテキストボックスの枠や中身も表示する  
-; menu については menu.md参照  
 ; 
 ; INPUT:  
 ; [wListMenuID] = list menu ID  
 ; [wListPointer] = listのポインタ(2バイト)  
+; 
+; OUTPUT:  
+; 
 DisplayListMenuID::
 	; 自動的なBG転送を無効化
 	xor a
@@ -1728,9 +1733,18 @@ DisplayListMenuID::
 	call DelayFrames	; fallthrough
 
 ; **DisplayListMenuIDLoop**  
+; list menu でユーザーの入力を待って対応する処理  
 ; - - -  
 ; INPUT:  
-; [wListMenuID] = PCPOKEMONLISTMENU or PRICEDITEMLISTMENU or ITEMLISTMENU
+; [wListMenuID] = PCPOKEMONLISTMENU or PRICEDITEMLISTMENU or ITEMLISTMENU  
+; 
+; OUTPUT:  
+; carry = 0(選択された) or 1(キャンセルされた)  
+; 
+; Aボタンが押された時の OUTPUT  
+; [wMenuExitMethod] = CHOSE_MENU_ITEM  
+; [wcf91] = ItemID or PokemonID  
+; [wcf4b] = アイテム名 or ポケモン名  
 DisplayListMenuIDLoop::
 	; list menuをテキストボックス内に表示 
 	xor a
@@ -1796,7 +1810,7 @@ DisplayListMenuIDLoop::
 
 	; list menu の空白の領域を選択(バグ対策?) -> ExitListMenu
 	ld a, [wListCount]
-	and a ; is the list empty?
+	and a
 	jp z, ExitListMenu
 
 	; やめるなどの一番下の番兵を選択 -> ExitListMenu
@@ -1826,7 +1840,7 @@ DisplayListMenuIDLoop::
 	ld b, 0
 	add hl, bc
 
-	; [wcf91] = 選んだエントリのID(ITEMLISTMENU -> ItemID, PCPOKEMONLISTMENU -> PokemonID, ...)
+	; [wcf91] = 選んだエントリのアイテムID(ITEMLISTMENU -> ItemID, PCPOKEMONLISTMENU -> PokemonID, ...)
 	ld a, [hl]
 	ld [wcf91], a
 
@@ -1850,8 +1864,7 @@ DisplayListMenuIDLoop::
 	ld a, [hl] ; a = item quantity
 	ld [wMaxItemQuantity], a
 
-; list menu がアイテムの場合、選んだアイテム名を取得
-; list menu がポケモンの場合、選んだポケモン名を取得
+; [wcf4b] = アイテム名 or ポケモン名
 .skipGettingQuantity
 	ld a, [wcf91]
 	ld [wd0b5], a	; [wd0b5] = アイテムID
@@ -1869,28 +1882,40 @@ DisplayListMenuIDLoop::
 .getPokemonName
 	ld a, [wWhichPokemon]
 	call GetPartyMonName
-	
 .storeChosenEntry ; store the menu entry that the player chose and return
 	ld de, wcd6d
 	call CopyStringToCF4B ; copy name to wcf4b
+
+	; 選択結果を WRAM に書き込む
 	ld a, CHOSE_MENU_ITEM
-	ld [wMenuExitMethod], a
+	ld [wMenuExitMethod], a	; [wMenuExitMethod] = CHOSE_MENU_ITEM
 	ld a, [wCurrentMenuItem]
-	ld [wChosenMenuItem], a
+	ld [wChosenMenuItem], a	; [wChosenMenuItem] = [wCurrentMenuItem]
+
+	; 終了
 	xor a
 	ld [hJoy7], a ; joypad state update flag
 	ld hl, wd730
 	res 6, [hl] ; turn on letter printing delay
-	jp BankswitchBack
-.checkOtherKeys ; check B, SELECT, Up, and Down keys
-	bit 1, a ; was the B button pressed?
-	jp nz, ExitListMenu ; if so, exit the menu
-	bit 2, a ; was the select button pressed?
-	jp nz, HandleItemListSwapping ; if so, allow the player to swap menu entries
+	jp BankswitchBack	; return
+
+; B/Select/↑/↓ が押された時はここにくる
+.checkOtherKeys
+	; B -> ExitListMenu
+	bit 1, a
+	jp nz, ExitListMenu
+
+	; Select -> HandleItemListSwapping
+	bit 2, a
+	jp nz, HandleItemListSwapping
+
+	; ↑ -> .upPressed
 	ld b, a
 	bit 7, b ; was Down pressed?
 	ld hl, wListScrollOffset
 	jr z, .upPressed
+	; ↓ -> .downPressed(fallthrough)
+
 .downPressed
 	ld a, [hl]
 	add 3
@@ -1899,7 +1924,8 @@ DisplayListMenuIDLoop::
 	cp b ; will going down scroll past the Cancel button?
 	jp c, DisplayListMenuIDLoop
 	inc [hl] ; if not, go down
-	jp DisplayListMenuIDLoop
+	jp DisplayListMenuIDLoop	; loop
+
 .upPressed
 	ld a, [hl]
 	and a

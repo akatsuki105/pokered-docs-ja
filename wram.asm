@@ -983,7 +983,8 @@ wCoordIndex:: ; cd3d
 
 wOptionsTextSpeedCursorX:: ; cd3d
 
-wBoxNumString:: ; cd3d
+; cd3d
+wBoxNumString::
 
 wTrainerInfoTextBoxWidthPlus1:: ; cd3d
 
@@ -1639,8 +1640,8 @@ wListMenuID::
 	ds 1
 
 ; cf95  
-; if non-zero, RemovePokemon will remove the mon from the current box,
-; else it will remove the mon from the party
+; 0 = RemovePokemon で手持ちから削除  
+; 1 = RemovePokemon でPCBoxから削除  
 wRemoveMonFromBox::
 
 ; cf95  

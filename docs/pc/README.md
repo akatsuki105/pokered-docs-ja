@@ -13,3 +13,5 @@
 ## Bill's PC
 
 <img src="https://imgur.com/Deb4PTH.png" width="320px" height="288px" />
+
+<img src="https://imgur.com/pejA317.png" width="320px" height="288px" />
