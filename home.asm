@@ -1729,6 +1729,8 @@ DisplayListMenuID::
 
 ; **DisplayListMenuIDLoop**  
 ; - - -  
+; INPUT:  
+; [wListMenuID] = PCPOKEMONLISTMENU or PRICEDITEMLISTMENU or ITEMLISTMENU
 DisplayListMenuIDLoop::
 	; list menuをテキストボックス内に表示 
 	xor a
@@ -1811,34 +1813,48 @@ DisplayListMenuIDLoop::
 	cp ITEMLISTMENU
 	jr nz, .skipMultiplying
 
-; アイテムのlist menuのとき
-	sla c ; itemの各エントリは2byteなので ×2
+	; アイテムのlist menuのとき、listの各エントリは2byteなので *2
+	sla c
 .skipMultiplying
+
+	; hl = 選んだ項目の list のエントリのアドレス
 	ld a, [wListPointer]
 	ld l, a
 	ld a, [wListPointer + 1]
 	ld h, a
-	inc hl ; hl = beginning of list entries
+	inc hl
 	ld b, 0
 	add hl, bc
+
+	; [wcf91] = 選んだエントリのID(ITEMLISTMENU -> ItemID, PCPOKEMONLISTMENU -> PokemonID, ...)
 	ld a, [hl]
 	ld [wcf91], a
+
+	; list menu がポケモンのリスト -> .pokemonList
 	ld a, [wListMenuID]
-	and a ; is it a PC pokemon list?
+	and a ; PCPOKEMONLISTMENU
 	jr z, .pokemonList
+
+	; ここにくるのはアイテムのリストの場合なので値段を入手
 	push hl
 	call GetItemPrice
 	pop hl
+	
+	; PRICEDITEMLISTMENU -> .skipGettingQuantity
 	ld a, [wListMenuID]
 	cp ITEMLISTMENU
 	jr nz, .skipGettingQuantity
-; if it's an item menu
+
+	; アイテムのlist menuのとき、エントリの2byte目からかばんの個数をとる
 	inc hl
 	ld a, [hl] ; a = item quantity
 	ld [wMaxItemQuantity], a
+
+; list menu がアイテムの場合、選んだアイテム名を取得
+; list menu がポケモンの場合、選んだポケモン名を取得
 .skipGettingQuantity
 	ld a, [wcf91]
-	ld [wd0b5], a
+	ld [wd0b5], a	; [wd0b5] = アイテムID
 	ld a, BANK(ItemNames)
 	ld [wPredefBank], a
 	call GetName
@@ -1853,6 +1869,7 @@ DisplayListMenuIDLoop::
 .getPokemonName
 	ld a, [wWhichPokemon]
 	call GetPartyMonName
+	
 .storeChosenEntry ; store the menu entry that the player chose and return
 	ld de, wcd6d
 	call CopyStringToCF4B ; copy name to wcf4b

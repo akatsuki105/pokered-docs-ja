@@ -1656,7 +1656,9 @@ wMoveMonType::
 wItemQuantity::
 	ds 1
 
-wMaxItemQuantity:: ; cf97
+; cf97  
+; list menu でかばんからアイテムを選んだ時のアイテムの個数  
+wMaxItemQuantity::
 	ds 1
 
 ; LoadMonData copies mon data here

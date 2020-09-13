@@ -8,41 +8,59 @@ list menuという [list](./list.md) の内容を表示しプレイヤーに選�
 
 ## List Menu ID
 
-list menuで表示されるlistのカテゴリはあらかじめ決まっており、それらを指定するのがList Menu ID
+list menuで表示されるlistのカテゴリはあらかじめ決まっており、それらを指定するのが List Menu ID
 
-#### PCPOKEMONLISTMENU
-
-<img src="../docs/image/menu/pokemon_list_menu.png" width="320px" height="288px" />
+#### ポケモン選択リスト
 
 PCのポケモン引き出し預け時のポケモン選択リスト
 
-#### MOVESLISTMENU
+ID = PCPOKEMONLISTMENU
 
-<img src="../docs/image/menu/move_list_menu.png" width="320px" height="288px" />
+<img src="../docs/image/menu/pokemon_list_menu.png" width="320px" height="288px" />
+
+#### 技選択リスト
 
 技選択リスト
 
-#### PRICEDITEMLISTMENU
+ID = MOVESLISTMENU
+
+<img src="../docs/image/menu/move_list_menu.png" width="320px" height="288px" />
+
+list menu の中ではこれだけ list のエントリが2byte
+
+```asm
+;　engine/battle/core.asm 
+OldManItemList:
+	db 1
+	db POKE_BALL, 50
+	db -1
+```
+
+#### 価格付きアイテムリスト
+
+ショップで買いたいもの(売り物一覧)
+
+ID = PRICEDITEMLISTMENU
 
 <img src="../docs/image/menu/buy_list.png" width="320px" height="288px" />
 
 <img src="../docs/image/menu/vending_machine.png" width="320px" height="288px" />
 
-ショップで買いたいもの(売り物一覧)
+#### アイテムリスト
 
-#### ITEMLISTMENU
+かばんの中身を表示する時にこの list menu を使う
+
+ID = ITEMLISTMENU
 
 <img src="../docs/image/menu/item_list.jpg" width="320px" height="288px" />
 
-<img src="../docs/image/menu/sell_list.png" width="320px" height="288px" />
+#### その他のlist menu
 
-スタートメニューのかばん / ショップで売りたいもの(中身はかばんと同じ)
+エレベータの階層一覧 / バッジのリスト(ハナダのバッジおじさん) などの特別な list menu
 
-#### SPECIALLISTMENU
+ID = SPECIALLISTMENU
 
 <img src="../docs/image/menu/elevator.png" width="320px" height="288px" />
-
-エレベータの階層一覧 / バッジのリスト(ハナダのバッジおじさん) などの特別な選択リスト
 
 ## memo
 

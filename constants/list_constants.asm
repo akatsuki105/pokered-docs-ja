@@ -4,7 +4,7 @@
 PCPOKEMONLISTMENU  EQU $00 ; PC pokemon withdraw/deposit lists
 MOVESLISTMENU      EQU $01 ; XXX where is this used?
 PRICEDITEMLISTMENU EQU $02 ; Pokemart buy menu / Pokemart buy/sell choose quantity menu
-ITEMLISTMENU       EQU $03 ; スタートメニューのかばん / ショップでの売り物一覧
+ITEMLISTMENU       EQU $03 ; かばんの中身
 SPECIALLISTMENU    EQU $04 ; list of special "items" e.g. floor list in elevators / list of badges
 
 ; GetName でどのカテゴリの名前を取得するかを決める変数。 wNameListType に格納される
