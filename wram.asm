@@ -2072,8 +2072,9 @@ wNumFallingObjects:: ; d08b
 
 wSlideMonDelay:: ; d08b
 
-wAnimCounter:: ; d08b
-; generic counter variable for various animations
+; d08b  
+; 様々なアニメーションで使われるカウンター
+wAnimCounter::
 
 wSubAnimTransform:: ; d08b
 ; controls what transformations are applied to the subanimation
@@ -2118,9 +2119,10 @@ wOutwardSpiralTileMapPointer:: ; d09a
 ; d09b  
 wPartyMenuAnimMonEnabled::
 
-wTownMapSpriteBlinkingEnabled:: ; d09b
+; d09b
 ; non-zero when enabled. causes nest locations to blink on and off.
 ; the town selection cursor will blink regardless of what this value is
+wTownMapSpriteBlinkingEnabled::
 
 wUnusedD09B:: ; d09b
 	ds 1

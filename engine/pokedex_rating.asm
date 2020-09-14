@@ -47,6 +47,7 @@ DisplayDexRating:
 	call PrintText
 	callba PlayPokedexRatingSfx
 	jp WaitForTextScrollButtonPress
+	
 .hallOfFame
 	; [wDexRatingNumMonsSeen] = [hDexRatingNumMonsSeen]
 	ld de, wDexRatingNumMonsSeen

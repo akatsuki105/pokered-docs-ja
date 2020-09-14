@@ -590,20 +590,32 @@ MonNestIcon:
 	INCBIN "gfx/mon_nest_icon.1bpp"
 MonNestIconEnd:
 
+; **TownMapSpriteBlinkingAnimation**  
+; タウンマップのカーソルを点滅させる処理  
+; - - -  
+; [wAnimCounter] (0 <= ctr <= 50) が  
+; 0-25 のとき カーソルを表示  
+; 26-50 のとき カーソルを非表示  
+; にすることで点滅処理を実現している  
 TownMapSpriteBlinkingAnimation:
 	ld a, [wAnimCounter]
 	inc a
+
+	; 25-50の間はスプライトを非表示にする
 	cp 25
 	jr z, .hideSprites
 	cp 50
 	jr nz, .done
-; show sprites when the counter reaches 50
+
+	; カウンタが 50 になったらスプライトを表示する
 	ld hl, wTileMapBackup
 	ld de, wOAMBuffer
 	ld bc, $90
 	call CopyData
-	xor a
+	xor a	; [wAnimCounter] = 0
 	jr .done
+
+	; カウンタが25 になったらスプライトを隠す
 .hideSprites
 	ld hl, wOAMBuffer
 	ld b, $24
@@ -614,6 +626,7 @@ TownMapSpriteBlinkingAnimation:
 	dec b
 	jr nz, .hideSpritesLoop
 	ld a, 25
+
 .done
-	ld [wAnimCounter], a
+	ld [wAnimCounter], a	; [wAnimCounter]++
 	jp DelayFrame

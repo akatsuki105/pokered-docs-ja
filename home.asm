@@ -4184,7 +4184,12 @@ JoypadLowSensitivity::
 	ld [H_FRAMECOUNTER], a
 	ret
 
+; **WaitForTextScrollButtonPress**  
+; ▼ を点滅させながら、A/Bボタンの入力を待つ  
+; - - -  
+; タウンマップやDiplomaでも使われる？
 WaitForTextScrollButtonPress::
+	; [H_DOWNARROWBLINKCNT1] = 0, [H_DOWNARROWBLINKCNT2] = 6 で初期化
 	ld a, [H_DOWNARROWBLINKCNT1]
 	push af
 	ld a, [H_DOWNARROWBLINKCNT2]
@@ -4193,21 +4198,30 @@ WaitForTextScrollButtonPress::
 	ld [H_DOWNARROWBLINKCNT1], a
 	ld a, $6
 	ld [H_DOWNARROWBLINKCNT2], a
+
 .loop
+; {
 	push hl
+	; タウンマップのカーソルを点滅させる
 	ld a, [wTownMapSpriteBlinkingEnabled]
 	and a
 	jr z, .skipAnimation
 	call TownMapSpriteBlinkingAnimation
+
 .skipAnimation
 	coord hl, 18, 16
 	call HandleDownArrowBlinkTiming
 	pop hl
+
+	; A/Bボタンが押されたら終了
 	call JoypadLowSensitivity
 	predef CableClub_Run
 	ld a, [hJoy5]
 	and A_BUTTON | B_BUTTON
 	jr z, .loop
+; }
+
+	; 終了
 	pop af
 	ld [H_DOWNARROWBLINKCNT2], a
 	pop af
@@ -5054,20 +5068,29 @@ EraseMenuCursor::
 ; この関数はタイルhlに"▼"がセットされている場合は"▼"の点滅を行うが、セットされていない場合は何もしない  
 ; そのため点滅が生じないときもとりあえずこの関数を呼び出すといったことをしても問題にはならない   
 HandleDownArrowBlinkTiming::
+	; [hl] == " " -> .downArrowOff
 	ld a, [hl]
 	ld b, a
 	ld a, "▼"
 	cp b
 	jr nz, .downArrowOff
+
 .downArrowOn
+	; [hl] == "▼"のときここにくる
+
+	; [H_DOWNARROWBLINKCNT1]--
 	ld a, [H_DOWNARROWBLINKCNT1]
 	dec a
 	ld [H_DOWNARROWBLINKCNT1], a
-	ret nz
+	ret nz	; [H_DOWNARROWBLINKCNT1] > 0 ならreturn
+
+	; [H_DOWNARROWBLINKCNT1] == 0 になったとき [H_DOWNARROWBLINKCNT2]--
 	ld a, [H_DOWNARROWBLINKCNT2]
 	dec a
 	ld [H_DOWNARROWBLINKCNT2], a
-	ret nz
+	ret nz	; [H_DOWNARROWBLINKCNT2] > 0 なら return
+
+	; [H_DOWNARROWBLINKCNT2] == 0 になったときに ▼ を消す
 	ld a, " "
 	ld [hl], a
 	ld a, $ff
@@ -5075,19 +5098,23 @@ HandleDownArrowBlinkTiming::
 	ld a, $06
 	ld [H_DOWNARROWBLINKCNT2], a
 	ret
+
 .downArrowOff
 	ld a, [H_DOWNARROWBLINKCNT1]
 	and a
 	ret z
+
 	dec a
 	ld [H_DOWNARROWBLINKCNT1], a
 	ret nz
+
 	dec a
 	ld [H_DOWNARROWBLINKCNT1], a
 	ld a, [H_DOWNARROWBLINKCNT2]
 	dec a
 	ld [H_DOWNARROWBLINKCNT2], a
 	ret nz
+
 	ld a, $06
 	ld [H_DOWNARROWBLINKCNT2], a
 	ld a, "▼"

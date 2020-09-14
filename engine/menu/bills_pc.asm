@@ -104,12 +104,15 @@ DisplayPCMainMenu::
 	call PlaceString
 
 ; メニューにカーソルを配置
+	; (上下方向キーのぞいて)ABボタンのみ有効
 	ld a, A_BUTTON | B_BUTTON
 	ld [wMenuWatchedKeys], a
+	; (1, 2) にカーソル
 	ld a, 2
 	ld [wTopMenuItemY], a
 	ld a, 1
 	ld [wTopMenuItemX], a
+	; 変数を初期化
 	xor a
 	ld [wCurrentMenuItem], a
 	ld [wLastMenuItem], a

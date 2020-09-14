@@ -1,17 +1,27 @@
+; **DisplayDiploma**  
+; Diplomaを画面に表示する処理  
+; - - -  
+; Diploma表示 と Diploma画面で待機 と 元に戻る処理 を担当する
 DisplayDiploma:
+	; Diploma 描画準備
 	call SaveScreenTilesToBuffer2
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
 	xor a
 	ld [wUpdateSpritesEnabled], a
+
+	; Diploma ではテキストを一気に表示する
 	ld hl, wd730
 	set 6, [hl]
 	call DisableLCD
+
+	; "●Diploma●" の●の2bppデータをVRAMに転送
 	ld hl, CircleTile
 	ld de, vChars2 + $700
 	ld bc, $0010
 	ld a, BANK(CircleTile)
 	call FarCopyData2
+
 	coord hl, 0, 0
 	lb bc, 16, 18
 	predef Diploma_TextBoxBorder
@@ -61,7 +71,11 @@ DisplayDiploma:
 	call GBPalNormal
 	ld a, $90
 	ld [rOBP0], a
+
+	; A/Bボタンが押されるまで表示しっぱなし
 	call WaitForTextScrollButtonPress
+
+	; Diploma表示前の画面に戻る
 	ld hl, wd730
 	res 6, [hl]
 	call GBPalWhiteOutWithDelay3
@@ -69,9 +83,8 @@ DisplayDiploma:
 	call Delay3
 	jp GBPalNormal
 
+; 未使用
 UnusedPlayerNameLengthFunc:
-; Unused function that does a calculation involving the length of the player's
-; name.
 	ld hl, wPlayerName
 	ld bc, $ff00
 .loop
@@ -93,15 +106,19 @@ DiplomaTextPointersAndCoords:
 	dw DiplomaGameFreak
 	dwCoord 9, 16
 
+; "●Diploma●"
 DiplomaText:
 	db $70,"Diploma",$70,"@"
 
+; "Playler"
 DiplomaPlayer:
 	db "Player@"
 
+; " "
 DiplomaEmptyText:
 	db "@"
 
+; "Congrats! This diploma certifies that you have completed your #DEX."
 DiplomaCongrats:
 	db   "Congrats! This"
 	next "diploma certifies"
@@ -109,5 +126,6 @@ DiplomaCongrats:
 	next "completed your"
 	next "#DEX.@"
 
+; "GAME FREAK"
 DiplomaGameFreak:
 	db "GAME FREAK@"

@@ -30,8 +30,11 @@ H_SPRITEINTERLACECOUNTER EQU $FF8B
 H_SPRITEHEIGHT           EQU $FF8C ; in tiles
 H_SPRITEOFFSET           EQU $FF8D
 
-H_DOWNARROWBLINKCNT1 EQU $FF8B  ; TODO: ▼の点滅をカウントするカウンター
-H_DOWNARROWBLINKCNT2 EQU $FF8C  ; TODO: ▼の点滅をカウントするカウンター
+; ▼の点滅をカウントするintraカウンター (0xff -> 0xfe -> ... -> 0) 
+H_DOWNARROWBLINKCNT1 EQU $FF8B
+; ▼の点滅をカウントするカウンター  (6 -> 5 -> 4 -> ... -> 0)  
+; H_DOWNARROWBLINKCNT1 が 0になったらデクリメント
+H_DOWNARROWBLINKCNT2 EQU $FF8C
 
 H_SPRITEDATAOFFSET EQU $FF8B
 H_SPRITEINDEX      EQU $FF8C    ; スプライトのオフセットを格納するバッファ (オフセットaなら 0xa0 ではなく 0x0a)
