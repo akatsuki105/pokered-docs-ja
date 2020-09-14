@@ -406,6 +406,7 @@ BillsPCWithdraw:
 	ld hl, wBoxMonNicks
 	call GetPartyMonName
 
+	; 鳴き声を出しながら、ポケモンのデータをPCBoxから手持ちに移動する
 	ld a, [wcf91]
 	call GetCryData
 	call PlaySoundWaitForCurrent
@@ -416,35 +417,55 @@ BillsPCWithdraw:
 	ld [wRemoveMonFromBox], a
 	call RemovePokemon
 	call WaitForSoundToFinish
+
+	; "${Pokemon} is taken out. Got ${Pokemon}."
 	ld hl, MonIsTakenOutText
 	call PrintText
+
+	; 戻る
 	jp BillsPCMenu
 
+; マサキのPCでポケモンを release を選んだ場合
 BillsPCRelease:
+	; ボックスに1匹以上ポケモンがいる -> .loop
 	ld a, [wNumInBox]
 	and a
 	jr nz, .loop
+
+	; ボックスにポケモンが1匹もいないなら終了
 	ld hl, NoMonText
-	call PrintText
-	jp BillsPCMenu
-.loop
+	call PrintText	; "What? There are no #MON here!"
+	jp BillsPCMenu	; 戻る
+
+.loop	
+	; 逃すポケモンの list menu のテキストボックスを表示
 	ld hl, wNumInBox
 	call DisplayMonListMenu ; hl = wNumInBox
-	jp c, BillsPCMenu
+	jp c, BillsPCMenu		; キャンセルされたとき -> BillsPCMenu
+
+	; 逃していいか確認
 	ld hl, OnceReleasedText
-	call PrintText
+	call PrintText			; "Once released, ${Pokemon} is gone forever. OK?"
 	call YesNoChoice
+	
+	; 確認で No を押されたら戻る
 	ld a, [wCurrentMenuItem]
 	and a
-	jr nz, .loop
+	jr nz, .loop	; キャンセルされたとき -> .loop
+
+	; PCBoxから逃す処理を行う
 	inc a
 	ld [wRemoveMonFromBox], a
 	call RemovePokemon
 	call WaitForSoundToFinish
 	ld a, [wcf91]
 	call PlayCry
+
+	; "${Pokemon} was released outside. Bye"
 	ld hl, MonWasReleasedText
 	call PrintText
+
+	; 戻る
 	jp BillsPCMenu
 
 BillsPCChangeBox:
@@ -671,7 +692,7 @@ BoxFullText:
 	TX_FAR _BoxFullText
 	db "@"
 
-; "\<Pokemon\> is taken out. Got \<Pokemon\>."
+; "${Pokemon} is taken out. Got ${Pokemon}."
 MonIsTakenOutText:
 	TX_FAR _MonIsTakenOutText
 	db "@"
@@ -690,10 +711,12 @@ ReleaseWhichMonText:
 	TX_FAR _ReleaseWhichMonText
 	db "@"
 
+; "Once released, ${Pokemon} is gone forever. OK?"
 OnceReleasedText:
 	TX_FAR _OnceReleasedText
 	db "@"
 
+; "${Pokemon} was released outside. Bye"
 MonWasReleasedText:
 	TX_FAR _MonWasReleasedText
 	db "@"

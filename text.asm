@@ -1830,6 +1830,7 @@ _ReleaseWhichMonText::
 	line "#MON?"
 	done
 
+; "Once released, ${Pokemon} is gone forever. OK?"
 _OnceReleasedText::
 	text "Once released,"
 	line "@"
@@ -1838,6 +1839,7 @@ _OnceReleasedText::
 	cont "gone forever. OK?"
 	done
 
+; "${Pokemon} was released outside. Bye"
 _MonWasReleasedText::
 	TX_RAM wcf4b
 	text " was"
