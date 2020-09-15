@@ -619,7 +619,12 @@ wSlotMachineSevenAndBarModeChance:: ; cc5b
 ; If the slot is lucky, it equals 250, giving a 5/256 (~2%) chance.
 ; Otherwise, it equals 253, giving a 2/256 (~0.8%) chance.
 
-wHallOfFame:: ; cc5b
+; cc5b  
+; [wHoFTeamIndex]回目の殿堂入りデータ  
+; - - -  
+; sHallOfFame[wHoFTeamIndex]
+wHallOfFame::
+
 wBoostExpByExpAll:: ; cc5b
 wAnimationType:: ; cc5b
 ; values between 0-6. Shake screen horizontally, shake screen vertically, blink Pokemon...
@@ -990,7 +995,9 @@ wTrainerInfoTextBoxWidthPlus1:: ; cd3d
 
 wSwappedMenuItem:: ; cd3d
 
-wHoFMonSpecies:: ; cd3d
+; cd3d  
+; `LeaguePCShowMon` で今表示しているポケモンの ポケモンID
+wHoFMonSpecies::
 
 wFieldMoves:: ; cd3d
 ; 4 bytes
@@ -1108,7 +1115,9 @@ wOptionsBattleStyleCursorX:: ; cd3f
 
 wTrainerInfoTextBoxNextRowOffset:: ; cd3f
 
-wHoFMonLevel:: ; cd3f
+; cd3f  
+; `LeaguePCShowMon` で今表示しているポケモンの レベル
+wHoFMonLevel::
 
 ; cd3f  
 ; 8 bytes  
@@ -1179,7 +1188,8 @@ wTrainerScreenX:: ; cd41
 	ds 1
 ; a lot of the uses for these values use more than the said address
 
-wHoFTeamNo:: ; cd42
+; cd42
+wHoFTeamNo::
 
 wSlotMachineWheel1MiddleTile:: ; cd42
 
@@ -1352,7 +1362,8 @@ wNumMovesMinusOne:: ; cd6c
 
 UNION
 
-wcd6d:: ds 4 ; buffer for various data
+; 様々なデータを格納する 4byte のバッファ
+wcd6d:: ds 4
 
 wStatusScreenCurrentPP:: ; cd71
 ; temp variable used to print a move's current PP on the status screen

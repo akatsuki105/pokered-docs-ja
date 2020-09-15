@@ -6,7 +6,11 @@ sSpriteBuffer2:: ds SPRITEBUFFERSIZE ; a310
 
 	ds $100
 
-sHallOfFame:: ds HOF_TEAM * HOF_TEAM_CAPACITY ; a598
+; a598  
+; 全部の殿堂入りパーティのデータ  
+; - - -  
+; ds HOF_TEAM * HOF_TEAM_CAPACITY
+sHallOfFame:: ds HOF_TEAM * HOF_TEAM_CAPACITY
 
 
 SECTION "Save Data", SRAM ; BANK 1

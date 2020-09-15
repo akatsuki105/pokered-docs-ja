@@ -789,23 +789,35 @@ SaveHallOfFameTeams:
 	ld bc, HOF_TEAM
 	jr HallOfFame_Copy
 
+; **LoadHallOfFameTeams**  
+; [wHoFTeamIndex]回目の殿堂入りデータを wHallOfFame にロード
+; - - -  
 LoadHallOfFameTeams:
+	; hl = sHallOfFame[wHoFTeamIndex]
 	ld hl, sHallOfFame
 	ld bc, HOF_TEAM
 	ld a, [wHoFTeamIndex]
 	call AddNTimes
+
+	; CopyData の変数
 	ld de, wHallOfFame
 	ld bc, HOF_TEAM
 	; fallthrough
 
 HallOfFame_Copy:
+	; SRAM を有効化
 	ld a, SRAM_ENABLE
 	ld [MBC1SRamEnable], a
+
+	; SRAMをバンク0にスイッチ
 	ld a, $1
 	ld [MBC1SRamBankingMode], a
 	xor a
 	ld [MBC1SRamBank], a
+
 	call CopyData
+
+	; SRAM を戻す
 	xor a
 	ld [MBC1SRamBankingMode], a
 	ld [MBC1SRamEnable], a

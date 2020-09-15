@@ -7,6 +7,7 @@ PKMNLeaguePC:
 	set 6, [hl]
 	push hl
 	
+	; 変数を初期化
 	ld a, [wUpdateSpritesEnabled]
 	push af
 	ld a, [hTilesetType]
@@ -18,30 +19,34 @@ PKMNLeaguePC:
 	ld [wHoFTeamIndex2], a
 	ld [wHoFTeamNo], a
 	
+	; b = [wNumHoFTeams], [wHoFTeamNo] = 50回前の殿堂入りが何回目の殿堂入りか
 	ld a, [wNumHoFTeams]
 	ld b, a
 	cp HOF_TEAM_CAPACITY + 1
 	jr c, .loop
-; If the total number of hall of fame teams is greater than the storage
-; capacity, then calculate the number of the first team that is still recorded.
-	ld b, HOF_TEAM_CAPACITY
+	ld b, HOF_TEAM_CAPACITY	; 殿堂入りパーティのデータは 50パーティ までしか保持できないので
 	sub b
 	ld [wHoFTeamNo], a
+
 .loop
 	ld hl, wHoFTeamNo
 	inc [hl]
+
+	; [wHoFTeamIndex]回目の殿堂入りデータを表示
 	push bc
 	ld a, [wHoFTeamIndex2]
 	ld [wHoFTeamIndex], a
-	callba LoadHallOfFameTeams
+	callba LoadHallOfFameTeams	; [wHoFTeamIndex]回目の殿堂入りデータを wHallOfFame にロード
 	call LeaguePCShowTeam
 	pop bc
+
 	jr c, .doneShowingTeams
 	ld hl, wHoFTeamIndex2
 	inc [hl]
 	ld a, [hl]
 	cp b
 	jr nz, .loop
+
 .doneShowingTeams
 	pop af
 	ld [hTilesetType], a
@@ -84,18 +89,25 @@ LeaguePCShowTeam:
 LeaguePCShowMon:
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
+
 	ld hl, wHallOfFame
+
+	; ポケモンID
 	ld a, [hli]
 	ld [wHoFMonSpecies], a
 	ld [wcf91], a
 	ld [wd0b5], a
 	ld [wBattleMonSpecies2], a
 	ld [wWholeScreenPaletteMonSpecies], a
+
+	; ポケモンのレベル
 	ld a, [hli]
 	ld [wHoFMonLevel], a
+
 	ld de, wcd6d
 	ld bc, NAME_LENGTH
 	call CopyData
+	
 	ld b, SET_PAL_POKEMON_WHOLE_SCREEN
 	ld c, 0
 	call RunPaletteCommand
