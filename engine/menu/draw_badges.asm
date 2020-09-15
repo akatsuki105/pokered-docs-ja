@@ -60,7 +60,7 @@ DrawBadges:
 
 .DrawBadgeRow
 	; バッジ欄を1行描画する
-	; バッジ番号 -> (ジムリーダー名) -> 
+	; バッジ番号 -> (ジムリーダー名) -> バッジ(or 顔)
 	ld c, 4
 .DrawBadge
 	push de

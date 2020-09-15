@@ -19,6 +19,7 @@ TextBoxBorder::
 
 	; 真ん中の行 │        │ 
 .next
+; {
 	push hl
 	ld a, "│"
 	ld [hli], a
@@ -26,11 +27,12 @@ TextBoxBorder::
 	call NPlaceChar
 	ld [hl], "│"
 	pop hl
-
+	; 次の行へ
 	ld de, SCREEN_WIDTH
 	add hl, de
 	dec b
 	jr nz, .next
+; }
 
 	; ボックスの下枠 └--------┘
 	ld a, "└"
@@ -40,7 +42,8 @@ TextBoxBorder::
 	ld [hl], "┘"
 	ret
 
-; aレジスタの文字をc回描画
+; **NPlaceChar**  
+; aレジスタ の文字を c回だけ hl に描画
 NPlaceChar::
 	ld d, c
 .loop
@@ -49,21 +52,25 @@ NPlaceChar::
 	jr nz, .loop
 	ret
 
+; **PlaceString**  
 ; 文字列を特殊文字は処理を行ってから特定のアドレスに配置する  
+; - - -  
 ; de = 配置対象のテキストのアドレス  
 ; hl = テキストの配置先
 PlaceString::
 	push hl
-; deが示すアドレスに配置された文字を描画する
+
+; **PlaceNextChar**  
+; deに配置された文字を描画する  
 PlaceNextChar::
 	ld a, [de]
 
-	; 描画する文字が終端記号@でないならChar4ETestへ(ここから特殊文字かどうかの制御が始まる)
-	; 終端記号@が来たなら文字列の描画を終える
-	cp "@" ; 終端記号
-	jr nz, Char4ETest	
+	; 描画する文字が @ でない -> Char4ETest(ここから特殊文字かどうかの制御が始まる)
+	cp "@"
+	jr nz, Char4ETest	; -> .char4FTest
 
-	; TODO
+	; @ (終端記号)が来たなら文字列の描画を終える
+
 	; TX_RAMのためにBCにHLの中身を入れる
 	; TX_RAM: BCに第一引数で渡されたアドレスの中の文字列を渡す  
 	ld b, h
@@ -73,32 +80,42 @@ PlaceNextChar::
 
 ; ここから特殊文字かどうか1つ1つ検討していく
 
-; 改行文字(next)なら改行
+; **Char4ETest**  
+; 特殊文字のチェック
 Char4ETest::
-	cp $4E ; ./text_macros.asm参照
-	jr nz, .char4FTest
-	ld bc, 2 * SCREEN_WIDTH ; タイル2枚分下に移動する
+	; 描画文字がnext($4E)なら改行 
+	cp $4E ; next
+	jr nz, .char4FTest ; 次は line のチェック
+
+	; bc = SCREEN_WIDTH or 2*SCREEN_WIDTH ([hFlags_0xFFF6] の bit1次第)
+	ld bc, 2 * SCREEN_WIDTH ; 1行 = 2タイル
 	ld a, [hFlags_0xFFF6]
 	bit 2, a
 	jr z, .ok
-	ld bc, SCREEN_WIDTH		; タイル1枚分下に移動する
+	ld bc, SCREEN_WIDTH		; 1行 = 1タイル
+
 .ok
+	; hl を改行
 	pop hl
-	add hl, bc				; タイル2枚分下に移動する
+	add hl, bc				
 	push hl
 	jp PlaceNextChar_inc
 
-; 改行文字(line)なら改行
 .char4FTest
-	cp $4F ; ./text_macros.asm参照
-	jr nz, .next3
+	; 描画文字が line($4F) なら改行 
+	cp $4F ; line
+	jr nz, .next3	; 次はその他特殊文字のチェック
+
+	; テキスト描画場所を (1, 16) に配置
 	pop hl
-	coord hl, 1, 16
+	coord hl, 1, 16	; (1, 16) = テキストボックスの2行目
 	push hl
 	jp PlaceNextChar_inc
 
 ; 描画対象の文字が特殊文字なら対応するハンドラに飛ぶ
 .next3
+
+; dict $XX, addr
 dict: macro
 if \1 == 0
 	and a

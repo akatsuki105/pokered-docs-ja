@@ -1,9 +1,12 @@
 PKMNLeaguePC:
 	ld hl, AccessedHoFPCText
-	call PrintText
+	call PrintText	; "Accessed #MON LEAGUE's site. Accessed the HALL OF FAME List."  
+
+	; 一気に表示
 	ld hl, wd730
 	set 6, [hl]
 	push hl
+	
 	ld a, [wUpdateSpritesEnabled]
 	push af
 	ld a, [hTilesetType]
@@ -14,6 +17,7 @@ PKMNLeaguePC:
 	ld [wUpdateSpritesEnabled], a
 	ld [wHoFTeamIndex2], a
 	ld [wHoFTeamNo], a
+	
 	ld a, [wNumHoFTeams]
 	ld b, a
 	cp HOF_TEAM_CAPACITY + 1
@@ -112,9 +116,11 @@ LeaguePCShowMon:
 	call PrintNumber
 	jpba HoFDisplayMonInfo
 
+; "HALL OF FAME No   ${N}"
 HallOfFameNoText:
 	db "HALL OF FAME No   @"
 
+; "Accessed #MON LEAGUE's site. Accessed the HALL OF FAME List."  
 AccessedHoFPCText:
 	TX_FAR _AccessedHoFPCText
 	db "@"

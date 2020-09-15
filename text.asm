@@ -1754,6 +1754,8 @@ _TossHowManyText::
 	text "How many?"
 	done
 
+; "Accessed #MON LEAGUE's site."  
+; "Accessed the HALL OF FAME List."  
 _AccessedHoFPCText::
 	text "Accessed #MON"
 	line "LEAGUE's site."
