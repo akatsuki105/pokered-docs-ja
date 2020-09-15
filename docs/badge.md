@@ -2,10 +2,14 @@
 
 ## トレーナーカード
 
-![en](./image/badge/trainer_card_en.png) &nbsp; ![en](./image/badge/trainer_card_en_2.png)
+<img src="./image/badge/trainer_card_en.png" width="320px" height="288px" /> &nbsp; <img src="./image/badge/trainer_card_en_2.png" width="320px" height="288px" />
 
 日本語ROMではバッジ未取得の場合は、顔アイコンの上にトレーナーの名前が出る
 
-![ja](./image/badge/trainer_card_ja.png)
+<img src="./image/badge/trainer_card_ja.png" width="320px" height="288px" />
 
-![ja debug](./image/badge/trainer_card_ja_debug.png)
+<img src="./image/badge/trainer_card_ja_debug.png" width="1080px" height="720px" />
+
+英語版では、顔アイコンの上にトレーナーの名前が出ず、VRAMも空白
+
+<img src="./image/badge/trainer_card_en_debug.png" width="1080px" height="720px" />
