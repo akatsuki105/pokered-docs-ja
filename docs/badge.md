@@ -1,5 +1,15 @@
 # Badge
 
+<img src="./image/badge/trainer_card_en_2.png" width="320px" height="288px" />
+
+ジムバッジのこと
+
+## wObtainedBadges
+
+バッジを取得したかのフラグは `wObtainedBadges` で管理されている
+
+`wObtainedBadges` は 1byteの領域で各bitがバッジの取得フラグとなっている  
+
 ## トレーナーカード
 
 <img src="./image/badge/trainer_card_en.png" width="320px" height="288px" /> &nbsp; <img src="./image/badge/trainer_card_en_2.png" width="320px" height="288px" />

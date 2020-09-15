@@ -5,8 +5,8 @@
 ---- | ----
 /bills_pc.asm | マサキのパソコンに関する処理 
 /diploma.asm | Diplomaを画面に表示する処理
-/draw_badges.asm | null
-/draw_start_menu.asm | null
+/draw_badges.asm | トレーナーカードにバッジ(or 顔)を描画する処理
+/draw_start_menu.asm | start menu を画面に描画する
 /league_pc.asm | null
 /start_menu.asm | null
 /swap_items.asm | null
