@@ -29,6 +29,7 @@
 ## ドキュメント一覧
 
 - [2bpp](./docs/2bpp.md)
+- [バッジ](./docs/badge.md)
 - [バンク](./docs/bank.md)
 - [BCD](./docs/bcd.md)
 - [Boulder](./docs/boulder.md)
