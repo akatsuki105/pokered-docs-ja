@@ -21,6 +21,19 @@ TX_RAM: MACRO
 	dw \1
 ENDM
 
+; **SWITCH**  
+; SWITCH $XX, addr  
+; - - -  
+; a == $XX のとき jr addr
+SWITCH: macro
+if \1 == 0
+	and a
+else
+	cp \1
+endc
+	jp z, \2
+endm
+
 TX_BCD: MACRO
 ; \1: RAM address to read from
 ; \2: number of bytes + print flags

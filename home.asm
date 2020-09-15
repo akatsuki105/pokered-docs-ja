@@ -4297,13 +4297,16 @@ Divide::
 	pop hl
 	ret
 
+; **PrintLetterDelay**  
+; 文字を描画した後に待機することでテキストの速さを調整する  
+; - - -  
 ; プレイヤーによってA/Bボタンを押されていないときに文字を描画した後で少し待つ処理を行う  
-; つまり文字描画速度を調整している
 PrintLetterDelay::
-	; 遅延フラグが立っていなかったら何もしない
+	; 遅延フラグが立っていない　つまり 一気に表示するテキストの場合 -> return
 	ld a, [wd730]
 	bit 6, a
 	ret nz
+
 	ld a, [wLetterPrintingDelayFlags]
 	bit 1, a
 	ret z
@@ -4311,9 +4314,13 @@ PrintLetterDelay::
 	push hl
 	push de
 	push bc
+
+; [H_FRAMECOUNTER] = 待機するフレーム
+	; [wLetterPrintingDelayFlags] が最優先
 	ld a, [wLetterPrintingDelayFlags]
 	bit 0, a
 	jr z, .waitOneFrame
+	; 設定の もじのはやさ を使う
 	ld a, [wOptions]
 	and $f
 	ld [H_FRAMECOUNTER], a
@@ -4321,23 +4328,31 @@ PrintLetterDelay::
 .waitOneFrame
 	ld a, 1
 	ld [H_FRAMECOUNTER], a
+
 .checkButtons
 	call Joypad
 	ld a, [hJoyHeld]
+
 .checkAButton
-	bit 0, a ; is the A button pressed?
+	; Aボタンが押された -> .endWait
+	bit 0, a
 	jr z, .checkBButton
 	jr .endWait
+
 .checkBButton
-	bit 1, a ; is the B button pressed?
+	; Bボタンが押された -> .endWait
+	bit 1, a
 	jr z, .buttonsNotPressed
+
 .endWait
 	call DelayFrame
 	jr .done
+
 .buttonsNotPressed ; if neither A nor B is pressed
 	ld a, [H_FRAMECOUNTER]
 	and a
 	jr nz, .checkButtons
+	
 .done
 	pop bc
 	pop de

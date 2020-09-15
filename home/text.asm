@@ -53,15 +53,15 @@ NPlaceChar::
 	ret
 
 ; **PlaceString**  
-; 文字列を特殊文字は処理を行ってから特定のアドレスに配置する  
+; 終端文字が来るまで文字列を描画する  
 ; - - -  
 ; de = 配置対象のテキストのアドレス  
-; hl = テキストの配置先
+; hl = テキストの配置先  
 PlaceString::
 	push hl
 
 ; **PlaceNextChar**  
-; deに配置された文字を描画する  
+; deに配置された文字をhlに描画する  
 PlaceNextChar::
 	ld a, [de]
 
@@ -112,46 +112,36 @@ Char4ETest::
 	push hl
 	jp PlaceNextChar_inc
 
-; 描画対象の文字が特殊文字なら対応するハンドラに飛ぶ
 .next3
+	; 描画対象の文字が特殊文字のどれかなら対応するハンドラに飛ぶ
+	; SWITCH $XX, addr -> a == $XX のとき jr addr
+	SWITCH $00, Char00 ; error
+	SWITCH $4C, Char4C ; autocont
+	SWITCH $4B, Char4B ; cont_
+	SWITCH $51, Char51 ; para
+	SWITCH $49, Char49 ; page
+	SWITCH $52, Char52 ; player
+	SWITCH $53, Char53 ; rival
+	SWITCH $54, Char54 ; POKé
+	SWITCH $5B, Char5B ; PC
+	SWITCH $5E, Char5E ; ROCKET
+	SWITCH $5C, Char5C ; TM
+	SWITCH $5D, Char5D ; TRAINER
+	SWITCH $55, Char55 ; cont
+	SWITCH $56, Char56 ; 6 dots
+	SWITCH $57, Char57 ; done
+	SWITCH $58, Char58 ; prompt
+	SWITCH $4A, Char4A ; PKMN
+	SWITCH $5F, Char5F ; dex
+	SWITCH $59, Char59 ; TARGET
+	SWITCH $5A, Char5A ; USER
 
-; dict $XX, addr
-dict: macro
-if \1 == 0
-	and a
-else
-	cp \1
-endc
-	jp z, \2
-endm
-
-	dict $00, Char00 ; error
-	dict $4C, Char4C ; autocont
-	dict $4B, Char4B ; cont_
-	dict $51, Char51 ; para
-	dict $49, Char49 ; page
-	dict $52, Char52 ; player
-	dict $53, Char53 ; rival
-	dict $54, Char54 ; POKé
-	dict $5B, Char5B ; PC
-	dict $5E, Char5E ; ROCKET
-	dict $5C, Char5C ; TM
-	dict $5D, Char5D ; TRAINER
-	dict $55, Char55 ; cont
-	dict $56, Char56 ; 6 dots
-	dict $57, Char57 ; done
-	dict $58, Char58 ; prompt
-	dict $4A, Char4A ; PKMN
-	dict $5F, Char5F ; dex
-	dict $59, Char59 ; TARGET
-	dict $5A, Char5A ; USER
-
-	; 文字を描画
+	; 通常文字の場合は文字を描画して遅延処理
 	ld [hli], a
 	call PrintLetterDelay
+	; jr PlaceNextChar_inc (fallthrough)
 
-; 描画する文字を1文字進める
-; PlaceNextCharではdeが示すアドレスに文字を配置していくのでdeのインクリメントが1文字進めるのに対応する
+; 次の文字を描画
 PlaceNextChar_inc::
 	inc de
 	jp PlaceNextChar
@@ -244,11 +234,13 @@ MonsterNameCharsCommon::
 	ld l, c
 	ld de, wEnemyMonNick ; enemy active monster name
 
-; 特殊文字@までを処理する  
+; **FinishDTE**  
+; 特殊文字に対応する文字列を全部描画する  
+; - - -  
 ; 特殊文字は必ず@で終わっていることに留意する  
-; FinishDTE実行前にpush deによりどの文字列まで描画したかが保存されている  
+; FinishDTE実行前にpush deによりどの文字まで描画したかが保存されている  
 ; 特殊文字の描画は通常の文字列描画に対する割り込み処理と考えると理解しやすいかも  
-; 特殊文字の描画が終わったらpop deにより中断した文字列描画から復帰して戻る
+; 特殊文字の描画が終わったらpop deにより中断した文字列描画から復帰して戻る  
 FinishDTE::
 	call PlaceString
 	ld h, b
