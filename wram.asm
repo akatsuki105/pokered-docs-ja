@@ -996,8 +996,10 @@ wFieldMoves:: ; cd3d
 ; 4 bytes
 ; the current mon's field moves
 
-wBadgeNumberTile:: ; cd3d
-; tile ID of the badge number being drawn
+; cd3d  
+; 8 byte  
+; トレーナーカードでバッジの左上に表示される番号のタイルのタイル番号
+wBadgeNumberTile::
 
 wRodResponse:: ; cd3d
 ; 0 = no bite
@@ -1064,8 +1066,9 @@ wHoFPartyMonIndex:: ; cd3e
 wNumCreditsMonsDisplayed:: ; cd3e
 ; the number of credits mons that have been displayed so far
 
-wBadgeNameTile:: ; cd3e
-; first tile ID of the name being drawn
+; cd3e  
+; トレーナーカードでジムリーダーの顔の上に表示される名前の最初のタイル番号  
+wBadgeNameTile::
 
 wFlyLocationsList:: ; cd3e
 ; 11 bytes plus $ff sentinel values at each end
@@ -1107,10 +1110,11 @@ wTrainerInfoTextBoxNextRowOffset:: ; cd3f
 
 wHoFMonLevel:: ; cd3f
 
-wBadgeOrFaceTiles:: ; cd3f
-; 8 bytes
-; a list of the first tile IDs of each badge or face (depending on whether the
-; badge is owned) to be drawn on the trainer screen
+; cd3f  
+; 8 bytes  
+; 各ジムリーダーのところには 2×2タイル(16*16px) で ジムリーダーの顔 か バッジ が配置される  
+; ここはその 2×2タイルのうちの最初のタイル番号を8つ集めたもの  
+wBadgeOrFaceTiles::
 
 wSlotMachineWheel2Offset:: ; cd3f
 
@@ -1217,10 +1221,11 @@ wFacingDirectionList::
 
 wSlotMachineWheel3TopTile:: ; cd49
 
+; cd49  
+; トレーナーカード閲覧時にバッジを表示するために使われる一時的な 8byte の領域  
+; 各バイトが各バッジに対応している  
+; 0 => 未取得 1 => 取得済み  
 wTempObtainedBadgesBooleans::
-; 8 bytes
-; temporary list created when displaying the badges on the trainer screen
-; one byte for each badge; 0 = not obtained, 1 = obtained
 	ds 1
 
 wTempCoins2:: ; cd4a
@@ -2651,7 +2656,10 @@ wRivalName:: ; d34a
 wOptions::
 	ds 1
 
-wObtainedBadges:: ; d356
+; d356  
+; バッジの取得フラグ  
+; 1byte で 各bit が1なら取得済み  
+wObtainedBadges::
 	flag_array 8
 
 	ds 1

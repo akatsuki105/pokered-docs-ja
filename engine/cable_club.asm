@@ -926,6 +926,8 @@ CableClub_Run:
 EmptyFunc3:
 	ret
 
+; **Diploma_TextBoxBorder**  
+; CableClub_TextBoxBorder と同じボーダー表示
 Diploma_TextBoxBorder:
 	call GetPredefRegisters
 
