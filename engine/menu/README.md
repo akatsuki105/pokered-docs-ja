@@ -16,7 +16,7 @@
 /players_pc.asm | null
 /pokedex.asm | null 
 /prize_menu.asm | null
-/start_menu.asm | null
+/start_menu.asm | start menu に関する処理 図鑑やかばんなどの個々の処理はここでは行わない
 /start_sub_menus.asm | null
 /status_screen.asm | null
 /swap_items.asm | null

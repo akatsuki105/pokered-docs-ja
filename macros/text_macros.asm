@@ -34,6 +34,15 @@ endc
 	jp z, \2
 endm
 
+; **SWITCH2**  
+; SWITCH2 $XX, addr  
+; - - -  
+; a == $XX のとき jr addr
+SWITCH2: macro
+	cp \1
+	jp z, \2
+endm
+
 TX_BCD: MACRO
 ; \1: RAM address to read from
 ; \2: number of bytes + print flags

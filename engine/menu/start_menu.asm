@@ -1,85 +1,108 @@
+; **DisplayStartMenu**  
+; start menu に入る処理  
+; - - -  
+; start menuの描画、ユーザー入力に対するハンドリング、各menu項目に対するハンドラへのジャンプなど start menuに関することを行う
 DisplayStartMenu::
 	ld a, BANK(StartMenu_Pokedex)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
-	ld a, [wWalkBikeSurfState] ; walking/biking/surfing
-	ld [wWalkBikeSurfStateCopy], a
+	ld a, [wWalkBikeSurfState]
+	ld [wWalkBikeSurfStateCopy], a	; [wWalkBikeSurfStateCopy] = [wWalkBikeSurfState]
 	ld a, SFX_START_MENU
 	call PlaySound
+	; fallthrough
 
+; **RedisplayStartMenu**  
+; start menu を再描画する処理  
+; - - -  
+; 図鑑やかばんなどの start menuから飛んだ先の処理が終了した時に、この関数を呼ぶことでstart menuに戻ってくる  
 RedisplayStartMenu::
 	callba DrawStartMenu
-	callba PrintSafariZoneSteps ; print Safari Zone info, if in Safari Zone
+	callba PrintSafariZoneSteps
 	call UpdateSprites
+	; この時点で start menuが表示されている 
+
 .loop
+	; start menu でユーザーのキー入力を待つ
 	call HandleMenuInput
 	ld b, a
+
 .checkIfUpPressed
-	bit 6, a ; was Up pressed?
+	; ↑が押されなかった -> .checkIfDownPressed
+	bit 6, a
 	jr z, .checkIfDownPressed
+	; ↑が押された場合は 下の warpping 以外は何もしない (HandleMenuInputまかせでOK)
+	; 一番上の項目で↑を押した場合一番下にカーソルを配置してあげる (wrap)
 	ld a, [wCurrentMenuItem] ; menu selection
 	and a
 	jr nz, .loop
 	ld a, [wLastMenuItem]
 	and a
 	jr nz, .loop
-; if the player pressed tried to go past the top item, wrap around to the bottom
+	; a = 6(図鑑あり) or 5(図鑑なし)
 	CheckEvent EVENT_GOT_POKEDEX
-	ld a, 6 ; there are 7 menu items with the pokedex, so the max index is 6
+	ld a, 6
 	jr nz, .wrapMenuItemId
-	dec a ; there are only 6 menu items without the pokedex
+	dec a
 .wrapMenuItemId
 	ld [wCurrentMenuItem], a
 	call EraseMenuCursor
 	jr .loop
+
 .checkIfDownPressed
+	; ↓が押されなかった -> .buttonPressed
 	bit 7, a
 	jr z, .buttonPressed
-; if the player pressed tried to go past the bottom item, wrap around to the top
+	; ↓が押された場合は 下の warpping 以外は何もしない (HandleMenuInputまかせでOK)
+	; 一番下の項目で↓を押した場合一番上にカーソルを配置してあげる (wrap)
 	CheckEvent EVENT_GOT_POKEDEX
 	ld a, [wCurrentMenuItem]
-	ld c, 7 ; there are 7 menu items with the pokedex
+	ld c, 7
 	jr nz, .checkIfPastBottom
-	dec c ; there are only 6 menu items without the pokedex
+	dec c
 .checkIfPastBottom
 	cp c
 	jr nz, .loop
-; the player went past the bottom, so wrap to the top
 	xor a
 	ld [wCurrentMenuItem], a
 	call EraseMenuCursor
 	jr .loop
-.buttonPressed ; A, B, or Start button pressed
+
+.buttonPressed 
+	; A/B/Startボタンが押された時
 	call PlaceUnfilledArrowMenuCursor
 	ld a, [wCurrentMenuItem]
-	ld [wBattleAndStartSavedMenuItem], a ; save current menu selection
-	ld a, b
-	and %00001010 ; was the Start button or B button pressed?
+	ld [wBattleAndStartSavedMenuItem], a ; どのmenuを選択したかを保存
+	
+	ld a, b	; a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]
+
+	; B/Startが押された -> CloseStartMenu
+	and %00001010
 	jp nz, CloseStartMenu
-	call SaveScreenTilesToBuffer2 ; copy background from wTileMap to wTileMapBackup2
+
+	; Aボタンが押された時は対応する menu のハンドラにjump
+	call SaveScreenTilesToBuffer2 ; 背景のタイルデータを退避
 	CheckEvent EVENT_GOT_POKEDEX
 	ld a, [wCurrentMenuItem]
 	jr nz, .displayMenuItem
-	inc a ; adjust position to account for missing pokedex menu item
+	inc a	; ポケモン図鑑がないことによるmenuずれを調整
 .displayMenuItem
-	cp 0
-	jp z, StartMenu_Pokedex
-	cp 1
-	jp z, StartMenu_Pokemon
-	cp 2
-	jp z, StartMenu_Item
-	cp 3
-	jp z, StartMenu_TrainerInfo
-	cp 4
-	jp z, StartMenu_SaveReset
-	cp 5
-	jp z, StartMenu_Option
+	SWITCH2 0, StartMenu_Pokedex
+	SWITCH2 1, StartMenu_Pokemon
+	SWITCH2 2, StartMenu_Item
+	SWITCH2 3, StartMenu_TrainerInfo
+	SWITCH2 4, StartMenu_SaveReset
+	SWITCH2 5, StartMenu_Option
+	; SWITCH2 6, CloseStartMenu
 
-; EXIT falls through to here
+; **CloseStartMenu**  
+; start menuを閉じる処理  
 CloseStartMenu::
+	; ???
 	call Joypad
 	ld a, [hJoyPressed]
 	bit 0, a ; was A button newly pressed?
 	jr nz, CloseStartMenu
+
 	call LoadTextBoxTilePatterns
-	jp CloseTextDisplay
+	jp CloseTextDisplay	; return 

@@ -1394,18 +1394,24 @@ HoldTextDisplayOpen::
 	bit 0, a ; is the A button being pressed?
 	jr nz, HoldTextDisplayOpen
 
-; テキスト表示を終える
+; **CloseTextDisplay**  
+; テキスト表示を終える  
+; - - -  
+; ウィンドウとして存在していたテキストボックスを消し、マップの状態を復元  
+; どんなテキストボックスでも対応可能  
 CloseTextDisplay::
-	; マップバンクにスイッチ
+	; 現在のマップの Map Headerのあるバンクにスイッチ
 	ld a, [wCurMap]
 	call SwitchToMapRomBank
 
 	; ウィンドウを非表示に
 	ld a, $90
-	ld [hWY], a ; move the window off the screen
+	ld [hWY], a
 	call DelayFrame
 
-	call LoadGBPal ; TODO: ???
+	; パレットを通常時に戻す
+	call LoadGBPal
+
 	; VBlank期間の自動的なBG転送を無効に
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a ; disable continuous WRAM to VRAM transfer each V-blank
@@ -1435,7 +1441,7 @@ CloseTextDisplay::
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
-	jp UpdateSprites
+	jp UpdateSprites	; return
 
 DisplayPokemartDialogue::
 	push hl
@@ -3760,7 +3766,7 @@ LoadFontTilePatterns::
 	jp CopyVideoDataDouble ; if LCD is on, transfer during V-blank
 
 ; **LoadTextBoxTilePatterns**  
-; VRAMにテキストボックスのグラフィックデータをコピーする関数
+; VRAMにテキストボックスの2bppデータをコピーする関数
 LoadTextBoxTilePatterns::
 	; LCDが有効 -> .on 無効 -> .off
 	ld a, [rLCDC]
@@ -4832,6 +4838,7 @@ HandleMenuInput_::
 	jr z, .giveUpWaiting
 
 	jr .loop2
+
 .giveUpWaiting
 	; 一定回数のチェックの間にキー入力がされなかった場合
 
@@ -4844,6 +4851,7 @@ HandleMenuInput_::
 	xor a
 	ld [wMenuWrappingEnabled], a
 	ret
+
 .keyPressed
 	; [wCheckFor180DegreeTurn] = 0
 	xor a
