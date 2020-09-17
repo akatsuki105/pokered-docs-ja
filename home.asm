@@ -223,19 +223,21 @@ DrawHPBar::
 
 	push hl
 
-	; Middle
-	ld a, $63 ; empty
+; 空のHPバー を描画
+	ld a, $63
 .draw
+; {
 	ld [hli], a
 	dec d
 	jr nz, .draw
+; }
 
-	; Right
+; HPバーの右端(タイル番号 0x6d or 0x6c) を描画
 	ld a, [wHPBarType]
 	dec a
-	ld a, $6d ; status screen and battle
+	ld a, $6d 	; 0x6d: status screen and battle
 	jr z, .ok
-	dec a ; pokemon menu
+	dec a 		; 0x6c: pokemon menu
 .ok
 	ld [hl], a
 

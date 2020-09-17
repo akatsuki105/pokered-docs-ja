@@ -138,7 +138,8 @@ CopyVideoData::
 
 	jr .loop
 
-; 次のVBlankを待ってc枚の1bppフォーマットのタイルデータをbバンクのdeからhlにコピーする  
+; **CopyVideoDataDouble**  
+; 次のVBlankを待って c枚の1bppフォーマットのタイルデータを bバンクの de から hl にコピーする  
 ; 一度の実行で8タイル分転送を行う  
 ; つまりすべてのタイルデータの転送にc/8フレームほどの時間を要する  
 ; 

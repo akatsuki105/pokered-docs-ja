@@ -16,7 +16,7 @@ DrawHP2:
 	ld a, $2
 
 ; **DrawHP_**  
-; DrawHP と DrawHP2 から呼ばれる内部処理
+; DrawHP と DrawHP2 から呼ばれる内部処理  
 DrawHP_:
 	ld [wHPBarType], a
 	push hl
@@ -46,12 +46,16 @@ DrawHP_:
 	ld c, a	; c = XX
 
 .drawHPBarAndPrintFraction
-	pop hl
-	push de	; 
+	pop hl	; hl = HPバーの描画先
+	push de
 	push hl
+
+	; HPバーを描画
 	push hl
 	call DrawHPBar
 	pop hl
+
+; bc = $9(手持ち画面) or SCREEN_WIDTH+1(それ以外)
 	ld a, [hFlags_0xFFF6]
 	bit 0, a
 	jr z, .printFractionBelowBar
@@ -59,8 +63,10 @@ DrawHP_:
 	jr .printFraction
 .printFractionBelowBar
 	ld bc, SCREEN_WIDTH + 1 ; below bar
+
 .printFraction
-	add hl, bc
+	; AA/BB (AA: 現HP, BB: maxHP) を描画
+	add hl, bc	; hl = HP数値の描画先
 	ld de, wLoadedMonHP
 	lb bc, 2, 3
 	call PrintNumber
@@ -69,20 +75,21 @@ DrawHP_:
 	ld de, wLoadedMonMaxHP
 	lb bc, 2, 3
 	call PrintNumber
-	pop hl
-	pop de
+	pop hl	; hl = HPバーの描画先
+	pop de	; de = 0x06XX (XX = HPバーのピクセル数)
 	ret
 
 
 ; **StatusScreen**  
 ; Predef 0x37  
-; INPUT: [wMonDataLocation] = 
+; INPUT: [wMonDataLocation] = 表示対象がどのデータスロットにいるか
 StatusScreen:
 	call LoadMonData
+
+	; PCBoxか育て屋の時はパラメータを変えて stats を再計算
 	ld a, [wMonDataLocation]
 	cp BOX_DATA
 	jr c, .DontRecalculate
-; mon is in a box or daycare
 	ld a, [wLoadedMonBoxLevel]
 	ld [wLoadedMonLevel], a
 	ld [wCurEnemyLVL], a
@@ -90,51 +97,73 @@ StatusScreen:
 	ld de, wLoadedMonStats
 	ld b, $1
 	call CalcStats ; Recalculate stats
+
 .DontRecalculate
+	; 音量を下げる
 	ld hl, wd72c
 	set 1, [hl]
 	ld a, $33
 	ld [rNR50], a ; Reduce the volume
+
+	; 画面を真っ白にする
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
 	call UpdateSprites
+
 	call LoadHpBarAndStatusTilePatterns
-	ld de, BattleHudTiles1  ; source
-	ld hl, vChars2 + $6d0 ; dest
-	lb bc, BANK(BattleHudTiles1), $03
-	call CopyVideoDataDouble ; ·│ :L and halfarrow line end
+
+	; ·│ :L and half-arrow line end をVRAMに転送
+	ld de, BattleHudTiles1	; from
+	ld hl, vChars2 + $6d0	; to
+	lb bc, BANK(BattleHudTiles1), $03 ; 3枚
+	call CopyVideoDataDouble
+
+	; │ をVRAMに転送
 	ld de, BattleHudTiles2
 	ld hl, vChars2 + $780
 	lb bc, BANK(BattleHudTiles2), $01
-	call CopyVideoDataDouble ; │
+	call CopyVideoDataDouble
+
+	; ─┘ をVRAMに転送
 	ld de, BattleHudTiles3
 	ld hl, vChars2 + $760
 	lb bc, BANK(BattleHudTiles3), $02
-	call CopyVideoDataDouble ; ─┘
+	call CopyVideoDataDouble
+
+	; PP の Pの字のタイルをVRAMに転送
 	ld de, PTile
 	ld hl, vChars2 + $720
 	lb bc, BANK(PTile), (PTileEnd - PTile) / $8
-	call CopyVideoDataDouble ; P (for PP), inline
+	call CopyVideoDataDouble
+
+	; [hTilesetType] を indoor に(水や花が定期的に動く処理をoffに)
 	ld a, [hTilesetType]
 	push af
 	xor a
 	ld [hTilesetType], a
+
 	coord hl, 19, 1
 	lb bc, 6, 10
 	call DrawLineBox ; Draws the box around name, HP and status
+
+	; "No."を描画
 	ld de, -6
 	add hl, de
 	ld [hl], "⠄" ; . after No ("." is a different one)
 	dec hl
 	ld [hl], "№"
+
 	coord hl, 19, 9
 	lb bc, 8, 6
 	call DrawLineBox ; Draws the box around types, ID No. and OT
+
 	coord hl, 10, 9
 	ld de, Type1Text
 	call PlaceString ; "TYPE1/"
+
 	coord hl, 11, 3
 	predef DrawHP
+	
 	ld hl, wStatusScreenHPBarColor
 	call GetHealthBarColor
 	ld b, SET_PAL_STATUS_SCREEN
