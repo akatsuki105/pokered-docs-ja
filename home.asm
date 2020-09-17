@@ -5527,10 +5527,11 @@ RunPaletteCommand::
 
 ; **GetHealthBarColor**  
 ; e で与えられたHPゲージのピクセルの長さに応じたHPゲージの色番号を [hl] に入れて返す  
+; - - -  
 ; OUTPUT:  
-; - [hl] -> 0: green (pixel >= 27)
-; - [hl] -> 1: orange (pixel >= 10)
-; - [hl] -> 2: red (pixel < 10)
+; [hl] -> 0: green (pixel >= 27)  
+; [hl] -> 1: orange (pixel >= 10)  
+; [hl] -> 2: red (pixel < 10)  
 GetHealthBarColor::
 	ld a, e
 	cp 27
