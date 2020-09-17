@@ -594,10 +594,14 @@ PrintStatusConditionNotFainted:
 	ld [MBC1RomBank], a
 	ret
 
-; function to print pokemon level, leaving off the ":L" if the level is at least 100
-; INPUT:
-; hl = destination address
-; [wLoadedMonLevel] = level
+; **PrintLevel**  
+; ポケモンのレベルを描画する  
+; - - -  
+; レベルが100以上のときは ":L" は描画しない  
+; 
+; INPUT:  
+; hl = 描画先  
+; [wLoadedMonLevel] = level  
 PrintLevel::
 	ld a, $6e ; ":L" tile ID
 	ld [hli], a

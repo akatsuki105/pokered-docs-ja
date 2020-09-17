@@ -1,5 +1,8 @@
-; [wd0b5] = pokemon ID
-; hl = dest addr
+; **PrintMonType**  
+; ポケモンのタイプを描画  
+; - - -  
+; [wd0b5] = 対象のポケモンID  
+; hl = 描画先  
 PrintMonType:
 	call GetPredefRegisters
 	push hl
@@ -17,8 +20,11 @@ PrintMonType:
 	ld bc, SCREEN_WIDTH * 2
 	add hl, bc
 
-; a = type
-; hl = dest addr
+; **PrintType**  
+; ポケモンのタイプを描画  
+; - - -  
+; a = タイプ  
+; hl = 描画先  
 PrintType:
 	push hl
 	jr PrintType_

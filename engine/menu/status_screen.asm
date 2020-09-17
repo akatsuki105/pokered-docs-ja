@@ -189,8 +189,11 @@ StatusScreen:
 	ld de, StatusText
 	call PlaceString
 
+	; ポケモンのレベル を描画
 	coord hl, 14, 2
-	call PrintLevel ; Pokémon level
+	call PrintLevel
+	
+	; 図鑑番号を描画
 	ld a, [wMonHIndex]
 	ld [wd11e], a
 	ld [wd0b5], a
@@ -199,33 +202,50 @@ StatusScreen:
 	ld de, wd11e
 	lb bc, LEADING_ZEROES | 1, 3
 	call PrintNumber ; Pokémon no.
+
+	; ポケモンのタイプ(タイプ1, タイプ2) を描画
 	coord hl, 11, 10
 	predef PrintMonType
+
+	; ポケモンのニックネーム を描画
 	ld hl, NamePointers2
 	call .GetStringPointer
 	ld d, h
 	ld e, l
 	coord hl, 9, 1
-	call PlaceString ; Pokémon name
+	call PlaceString
+
+	; OT を描画
 	ld hl, OTPointers
 	call .GetStringPointer
 	ld d, h
 	ld e, l
 	coord hl, 12, 16
-	call PlaceString ; OT
+	call PlaceString
+
+	; IDNo. を描画
 	coord hl, 12, 14
 	ld de, wLoadedMonOTID
 	lb bc, LEADING_ZEROES | 2, 5
-	call PrintNumber ; ID Number
+	call PrintNumber
+
 	ld d, $0
 	call PrintStatsBox
+
+	; ポケモンのグラフィックを描画
 	call Delay3
 	call GBPalNormal
 	coord hl, 1, 0
-	call LoadFlippedFrontSpriteByMonIndex ; draw Pokémon picture
+	call LoadFlippedFrontSpriteByMonIndex
+
+	; 鳴き声を出す
 	ld a, [wcf91]
-	call PlayCry ; play Pokémon cry
-	call WaitForTextScrollButtonPress ; wait for button
+	call PlayCry
+
+	; A/Bボタンを待つ
+	call WaitForTextScrollButtonPress
+
+	; 終了
 	pop af
 	ld [hTilesetType], a
 	ret
@@ -303,9 +323,17 @@ PTile: ; This is a single 1bpp "P" tile
 	INCBIN "gfx/p_tile.1bpp"
 PTileEnd:
 
+; **PrintStatsBox**  
+; ステータスボックスを描画する  
+; - - -  
+; INPUT: 
+; d = 0(ステータス画面) or 1(レベルUP時など)  
 PrintStatsBox:
+	; 
 	ld a, d
 	and a ; a is 0 from the status screen
+
+	; ステータス画面では左下に描画
 	jr nz, .DifferentBox
 	coord hl, 0, 8
 	ld b, 8
@@ -314,6 +342,8 @@ PrintStatsBox:
 	coord hl, 1, 9 ; Start printing stats from here
 	ld bc, $0019 ; Number offset
 	jr .PrintStats
+
+	; LvUp時などは右に描画 (https://imgur.com/k7vtwEW.jpg)
 .DifferentBox
 	coord hl, 9, 2
 	ld b, 8
@@ -321,13 +351,17 @@ PrintStatsBox:
 	call TextBoxBorder
 	coord hl, 11, 3
 	ld bc, $0018
+
 .PrintStats
+	; "ATTACK/DEFENSE/SPEED/SPECIAL" を描画
 	push bc
 	push hl
 	ld de, StatsText
 	call PlaceString
 	pop hl
 	pop bc
+
+	; ステータス値を描画していく
 	add hl, bc
 	ld de, wLoadedMonAttack
 	lb bc, 2, 3
@@ -338,6 +372,7 @@ PrintStatsBox:
 	call PrintStat
 	ld de, wLoadedMonSpecial
 	jp PrintNumber
+
 PrintStat:
 	push hl
 	call PrintNumber
@@ -346,18 +381,29 @@ PrintStat:
 	add hl, de
 	ret
 
+; "ATTACK"  
+; "DEFENSE"  
+; "SPEED"  
+; "SPECIAL"  
 StatsText:
 	db   "ATTACK"
 	next "DEFENSE"
 	next "SPEED"
 	next "SPECIAL@"
 
+; **StatusScreen2**  
+; ステータス画面2を描画  
+; - - -  
+; https://imgur.com/ek7iTFP.png
 StatusScreen2:
+	; [hTilesetType] = 0
 	ld a, [hTilesetType]
 	push af
 	xor a
 	ld [hTilesetType], a
 	ld [H_AUTOBGTRANSFERENABLED], a
+
+	; wMoves にポケモンの技データをコピー
 	ld bc, NUM_MOVES + 1
 	ld hl, wMoves
 	call FillMemory
@@ -365,19 +411,29 @@ StatusScreen2:
 	ld de, wMoves
 	ld bc, NUM_MOVES
 	call CopyData
+
 	callab FormatMovesString
+
+	; ステータス画面1のニックネームの下をクリアする
 	coord hl, 9, 2
 	lb bc, 5, 10
-	call ClearScreenArea ; Clear under name
+	call ClearScreenArea
+
+	; ???
 	coord hl, 19, 3
-	ld [hl], $78
+	ld [hl], $78	; │
+
+	; 技を描画するためのテキストボックスを描画
 	coord hl, 0, 8
 	ld b, 8
 	ld c, 18
-	call TextBoxBorder ; Draw move container
+	call TextBoxBorder
+
+	; 技を描画していく
 	coord hl, 2, 9
 	ld de, wMovesString
 	call PlaceString ; Print moves
+
 	ld a, [wNumMovesMinusOne]
 	inc a
 	ld c, a
