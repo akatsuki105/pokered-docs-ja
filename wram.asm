@@ -1649,11 +1649,12 @@ wWhichPokemon::
 wPrintItemPrices::
 	ds 1
 
-wHPBarType:: ; cf94
-; type of HP bar
-; $00 = enemy HUD in battle
-; $01 = player HUD in battle / status screen
-; $02 = party menu
+; cf94  
+; DrawHP_で描画する HP bar のカテゴリ  
+; $00 = enemy HUD in battle  
+; $01 = player HUD in battle / status screen  
+; $02 = party menu  
+wHPBarType::
 
 ; cf94  
 ; DisplayListMenuIDで使われるID  
@@ -1689,8 +1690,9 @@ wItemQuantity::
 wMaxItemQuantity::
 	ds 1
 
-; LoadMonData copies mon data here
-wLoadedMon:: party_struct wLoadedMon ; cf98
+; cf98  
+; LoadMonData でロードした Pokemon Data がここに入る   
+wLoadedMon:: party_struct wLoadedMon
 
 ; cfc4  
 ; bit 0:  プレイヤーやNPCの歩きモーションを保持するVRAM領域にフォントのタイルが格納されているときに立つフラグ  

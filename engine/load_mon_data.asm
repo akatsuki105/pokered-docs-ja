@@ -11,9 +11,9 @@
 ; - 3: 育て屋のポケモン
 ; 
 ; OUTPUT:  
-; - [wcf91] = ポケモンのID
-; - [wLoadedMon] = Pokemon Data
-; - [wMonHeader] = Pokemon Header
+; [wcf91] = ポケモンのID  
+; [wLoadedMon] = Pokemon Data  
+; [wMonHeader] = Pokemon Header  
 LoadMonData_:
 	; 育て屋の場合は wDayCareMonSpecies にポケモンのIDが入っている
 	ld a, [wDayCareMonSpecies]

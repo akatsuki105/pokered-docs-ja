@@ -199,18 +199,24 @@ LoadDestinationWarpPosition::
 	ld [MBC1RomBank], a
 	ret
 
-
+; **DrawHPBar**  
+; HPバーを描画する  
+; - - -  
+; dタイルの長さのHPバーを描画し、eピクセルだけHPを満たす  
+; HPバーの右端は [wHPBarType] によって形状が変わる  
+; 
+; INPUT:  
+; c = If c is nonzero, show at least a sliver regardless.  
+; d = HPバーのタイル長  
+; e = HPバーに満たすHPのピクセル  
+; hl = HPバーを描画する場所  
 DrawHPBar::
-; Draw an HP bar d tiles long, and fill it to e pixels.
-; If c is nonzero, show at least a sliver regardless.
-; The right end of the bar changes with [wHPBarType].
-
 	push hl
 	push de
 	push bc
 
-	; Left
-	ld a, $71 ; "HP:"
+	; HPバーの左に "HP:" を描画
+	ld a, $71
 	ld [hli], a
 	ld a, $62
 	ld [hli], a
@@ -270,7 +276,7 @@ DrawHPBar::
 
 
 ; **LoadMonData**  
-; ポケモンのデータを複数のsourceの1つからwLoadedMonにロードし、ポケモンのbase statsをwMonHeaderにロードする
+; ポケモンのデータを複数のsourceの1つから wLoadedMon にロードし、ポケモンのbase statsを wMonHeader にロードする
 ; - - -  
 ; 
 ; INPUT:  
@@ -278,9 +284,9 @@ DrawHPBar::
 ; [wMonDataLocation] = source (00: プレイヤーのパーティ/01: エネミーのパーティ/02: 現在のbox/03: 育て屋)  
 ; 
 ; OUTPUT:  
-; [wcf91] = pokemon ID  
-; wLoadedMon = base address of pokemon data  
-; wMonHeader = base address of base stats  
+; [wcf91] = ポケモンのID  
+; [wLoadedMon] = Pokemon Data  
+; [wMonHeader] = Pokemon Header  
 LoadMonData::
 	jpab LoadMonData_
 
@@ -2129,13 +2135,12 @@ ExitListMenu::
 	ret
 
 ; **PrintListMenuEntries**  
-; list menuを表示する
-; - - -
+; list menuを表示する  
+; - - -  
 ; list menuについては`docs/menu.md`を参照  
 ; 
 ; INPUT:  
-; - [wListPointer] = listのポインタ
-; TODO
+; [wListPointer] = listのポインタ  
 PrintListMenuEntries::
 	; (5, 3)から9*14タイル分だけクリア
 	coord hl, 5, 3

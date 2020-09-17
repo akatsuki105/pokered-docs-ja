@@ -1,28 +1,39 @@
+; **DrawHP**  
+; ステータス画面でのHPバーの描画  
+; - - -  
+; INPUT: hl = HPバーを描画する場所  
 DrawHP:
-; Draws the HP bar in the stats screen
 	call GetPredefRegisters
 	ld a, $1
 	jr DrawHP_
 
+; **DrawHP2**  
+; 手持ち一覧でのHPバーの描画  
+; - - -  
+; INPUT: hl = HPバーを描画する場所  
 DrawHP2:
-; Draws the HP bar in the party screen
 	call GetPredefRegisters
 	ld a, $2
 
+; **DrawHP_**  
+; DrawHP と DrawHP2 から呼ばれる内部処理
 DrawHP_:
 	ld [wHPBarType], a
 	push hl
+
+; 描画対象のHP が 0のとき c = 0, de = 0x0600
+; 描画対象のHP が 0でない c = XX, de = 0x06XX (XX = HPバーのピクセル数)
 	ld a, [wLoadedMonHP]
 	ld b, a
 	ld a, [wLoadedMonHP + 1]
 	ld c, a
-	or b
+	or b	; [wLoadedMonHP] | [wLoadedMonHP + 1]
 	jr nz, .nonzeroHP
 	xor a
-	ld c, a
+	ld c, a	; bc = 0
 	ld e, a
 	ld a, $6
-	ld d, a
+	ld d, a	; de = 0x0600
 	jp .drawHPBarAndPrintFraction
 .nonzeroHP
 	ld a, [wLoadedMonMaxHP]
@@ -31,11 +42,12 @@ DrawHP_:
 	ld e, a
 	predef HPBarLength
 	ld a, $6
-	ld d, a
-	ld c, a
+	ld d, a	; de = 0x06XX
+	ld c, a	; c = XX
+
 .drawHPBarAndPrintFraction
 	pop hl
-	push de
+	push de	; 
 	push hl
 	push hl
 	call DrawHPBar
