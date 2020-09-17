@@ -2706,7 +2706,7 @@ LoadMapData::
 ; **SwitchToMapRomBank**  
 ; Map Header が格納されているバンクにスイッチ  
 ; - - -  
-; Input: a = マップID
+; Input: a = マップID  
 SwitchToMapRomBank::
 	push hl
 	push bc

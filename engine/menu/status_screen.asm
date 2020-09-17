@@ -1,5 +1,5 @@
 ; **DrawHP**  
-; ステータス画面でのHPバーの描画  
+; ステータス画面でのHPバーとHP数値の描画  
 ; - - -  
 ; INPUT: hl = HPバーを描画する場所  
 DrawHP:
@@ -142,32 +142,39 @@ StatusScreen:
 	xor a
 	ld [hTilesetType], a
 
+	; ┘ 形の線を描画その1 https://imgur.com/g8sBtXb.png
 	coord hl, 19, 1
 	lb bc, 6, 10
-	call DrawLineBox ; Draws the box around name, HP and status
+	call DrawLineBox
 
 	; "No."を描画
 	ld de, -6
 	add hl, de
-	ld [hl], "⠄" ; . after No ("." is a different one)
+	ld [hl], "⠄"
 	dec hl
 	ld [hl], "№"
 
+	; ┘ 形の線を描画その2 https://imgur.com/6Cmgx8B.png
 	coord hl, 19, 9
 	lb bc, 8, 6
-	call DrawLineBox ; Draws the box around types, ID No. and OT
+	call DrawLineBox
 
+	; "TYPE1/" を描画
 	coord hl, 10, 9
 	ld de, Type1Text
-	call PlaceString ; "TYPE1/"
+	call PlaceString
 
+	; HP を描画
 	coord hl, 11, 3
 	predef DrawHP
 	
+	; SGBのときはHPバーに色を反映
 	ld hl, wStatusScreenHPBarColor
 	call GetHealthBarColor
 	ld b, SET_PAL_STATUS_SCREEN
 	call RunPaletteCommand
+
+	; ポケモンの状態異常を描画
 	coord hl, 16, 6
 	ld de, wLoadedMonStatus
 	call PrintStatusCondition
@@ -175,10 +182,13 @@ StatusScreen:
 	coord hl, 16, 6
 	ld de, OKText
 	call PlaceString ; "OK"
+
 .StatusWritten
+	; "STATUS/" を描画
 	coord hl, 9, 6
 	ld de, StatusText
-	call PlaceString ; "STATUS/"
+	call PlaceString
+
 	coord hl, 14, 2
 	call PrintLevel ; Pokémon level
 	ld a, [wMonHIndex]
@@ -266,7 +276,12 @@ StatusText:
 OKText:
 	db "OK@"
 
-; Draws a line starting from hl high b and wide c
+; **DrawLineBox**  
+; ステータスボックス用に ┘ 形の線を描画する  
+; - - -  
+; hl = 描画先  
+; b = ┘ 形の縦の線の長さ(タイル)  
+; c = ┘ 形の横の線の長さ(タイル)  
 DrawLineBox:
 	ld de, SCREEN_WIDTH ; New line
 .PrintVerticalLine

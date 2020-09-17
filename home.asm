@@ -543,11 +543,17 @@ DrawPartyMenuCommon::
 	ld b, BANK(RedrawPartyMenu_)
 	jp Bankswitch
 
-; prints a pokemon's status condition
-; INPUT:
-; de = address of status condition
-; hl = destination address
+; **PrintStatusCondition**  
+; ポケモンの状態異常を描画する(正常な時も含めて)  
+; - - -  
+; INPUT:  
+; de = status condition(`box_struct` の XXXStatus e.g. wLoadedMonStatus)  
+; hl = 描画先  
+; 
+; OUTPUT:  
+; a = 0(ポケモンが何の状態異常もない) or 1(なんらかの状態異常だった)  
 PrintStatusCondition::
+	; 対象の HP が 0でないときは、処理を PrintStatusConditionNotFainted に任せる
 	push de
 	dec de
 	dec de ; de = address of current HP
@@ -555,10 +561,11 @@ PrintStatusCondition::
 	ld b, a
 	dec de
 	ld a, [de]
-	or b ; is the pokemon's HP zero?
+	or b
 	pop de
 	jr nz, PrintStatusConditionNotFainted
-; if the pokemon's HP is 0, print "FNT"
+	
+	; 対象のHPが 0 のときは状態異常を無視して FNT(ひんし)を出す
 	ld a, "F"
 	ld [hli], a
 	ld a, "N"
@@ -567,13 +574,20 @@ PrintStatusCondition::
 	and a
 	ret
 
+; **PrintStatusConditionNotFainted**  
+; 瀕死じゃないポケモンの状態異常を描画する  
+; - - -  
+; INPUT:  
+; de = status condition(`box_struct` の XXXStatus e.g. wLoadedMonStatus)  
+; hl = 描画先  
 PrintStatusConditionNotFainted:
+	; PrintStatusAilmentのあるバンクにスイッチ
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, BANK(PrintStatusAilment)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
-	call PrintStatusAilment ; print status condition
+	call PrintStatusAilment
 	pop bc
 	ld a, b
 	ld [H_LOADEDROMBANK], a

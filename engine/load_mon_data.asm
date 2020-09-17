@@ -1,14 +1,14 @@
 ; **LoadMonData_**  
-; [wMonDataLocation]から[wWhichPokemon]で指定したポケモンのデータをロードする
-; - - -
+; [wMonDataLocation]から[wWhichPokemon]で指定したポケモンのデータをロードする  
+; - - -  
 ; 
 ; INPUT:  
 ; wWhichPokemon: wMonDataLocation内のポケモンのインデックス  
 ; wMonDataLocation:  
-; - 0: パーティのポケモン
-; - 1: 敵のポケモン
-; - 2: ボックスのポケモン
-; - 3: 育て屋のポケモン
+; 0: パーティのポケモン  
+; 1: 敵のポケモン  
+; 2: ボックスのポケモン  
+; 3: 育て屋のポケモン  
 ; 
 ; OUTPUT:  
 ; [wcf91] = ポケモンのID  

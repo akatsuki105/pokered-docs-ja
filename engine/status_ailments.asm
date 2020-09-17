@@ -1,13 +1,24 @@
+; **PrintStatusAilment**  
+; 瀕死じゃないポケモンの状態異常を描画する  
+; - - -  
+; INPUT:  
+; de = status condition(`box_struct` の XXXStatus e.g. wLoadedMonStatus)  
+; hl = 描画先  
 PrintStatusAilment:
 	ld a, [de]
+
 	bit PSN, a
 	jr nz, .psn
+
 	bit BRN, a
 	jr nz, .brn
+
 	bit FRZ, a
 	jr nz, .frz
+	
 	bit PAR, a
 	jr nz, .par
+	
 	and SLP
 	ret z
 	ld a, "S"
