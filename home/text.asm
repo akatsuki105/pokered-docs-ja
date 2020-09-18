@@ -404,11 +404,14 @@ ProtectedDelay3::
 	pop bc
 	ret
 
-; bcに配置したテキストを処理する  
-; bc: テキストを配置するメモリアドレス  
-; 文字の描画が目的ではなくテキストデータを命令として扱う
+; **TextCommandProcessor**  
+; - - -  
+; 文字の描画が目的ではなくテキストデータを命令として扱う  
+; INPUT:  
+; bc = 描画先  
+; hl = 処理対象のテキスト  
 TextCommandProcessor::
-	; wLetterPrintingDelayFlagsを取っておく
+	; wLetterPrintingDelayFlags を退避
 	ld a, [wLetterPrintingDelayFlags]
 	push af
 
@@ -416,39 +419,40 @@ TextCommandProcessor::
 	set 1, a
 	ld e, a
 	ld a, [$fff4]
-	xor e
+	xor e	; [wLetterPrintingDelayFlags] | [$fff4]
 	ld [wLetterPrintingDelayFlags], a
 
-	; wTextDestにbcを配置
+	; [wTextDest] = 描画先
 	ld a, c
 	ld [wTextDest], a
 	ld a, b
 	ld [wTextDest + 1], a
+	; fallthrough
 
-; 次のコマンドが終端記号@でないなら.doTextCommand
 NextTextCommand::
-	ld a, [hli]
-	cp "@" ; terminator
+	ld a, [hli]	; a = 文字
+
+	; @でない -> .doTextCommand
+	cp "@"
 	jr nz, .doTextCommand
 
-	; 取っておいたwLetterPrintingDelayFlagsを戻す
+	; @なら終了
 	pop af
 	ld [wLetterPrintingDelayFlags], a
 	ret
+
 .doTextCommand
 	push hl ; コマンドを保存しておく
 
-	; コマンドがTextCommand17か
+	; 文字が $17(TX_FAR) -> TextCommand17
 	cp $17
 	jp z, TextCommand17
 
-	; コマンドがTextCommand0Bか
-	; もし (a != 0x17 && a >= 0x0e)なら 0x0Bのコマンド  
-	; それ以外、つまり a <= 0x0eならTextCommandJumpTableを使う
+	; (文字 >= 0x0e) -> TextCommand0B
 	cp $0e
 	jp nc, TextCommand0B
 
-	; 上のcp $0eによってこの時点でaレジスタの値からTextCommandJumpTableのどこに飛ぶべきかわかる
+	; 対応するTextCommandJumpTable のエントリにジャンプ
 	ld hl, TextCommandJumpTable
 	push bc
 	add a
@@ -640,36 +644,45 @@ TextCommand0A::
 	pop hl
 	jp NextTextCommand
 
-; plays sounds
-; this actually handles various command ID's, not just 0B
-; (no arguments)
+; **TextCommand0B**  
+; 音を鳴らすテキストコマンド  
+; - - -  
+; $0b 以外のテキストコマンドにも対応している  
 TextCommand0B::
 	pop hl
 	push bc
+
+	; b = このコマンドで描画対象の文字
 	dec hl
 	ld a, [hli]
-	ld b, a ; b = command number that got us here
+	ld b, a
+
 	push hl
 	ld hl, TextCommandSounds
+
+; TextCommandSoundsの中からTextCmdIDと一致するエントリを探す
 .loop
+; {
 	ld a, [hli]
 	cp b
 	jr z, .matchFound
 	inc hl
 	jr .loop
+; }
+
 .matchFound
-	cp $14
-	jr z, .pokemonCry
-	cp $15
-	jr z, .pokemonCry
-	cp $16
-	jr z, .pokemonCry
-	ld a, [hl]
+	SWITCH_JR $14, .pokemonCry
+	SWITCH_JR $15, .pokemonCry
+	SWITCH_JR $16, .pokemonCry
+
+	ld a, [hl]	; a = SoundID
 	call PlaySound
 	call WaitForSoundToFinish
+
 	pop hl
 	pop bc
 	jp NextTextCommand
+
 .pokemonCry
 	push de
 	ld a, [hl]
@@ -679,7 +692,7 @@ TextCommand0B::
 	pop bc
 	jp NextTextCommand
 
-; format: text command ID, sound ID or cry ID
+; TextCmdID -> SoundID or CryID のマッピング
 TextCommandSounds::
 	db $0B, SFX_GET_ITEM_1 ; actually plays SFX_LEVEL_UP when the battle music engine is loaded
 	db $12, SFX_CAUGHT_MON
@@ -731,27 +744,31 @@ TextCommand0D::
 	pop hl
 	jp NextTextCommand
 
-; for TX_FAR  
-; process text commands in another ROM bank
-; 17AAAABB
-; AAAA = address of text commands
-; BB = bank
+; **TextCommand17**  
+; TX_FAR のためのテキストコマンド  
+; - - -  
+; 別のROMバンクにあるテキストコマンドを処理する   
 TextCommand17::
+	; テキストコマンドのあるバンク番号にスイッチ
 	pop hl
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
-	ld d, a
-	ld a, [hli]
+	ld d, a		; de = テキストコマンドのアドレス
+	ld a, [hli]	; a = テキストコマンドのあるバンク番号
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+	
+	; 終端記号までテキストコマンドを処理
 	push hl
 	ld l, e
 	ld h, d
 	call TextCommandProcessor
 	pop hl
+
+	; バンクを復帰して次へ
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a

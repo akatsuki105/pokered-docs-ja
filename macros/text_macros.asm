@@ -12,7 +12,7 @@ page   EQUS "db $49,"     ; Start a new Pokedex page.
 dex    EQUS "db $5f, $50" ; End a Pokedex entry.
 
 ; **TX_RAM**  
-; db $1, dw 引数
+; db $1, dw $arg
 ; - - -  
 ; BCに第一引数で渡された値を渡す  
 ; 第一引数で渡されたアドレスの中の文字列をテキストとして表示するのに使う
@@ -24,7 +24,7 @@ ENDM
 ; **SWITCH**  
 ; SWITCH $XX, addr  
 ; - - -  
-; a == $XX のとき jr addr
+; a == $XX のとき jp addr
 SWITCH: macro
 if \1 == 0
 	and a
@@ -34,13 +34,22 @@ endc
 	jp z, \2
 endm
 
-; **SWITCH2**  
-; SWITCH2 $XX, addr  
+; **SWITCH_CP**  
+; SWITCH_CP $XX, addr  
 ; - - -  
-; a == $XX のとき jr addr
-SWITCH2: macro
+; a == $XX のとき jp addr
+SWITCH_CP: macro
 	cp \1
 	jp z, \2
+endm
+
+; **SWITCH_JR**  
+; SWITCH_JR $XX, addr  
+; - - -  
+; a == $XX のとき jr addr
+SWITCH_JR: macro
+	cp \1
+	jr z, \2
 endm
 
 TX_BCD: MACRO
@@ -80,8 +89,10 @@ TX_CRY_NIDORINA       EQUS "db $14"
 TX_CRY_PIDGEOT        EQUS "db $15"
 ;TX_CRY_DEWGONG       EQUS "db $16"
 
+; **TX_FAR**  
+; db $17, dw $arg, db BANK($arg)  
+; - - -  
 ; 違うバンクにあるテキストの表示  
-; $17はTextCommand17というテキストコマンドとして解釈される
 TX_FAR: MACRO
 	db $17
 	dw \1

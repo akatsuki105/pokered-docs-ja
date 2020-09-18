@@ -5204,7 +5204,9 @@ PrintText::
 	call UpdateSprites
 	call Delay3
 	pop hl
-; 8*8のタイル単位で(1, 14)にテキストhlを表示する(テキストボックスは無し)
+	; fallthrough
+
+; (1, 14)にテキストhl を表示する(テキストボックスは無し)
 PrintText_NoCreatingTextBox::
 	coord bc, 1, 14
 	jp TextCommandProcessor

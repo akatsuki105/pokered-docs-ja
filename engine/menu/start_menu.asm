@@ -87,13 +87,13 @@ RedisplayStartMenu::
 	jr nz, .displayMenuItem
 	inc a	; ポケモン図鑑がないことによるmenuずれを調整
 .displayMenuItem
-	SWITCH2 0, StartMenu_Pokedex
-	SWITCH2 1, StartMenu_Pokemon
-	SWITCH2 2, StartMenu_Item
-	SWITCH2 3, StartMenu_TrainerInfo
-	SWITCH2 4, StartMenu_SaveReset
-	SWITCH2 5, StartMenu_Option
-	; SWITCH2 6, CloseStartMenu
+	SWITCH_CP 0, StartMenu_Pokedex
+	SWITCH_CP 1, StartMenu_Pokemon
+	SWITCH_CP 2, StartMenu_Item
+	SWITCH_CP 3, StartMenu_TrainerInfo
+	SWITCH_CP 4, StartMenu_SaveReset
+	SWITCH_CP 5, StartMenu_Option
+	; SWITCH_CP 6, CloseStartMenu
 
 ; **CloseStartMenu**  
 ; start menuを閉じる処理  

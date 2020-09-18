@@ -173,7 +173,7 @@ PalletTownText1:
 	jp TextScriptEnd
 
 OakAppearsText:
-	TX_FAR _OakAppearsText
+	TX_FAR _OakAppearsText	; "OAK: Hey! Wait! Don't go out!"  
 	TX_ASM
 	ld c, 10
 	call DelayFrames
@@ -185,30 +185,41 @@ OakAppearsText:
 	ld [wPlayerMovingDirection], a
 	jp TextScriptEnd
 
+; "OAK: It's unsafe! Wild #MON live in tall grass!"  
+; "You need your own #MON for your protection. I know!"  
+; "Here, come with me!"  
 OakWalksUpText:
 	TX_FAR _OakWalksUpText
 	db "@"
 
+; "I'm raising #MON too!"  
+; "When they get strong, they can protect me!"  
 PalletTownText2: ; girl
 	TX_FAR _PalletTownText2
 	db "@"
 
+; "Technology is incredible!"  
+; "You can now store and recall items and #MON as data via PC!"  
 PalletTownText3: ; fat man
 	TX_FAR _PalletTownText3
 	db "@"
 
+; "OAK #MON RESEARCH LAB"
 PalletTownText4: ; sign by lab
 	TX_FAR _PalletTownText4
 	db "@"
 
+; "PALLET TOWN Shades of your journey await!"
 PalletTownText5: ; sign by fence
 	TX_FAR _PalletTownText5
 	db "@"
 
+; "${PLAYER}'s house"
 PalletTownText6: ; sign by Red’s house
 	TX_FAR _PalletTownText6
 	db "@"
 
+; "${RIVAL}'s house"
 PalletTownText7: ; sign by Blue’s house
 	TX_FAR _PalletTownText7
 	db "@"
