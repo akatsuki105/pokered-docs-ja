@@ -4259,7 +4259,7 @@ WaitForTextScrollButtonPress::
 	ld [H_DOWNARROWBLINKCNT1], a
 	ret
 
-; (unless in link battle) waits for A or B being pressed and outputs the scrolling sound effect
+; A/Bボタンが入力されるのを待って、テキストのスクロールサウンドを出す(通信対戦は除く)
 ManualTextScroll::
 	ld a, [wLinkState]
 	cp LINK_STATE_BATTLING

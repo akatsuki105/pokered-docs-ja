@@ -20,7 +20,7 @@ charmap "a", $A0
 
 例えば英語版のROMではポケモンという単語は次のように特殊な文字で表される。
 
-![pkmn](image/pkmn.png)
+![pkmn](../image/pkmn.png)
 
 これはUnicodeにはない文字コードのため逆アセンブルされたコード内では\<pkmn\>と表記している
 

@@ -293,6 +293,7 @@ Char58:: ; prompt
 	ld a, [wLinkState]
 	cp LINK_STATE_BATTLING
 	jp z, .ok
+
 	ld a, "▼"
 	Coorda 18, 16
 .ok
@@ -300,6 +301,8 @@ Char58:: ; prompt
 	call ManualTextScroll
 	ld a, " "
 	Coorda 18, 16
+	; Char57(fallthrough)
+
 Char57:: ; done
 	pop hl
 	ld de, Char58Text
@@ -311,15 +314,19 @@ Char58Text::
 
 Char51:: ; para
 	push de
+
+	; "▼"を点滅させながら A/Bボタンの入力を待つ
 	ld a, "▼"
 	Coorda 18, 16
 	call ProtectedDelay3
 	call ManualTextScroll
+
 	coord hl, 1, 13
 	lb bc, 4, 18
 	call ClearScreenArea
 	ld c, 20
 	call DelayFrames
+
 	pop de
 	coord hl, 1, 14
 	jp PlaceNextChar_inc
@@ -390,6 +397,7 @@ ScrollTextUpOneLine::
 
 	ret
 
+; bc の値が変わらない Delay3
 ProtectedDelay3::
 	push bc
 	call Delay3
