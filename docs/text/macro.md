@@ -16,7 +16,7 @@ prompt EQUS "db $58"
 
 ## text
 
-ここからテキストの描画を開始
+ここから通常テキストの描画を開始することを `TextCommandProcessor`に伝える(`TextCommand00`がハンドルする)
 
 ## next
 

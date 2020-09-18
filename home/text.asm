@@ -487,8 +487,10 @@ TextCommand04::
 	pop hl
 	jr NextTextCommand
 
-; place string inline
-; 00{string}
+; **TextCommand00**  
+; textマクロのためのテキストコマンド    
+; - - -  
+; 以降のテキストコマンドを単純な文字列として描画する  
 TextCommand00::
 	pop hl
 	ld d, h
@@ -501,9 +503,10 @@ TextCommand00::
 	inc hl
 	jr NextTextCommand
 
-; place string from RAM
-; 01AAAA
-; AAAA = address of string
+; **TextCommand01**  
+; TX_RAM のためのテキストコマンド  
+; - - -  
+; RAM内の文字列を描画する  
 TextCommand01::
 	pop hl
 	ld a, [hli]
