@@ -101,17 +101,23 @@ SafariGameOverText:
 	ld a, [wNumSafariBalls]
 	and a
 	jr z, .noMoreSafariBalls
+
+	; "PA: Ding-dong! Time's up!"
 	ld hl, TimesUpText
 	call PrintText
 .noMoreSafariBalls
+	; "PA: Your SAFARI GAME is over!"
 	ld hl, GameOverText
 	call PrintText
+	
 	jp TextScriptEnd
 
+; "PA: Ding-dong! Time's up!"
 TimesUpText:
 	TX_FAR _TimesUpText
 	db "@"
 
+; "PA: Your SAFARI GAME is over!"
 GameOverText:
 	TX_FAR _GameOverText
 	db "@"

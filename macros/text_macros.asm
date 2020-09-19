@@ -12,10 +12,9 @@ page   EQUS "db $49,"     ; Start a new Pokedex page.
 dex    EQUS "db $5f, $50" ; End a Pokedex entry.
 
 ; **TX_RAM**  
-; db $1, dw $arg
+; $argアドレスの中の文字列を表示する  
 ; - - -  
-; BCに第一引数で渡された値を渡す  
-; 第一引数で渡されたアドレスの中の文字列をテキストとして表示するのに使う
+; db $1, dw $arg  
 TX_RAM: MACRO
 	db $1
 	dw \1
@@ -52,17 +51,32 @@ SWITCH_JR: macro
 	jr z, \2
 endm
 
+; **TX_BCD**  
+; BCD数値を表示する  
+; - - -  
+; db $arg0, $arg1  
+; $arg0 = RAM address to read from  
+; $arg1 = number of bytes + print flags  
+; 
+; TextCommand02 に対応  
 TX_BCD: MACRO
-; \1: RAM address to read from
-; \2: number of bytes + print flags
 	db $2
 	dw \1
 	db \2
 ENDM
 
+; **TX_LINE**  
+; (1, 16)にテキスト描画先を変更する  
 TX_LINE    EQUS "db $05"
+
+; **TX_BLINK**  
+; ▼ を点滅させ、A/Bボタンの入力を待つ  
 TX_BLINK   EQUS "db $06"
+
 ;TX_SCROLL EQUS "db $07"
+
+; **TX_ASM**  
+; このマクロ以降のバイト列をMLとしてCPUに実行させる  
 TX_ASM     EQUS "db $08"
 
 TX_NUM: MACRO

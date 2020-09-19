@@ -415,10 +415,11 @@ wMenuWatchedKeys::
 wLastMenuItem::
 	ds 1
 
-; cc2b
-; It is mainly used by the party menu to remember the cursor position while the menu isn't active.
-; It is also used to remember the cursor position of mon lists (for the withdraw/deposit/release actions) in Bill's PC so that it doesn't get lost when you choose a mon from the list and a sub-menu is shown. 
-; It's reset when you return to the main Bill's PC menu.
+; cc2b  
+; 主に手持ちのmenu画面でカーソル位置を記憶しておくのに利用される  
+; 
+; 他にも、ポケモン選択したときやサブmenuを開いた時にカーソル位置が失われない様にマサキのPCのポケモンのlist menuのカーソル位置の記憶にも使われる  
+; ただし、マサキのPCを終了すればリセットされる  
 wPartyAndBillsPCSavedMenuItem::
 	ds 1
 
@@ -468,7 +469,8 @@ wListScrollOffset::
 	ds 1
 
 ; cc37  
-; 0でないときには、menu wrappingが無効になり、プレイヤーがメニューの一番上や一番下の先を選択しようとすると HandleMenuInput からリターンする  
+; 0でないときには、menu wrap が無効になり、 menu の一番上や一番下の先を選択しようとすると HandleMenuInput からリターンする  
+; 
 ; この設定はmenuのitemが一度に画面に表示しきれないくらい多いときにmenuをスクロールさせるために必要である  
 wMenuWatchMovingOutOfBounds::
 	ds 1
@@ -1535,7 +1537,11 @@ wScriptedNPCWalkCounter::
 
 	ds 1
 
-wGBC:: ; cf1a
+; cf1a  
+; GBなら 0 に、GBCなら 1 になる?  
+; - - -  
+; みたところ 0 しか入らない  
+wGBC::
 	ds 1
 
 ; cf1b  
@@ -2009,7 +2015,26 @@ wAnimationID:: ; d07c
 ; 2: NAME_MON_SCREEN
 wNamingScreenType::
 
-wPartyMenuTypeOrMessageID:: ; d07d
+; d07d  
+; menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
+; 
+; 00: normal pokemon menu (e.g. Start menu)  
+; 01: use healing item on pokemon menu  
+; 02: in-battle switch pokemon menu  
+; 03: learn TM/HM menu  
+; 04: swap pokemon positions menu  
+; 05: use evolution stone on pokemon menu  
+; 
+; f0: poison healed  
+; f1: burn healed  
+; f2: freeze healed  
+; f3: sleep healed  
+; f4: paralysis healed  
+; f5: HP healed  
+; f6: health returned  
+; f7: revitalized  
+; f8: leveled up  
+wPartyMenuTypeOrMessageID::
 
 wTempTilesetNumTiles:: ; d07d
 ; temporary storage for the number of tiles in a tileset
@@ -2398,9 +2423,9 @@ wNumSetBits:: ; d11e
 ; ポケモンやアイテムストレージの値として使われる。またCountSetBitsの結果を格納するのにも利用される
 wd11e:: ds 1
 
-wForcePlayerToChooseMon:: ; d11f
-; When this value is non-zero, the player isn't allowed to exit the party menu
-; by pressing B and not choosing a mon.
+; d11f  
+; この値が 1 なら、プレイヤーは手持ち画面を Bボタンで抜けることができない
+wForcePlayerToChooseMon::
 	ds 1
 
 wNumRunAttempts::

@@ -520,12 +520,15 @@ TextCommand01::
 	pop hl
 	jr NextTextCommand
 
-; print BCD number
-; 02AAAABB
-; AAAA = address of BCD number
-; BB
-; bits 0-4 = length in bytes
-; bits 5-7 = unknown flags
+; **TextCommand02**  
+; TX_BCD のためのテキストコマンド  
+; - - -  
+; print BCD number  
+; 
+; 02AAAABB  
+; AAAA = address of BCD number  
+; BB[0-4] = length in bytes  
+; BB[5-7] = unknown flags  
 TextCommand02::
 	pop hl
 	ld a, [hli]
@@ -556,17 +559,19 @@ TextCommand03::
 	ld b, a
 	jp NextTextCommand
 
-; repoint destination to second line of dialogue text box
-; 05
-; (no arguments)
+; **TextCommand05**  
+; TX_LINE のためのテキストコマンド  
+; - - -  
+; ダイアログボックス2行目(1, 16)に描画先を変更する  
 TextCommand05::
 	pop hl
 	coord bc, 1, 16 ; address of second line of dialogue text box
 	jp NextTextCommand
 
-; blink arrow and wait for A or B to be pressed
-; 06
-; (no arguments)
+; **TextCommand06**  
+; TX_BLINK のためのテキストコマンド  
+; - - -  
+; ▼ を点滅させ、A/Bボタンの入力を待つ  
 TextCommand06::
 	ld a, [wLinkState]
 	cp LINK_STATE_BATTLING
@@ -593,8 +598,10 @@ TextCommand07::
 	coord bc, 1, 16 ; address of second line of dialogue text box
 	jp NextTextCommand
 
-; execute asm inline
-; 08{code}
+; **TextCommand08**  
+; TX_ASM のためのテキストコマンド  
+; - - -  
+; このマクロ以降のバイト列をMLとしてCPUに実行させる
 TextCommand08::
 	pop hl
 	ld de, NextTextCommand

@@ -152,8 +152,7 @@ rLCDC_DEFAULT EQU %11100011
 	ld a, rLCDC_DEFAULT
 	ld [rLCDC], a
 
-	; タイトル画面へ
-	; TODO: 名前はデフォルトでいいの？
+	; タイトル画面へ(名前はあとでSRAMからセットされるからデフォルトでいい)
 	jp SetDefaultNamesBeforeTitlescreen
 
 ; VRAMを 0 クリア

@@ -152,48 +152,73 @@ LoadAnimSpriteGfx:
 	jr nz, .loop
 	ret
 
+; **LoadMonPartySpriteGfxWithLCDDisabled**  
+; LCDを無効化して、ポケモンのSDアイコンの2bppデータをVRAMに転送する  
+; - - -  
+; プレイヤーの手持ちのポケモンにかかわらず全種類のSDアイコンを転送する
 LoadMonPartySpriteGfxWithLCDDisabled:
-; Load mon party sprite tile patterns into VRAM immediately by disabling the
-; LCD.
 	call DisableLCD
 	ld hl, MonPartySpritePointers
 	ld a, $1c
 	ld bc, $0
+	
+; MonPartySpritePointers のエントリ通りに転送を行っていく
 .loop
+; {
 	push af
 	push bc
 	push hl
+
 	add hl, bc
+
+	; push ROM内の2bppデータのアドレス
 	ld a, [hli]
 	ld e, a
 	ld a, [hli]
 	ld d, a
 	push de
+
+	; bc = 2bppデータのバイト長
 	ld a, [hli]
 	ld c, a
 	swap c
 	ld b, $0
+
+	; a = バンク番号
 	ld a, [hli]
+
+	; de = 転送先のVRAMアドレス
 	ld e, [hl]
 	inc hl
 	ld d, [hl]
+
+	; hl = ROM内の2bppデータのアドレス
 	pop hl
+
 	call FarCopyData2
+
 	pop hl
 	pop bc
+
+	; 次のSDアイコンへ
 	ld a, $6
 	add c
 	ld c, a
 	pop af
 	dec a
 	jr nz, .loop
-	jp EnableLCD
+; }
+	
+	; 最後に LCDを戻す
+	jp EnableLCD	; return
 
+; **MonPartySpritePointers**  
+; ポケモンのSDアイコンのテーブル  
 MonPartySpritePointers:
-	dw SlowbroSprite + $c0
-	db $40 / $10 ; 40 bytes
-	db BANK(SlowbroSprite)
-	dw vSprites
+	dw SlowbroSprite + $c0	; from
+	db $40 / $10 			; size(40 bytes)
+	db BANK(SlowbroSprite)	; bank
+	dw vSprites				; dest
 
 	dw BallSprite
 	db $80 / $10 ; $80 bytes

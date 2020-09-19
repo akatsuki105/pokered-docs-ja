@@ -1,33 +1,24 @@
-; [wPartyMenuTypeOrMessageID] = menu type / message ID
-; if less than $F0, it is a menu type
-; menu types:
-; 00: normal pokemon menu (e.g. Start menu)
-; 01: use healing item on pokemon menu
-; 02: in-battle switch pokemon menu
-; 03: learn TM/HM menu
-; 04: swap pokemon positions menu
-; 05: use evolution stone on pokemon menu
-; otherwise, it is a message ID
-; f0: poison healed
-; f1: burn healed
-; f2: freeze healed
-; f3: sleep healed
-; f4: paralysis healed
-; f5: HP healed
-; f6: health returned
-; f7: revitalized
-; f8: leveled up
+; **DrawPartyMenu_**  
+; 手持ち画面を描画する  
+; - - -  
+; [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 DrawPartyMenu_:
+	; SDアイコンをVRAMに転送する  
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
 	call ClearScreen
 	call UpdateSprites
 	callba LoadMonPartySpriteGfxWithLCDDisabled ; load pokemon icon graphics
 
+; **RedrawPartyMenu_**  
+; 手持ち画面を描画する  
+; - - -  
+; [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 RedrawPartyMenu_:
 	ld a, [wPartyMenuTypeOrMessageID]
 	cp SWAP_MONS_PARTY_MENU
 	jp z, .printMessage
+	
 	call ErasePartyMenuCursors
 	callba InitPartyMenuBlkPacket
 	coord hl, 3, 0
@@ -277,34 +268,42 @@ PotionText:
 	TX_FAR _PotionText
 	db "@"
 
+; "${wcd6d} was cured of poison!"
 AntidoteText:
 	TX_FAR _AntidoteText
 	db "@"
 
+; "${wcd6d}'s rid of paralysis!"
 ParlyzHealText:
 	TX_FAR _ParlyzHealText
 	db "@"
 
+; "${wcd6d}'s burn was healed!"
 BurnHealText:
 	TX_FAR _BurnHealText
 	db "@"
 
+; "${wcd6d} was defrosted!"
 IceHealText:
 	TX_FAR _IceHealText
 	db "@"
 
+; "${wcd6d} woke up!"
 AwakeningText:
 	TX_FAR _AwakeningText
 	db "@"
 
+; "${wcd6d}'s health returned!"
 FullHealText:
 	TX_FAR _FullHealText
 	db "@"
 
+; "${wcd6d} is revitalized!"
 ReviveText:
 	TX_FAR _ReviveText
 	db "@"
 
+; "${wcd6d} grew to level ${Lv}!"
 RareCandyText:
 	TX_FAR _RareCandyText
 	TX_SFX_ITEM_1 ; probably supposed to play SFX_LEVEL_UP but the wrong music bank is loaded

@@ -550,12 +550,14 @@ _StrengthsAndWeaknessesText::
 	cont "against others."
 	done
 
+; "PA: Ding-dong! Time's up!"
 _TimesUpText::
 	text "PA: Ding-dong!"
 
 	para "Time's up!"
 	prompt
 
+; "PA: Your SAFARI GAME is over!"
 _GameOverText::
 	text "PA: Your SAFARI"
 	line "GAME is over!"

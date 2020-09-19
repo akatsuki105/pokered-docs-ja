@@ -64,13 +64,18 @@ DisableLCD::
 	ld [rIE], a
 	ret
 
+; **EnableLCD**  
+; LCD を有効にする  
+; - - -  
+; LCDC の bit7 をセットすることで有効にする  
 EnableLCD::
 	ld a, [rLCDC]
 	set rLCDC_ENABLE, a
 	ld [rLCDC], a
 	ret
 
-; wOAMBufferを全部0でクリアする
+; **ClearSprites**  
+; wOAMBufferを 全部0 でクリアする
 ClearSprites::
 	xor a
 	ld hl, wOAMBuffer
@@ -135,10 +140,11 @@ INCLUDE "data/map_header_pointers.asm"
 INCLUDE "home/overworld.asm"
 
 ; **CheckForUserInterruption**  
-; cフレームの間に ↑+Select+B or Start or A が 押されたときキャリーを立てて返す  
-; 押されなければキャリーをクリアして返す  
+; cフレームの間 に `↑+Select+B` or `Start` or `A` が 押されたかを確認  
 ; - - -  
 ; イントロとタイトル画面でのみ利用される関数  
+; 
+; OUTPUT: carry = 1(押された) or 0(押されなかった)
 CheckForUserInterruption::
 	call DelayFrame
 
@@ -378,8 +384,11 @@ LoadFrontSpriteByMonIndex::
 	ret
 
 
+; **PlayCry**  
+; ポケモンの鳴き声を流す  
+; - - -  
+; INPUT: a = ポケモンID  
 PlayCry::
-; Play monster a's cry.
 	call GetCryData
 	call PlaySound
 	jp WaitForSoundToFinish
@@ -418,15 +427,17 @@ GetCryData::
 	ret
 
 DisplayPartyMenu::
+	; [hTilesetType] = 0
 	ld a, [hTilesetType]
 	push af
 	xor a
 	ld [hTilesetType], a
+
 	call GBPalWhiteOutWithDelay3
 	call ClearSprites
 	call PartyMenuInit
 	call DrawPartyMenu
-	jp HandlePartyMenuInput
+	jp HandlePartyMenuInput 	; ret
 
 GoBackToPartyMenu::
 	ld a, [hTilesetType]
@@ -437,32 +448,49 @@ GoBackToPartyMenu::
 	call RedrawPartyMenu
 	jp HandlePartyMenuInput
 
+; **PartyMenuInit**  
+; 手持ち画面を開く時のInit処理  
+; - - -  
+; 2bppデータのロード、menuに関する変数の初期化を行う  
+; 手持ち画面の描画はしない  
 PartyMenuInit::
+	; バンク1にスイッチ
 	ld a, 1 ; hardcoded bank
 	call BankswitchHome
+
 	call LoadHpBarAndStatusTilePatterns
+
+	; 手持ち画面ではテキストを一気に表示するので
 	ld hl, wd730
-	set 6, [hl] ; turn off letter printing delay
-	xor a ; PLAYER_PARTY_DATA
-	ld [wMonDataLocation], a
-	ld [wMenuWatchMovingOutOfBounds], a
+	set 6, [hl]
+
+	; 変数を初期化
+	xor a 
+	ld [wMonDataLocation], a	; PLAYER_PARTY_DATA
+	ld [wMenuWatchMovingOutOfBounds], a	; menu wrap を有効に 
+
+	; menuの一番上の項目でのカーソル位置を (0, 1) に設定
 	ld hl, wTopMenuItemY
 	inc a
-	ld [hli], a ; top menu item Y
+	ld [hli], a ; wTopMenuItemY
 	xor a
-	ld [hli], a ; top menu item X
+	ld [hli], a ; wTopMenuItemX
+
+	; 記憶していたカーソル位置を復元
 	ld a, [wPartyAndBillsPCSavedMenuItem]
 	push af
-	ld [hli], a ; current menu item ID
+	ld [hli], a ; wCurrentMenuItem
 	inc hl
-	ld a, [wPartyCount]
-	and a ; are there more than 0 pokemon in the party?
+
+; [wMaxMenuItem] = 手持ち数-1 or 0(最初のポケモンをもらう前)
+	ld a, [wPartyCount]	; a = 手持ちのポケモン数
+	and a
 	jr z, .storeMaxMenuItemID
 	dec a
-; if party is not empty, the max menu item ID is ([wPartyCount] - 1)
-; otherwise, it is 0
 .storeMaxMenuItemID
-	ld [hli], a ; max menu item ID
+	ld [hli], a ; wMaxMenuItem
+
+; [wMenuWatchedKeys] = A_BUTTON(手持ち画面から抜けれない) or A_BUTTON | B_BUTTON(抜けれる)
 	ld a, [wForcePlayerToChooseMon]
 	and a
 	ld a, A_BUTTON | B_BUTTON
@@ -472,8 +500,10 @@ PartyMenuInit::
 	inc a ; a = A_BUTTON
 .next
 	ld [hli], a ; menu watched keys
-	pop af
-	ld [hl], a ; old menu item ID
+
+	; [wLastMenuItem] = [wPartyAndBillsPCSavedMenuItem]
+	pop af		; a = [wPartyAndBillsPCSavedMenuItem]
+	ld [hl], a 	; old menu item ID
 	ret
 
 HandlePartyMenuInput::
@@ -538,7 +568,12 @@ DrawPartyMenu::
 
 RedrawPartyMenu::
 	ld hl, RedrawPartyMenu_
+	; fallthrough
 
+; **DrawPartyMenuCommon**  
+; hl で指定したアドレスにジャンプする  
+; - - -  
+; INPUT: hl = DrawPartyMenu_ or RedrawPartyMenu_
 DrawPartyMenuCommon::
 	ld b, BANK(RedrawPartyMenu_)
 	jp Bankswitch
@@ -1967,9 +2002,9 @@ DisplayListMenuIDLoop::
 ; 個数を選択するメニューを表示
 ; - - - 
 ; 
-; OUTPUT:
-; - a = $00(Aボタン) or $ff(Bボタン)
-; - [wItemQuantity] = 売却個数
+; OUTPUT:  
+; a = $00(Aボタン) or $ff(Bボタン)  
+; [wItemQuantity] = 売却個数  
 DisplayChooseQuantityMenu::
 	; メニューのテキストボックスの大きさを設定する
 	; PRICEDITEMLISTMENUでないなら個数を表示するメニューでok
