@@ -1,8 +1,12 @@
 PalletTown_Script:
+
+; オーキド博士からモンスターボールを5個もらうイベントを消化しているなら EVENT_PALLET_AFTER_GETTING_POKEBALLS フラグを立てる
 	CheckEvent EVENT_GOT_POKEBALLS_FROM_OAK
 	jr z, .next
 	SetEvent EVENT_PALLET_AFTER_GETTING_POKEBALLS
 .next
+
+	; PalletTown_ScriptPointers の [wPalletTownCurScript]が指す map scriptを実行
 	call EnableAutoTextBoxDrawing
 	ld hl, PalletTown_ScriptPointers
 	ld a, [wPalletTownCurScript]
@@ -17,27 +21,40 @@ PalletTown_ScriptPointers:
 	dw PalletTownScript5
 	dw PalletTownScript6
 
+; **PalletTownScript0**  
+; プレイヤーが草むらに入ろうとした時オーキド博士が出現するイベントを行う  
+; - - -  
+; 連行まではしない  
 PalletTownScript0:
+	; イベント消化済みなら return
 	CheckEvent EVENT_FOLLOWED_OAK_INTO_LAB
 	ret nz
+
+	; プレイヤーがマサラタウンの南からマップ外に出ようとしている時は return
 	ld a, [wYCoord]
 	cp 1 ; is player near north exit?
 	ret nz
+
+	; プレイヤーに下をむかせる
 	xor a
 	ld [hJoyHeld], a
 	ld a, PLAYER_DIR_DOWN
 	ld [wPlayerMovingDirection], a
+
+	; 研究所連行イベントのBGMに切り替え
 	ld a, $FF
 	call PlaySound ; stop music
 	ld a, BANK(Music_MeetProfOak)
 	ld c, a
 	ld a, MUSIC_MEET_PROF_OAK ; “oak appears” music
 	call PlayMusic
+
+	; イベントを消化済みに
 	ld a, $FC
 	ld [wJoyIgnore], a
 	SetEvent EVENT_OAK_APPEARED_IN_PALLET
 
-	; trigger the next script
+	; PalletTownScript1　が次にトリガーされる様にする
 	ld a, 1
 	ld [wPalletTownCurScript], a
 	ret

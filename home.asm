@@ -2772,22 +2772,31 @@ StoreTrainerHeaderPointer::
 	ld [wTrainerHeaderPtr+1], a
 	ret
 
-; executes the current map script from the function pointer array provided in hl.
-; a: map script index to execute (unless overridden by [wd733] bit 4)
+; **ExecuteCurMapScriptInTable**  
+; map scriptをトリガーする関数  
+; - - -  
+; INPUT:  
+; de = map script の jumptable  
+; a =  map scriptのインデックス (unless overridden by [wd733] bit 4)  
+; hl = trainer header  
 ExecuteCurMapScriptInTable::
 	push af
 	push de
-	call StoreTrainerHeaderPointer
-	pop hl
+	call StoreTrainerHeaderPointer	; [wTrainerHeaderPtr] = hl
+	pop hl	; hl = jumptable
 	pop af
 	push hl
+
+	; wFlags_D733 の bit4 がセットされている時は Aレジスタで与えられた値を、そうでない場合は[wCurMapScript] をmap scriptのインデックスとして利用する  
 	ld hl, wFlags_D733
 	bit 4, [hl]
 	res 4, [hl]
 	jr z, .useProvidedIndex   ; test if map script index was overridden manually
 	ld a, [wCurMapScript]
+
+	; jumptableの関数(map script)にジャンプ
 .useProvidedIndex
-	pop hl
+	pop hl	; hl = jumptable
 	ld [wCurMapScript], a
 	call CallFunctionInTable
 	ld a, [wCurMapScript]
@@ -5184,9 +5193,9 @@ DisableAutoTextBoxDrawing::
 	ld a, $01
 
 ; **AutoTextBoxDrawingCommon**  
+; 自動で会話が進むテキスト  
 ; - - -  
-; 自動で会話が進むテキスト
-; INPUT: a = 0(無効化) or 1(有効化)
+; INPUT: a = 0(無効化) or 1(有効化)  
 AutoTextBoxDrawingCommon::
 	ld [wAutoTextBoxDrawingControl], a
 	xor a
@@ -5431,8 +5440,8 @@ endm
 
 
 ; **CallFunctionInTable**  
-; Call function a in jumptable hl.
-; jumptable hlの 関数aをコールする  
+; jumptable hlの 関数a をcallする  
+; - - -  
 ; deだけは値が変わる可能性がある
 CallFunctionInTable::
 	push hl
@@ -5446,7 +5455,7 @@ CallFunctionInTable::
 	ld h, [hl]
 	ld l, a
 	ld de, .returnAddress
-	push de
+	push de	; call hl
 	jp hl
 .returnAddress
 	pop bc

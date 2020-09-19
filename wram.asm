@@ -3083,7 +3083,10 @@ wMissableObjectList::
 wGameProgressFlags::
 wOaksLabCurScript:: ; d5f0
 	ds 1
-wPalletTownCurScript:: ; d5f1
+
+; d5f1  
+; PalletTown_ScriptPointersのどの関数が実行されるかを決める
+wPalletTownCurScript::
 	ds 1
 	ds 1
 wBluesHouseCurScript:: ; d5f3
@@ -3462,13 +3465,15 @@ wd730::
 wd732::
 	ds 1
 
+; **wFlags_D733**  
 ; d733  
+; - - -  
 ; bit 0: running a test battle  
 ; bit 1: このフラグが立っている時はマップが変わってもBGMを変えない  
 ; bit 2: skip the joypad check in CheckWarpsNoCollision (used for the forced warp down the waterfall in the Seafoam Islands)  
 ; bit 3: trainer wants to battle  
-; bit 4: use variable [wCurMapScript] instead of the provided index for next frame's map script (used to start battle when talking to trainers)  
-; bit 7: フィールド上で空をとぶを使った時にセットされる
+; bit 4: 次のフレームで実行されるmap scriptのインデックスとして[wCurMapScript]を使う(トレーナーに話しかけてバトルが始まる場合に利用される)  
+; bit 7: フィールド上で空をとぶを使った時にセットされる  
 wFlags_D733::
 	ds 1
 
