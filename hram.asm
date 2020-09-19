@@ -48,6 +48,7 @@ hNorthSouthConnectedMapWidth    EQU $FF8C
 ; スプライトのオフセット($c1X0のX) か テキストID(DisplayTextIDの引数) のバッファ
 hSpriteIndexOrTextID EQU $FF8C
 
+; `RedrawPartyMenu_`のループ処理で何匹めの手持ちポケモンを描画中かを表す
 hPartyMonIndex EQU $FF8C
 
 ; OakSpeechSlidePicCommon で使用

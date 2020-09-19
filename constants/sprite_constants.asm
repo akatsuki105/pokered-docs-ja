@@ -1,4 +1,4 @@
-; pokemon's overworld sprites
+; ポケモンのスプライトタイプ(SDキャラ)のID
 const_value = 0
 
 	const SPRITE_MON       ; $0

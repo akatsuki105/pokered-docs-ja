@@ -3,7 +3,7 @@
 ; - - -  
 ; [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 DrawPartyMenu_:
-	; SDアイコンをVRAMに転送する  
+	; SDキャラをVRAMに転送する  
 	xor a
 	ld [H_AUTOBGTRANSFERENABLED], a
 	call ClearScreen
@@ -15,42 +15,59 @@ DrawPartyMenu_:
 ; - - -  
 ; [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 RedrawPartyMenu_:
+	; SWAP_MONS_PARTY_MENU のときはすでに手持ち画面は描画されているので -> .printMessage
 	ld a, [wPartyMenuTypeOrMessageID]
 	cp SWAP_MONS_PARTY_MENU
 	jp z, .printMessage
-	
+
+; ここから手持ち画面を描画していく  
 	call ErasePartyMenuCursors
 	callba InitPartyMenuBlkPacket
-	coord hl, 3, 0
+
+	; ループ変数の初期化
+	coord hl, 3, 0	; (3, 0) 一匹めのポケモンの名前の位置
 	ld de, wPartySpecies
 	xor a
 	ld c, a
 	ld [hPartyMonIndex], a
 	ld [wWhichPartyMenuHPBar], a
+
 .loop
+	; 手持ち全部処理した -> .afterDrawingMonEntries
 	ld a, [de]
-	cp $FF ; reached the terminator?
+	cp $FF
 	jp z, .afterDrawingMonEntries
+
 	push bc
 	push de
-	push hl
+	push hl	; push 処理中のポケモンの名前の位置
+
+	; ポケモンの名前を描画
 	ld a, c
 	push hl
 	ld hl, wPartyMonNicks
 	call GetPartyMonName
 	pop hl
-	call PlaceString ; print the pokemon's name
-	callba WriteMonPartySpriteOAMByPartyIndex ; place the appropriate pokemon icon
+	call PlaceString
+
+	; SDキャラをOAMに格納する
+	callba WriteMonPartySpriteOAMByPartyIndex
+	
+	; [hPartyMonIndex]をインクリメント
 	ld a, [hPartyMonIndex]
-	ld [wWhichPokemon], a
+	ld [wWhichPokemon], a	; LoadMonDataで使う
 	inc a
 	ld [hPartyMonIndex], a
 	call LoadMonData
+	
+	; hl = ポケモンの名前の位置
 	pop hl
 	push hl
+	
 	ld a, [wMenuItemToSwap]
 	and a ; is the player swapping pokemon positions?
 	jr z, .skipUnfilledRightArrow
+
 ; if the player is swapping pokemon positions
 	dec a
 	ld b, a
@@ -65,6 +82,7 @@ RedrawPartyMenu_:
 	ld [hli], a ; place the cursor
 	inc hl
 	inc hl
+	
 .skipUnfilledRightArrow
 	ld a, [wPartyMenuTypeOrMessageID] ; menu type
 	cp TMHM_PARTY_MENU
@@ -181,15 +199,22 @@ RedrawPartyMenu_:
 .afterDrawingMonEntries
 	ld b, SET_PAL_PARTY_MENU
 	call RunPaletteCommand
+
 .printMessage
+	; テキスト表示は一気にするようにする
 	ld hl, wd730
 	ld a, [hl]
 	push af
 	push hl
-	set 6, [hl] ; turn off letter printing delay
-	ld a, [wPartyMenuTypeOrMessageID] ; message ID
+	set 6, [hl]
+
+	; [wPartyMenuTypeOrMessageID] が messageID -> .printItemUseMessage
+	ld a, [wPartyMenuTypeOrMessageID]
 	cp $F0
 	jr nc, .printItemUseMessage
+
+; menu typeのとき
+	; PartyMenuMessagePointers の該当エントリのテキストを描画
 	add a
 	ld hl, PartyMenuMessagePointers
 	ld b, 0
@@ -199,15 +224,20 @@ RedrawPartyMenu_:
 	ld h, [hl]
 	ld l, a
 	call PrintText
+
 .done
+	; 終了
 	pop hl
 	pop af
 	ld [hl], a
 	ld a, 1
 	ld [H_AUTOBGTRANSFERENABLED], a
 	call Delay3
-	jp GBPalNormal
+	jp GBPalNormal	; return
+
 .printItemUseMessage
+; messageIDのとき
+	; PartyMenuItemUseMessagePointers の該当エントリのテキストを描画
 	and $0F
 	ld hl, PartyMenuItemUseMessagePointers
 	add a
@@ -225,6 +255,16 @@ RedrawPartyMenu_:
 	call PrintText
 	jr .done
 
+; **PartyMenuItemUseMessagePointers**  
+; dw AntidoteText
+; dw BurnHealText
+; dw IceHealText
+; dw AwakeningText
+; dw ParlyzHealText
+; dw PotionText
+; dw FullHealText
+; dw ReviveText
+; dw RareCandyText
 PartyMenuItemUseMessagePointers:
 	dw AntidoteText
 	dw BurnHealText
@@ -236,6 +276,13 @@ PartyMenuItemUseMessagePointers:
 	dw ReviveText
 	dw RareCandyText
 
+; **PartyMenuMessagePointers**  
+; dw PartyMenuNormalText
+; dw PartyMenuItemUseText
+; dw PartyMenuBattleText
+; dw PartyMenuUseTMText
+; dw PartyMenuSwapMonText
+; dw PartyMenuItemUseText
 PartyMenuMessagePointers:
 	dw PartyMenuNormalText
 	dw PartyMenuItemUseText
@@ -244,26 +291,32 @@ PartyMenuMessagePointers:
 	dw PartyMenuSwapMonText
 	dw PartyMenuItemUseText
 
+; "Choose a #MON."
 PartyMenuNormalText:
 	TX_FAR _PartyMenuNormalText
 	db "@"
 
+; "Use item on which #MON?"
 PartyMenuItemUseText:
 	TX_FAR _PartyMenuItemUseText
 	db "@"
 
+; "Bring out which #MON?"
 PartyMenuBattleText:
 	TX_FAR _PartyMenuBattleText
 	db "@"
 
+; "Use TM on which #MON?"
 PartyMenuUseTMText:
 	TX_FAR _PartyMenuUseTMText
 	db "@"
 
+; "Move #MON where?"
 PartyMenuSwapMonText:
 	TX_FAR _PartyMenuSwapMonText
 	db "@"
 
+; "${wcd6d} recovered by ${HP}!"
 PotionText:
 	TX_FAR _PotionText
 	db "@"

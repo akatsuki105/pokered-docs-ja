@@ -298,6 +298,7 @@ DeterminePaletteIDOutOfBattle:
 	ld a, [hl]
 	ret
 
+; BlkPacket_PartyMenu から wPartyMenuBlkPacket にデータ転送
 InitPartyMenuBlkPacket:
 	ld hl, BlkPacket_PartyMenu
 	ld de, wPartyMenuBlkPacket

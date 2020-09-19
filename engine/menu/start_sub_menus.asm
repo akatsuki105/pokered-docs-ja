@@ -283,7 +283,10 @@ StartMenu_Pokemon:
 	TX_FAR _NewBadgeRequiredText
 	db "@"
 
-; writes a blank tile to all possible menu cursor positions on the party menu
+; **ErasePartyMenuCursors**  
+; 手持ち一覧の menu のカーソルを削除する  
+; - - -  
+; 手持ち一覧のカーソルがとりうるタイルを全部空白のタイルで上書き
 ErasePartyMenuCursors:
 	coord hl, 0, 1
 	ld bc, 2 * 20 ; menu cursor positions are 2 rows apart

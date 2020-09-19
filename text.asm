@@ -1570,35 +1570,42 @@ _ClearSaveDataText::
 	line "data?"
 	done
 
+; "Which floor do you want? "
 _WhichFloorText::
 	text "Which floor do"
 	line "you want? "
 	done
 
+; "Choose a #MON."
 _PartyMenuNormalText::
 	text "Choose a #MON."
 	done
 
+; "Use item on which #MON?"
 _PartyMenuItemUseText::
 	text "Use item on which"
 	line "#MON?"
 	done
 
+; "Bring out which #MON?"
 _PartyMenuBattleText::
 	text "Bring out which"
 	line "#MON?"
 	done
 
+; "Use TM on which #MON?"
 _PartyMenuUseTMText::
 	text "Use TM on which"
 	line "#MON?"
 	done
 
+; "Move #MON where?"
 _PartyMenuSwapMonText::
 	text "Move #MON"
 	line "where?"
 	done
 
+; "${wcd6d} recovered by ${HP}!"
 _PotionText::
 	TX_RAM wcd6d
 	text ""

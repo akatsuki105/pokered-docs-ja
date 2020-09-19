@@ -153,9 +153,9 @@ LoadAnimSpriteGfx:
 	ret
 
 ; **LoadMonPartySpriteGfxWithLCDDisabled**  
-; LCDを無効化して、ポケモンのSDアイコンの2bppデータをVRAMに転送する  
+; LCDを無効化して、ポケモンのSDキャラの2bppデータをVRAMに転送する  
 ; - - -  
-; プレイヤーの手持ちのポケモンにかかわらず全種類のSDアイコンを転送する
+; プレイヤーの手持ちのポケモンにかかわらず全種類のSDキャラを転送する
 LoadMonPartySpriteGfxWithLCDDisabled:
 	call DisableLCD
 	ld hl, MonPartySpritePointers
@@ -200,7 +200,7 @@ LoadMonPartySpriteGfxWithLCDDisabled:
 	pop hl
 	pop bc
 
-	; 次のSDアイコンへ
+	; 次のSDキャラへ
 	ld a, $6
 	add c
 	ld c, a
@@ -213,7 +213,7 @@ LoadMonPartySpriteGfxWithLCDDisabled:
 	jp EnableLCD	; return
 
 ; **MonPartySpritePointers**  
-; ポケモンのSDアイコンのテーブル  
+; ポケモンのSDキャラのテーブル  
 MonPartySpritePointers:
 	dw SlowbroSprite + $c0	; from
 	db $40 / $10 			; size(40 bytes)
@@ -355,18 +355,21 @@ MonPartySpritePointers:
 	db BANK(MonPartySprites)
 	dw vSprites + $780
 
-WriteMonPartySpriteOAMByPartyIndex:
 ; Write OAM blocks for the party mon in [hPartyMonIndex].
+WriteMonPartySpriteOAMByPartyIndex:
 	push hl
 	push de
 	push bc
+	
+	; a = 処理中のポケモンID
 	ld a, [hPartyMonIndex]
 	ld hl, wPartySpecies
 	ld e, a
 	ld d, 0
 	add hl, de
 	ld a, [hl]
-	call GetPartyMonSpriteID
+
+	call GetPartyMonSpriteID	; a = SDキャラのID
 	ld [wOAMBaseTile], a
 	call WriteMonPartySpriteOAM
 	pop bc
@@ -422,9 +425,9 @@ UnusedPartyMonSpriteFunction:
 	pop hl
 	jp CopyVideoData
 
+; Write the OAM blocks for the first animation frame into the OAM buffer
+; and make a copy at wMonPartySpritesSavedOAM.
 WriteMonPartySpriteOAM:
-; Write the OAM blocks for the first animation frame into the OAM buffer and
-; make a copy at wMonPartySpritesSavedOAM.
 	push af
 	ld c, $10
 	ld h, wOAMBuffer / $100
@@ -448,10 +451,17 @@ WriteMonPartySpriteOAM:
 	ld bc, $60
 	jp CopyData
 
+; **GetPartyMonSpriteID**  
+; ポケモンのSpriteID(SDキャラのID)を得る  
+; - - -  
+; INPUT a = ポケモンID  
+; OUTPUT a = SDキャラのID(SPRITE_MON, SPRITE_BALL_M)  
 GetPartyMonSpriteID:
+	; a = [wd11e] = ポケモン図鑑の番号
 	ld [wd11e], a
 	predef IndexToPokedex
 	ld a, [wd11e]
+
 	ld c, a
 	dec a
 	srl a
@@ -459,6 +469,7 @@ GetPartyMonSpriteID:
 	ld e, a
 	ld d, 0
 	add hl, de
+
 	ld a, [hl]
 	bit 0, c
 	jr nz, .skipSwap

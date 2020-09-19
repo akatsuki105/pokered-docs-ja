@@ -1,3 +1,4 @@
+; 各ニブル -> 図鑑番号とするポケモンのSDキャラ   
 MonPartyData:
 	dn SPRITE_GRASS, SPRITE_GRASS           ;Bulbasaur/Ivysaur
 	dn SPRITE_GRASS, SPRITE_MON             ;Venusaur/Charmander

@@ -1586,8 +1586,10 @@ wWhichPartyMenuHPBar::
 wPalPacket::
 	ds 1
 
-; cf2e
-; wPalPacketと合わせて合計30バイト
+; cf2e  
+; 手持ち一覧の画面で使うパレットのデータが格納される？  
+; - - -  
+; wPalPacketと合わせて合計30バイト  
 wPartyMenuBlkPacket::
 	ds 29
 
