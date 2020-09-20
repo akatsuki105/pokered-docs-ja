@@ -7,9 +7,10 @@ StartMenu_Pokedex:
 	jp RedisplayStartMenu
 
 ; **StartMenu_Pokemon**  
-; start menuの "Pokemon" menu
+; start menuの "Pokemon" menu  
 ; - - -  
 ; start menuで "Pokemon" を押した時にここに処理が映る  
+; 手持ち画面を写し、Aボタンを押した時の STATS/SWITCH/CANCEL/+α の menuも担当する  
 StartMenu_Pokemon:
 	; 最初のポケモン入手前 は Pokemonのmenu項目を押しても何もおきない
 	ld a, [wPartyCount]
@@ -95,67 +96,94 @@ StartMenu_Pokemon:
 	xor a
 	ld [hl], a	; [wLastMenuItem] = 0
 
+	; STATS/SWITCH/CANCEL/+α の menuでプレイヤーがA/Bボタンを押すのを待つ
 	call HandleMenuInput
 
 	push af
 	call LoadScreenTilesFromBuffer1 ; restore saved screen
 	pop af
 
-	bit 1, a ; was the B button pressed?
+	; Bボタンが押された時
+	bit 1, a
 	jp nz, .loop
-	
-; if the B button wasn't pressed
+
+	; ここからはAボタンが押された時
+
 	ld a, [wMaxMenuItem]
 	ld b, a
-	ld a, [wCurrentMenuItem] ; menu selection
-	cp b
-	jp z, .exitMenu ; if the player chose Cancel
+
+	; CANCEL を選んだ -> .exitMenu
+	ld a, [wCurrentMenuItem] 	; プレイヤーの選んだ項目
+	cp b						; [wMaxMenuItem] == CANCEL
+	jp z, .exitMenu
+
+	; SWITCH を選んだ -> .choseSwitch
 	dec b
 	cp b
 	jr z, .choseSwitch
+
+	; STATS を選んだ -> .choseStats
 	dec b
 	cp b
 	jp z, .choseStats
+
+	; 何かしらのフィールド技を選んだ -> .choseOutOfBattleMove
 	ld c, a
 	ld b, 0
 	ld hl, wFieldMoves
-	add hl, bc
+	add hl, bc	; hl = wFieldMoves のエントリ
 	jp .choseOutOfBattleMove
+
 .choseSwitch
+	; ポケモンが1匹しかいないなら手持ち画面に戻る -> StartMenu_Pokemon
 	ld a, [wPartyCount]
-	cp 2 ; is there more than one pokemon in the party?
-	jp c, StartMenu_Pokemon ; if not, no switching
+	cp 2
+	jp c, StartMenu_Pokemon
+
 	call SwitchPartyMon_InitVarOrSwapData ; init [wMenuItemToSwap]
+
+	; "Move #MON where?" と表示しながらプレイヤーに入れ替え対象のポケモンを選ばせる
 	ld a, SWAP_MONS_PARTY_MENU
 	ld [wPartyMenuTypeOrMessageID], a
 	call GoBackToPartyMenu
 	jp .checkIfPokemonChosen
+
 .choseStats
+	; ステータス画面を描画
 	call ClearSprites
 	xor a ; PLAYER_PARTY_DATA
 	ld [wMonDataLocation], a
 	predef StatusScreen
 	predef StatusScreen2
+
+	; 手持ち画面に戻る
 	call ReloadMapData
 	jp StartMenu_Pokemon
+
 .choseOutOfBattleMove
+
 	push hl
 	ld a, [wWhichPokemon]
 	ld hl, wPartyMonNicks
 	call GetPartyMonName
 	pop hl
-	ld a, [hl]
+
+	; hl = .outOfBattleMovePointers の該当エントリ
+	ld a, [hl]	; wFieldMoves のエントリ
 	dec a
 	add a
 	ld b, 0
 	ld c, a
 	ld hl, .outOfBattleMovePointers
 	add hl, bc
+
+	; .outOfBattleMovePointers の該当エントリ にジャンプ
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
 	ld a, [wObtainedBadges] ; badges obtained
 	jp hl
+
 .outOfBattleMovePointers
 	dw .cut
 	dw .fly
@@ -166,57 +194,84 @@ StartMenu_Pokemon:
 	dw .dig
 	dw .teleport
 	dw .softboiled
+
 .fly
-	bit 2, a ; does the player have the Thunder Badge?
+	; オレンジバッジ(マチス)を持ってない -> .newBadgeRequired
+	bit 2, a
 	jp z, .newBadgeRequired
+
+	; 屋外なら飛べる -> .canFly
 	call CheckIfInOutsideMap
 	jr z, .canFly
+
+	; 屋内では空を飛ぶは使えないのでその旨のテキストを出して手持ち画面に戻る
 	ld a, [wWhichPokemon]
 	ld hl, wPartyMonNicks
 	call GetPartyMonName
 	ld hl, .cannotFlyHereText
 	call PrintText
 	jp .loop
+
 .canFly
 	call ChooseFlyDestination
+
+	; 飛ぶ先をAボタンで決定したらstart menuを全部閉じてマップに戻る -> .goBackToMap
 	ld a, [wd732]
-	bit 3, a ; did the player decide to fly?
+	bit 3, a
 	jp nz, .goBackToMap
+
+	; Bボタンでキャンセルした場合は手持ち画面に戻る
 	call LoadFontTilePatterns
 	ld hl, wd72e
 	set 1, [hl]
 	jp StartMenu_Pokemon
+
 .cut
-	bit 1, a ; does the player have the Cascade Badge?
+	; ブルーバッジ(カスミ)を持ってない -> .newBadgeRequired
+	bit 1, a
 	jp z, .newBadgeRequired
+
+	; いあいぎりに成功したらマップに戻る 失敗したら手持ち画面に戻る
 	predef UsedCut
 	ld a, [wActionResultOrTookBattleTurn]
 	and a
 	jp z, .loop
 	jp CloseTextDisplay
+
 .surf
-	bit 4, a ; does the player have the Soul Badge?
+	; ピンクバッジ(キョウ)を持ってない -> .newBadgeRequired
+	bit 4, a
 	jp z, .newBadgeRequired
+
+	; なみのり ができないとこだったら手持ち画面に戻る
 	callba IsSurfingAllowed
 	ld hl, wd728
 	bit 1, [hl]
 	res 1, [hl]
 	jp z, .loop
+	
+	; なみのり は SURFBOARD というアイテムを擬似的に使ったのと同じ処理
 	ld a, SURFBOARD
 	ld [wcf91], a
 	ld [wPseudoItemID], a
 	call UseItem
+
+	; なんらかの理由でなみのり失敗したら手持ち画面に戻る
 	ld a, [wActionResultOrTookBattleTurn]
 	and a
 	jp z, .loop
+
+	; なみのりに成功したらマップに戻る
 	call GBPalWhiteOutWithDelay3
 	jp .goBackToMap
+
 .strength
 	bit 3, a ; does the player have the Rainbow Badge?
 	jp z, .newBadgeRequired
 	predef PrintStrengthTxt
 	call GBPalWhiteOutWithDelay3
 	jp .goBackToMap
+
 .flash
 	bit 0, a ; does the player have the Boulder Badge?
 	jp z, .newBadgeRequired
@@ -226,9 +281,11 @@ StartMenu_Pokemon:
 	call PrintText
 	call GBPalWhiteOutWithDelay3
 	jp .goBackToMap
+
 .flashLightsAreaText
 	TX_FAR _FlashLightsAreaText
 	db "@"
+
 .dig
 	ld a, ESCAPE_ROPE
 	ld [wcf91], a
@@ -309,9 +366,11 @@ StartMenu_Pokemon:
 .notHealthyEnoughText
 	TX_FAR _NotHealthyEnoughText
 	db "@"
+
 .goBackToMap
 	call RestoreScreenTilesAndReloadTilePatterns
 	jp CloseTextDisplay
+
 .newBadgeRequired
 	ld hl, .newBadgeRequiredText
 	call PrintText

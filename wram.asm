@@ -1003,6 +1003,15 @@ wHoFMonSpecies::
 ; cd3d  
 ; 4 bytes  
 ; 処理中のポケモンが覚えているフィールドで使える技  
+; 1 = cut  
+; 2 = fly  
+; 3 = surf  
+; 4 = surf  
+; 5 = strength  
+; 6 = flash  
+; 7 = dig  
+; 8 = teleport  
+; 9 = softboiled  
 wFieldMoves::
 
 ; cd3d  
@@ -1336,16 +1345,19 @@ wFlags_0xcd60::
 
 	ds 9
 
-wActionResultOrTookBattleTurn:: ; cd6a
-; This has overlapping related uses.
-; When the player tries to use an item or use certain field moves, 0 is stored
-; when the attempt fails and 1 is stored when the attempt succeeds.
+; cd6a  
+; This has overlapping related uses.  
+; プレイヤーが道具かフィールド技を使う時は、その結果が成功なら 1、失敗なら 0 になる  
+; 
 ; In addition, some items store 2 for certain types of failures, but this
 ; cannot happen in battle.
+; 
 ; In battle, a non-zero value indicates the player has taken their turn using
 ; something other than a move (e.g. using an item or switching pokemon).
+; 
 ; So, when an item is successfully used in battle, this value becomes non-zero
 ; and the player is not allowed to make a move and the two uses are compatible.
+wActionResultOrTookBattleTurn::
 	ds 1
 
 ; cd6b  
@@ -2599,11 +2611,16 @@ wLinkBattleRandomNumberList:: ; d148
 wSerialPlayerDataBlock:: ; d152
 ; the first 6 bytes are the preamble
 
-wPseudoItemID:: ; d152
-; When a real item is being used, this is 0.
-; When a move is acting as an item, this is the ID of the item it's acting as.
-; For example, out-of-battle Dig is executed using a fake Escape Rope item. In
-; that case, this would be ESCAPE_ROPE.
+; d152  
+; あなをほる は 内部処理ではあなぬけのひも を使ったことにしている  
+; ここにはそのようなアクションをとったときに擬似的に使われたことにするアイテムIDを格納する  
+; 
+; 実際に道具を使った時はここには 0 が入る  
+; 
+; 例:  
+; Dig -> ESCAPE_ROPE  
+; Surf -> SURFBOARD("?????" という没アイテム)  
+wPseudoItemID::
 	ds 1
 
 wUnusedD153:: ; d153

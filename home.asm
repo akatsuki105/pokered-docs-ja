@@ -2696,7 +2696,8 @@ ReloadTilesetTilePatterns::
 	ld [MBC1RomBank], a
 	ret
 
-; shows the town map and lets the player choose a destination to fly to
+; **ChooseFlyDestination**  
+; タウンマップを表示して、プレイヤーに空を飛ぶの目的地を選ばせる  
 ChooseFlyDestination::
 	ld hl, wd72e
 	res 4, [hl]
