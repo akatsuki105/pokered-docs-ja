@@ -6,67 +6,104 @@ StartMenu_Pokedex:
 	call UpdateSprites
 	jp RedisplayStartMenu
 
+; **StartMenu_Pokemon**  
+; start menuの "Pokemon" menu
+; - - -  
+; start menuで "Pokemon" を押した時にここに処理が映る  
 StartMenu_Pokemon:
+	; 最初のポケモン入手前 は Pokemonのmenu項目を押しても何もおきない
 	ld a, [wPartyCount]
 	and a
 	jp z, RedisplayStartMenu
+
+	; 手持ち画面を表示しプレイヤーからアクションがあったら -> .checkIfPokemonChosen
 	xor a
 	ld [wMenuItemToSwap], a
 	ld [wPartyMenuTypeOrMessageID], a
 	ld [wUpdateSpritesEnabled], a
 	call DisplayPartyMenu
 	jr .checkIfPokemonChosen
+
 .loop
 	xor a
 	ld [wMenuItemToSwap], a
 	ld [wPartyMenuTypeOrMessageID], a
 	call GoBackToPartyMenu
+
 .checkIfPokemonChosen
+	; Aボタンでポケモンを選択した -> .chosePokemon
+	; BボタンでExitした -> .exitMenu
 	jr nc, .chosePokemon
+
 .exitMenu
+	; プレイヤーが手持ち画面をBボタンでExitした場合は、start menuに戻る
 	call GBPalWhiteOutWithDelay3
 	call RestoreScreenTilesAndReloadTilePatterns
 	call LoadGBPal
 	jp RedisplayStartMenu
+
 .chosePokemon
+	; プレイヤーが手持ち画面でAボタンでポケモンを選択したとき
+	; ここから STATS/SWITCH/CANCEL/+α の menu 
+
 	call SaveScreenTilesToBuffer1
+
+	; STATS/SWITCH/CANCEL/+α のためのテキストボックスを表示(STATS/SWITCH/CANCELという文字も描画する)
 	ld a, FIELD_MOVE_MON_MENU
 	ld [wTextBoxID], a
 	call DisplayTextBoxID ; display pokemon menu options
+
+; bc(maxMenuItemID, topMenuItemY)をフィールド技の数に応じて設定する
 	ld hl, wFieldMoves
-	lb bc, 2, 12 ; max menu item ID, top menu item Y
+	lb bc, 2, 12 ; 2 = maxMenuItemID, 12 = topMenuItemY
 	ld e, 5
 .adjustMenuVariablesLoop
+; {
+	; 5個以上はありえない -> .storeMenuVariables
 	dec e
 	jr z, .storeMenuVariables
+
+	; フィールド技を全部見た -> .storeMenuVariables
 	ld a, [hli]
-	and a ; end of field moves?
+	and a
 	jr z, .storeMenuVariables
-	inc b
+
+	; フィールド技の数が増えるごとにmenuの項目が上に増えていく
+	inc b	; maxMenuItemID++
 	dec c
-	dec c
+	dec c	; topMenuItemY -= 2
 	jr .adjustMenuVariablesLoop
+; }
+
 .storeMenuVariables
+	; STATS/SWITCH/CANCEL/+α の menuの変数を設定していく 
+
+	; カーソルの一番上があるタイルが ([hFieldMoveMonMenuTopMenuItemX], c) になるようにする
 	ld hl, wTopMenuItemY
 	ld a, c
-	ld [hli], a ; top menu item Y
+	ld [hli], a ; wTopMenuItemY
 	ld a, [hFieldMoveMonMenuTopMenuItemX]
-	ld [hli], a ; top menu item X
+	ld [hli], a ; wTopMenuItemX
+
 	xor a
-	ld [hli], a ; current menu item ID
+	ld [hli], a ; [wCurrentMenuItem] = 0
 	inc hl
 	ld a, b
-	ld [hli], a ; max menu item ID
+	ld [hli], a ; [wMaxMenuItem] = b(adjustMenuVariablesLoopで設定した max menu item)
 	ld a, A_BUTTON | B_BUTTON
-	ld [hli], a ; menu watched keys
+	ld [hli], a ; [wMenuWatchedKeys] = A_BUTTON | B_BUTTON
 	xor a
-	ld [hl], a
+	ld [hl], a	; [wLastMenuItem] = 0
+
 	call HandleMenuInput
+
 	push af
 	call LoadScreenTilesFromBuffer1 ; restore saved screen
 	pop af
+
 	bit 1, a ; was the B button pressed?
 	jp nz, .loop
+	
 ; if the B button wasn't pressed
 	ld a, [wMaxMenuItem]
 	ld b, a

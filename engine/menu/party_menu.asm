@@ -1,7 +1,8 @@
 ; **DrawPartyMenu_**  
 ; 手持ち画面を描画する  
 ; - - -  
-; [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
+; 手持ちmenuや回復アイテム・技マシンの対象選択など全ての手持ち画面を担当する  
+; INPUT: [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 DrawPartyMenu_:
 	; SDキャラをVRAMに転送する  
 	xor a
@@ -13,6 +14,7 @@ DrawPartyMenu_:
 ; **RedrawPartyMenu_**  
 ; 手持ち画面を描画する  
 ; - - -  
+; 手持ちmenuや回復アイテム・技マシンの対象選択など全ての手持ち画面を担当する  
 ; [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 RedrawPartyMenu_:
 	; SWAP_MONS_PARTY_MENU のときはすでに手持ち画面は描画されているので -> .printMessage
@@ -207,6 +209,7 @@ RedrawPartyMenu_:
 	jr nz, .checkEvolutionsLoop
 ; if it does match
 	ld de, .ableToEvolveText
+
 .placeEvolutionStoneString
 	ld bc, 20 + 9 ; down 1 row and right 9 columns
 	pop hl
@@ -215,10 +218,12 @@ RedrawPartyMenu_:
 	call PlaceString
 	pop hl
 	jr .printLevel
+
 .ableToEvolveText
 	db "ABLE@"
 .notAbleToEvolveText
 	db "NOT ABLE@"
+
 .afterDrawingMonEntries
 	ld b, SET_PAL_PARTY_MENU
 	call RunPaletteCommand

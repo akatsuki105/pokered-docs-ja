@@ -426,6 +426,14 @@ GetCryData::
 	add c
 	ret
 
+; **DisplayPartyMenu**  
+; 手持ち画面を描画しプレイヤーのアクションを待つ  
+; - - -  
+; プレイヤーが手持ちでA/Bボタンを押すまで続く  
+; 
+; OUTPUT:  
+; carry = 1(ポケモンを選択した) or 0(手持ち画面からBボタンでExit)  
+; [wcf91] = [wBattleMonSpecies2] = 選択したポケモンID  
 DisplayPartyMenu::
 	; [hTilesetType] = 0
 	ld a, [hTilesetType]
@@ -433,10 +441,12 @@ DisplayPartyMenu::
 	xor a
 	ld [hTilesetType], a
 
+	; 手持ち画面を描画
 	call GBPalWhiteOutWithDelay3
 	call ClearSprites
 	call PartyMenuInit
 	call DrawPartyMenu
+
 	jp HandlePartyMenuInput 	; ret
 
 GoBackToPartyMenu::
@@ -506,30 +516,55 @@ PartyMenuInit::
 	ld [hl], a 	; old menu item ID
 	ret
 
+; **HandlePartyMenuInput**  
+; 手持ち画面でのキー入力に対処する  
+; - - -  
+; プレイヤーが手持ちでA/Bボタンを押すまで続く  
+; 
+; OUTPUT:  
+; carry = 1(ポケモンを選択した) or 0(手持ち画面からBボタンでExit)  
+; [wcf91] = [wBattleMonSpecies2] = 選択したポケモンID  
 HandlePartyMenuInput::
+	; menu wrap を有効化
 	ld a, 1
 	ld [wMenuWrappingEnabled], a
+
+	; プレイヤーのA/Bボタンを待つ(PartyMenuInitでA/Bボタンのみハンドルする様にしている)
 	ld a, $40
 	ld [wPartyMenuAnimMonEnabled], a
 	call HandleMenuInput_
+
+	; ポケモンが選択された状態にする  
 	call PlaceUnfilledArrowMenuCursor
-	ld b, a
+	ld b, a	; b = プレイヤーのキー入力
 	xor a
 	ld [wPartyMenuAnimMonEnabled], a
 	ld a, [wCurrentMenuItem]
 	ld [wPartyAndBillsPCSavedMenuItem], a
+
+	; ???
 	ld hl, wd730
 	res 6, [hl] ; turn on letter printing delay
+
+	; セレクトを押されている状態でA/Bボタンが押された時 -> .swappingPokemon
 	ld a, [wMenuItemToSwap]
 	and a
 	jp nz, .swappingPokemon
+
+	; タイルセットを戻す
 	pop af
 	ld [hTilesetType], a
+
+	; Bボタンが押された時 -> .noPokemonChosen
 	bit 1, b
 	jr nz, .noPokemonChosen
+
+	; そもそも手持ちのポケモンが0匹(ありえないが) -> .noPokemonChosen
 	ld a, [wPartyCount]
 	and a
 	jr z, .noPokemonChosen
+
+	; a = ポケモンID
 	ld a, [wCurrentMenuItem]
 	ld [wWhichPokemon], a
 	ld hl, wPartySpecies
@@ -537,35 +572,54 @@ HandlePartyMenuInput::
 	ld c, a
 	add hl, bc
 	ld a, [hl]
+
 	ld [wcf91], a
 	ld [wBattleMonSpecies2], a
 	call BankswitchBack
 	and a
 	ret
+
 .noPokemonChosen
 	call BankswitchBack
 	scf
 	ret
+
 .swappingPokemon
-	bit 1, b ; was the B button pressed?
-	jr z, .handleSwap ; if not, handle swapping the pokemon
-.cancelSwap ; if the B button was pressed
+	; Aボタンが押された
+	bit 1, b
+	jr z, .handleSwap
+
+	; Bボタンが押された
+.cancelSwap
+	; 通常の手持ち画面に戻す
 	callba ErasePartyMenuCursors
 	xor a
 	ld [wMenuItemToSwap], a
 	ld [wPartyMenuTypeOrMessageID], a
 	call RedrawPartyMenu
 	jr HandlePartyMenuInput
+
 .handleSwap
+	; ポケモンを入れ替える  
 	ld a, [wCurrentMenuItem]
 	ld [wWhichPokemon], a
 	callba SwitchPartyMon
 	jr HandlePartyMenuInput
 
+; **DrawPartyMenu**  
+; 手持ち画面を描画する  
+; - - -  
+; 手持ちmenuや回復アイテム・技マシンの対象選択など全ての手持ち画面を担当する  
+; INPUT: [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 DrawPartyMenu::
 	ld hl, DrawPartyMenu_
 	jr DrawPartyMenuCommon
 
+; **RedrawPartyMenu**  
+; 手持ち画面を描画する  
+; - - -  
+; 手持ちmenuや回復アイテム・技マシンの対象選択など全ての手持ち画面を担当する  
+; INPUT: [wPartyMenuTypeOrMessageID] = menuType(x < $F0のとき) or messageID(x >= $F0のとき)  
 RedrawPartyMenu::
 	ld hl, RedrawPartyMenu_
 	; fallthrough
@@ -2706,6 +2760,8 @@ IsKeyItem::
 ; **DisplayTextBoxID**  
 ; 引数で与えたTextBox IDに対応するテキストボックスを表示する  
 ; - - -  
+; 使いまわされる定型分的なテキストボックスとテキストなら中のテキストも描画する  
+; 
 ; INPUT:  
 ; [wTextBoxID] = TextBox ID  
 ; b, c = カーソルのy, x (2択メニューのみで引数として与える)  
@@ -4854,6 +4910,15 @@ HandleMenuInput::
 	xor a
 	ld [wPartyMenuAnimMonEnabled], a
 
+; **HandleMenuInput_**  
+; menu でのキー入力に対処するハンドラ  
+; - - - 
+; INPUT: [wMenuWatchedKeys] = 反応する対象のキー入力 上下ボタンは必ず反応して選択オフセットを上下に移動させる  
+; 
+; OUTPUT:  
+; a = キー入力 [↓, ↑, ←, →, Start, Select, B, A]  
+; [wCurrentMenuItem] = 選択されたメニューアイテム  
+; [wMenuCursorLocation] = カーソルのあるタイルのアドレス  
 HandleMenuInput_::
 	; H_DOWNARROWBLINKCNT1/2を退避
 	ld a, [H_DOWNARROWBLINKCNT1]

@@ -547,8 +547,7 @@ wMonDataLocation::
 	ds 1
 
 ; cc4a  
-; メニューの上部または下部を通過できる場合に1にセットされる  
-; メニューの上部または下部を通過できない場合は0に設定します  
+; menu wrapできる場合に1にセットされる   
 wMenuWrappingEnabled::
 	ds 1
 
@@ -1001,9 +1000,10 @@ wSwappedMenuItem:: ; cd3d
 ; `LeaguePCShowMon` で今表示しているポケモンの ポケモンID
 wHoFMonSpecies::
 
-wFieldMoves:: ; cd3d
-; 4 bytes
-; the current mon's field moves
+; cd3d  
+; 4 bytes  
+; 処理中のポケモンが覚えているフィールドで使える技  
+wFieldMoves::
 
 ; cd3d  
 ; 8 byte  
@@ -1791,7 +1791,9 @@ wPlayerMoveMaxPP:: ; cfd7
 
 wEnemyMonSpecies2:: ; cfd8
 	ds 1
-wBattleMonSpecies2:: ; cfd9
+
+; cfd9
+wBattleMonSpecies2::
 	ds 1
 
 wEnemyMonNick:: ds NAME_LENGTH ; cfda
