@@ -2994,36 +2994,43 @@ _MonCannotLearnMachineMoveText::
 	text "."
 	prompt
 
+; "OAK: ${PLAYER}! This isn't the time to use that!"
 _ItemUseNotTimeText::
 	text "OAK: <PLAYER>!"
 	line "This isn't the"
 	cont "time to use that! "
 	prompt
 
+; "This isn't yours to use!"
 _ItemUseNotYoursToUseText::
 	text "This isn't yours"
 	line "to use!"
 	prompt
 
+; "It won't have any effect."
 _ItemUseNoEffectText::
 	text "It won't have any"
 	line "effect."
 	prompt
 
+; "The trainer blocked the BALL!"
 _ThrowBallAtTrainerMonText1::
 	text "The trainer"
 	line "blocked the BALL!"
 	prompt
 
+; "Don't be a thief!"
 _ThrowBallAtTrainerMonText2::
 	text "Don't be a thief!"
 	prompt
 
+; "No cycling allowed here."
 _NoCyclingAllowedHereText::
 	text "No cycling"
 	next "allowed here."
 	prompt
 
+; "No SURFing on ${wcd6d} here!"
 _NoSurfingHereText::
 	text "No SURFing on"
 	line "@"
@@ -3031,6 +3038,7 @@ _NoSurfingHereText::
 	text " here!"
 	prompt
 
+; "The #MON BOX is full! Can't use that item!"
 _BoxFullCannotThrowBallText::
 	text "The #MON BOX"
 	line "is full! Can't"
@@ -3040,9 +3048,11 @@ _BoxFullCannotThrowBallText::
 
 SECTION "Text 11", ROMX ; BANK $2a
 
+; "${PLAYER} used"
 _ItemUseText001::
 	text "<PLAYER> used@@"
 
+; "${wcf4b} !"
 _ItemUseText002::
 	TX_RAM wcf4b
 	text "!"

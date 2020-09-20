@@ -1,13 +1,18 @@
 HiddenItemNear:
 	ld hl, HiddenItemCoords
 	ld b, 0
+
 .loop
 	ld de, 3
 	ld a, [wCurMap]
+
+	; 
 	call IsInRestOfArray
 	ret nc ; return if current map has no hidden items
+
 	push bc
 	push hl
+	
 	ld hl, wObtainedHiddenItemsFlags
 	ld c, b
 	ld b, FLAG_TEST

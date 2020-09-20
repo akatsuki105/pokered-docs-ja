@@ -3368,6 +3368,10 @@ GetOutText:
 	TX_FAR _GetOutText
 	db "@"
 
+; **IsGhostBattle**  
+; ゆうれいとの戦闘か判定  
+; - - -  
+; OUTPUT: z = 1(ゆうれい) or 0(ではない)
 IsGhostBattle:
 	ld a, [wIsInBattle]
 	dec a

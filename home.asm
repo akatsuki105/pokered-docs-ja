@@ -2709,15 +2709,16 @@ DisableWaitingAfterTextDisplay::
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
 	ret
 
-; uses an item
+; **UseItem**  
+; 道具を使う処理  
+; - - -  
 ; UseItem is used with dummy items to perform certain other functions as well
-; INPUT:
-; [wcf91] = item ID
-; OUTPUT:
-; [wActionResultOrTookBattleTurn] = success
-; 00: unsuccessful
-; 01: successful
-; 02: not able to be used right now, no extra menu displayed (only certain items use this)
+; 
+; INPUT:  
+; [wcf91] = アイテムID  
+; 
+; OUTPUT:  
+; [wActionResultOrTookBattleTurn] = 結果 0(失敗) or 1(成功) or 2(not able to be used right now, no extra menu displayed (only certain items use this) )  
 UseItem::
 	jpba UseItem_
 

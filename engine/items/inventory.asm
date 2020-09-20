@@ -3,10 +3,11 @@
 ; - - - 
 ; AddItemToInventory の内部でのみ呼び出される処理  
 ; 成功したときにはcarryをセット、失敗したときにはcarryをクリアする  
+; 
 ; INPUT:  
-; - hl = インベントリのアドレス (wNumBagItems  or wNumBoxItems)  
-; - [wcf91] = アイテムID  
-; - [wItemQuantity] = アイテムの個数  
+; hl = インベントリのアドレス (wNumBagItems  or wNumBoxItems)  
+; [wcf91] = アイテムID  
+; [wItemQuantity] = アイテムの個数  
 AddItemToInventory_:
 	ld a, [wItemQuantity] ; a = item quantity
 	push af
@@ -143,6 +144,7 @@ AddItemToInventory_:
 	ret
 
 ; プレイヤーのかばんかPCから指定した個数だけ指定したアイテムを削除する関数  
+; 
 ; INPUT:  
 ; HL = 削除対象のインベントリのポインタ(wNumBagItems(かばん) または wNumBoxItems(PC))  
 ; [wRemoveItemIndex] = 削除する対象のアイテムがインベントリの何番目にあるか  

@@ -18,7 +18,7 @@ box_struct: MACRO
 \1Type1::      db
 \1Type2::      db
 \1CatchRate::  db
-\1Moves::      ds NUM_MOVES
+\1Moves::      ds NUM_MOVES	; [moveNum, moveNum, moveNum, moveNum]
 \1OTID::       dw
 \1Exp::        ds 3
 \1HPExp::      dw
@@ -2391,7 +2391,7 @@ wMoves:: ; d0dc
 	ds 4
 
 ; d0e0  
-; 技マシンの番号を格納する領域  
+; 引数として技マシンの番号を格納する領域  
 ; CanLearnTM などで使われる  
 ; 秘伝マシンは 1 -> 51, 2 -> 52, ...
 wMoveNum::
@@ -2412,8 +2412,9 @@ wInitListType:: ; d11b
 ; the type of list for InitList to init
 	ds 1
 
-wCapturedMonSpecies:: ; d11c
-; 0 if no mon was captured
+; d11c  
+; 0 if no mon was captured  
+wCapturedMonSpecies::
 	ds 1
 
 wFirstMonsNotOutYet:: ; d11d
@@ -2426,9 +2427,10 @@ wFirstMonsNotOutYet:: ; d11d
 
 wPokeBallCaptureCalcTemp:: ; d11e
 
-; lower nybble: number of shakes
-; upper nybble: number of animations to play
-wPokeBallAnimData:: ; d11e
+; d11e  
+; upper nybble: ボールで捕まえるまでに行うアニメーションの数  
+; lower nybble: ボールで捕まえるまでに行う判定の回数(ゆれ1, ゆれ2, ゆれ3, 捕獲)  
+wPokeBallAnimData::
 
 wUsingPPUp:: ; d11e
 
@@ -3581,8 +3583,9 @@ wSecondLockTrashCanIndex:: ; d744
 wEventFlags::
 	ds 320
 
-wLinkEnemyTrainerName:: ; d887
-; linked game's trainer name
+; d887  
+; linked game's trainer name  
+wLinkEnemyTrainerName::
 
 ; d887  
 ; 現在のマップ(草むら)でのエンカウント率  
@@ -3664,7 +3667,9 @@ wPlayTimeFrames:: ; da45
 wSafariZoneGameOver:: ; da46
 	ds 1
 
-wNumSafariBalls:: ; da47
+; da47  
+; サファリゲーム時に、残りのサファリボールの数を記録するのに使われる  
+wNumSafariBalls::
 	ds 1
 
 

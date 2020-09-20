@@ -1,9 +1,15 @@
 UseItem_:
+	; [wActionResultOrTookBattleTurn]を失敗で初期化
 	ld a, 1
-	ld [wActionResultOrTookBattleTurn], a ; initialise to success value
-	ld a, [wcf91] ;contains item_ID
+	ld [wActionResultOrTookBattleTurn], a
+
+	; アイテムIDが HM_01以上 は技マシン確定 -> ItemUseTMHM
+	ld a, [wcf91]
 	cp HM_01
 	jp nc, ItemUseTMHM
+
+	; それ以外は通常アイテム  
+	; hl = アイテムの該当するハンドラ関数  
 	ld hl, ItemUsePtrTable
 	dec a
 	add a
@@ -13,8 +19,12 @@ UseItem_:
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+	; ハンドラ関数にジャンプ
 	jp hl
 
+; **ItemUsePtrTable**  
+; アイテムID -> ハンドラ関数  
 ItemUsePtrTable:
 	dw ItemUseBall       ; MASTER_BALL
 	dw ItemUseBall       ; ULTRA_BALL
@@ -102,35 +112,38 @@ ItemUsePtrTable:
 
 ItemUseBall:
 
-; Balls can't be used out of battle.
+	; 戦闘外ではボールは使えない
 	ld a, [wIsInBattle]
 	and a
-	jp z, ItemUseNotTime
+	jp z, ItemUseNotTime	; return
 
-; Balls can't catch trainers' Pokémon.
+	; 野生ポケモン以外(トレーナー戦)では、ポケモンは捕まえられない
 	dec a
-	jp nz, ThrowBallAtTrainerMon
+	jp nz, ThrowBallAtTrainerMon	; return
 
-; If this is for the old man battle, skip checking if the party & box are full.
+	; トキワのおじいさんによる戦闘デモ では手持ちとPCボックスのポケモンがいっぱいかのチェックは行わない -> .canUseBall
 	ld a, [wBattleType]
 	dec a
 	jr z, .canUseBall
 
-	ld a, [wPartyCount] ; is party full?
+	; 手持ちに空きがある -> .canUseBall
+	ld a, [wPartyCount]
 	cp PARTY_LENGTH
 	jr nz, .canUseBall
-	ld a, [wNumInBox] ; is box full?
+
+	; 手持ちがいっぱいで、PCボックスも空きがない -> BoxFullCannotThrowBall
+	ld a, [wNumInBox]
 	cp MONS_PER_BOX
-	jp z, BoxFullCannotThrowBall
+	jp z, BoxFullCannotThrowBall	; return "The #MON BOX is full! Can't use that item!"
 
 .canUseBall
 	xor a
 	ld [wCapturedMonSpecies], a
 
+; サファリゲームのときはサファリボールの残り数を減らす
 	ld a, [wBattleType]
 	cp BATTLE_TYPE_SAFARI
 	jr nz, .skipSafariZoneCode
-
 .safariZone
 	ld hl, wNumSafariBalls
 	dec [hl] ; remove a Safari Ball
@@ -141,30 +154,32 @@ ItemUseBall:
 	ld a, $43 ; successful capture value
 	ld [wPokeBallAnimData], a
 
+	; "${PLAYER} used ${wcf4b}!"
 	call LoadScreenTilesFromBuffer1
 	ld hl, ItemUseText00
 	call PrintText
 
-; If the player is fighting an unidentified ghost, set the value that indicates
-; the Pokémon can't be caught and skip the capture calculations.
+	; ゆうれいとの戦闘でボールを投げた場合は、捕まえられないことを示唆し、捕獲判定の計算をスキップする
 	callab IsGhostBattle
 	ld b, $10 ; can't be caught value
 	jp z, .setAnimData
 
+	; 通常のバトルでボールを投げた -> .notOldManBattle
 	ld a, [wBattleType]
 	dec a
 	jr nz, .notOldManBattle
 
+	; トキワのおじいさんによる戦闘デモ 
 .oldManBattle
+	; wGrassRate に wPlayerName が退避されているので戻す(Old man glitch の原因)
 	ld hl, wGrassRate
 	ld de, wPlayerName
 	ld bc, NAME_LENGTH
-	call CopyData ; save the player's name in the Wild Monster data (part of the Cinnabar Island Missingno. glitch)
+	call CopyData
 	jp .captured
 
 .notOldManBattle
-; If the player is fighting the ghost Marowak, set the value that indicates the
-; Pokémon can't be caught and skip the capture calculations.
+	; ガラガラのゆうれい(正体未発見)とのバトルでボールを投げた -> .setAnimData
 	ld a, [wCurMap]
 	cp POKEMON_TOWER_6F
 	jr nz, .loop
@@ -173,71 +188,68 @@ ItemUseBall:
 	ld b, $10 ; can't be caught value
 	jp z, .setAnimData
 
-; Get the first random number. Let it be called Rand1.
-; Rand1 must be within a certain range according the kind of ball being thrown.
-; The ranges are as follows.
-; Poké Ball:         [0, 255]
-; Great Ball:        [0, 200]
-; Ultra/Safari Ball: [0, 150]
-; Loop until an acceptable number is found.
+	; ここからは正常な場合
+	; 捕獲判定を行う
 
+; Rand1と呼ぶ乱数を得る
+; ボールの種類によって乱数の範囲が変わる モンボ:0~255, スーパー:0~200, ハイバー,サファリ:0~150
+; .loopではマスターボールをのぞいて上記の範囲に収まる乱数がでるまでloopを繰り返す
 .loop
 	call Random
 	ld b, a
 
-; Get the item ID.
+	; a = アイテムID
 	ld hl, wcf91
 	ld a, [hl]
-
-; The Master Ball always succeeds.
+	; マスターボール -> .captured
 	cp MASTER_BALL
 	jp z, .captured
-
-; Anything will do for the basic Poké Ball.
+	; モンスターボールはなんでもOK -> .checkForAilments
 	cp POKE_BALL
 	jr z, .checkForAilments
-
-; If it's a Great/Ultra/Safari Ball and Rand1 is greater than 200, try again.
+	; スーパー/ハイパー/サファリ で 200より大きいなら再度乱数生成
 	ld a, 200
 	cp b
 	jr c, .loop
-
-; Less than or equal to 200 is good enough for a Great Ball.
+	; 200以下でスーパーボールならOK -> .checkForAilments
 	ld a, [hl]
 	cp GREAT_BALL
 	jr z, .checkForAilments
-
-; If it's an Ultra/Safari Ball and Rand1 is greater than 150, try again.
+	; ハイバー/サファリで150より大きい再度乱数生成
 	ld a, 150
 	cp b
 	jr c, .loop
 
+	; この時点で b = Rand1
+
+; 捕獲対象に状態異常があれば、Rand1から一定値差し引くことで捕獲率をあげる
+; 状態異常なし -> 0
+; 火傷/麻痺/毒 -> 12
+; 氷/睡眠 -> 25
+; 差し引いた値が マイナスになれば確定で捕まえられる
 .checkForAilments
-; Pokémon can be caught more easily with a status ailment.
-; Depending on the status ailment, a certain value will be subtracted from
-; Rand1. Let this value be called Status.
-; The larger Status is, the more easily the Pokémon can be caught.
-; no status ailment:     Status = 0
-; Burn/Paralysis/Poison: Status = 12
-; Freeze/Sleep:          Status = 25
-; If Status is greater than Rand1, the Pokémon will be caught for sure.
+	; 状態異常なし -> .skipAilmentValueSubtraction
 	ld a, [wEnemyMonStatus]
 	and a
 	jr z, .skipAilmentValueSubtraction ; no ailments
+
+; c = 12(火傷/麻痺/毒) or 25(氷/睡眠)
 	and 1 << FRZ | SLP
 	ld c, 12
 	jr z, .notFrozenOrAsleep
 	ld c, 25
 .notFrozenOrAsleep
+
+	; Rand1 -= c (Rand1 < c なら -> .captured)
 	ld a, b
 	sub c
 	jp c, .captured
 	ld b, a
 
 .skipAilmentValueSubtraction
-	push bc ; save (Rand1 - Status)
+	push bc ; push Rand1
 
-; Calculate MaxHP * 255.
+	; Calculate MaxHP * 255.
 	xor a
 	ld [H_MULTIPLICAND], a
 	ld hl, wEnemyMonMaxHP
@@ -249,7 +261,7 @@ ItemUseBall:
 	ld [H_MULTIPLIER], a
 	call Multiply
 
-; Determine BallFactor. It's 8 for Great Balls and 12 for the others.
+	; a = ボール係数 (8(スーパーボール) or 12(それ以外))
 	ld a, [wcf91]
 	cp GREAT_BALL
 	ld a, 12
@@ -259,14 +271,12 @@ ItemUseBall:
 .skip1
 ; Note that the results of all division operations are floored.
 
-; Calculate (MaxHP * 255) / BallFactor.
+	; Calculate 最大HP×255÷ボール係数
 	ld [H_DIVISOR], a
-	ld b, 4 ; number of bytes in dividend
-	call Divide
+	ld b, 4
+	call Divide	; 最大HP×255÷ボール係数
 
-; Divide the enemy's current HP by 4. HP is not supposed to exceed 999 so
-; the result should fit in a. If the division results in a quotient of 0,
-; change it to 1.
+	; a = 現在HP÷4 (HP < 999なので a にかならず収まる)
 	ld hl, wEnemyMonHP
 	ld a, [hli]
 	ld b, a
@@ -277,38 +287,38 @@ ItemUseBall:
 	rr a
 	and a
 	jr nz, .skip2
-	inc a
+	inc a	; 現在HP÷4 が 0なら 1にする
 
 .skip2
-; Let W = ((MaxHP * 255) / BallFactor) / max(HP / 4, 1). Calculate W.
+	; W = (最大HP×255÷ボール係数)÷(現在HP÷4)
 	ld [H_DIVISOR], a
 	ld b, 4
 	call Divide
 
-; If W > 255, store 255 in [H_QUOTIENT + 3].
-; Let X = min(W, 255) = [H_QUOTIENT + 3].
+	; 255以下のとき、Wは255とする
 	ld a, [H_QUOTIENT + 2]
 	and a
 	jr z, .skip3
 	ld a, 255
-	ld [H_QUOTIENT + 3], a
+	ld [H_QUOTIENT + 3], a	; W = 255
 
 .skip3
-	pop bc ; b = Rand1 - Status
+	pop bc ; b = Rand1
 
-; If Rand1 - Status > CatchRate, the ball fails to capture the Pokémon.
+	; Rand1 > CatchRate なら 捕獲失敗 -> .failedToCapture
 	ld a, [wEnemyMonActualCatchRate]
 	cp b
 	jr c, .failedToCapture
 
-; If W > 255, the ball captures the Pokémon.
+	; Rand1 > CatchRate のときに W > 255 (W >= 256) なら捕獲成功
 	ld a, [H_QUOTIENT + 2]
 	and a
 	jr nz, .captured
 
+	; Rand1 > CatchRate のときに W <= 255 (W == 255)の場合
 	call Random ; Let this random number be called Rand2.
 
-; If Rand2 > X, the ball fails to capture the Pokémon.
+	; If Rand2 > X, the ball fails to capture the Pokémon.
 	ld b, a
 	ld a, [H_QUOTIENT + 3]
 	cp b
@@ -2192,7 +2202,9 @@ PPRestoredText:
 	TX_FAR _PPRestoredText
 	db "@"
 
-; for items that can't be used from the Item menu
+; かばんから使えないアイテムに対する処理
+; 
+; "OAK: ${PLAYER}! This isn't the time to use that!"
 UnusableItem:
 	jp ItemUseNotTime
 
@@ -2326,6 +2338,7 @@ ItemUseNoEffect:
 	ld hl, ItemUseNoEffectText
 	jr ItemUseFailed
 
+; "OAK: ${PLAYER}! This isn't the time to use that!"
 ItemUseNotTime:
 	ld hl, ItemUseNotTimeText
 	jr ItemUseFailed
@@ -2334,23 +2347,32 @@ ItemUseNotYoursToUse:
 	ld hl, ItemUseNotYoursToUseText
 	jr ItemUseFailed
 
+; トレーナーのポケモンにボールを投げてトレーナーに弾かれる処理
 ThrowBallAtTrainerMon:
 	call RunDefaultPaletteCommand
-	call LoadScreenTilesFromBuffer1 ; restore saved screen
+
+	; ボールを投げるアニメーション
+	call LoadScreenTilesFromBuffer1 ; 戦闘画面に戻る
 	call Delay3
 	ld a, TOSS_ANIM
 	ld [wAnimationID], a
 	predef MoveAnimation ; do animation
+	
+	; "The trainer blocked the BALL!"
+	; "Don't be a thief!"
 	ld hl, ThrowBallAtTrainerMonText1
 	call PrintText
 	ld hl, ThrowBallAtTrainerMonText2
 	call PrintText
+
+	; ボールは消費される
 	jr RemoveUsedItem
 
 NoCyclingAllowedHere:
 	ld hl, NoCyclingAllowedHereText
 	jr ItemUseFailed
 
+; "The #MON BOX is full! Can't use that item!"
 BoxFullCannotThrowBall:
 	ld hl, BoxFullCannotThrowBallText
 	jr ItemUseFailed
@@ -2358,43 +2380,56 @@ BoxFullCannotThrowBall:
 SurfingAttemptFailed:
 	ld hl, NoSurfingHereText
 
+; **ItemUseFailed**  
+; 道具使用に失敗した時に fail文 を表示して return  
+; - - -  
+; INPUT: hl = fail文  
 ItemUseFailed:
 	xor a
 	ld [wActionResultOrTookBattleTurn], a ; item use failed
-	jp PrintText
+	jp PrintText	; return
 
+; "OAK: ${PLAYER}! This isn't the time to use that!"
 ItemUseNotTimeText:
 	TX_FAR _ItemUseNotTimeText
 	db "@"
 
+; "This isn't yours to use!"
 ItemUseNotYoursToUseText:
 	TX_FAR _ItemUseNotYoursToUseText
 	db "@"
 
+; "It won't have any effect."
 ItemUseNoEffectText:
 	TX_FAR _ItemUseNoEffectText
 	db "@"
 
+; "The trainer blocked the BALL!"
 ThrowBallAtTrainerMonText1:
 	TX_FAR _ThrowBallAtTrainerMonText1
 	db "@"
 
+; "Don't be a thief!"
 ThrowBallAtTrainerMonText2:
 	TX_FAR _ThrowBallAtTrainerMonText2
 	db "@"
 
+; "No cycling allowed here."
 NoCyclingAllowedHereText:
 	TX_FAR _NoCyclingAllowedHereText
 	db "@"
 
+; "No SURFing on ${wcd6d} here!"
 NoSurfingHereText:
 	TX_FAR _NoSurfingHereText
 	db "@"
 
+; "The #MON BOX is full! Can't use that item!"
 BoxFullCannotThrowBallText:
 	TX_FAR _BoxFullCannotThrowBallText
 	db "@"
 
+; "${PLAYER} used ${wcf4b}!"
 ItemUseText00:
 	TX_FAR _ItemUseText001
 	TX_LINE
