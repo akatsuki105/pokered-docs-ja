@@ -2348,9 +2348,13 @@ wMonHMoves:: ; d0c7
 wMonHGrowthRate::
 	ds 1
 
-wMonHLearnset:: ; d0cc
-; bit field
-	flag_array 50 + 5
+; d0cc  
+; ds 7 (56bit)  
+; 初代の技マシンは秘伝マシン含めて 55 (50 + 5)  
+; 
+; 各bitがそのポケモンがその技マシンを覚えられるかのフラグになっている(1bitは余り)  
+wMonHLearnset::
+	flag_array 50 + 5	; 初代の技マシンの数は 50, 秘伝マシンは 5
 	ds 1
 
 wSavedTilesetType:: ; d0d4
@@ -2372,7 +2376,11 @@ wMoves:: ; d0dc
 ; list of moves for FormatMovesString
 	ds 4
 
-wMoveNum:: ; d0e0
+; d0e0  
+; 技マシンの番号を格納する領域  
+; CanLearnTM などで使われる  
+; 秘伝マシンは 1 -> 51, 2 -> 52, ...
+wMoveNum::
 	ds 1
 
 wMovesString:: ; d0e1

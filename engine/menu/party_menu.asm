@@ -60,41 +60,49 @@ RedrawPartyMenu_:
 	ld [hPartyMonIndex], a
 	call LoadMonData
 	
-	; hl = ポケモンの名前の位置
+	; hl = ポケモンの名前の位置 (3, X)
 	pop hl
 	push hl
 	
-	ld a, [wMenuItemToSwap]
-	and a ; is the player swapping pokemon positions?
+	; ポケモンを入れ替えようとしていない -> .skipUnfilledRightArrow
+	ld a, [wMenuItemToSwap]	; セレクトを押した項目
+	and a
 	jr z, .skipUnfilledRightArrow
 
-; if the player is swapping pokemon positions
+; ポケモンを入れ替えようとしているとき(セレクトを押した状態)
 	dec a
 	ld b, a
-	ld a, [wWhichPokemon]
-	cp b ; is the player swapping the current pokemon in the list?
+	ld a, [wWhichPokemon]	; 現在カーソルで選択している項目
+
+	; 現在カーソルで選択しているポケモンとセレクトを押したポケモンが同じならカーソルは ▶︎ のまま
+	cp b
 	jr nz, .skipUnfilledRightArrow
-; the player is swapping the current pokemon in the list
+
+	; 違うならセレクトを押したポケモンのカーソルを ▷ にする
 	dec hl
 	dec hl
-	dec hl
-	ld a, "▷" ; unfilled right arrow menu cursor
-	ld [hli], a ; place the cursor
+	dec hl	
+	ld a, "▷"
+	ld [hli], a	; カーソル位置(0, X) = "▷"
 	inc hl
 	inc hl
 	
 .skipUnfilledRightArrow
-	ld a, [wPartyMenuTypeOrMessageID] ; menu type
-	cp TMHM_PARTY_MENU
-	jr z, .teachMoveMenu
-	cp EVO_STONE_PARTY_MENU
-	jr z, .evolutionStoneMenu
+	; 技マシンを使った時 -> .teachMoveMenu
+	; 進化の石を使った時 -> .evolutionStoneMenu
+	ld a, [wPartyMenuTypeOrMessageID]
+	SWITCH_JR TMHM_PARTY_MENU, .teachMoveMenu
+	SWITCH_JR EVO_STONE_PARTY_MENU, .evolutionStoneMenu
+
+	; ポケモンの状態異常を手持ち画面に描画
 	push hl
 	ld bc, 14 ; 14 columns to the right
 	add hl, bc
 	ld de, wLoadedMonStatus
 	call PrintStatusCondition
 	pop hl
+
+	; HPを描画
 	push hl
 	ld bc, SCREEN_WIDTH + 1 ; down 1 row and right 1 column
 	ld a, [hFlags_0xFFF6]
@@ -106,27 +114,38 @@ RedrawPartyMenu_:
 	res 0, a
 	ld [hFlags_0xFFF6], a
 	call SetPartyMenuHPBarColor ; color the HP bar (on SGB)
+
 	pop hl
 	jr .printLevel
+
 .teachMoveMenu
+	; 技マシン使用時はHPと状態異常の代わりに "ABLE"/"NOT ABLE" を表示する
+
+	; de = "ABLE" or "NOT ABLE"
 	push hl
-	predef CanLearnTM ; check if the pokemon can learn the move
+	predef CanLearnTM
 	pop hl
 	ld de, .ableToLearnMoveText
 	ld a, c
 	and a
 	jr nz, .placeMoveLearnabilityString
 	ld de, .notAbleToLearnMoveText
+
 .placeMoveLearnabilityString
+	; "ABLE"/"NOT ABLE" を配置
 	ld bc, 20 + 9 ; down 1 row and right 9 columns
 	push hl
 	add hl, bc
 	call PlaceString
 	pop hl
+
 .printLevel
+	; レベルを描画
 	ld bc, 10 ; move 10 columns to the right
 	add hl, bc
 	call PrintLevel
+
+	; 次の手持ちへ
 	pop hl
 	pop de
 	inc de
@@ -135,10 +154,14 @@ RedrawPartyMenu_:
 	pop bc
 	inc c
 	jp .loop
+
+; "ABLE"
 .ableToLearnMoveText
 	db "ABLE@"
+; "NOT ABLE"
 .notAbleToLearnMoveText
 	db "NOT ABLE@"
+
 .evolutionStoneMenu
 	push hl
 	ld hl, EvosMovesPointerTable

@@ -1,5 +1,9 @@
+; **TechnicalMachines**  
+; 技マシン番号 -> MoveID  
+; - - -  
+; MoveID -> 技マシン番号にも使われる
 TechnicalMachines:
-	db MEGA_PUNCH
+	db MEGA_PUNCH	; 05
 	db RAZOR_WIND
 	db SWORDS_DANCE
 	db WHIRLWIND
