@@ -743,9 +743,7 @@ DoBallTossSpecialEffects:
 	ld a, SFX_BALL_TOSS
 	call PlaySound
 .skipPlayingSound
-	ld a, [wIsInBattle]
-	cp 02 ; is it a trainer battle?
-	jr z, .isTrainerBattle
+	ifInTrainerBattle OP_JR, .isTrainerBattle
 	ld a, [wd11e]
 	cp $10 ; is the enemy pokemon the Ghost Marowak?
 	ret nz
@@ -3029,9 +3027,7 @@ BattleAnimCopyTileMapToVRAM:
 	jp Delay3
 
 TossBallAnimation:
-	ld a, [wIsInBattle]
-	cp 2
-	jr z, .BlockBall ; if in trainer battle, play different animation
+	ifInTrainerBattle OP_JR, .BlockBall
 	ld a, [wPokeBallAnimData]
 	ld b, a
 

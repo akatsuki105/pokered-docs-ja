@@ -6,9 +6,7 @@ PrintWaitingText:
 	ld c, $b
 
 	; 戦闘中でない => .asm_4c17
-	ld a, [wIsInBattle]
-	and a
-	jr z, .asm_4c17
+	ifInField OP_JR, .asm_4c17
 
 	call TextBoxBorder
 	jr .asm_4c1a

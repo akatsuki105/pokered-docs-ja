@@ -239,9 +239,11 @@ StartBattle:
 .foundFirstAliveEnemyMon
 	ld a, d
 	ld [wSerialExchangeNybbleReceiveData], a
+
 	ld a, [wIsInBattle]
 	dec a ; is it a trainer battle?
 	call nz, EnemySendOutFirstMon ; if it is a trainer battle, send out enemy mon
+
 	ld c, 40
 	call DelayFrames
 	call SaveScreenTilesToBuffer1
@@ -6968,9 +6970,7 @@ _InitBattleCommon:
 	lb bc, 4, 10
 	call ClearScreenArea
 	call ClearSprites
-	ld a, [wIsInBattle]
-	dec a ; is it a wild battle?
-	call z, DrawEnemyHUDAndHPBar ; draw enemy HUD and HP bar if it's a wild battle
+	ifInWildBattle OP_CALL, DrawEnemyHUDAndHPBar	; draw enemy HUD and HP bar if it's a wild battle
 	call StartBattle
 	callab EndOfBattle
 	pop af
@@ -7018,9 +7018,9 @@ AnimateSendingOutMon:
 	ld a, [hStartTileID]
 	ld [hBaseTileID], a
 	ld b, $4c
-	ld a, [wIsInBattle]
-	and a
-	jr z, .notInBattle
+
+	ifInField OP_JR, .notInBattle
+
 	add b
 	ld [hl], a
 	call Delay3

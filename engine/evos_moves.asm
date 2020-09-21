@@ -210,9 +210,11 @@ Evolution_PartyMonLoop: ; loop over party mons
 	call LearnMoveFromLevelUp
 	pop hl
 	predef SetPartyMonTypes
+
 	ld a, [wIsInBattle]
 	and a
 	call z, Evolution_ReloadTilesetTilePatterns
+
 	predef IndexToPokedex
 	ld a, [wd11e]
 	dec a
@@ -249,9 +251,11 @@ Evolution_PartyMonLoop: ; loop over party mons
 	ld a, [wLinkState]
 	cp LINK_STATE_TRADING
 	ret z
+
 	ld a, [wIsInBattle]
 	and a
 	ret nz
+	
 	ld a, [wEvolutionOccurred]
 	and a
 	call nz, PlayDefaultMusic
