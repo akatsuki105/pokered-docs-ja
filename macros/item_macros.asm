@@ -157,3 +157,11 @@ retIfNotInTrainerBattle: MACRO
 	cp $2
     ret nz
 ENDM
+
+; Lost battle
+
+jpIfInLostBattle: MACRO
+	ld a, [wIsInBattle]
+	cp $ff
+    jp z, \1
+ENDM
