@@ -52,10 +52,7 @@ AskName:
 	ld [wNamingScreenType], a
 	call DisplayNamingScreen
 
-	; バトル中 -> .inBattle
-	ld a, [wIsInBattle]
-	and a
-	jr nz, .inBattle
+	jrIfInBattle .inBattle	; バトル中 -> .inBattle
 	call ReloadMapSpriteTilePatterns
 .inBattle
 	call LoadScreenTilesFromBuffer1
@@ -243,10 +240,8 @@ DisplayNamingScreen:
 	res 6, [hl]
 	; バトル中 -> LoadHudTilePatterns
 	; それ以外 -> LoadTextBoxTilePatterns
-	ld a, [wIsInBattle]
-	and a
-	jp z, LoadTextBoxTilePatterns ; ここで ret
-	jpab LoadHudTilePatterns	  ; ここで ret
+	jpIfInField	LoadTextBoxTilePatterns	; ret
+	jpab LoadHudTilePatterns	  		; ret
 
 .namingScreenButtonFunctions
 	dw .dPadReturnPoint

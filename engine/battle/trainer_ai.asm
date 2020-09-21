@@ -338,9 +338,7 @@ INCLUDE "data/trainer_parties.asm"
 
 TrainerAI:
 	and a
-	ld a, [wIsInBattle]
-	dec a
-	ret z ; if not a trainer, we're done here
+	retIfInWildBattle
 	ld a, [wLinkState]
 	cp LINK_STATE_BATTLING
 	ret z

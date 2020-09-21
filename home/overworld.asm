@@ -314,9 +314,7 @@ OverworldLoopLessDelay::
 	and a
 	jp nz, WarpFound2
 .notSafariZone
-	ld a, [wIsInBattle]
-	and a
-	jp nz, CheckWarpsNoCollision
+	jpIfInBattle CheckWarpsNoCollision
 	predef ApplyOutOfBattlePoisonDamage ; also increment daycare mon exp
 	ld a, [wOutOfBattleBlackout]
 	and a

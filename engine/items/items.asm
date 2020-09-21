@@ -1279,9 +1279,7 @@ ItemUseMedicine:
 	ret nz ; if so, return
 	call GBPalWhiteOut
 	call z, RunDefaultPaletteCommand
-	ld a, [wIsInBattle]
-	and a
-	ret nz
+	retIfInBattle
 	jp ReloadMapData
 .useVitamin
 	push hl
