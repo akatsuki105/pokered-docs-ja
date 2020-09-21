@@ -1,5 +1,13 @@
+; **UseItem_**  
+; 道具を使う処理  
+; - - -  
+; INPUT:  
+; [wcf91] = アイテムID  
+; 
+; OUTPUT:  
+; [wActionResultOrTookBattleTurn] = 結果 0(失敗: アイテム減らない) or 1(成功: アイテムを消費) or 2(not able to be used right now, no extra menu displayed (only certain items use this) ) 
 UseItem_:
-	; [wActionResultOrTookBattleTurn]を失敗で初期化
+	; [wActionResultOrTookBattleTurn]を成功で初期化
 	ld a, 1
 	ld [wActionResultOrTookBattleTurn], a
 
@@ -770,51 +778,79 @@ SurfingNoPlaceToGetOffText:
 ItemUsePokedex:
 	predef_jump ShowPokedexMenu
 
+; **ItemUseEvoStone**  
+; 進化の石を使った時  
+; - - -  
+; [wActionResultOrTookBattleTurn] = 0(失敗: 進化はさせず石も減らなかった) or 1(成功: 進化させて石が減った)
 ItemUseEvoStone:
+	; 戦闘中では使えない
 	ld a, [wIsInBattle]
 	and a
 	jp nz, ItemUseNotTime
+
+	; 退避
 	ld a, [wWhichPokemon]
 	push af
 	ld a, [wcf91]
 	ld [wEvoStoneItemID], a
 	push af
+
+	; 手持ち画面を表示して、進化の石を使うポケモンを選ばせる
 	ld a, EVO_STONE_PARTY_MENU
 	ld [wPartyMenuTypeOrMessageID], a
 	ld a, $ff
 	ld [wUpdateSpritesEnabled], a
 	call DisplayPartyMenu
-	pop bc
+	pop bc	; bc = アイテムID
+
+	; キャンセルした -> .canceledItemUse
 	jr c, .canceledItemUse
+	
+	; アイテムIDを復帰 ([wcf91] = アイテムID)
 	ld a, b
 	ld [wcf91], a
+
 	ld a, $01
 	ld [wForceEvolution], a
+
+	; アイテム適用音を流す
 	ld a, SFX_HEAL_AILMENT
 	call PlaySoundWaitForCurrent
 	call WaitForSoundToFinish
+
 	callab TryEvolvingMon ; try to evolve pokemon
+
+	; 進化しなかった
 	ld a, [wEvolutionOccurred]
 	and a
 	jr z, .noEffect
+
 	pop af
 	ld [wWhichPokemon], a
+
+	; 進化の石を消費
 	ld hl, wNumBagItems
 	ld a, 1 ; remove 1 stone
 	ld [wItemQuantity], a
 	jp RemoveItemFromInventory
+
 .noEffect
-	call ItemUseNoEffect
+	call ItemUseNoEffect	; "It won't have any effect."
+	; fallthrough
+
 .canceledItemUse
 	xor a
-	ld [wActionResultOrTookBattleTurn], a ; item not used
+	ld [wActionResultOrTookBattleTurn], a ; 失敗(アイテムは消費しない)
 	pop af
 	ret
 
 ItemUseVitamin:
+	; 戦闘中 -> "OAK: ${PLAYER}! This isn't the time to use that!"
 	ld a, [wIsInBattle]
 	and a
 	jp nz, ItemUseNotTime
+
+	; fallthrough to ItemUseMedicine
 
 ItemUseMedicine:
 	ld a, [wPartyCount]
@@ -2339,6 +2375,7 @@ RemoveUsedItem:
 	ld [wItemQuantity], a
 	jp RemoveItemFromInventory
 
+; "It won't have any effect."
 ItemUseNoEffect:
 	ld hl, ItemUseNoEffectText
 	jr ItemUseFailed

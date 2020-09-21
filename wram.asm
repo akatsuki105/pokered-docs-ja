@@ -698,7 +698,8 @@ wCanEvolveFlags:: ; ccd3
 ; Other methods of evolution simply set it by calling TryEvolvingMon.
 	ds 1
 
-wForceEvolution:: ; ccd4
+; ccd4
+wForceEvolution::
 	ds 1
 
 ; if [ccd5] != 1, the second AI layer is not applied
@@ -2635,7 +2636,9 @@ wUnusedD153:: ; d153
 
 	ds 2
 
-wEvoStoneItemID:: ; d156
+; d156
+; `ItemUseEvoStone` で使う進化の石のアイテムIDを格納する
+wEvoStoneItemID::
 	ds 1
 
 wSavedNPCMovementDirections2Index:: ; d157
