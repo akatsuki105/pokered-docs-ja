@@ -3426,6 +3426,8 @@ IsItemInBag::
 	and a
 	ret
 
+; **DisplayPokedex**  
+; ポケモン図鑑を表示する
 DisplayPokedex::
 	ld [wd11e], a
 	jpba _DisplayPokedex
@@ -4230,12 +4232,14 @@ GetItemPrice::
 	ld [MBC1RomBank], a
 	ret
 
-; copies a string from [de] to [wcf4b]
+; **CopyStringToCF4B**  
+; 文字列を [de] から [wcf4b] にコピー
 CopyStringToCF4B::
 	ld hl, wcf4b
 	; fall through
 
-; copies a string from [de] to [hl]
+; **CopyString**  
+; 文字列を [de] から [hl] にコピー
 CopyString::
 	ld a, [de]
 	inc de

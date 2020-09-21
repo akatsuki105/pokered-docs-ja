@@ -1,9 +1,12 @@
+; INPUT: [wd11e] = ポケモンID
 _DisplayPokedex:
+	; 図鑑はテキストを一気に表示
 	ld hl, wd730
 	set 6, [hl]
 	predef ShowPokedexData
 	ld hl, wd730
 	res 6, [hl]
+
 	call ReloadMapData
 	ld c, 10
 	call DelayFrames

@@ -1,6 +1,11 @@
 ; **FlagActionPredef**  
-; フラグアクションを実行する  
 ; hlのビットフィールドのビットcにおいてアクションbを実行する  
+; - - -  
+; INPUT:  
+; c = アクション b の対象が hl の何ビット目か  
+; b = bitに対してとるアクション(0 -> クリア, 1 -> セット, 2 -> リード)  
+; 
+; OUTPUT: cレジスタ = アクションの結果(リードなら読み取ったbit)  
 FlagActionPredef:
 	call GetPredefRegisters
 

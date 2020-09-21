@@ -374,10 +374,16 @@ PokedexMenuItemsText:
 	next "AREA"
 	next "QUIT@"
 
-; tests if a pokemon's bit is set in the seen or owned pokemon bit fields
-; INPUT:
-; [wd11e] = pokedex number
-; hl = address of bit field
+; **IsPokemonBitSet**  
+; 図鑑番号で指定したポケモンがすでに見つけたポケモンか捕まえたポケモンかチェック
+; - - -  
+; INPUT:  
+; [wd11e] = 図鑑番号  
+; hl = wPokedexSeen or wPokedexOwned  
+; 
+; OUTPUT:  
+; cレジスタ = 1(見つけた or 捕まえた) or 0(そうでない)  
+; z = 1(見つけた or 捕まえた) or 0(そうでない)  
 IsPokemonBitSet:
 	ld a, [wd11e]
 	dec a
@@ -388,72 +394,83 @@ IsPokemonBitSet:
 	and a
 	ret
 
-; function to display pokedex data from outside the pokedex
+; ポケモン図鑑menu でないときに図鑑データを見せる関数  
+; セキチクシティなどのポケモン展示で使う??
 ShowPokedexData:
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
 	call UpdateSprites
 	callab LoadPokedexTilePatterns ; load pokedex tiles
 
-; function to display pokedex data from inside the pokedex
+; ポケモン図鑑menu で図鑑データを表示する関数
 ShowPokedexDataInternal:
+	; 音量を 3/7 に
 	ld hl, wd72c
 	set 1, [hl]
-	ld a, $33 ; 3/7 volume
+	ld a, $33
 	ld [rNR50], a
+
 	call GBPalWhiteOut ; zero all palettes
 	call ClearScreen
-	ld a, [wd11e] ; pokemon ID
+
+	; [wcf91] = ポケモンID
+	ld a, [wd11e]
 	ld [wcf91], a
 	push af
 	ld b, SET_PAL_POKEDEX
 	call RunPaletteCommand
 	pop af
 	ld [wd11e], a
+
+	; 花や水のアニメーションを向こうに
 	ld a, [hTilesetType]
 	push af
 	xor a
 	ld [hTilesetType], a
 
-	coord hl, 0, 0
+	; 図鑑の枠線を描画(角は除く)
+	coord hl, 0, 0	; 上の枠線を描画
 	ld de, 1
 	lb bc, $64, SCREEN_WIDTH
-	call DrawTileLine ; draw top border
-
-	coord hl, 0, 17
+	call DrawTileLine
+	coord hl, 0, 17	; 下の枠線を描画
 	ld b, $6f
-	call DrawTileLine ; draw bottom border
-
-	coord hl, 0, 1
+	call DrawTileLine
+	coord hl, 0, 1	; 左の枠線を描画
 	ld de, 20
 	lb bc, $66, $10
-	call DrawTileLine ; draw left border
-
-	coord hl, 19, 1
+	call DrawTileLine
+	coord hl, 19, 1	; 右の枠線を描画
 	ld b, $67
-	call DrawTileLine ; draw right border
+	call DrawTileLine
 
-	ld a, $63 ; upper left corner tile
+	; 枠線の角を描画
+	ld a, $63 	; 左上角
 	Coorda 0, 0
-	ld a, $65 ; upper right corner tile
+	ld a, $65	; 右上角
 	Coorda 19, 0
-	ld a, $6c ; lower left corner tile
+	ld a, $6c 	; 左下角
 	Coorda 0, 17
-	ld a, $6e ; lower right corner tile
+	ld a, $6e 	; 右下角
 	Coorda 19, 17
 
+	; 画面真ん中に図鑑の上下を区切る横線を引く
 	coord hl, 0, 9
 	ld de, PokedexDataDividerLine
-	call PlaceString ; draw horizontal divider line
+	call PlaceString
 
+	; "HT ?` ??`"  
+	; "WT ???lb"  を描画
 	coord hl, 9, 6
 	ld de, HeightWeightText
 	call PlaceString
 
+	; ポケモン名(例. ヒトカゲ)を描画
 	call GetMonName
 	coord hl, 9, 2
 	call PlaceString
 
+	; de = PokedexEntryPointers の該当エントリ
 	ld hl, PokedexEntryPointers
 	ld a, [wd11e]
 	dec a
@@ -465,16 +482,19 @@ ShowPokedexDataInternal:
 	ld e, a
 	ld d, [hl] ; de = address of pokedex entry
 
+	; ポケモンの分類(例. ヒトカゲ -> とかげポケモン)を描画
 	coord hl, 9, 4
 	call PlaceString ; print species name
 
+	; [wd11e] = 図鑑番号
 	ld h, b
 	ld l, c
 	push de
 	ld a, [wd11e]
-	push af
+	push af		; push ポケモンID
 	call IndexToPokedex
 
+	; No. XXX を描画
 	coord hl, 2, 8
 	ld a, "№"
 	ld [hli], a
@@ -492,11 +512,11 @@ ShowPokedexDataInternal:
 	ld [wd0b5], a
 	pop de
 
+	; 鳴き声を出しながらポケモンのグラフィックを図鑑に描画
 	push af
 	push bc
 	push de
 	push hl
-
 	call Delay3
 	call GBPalNormal
 	call GetMonHeader ; load pokemon picture location
@@ -504,15 +524,16 @@ ShowPokedexDataInternal:
 	call LoadFlippedFrontSpriteByMonIndex ; draw pokemon picture
 	ld a, [wcf91]
 	call PlayCry ; play pokemon cry
-
 	pop hl
 	pop de
 	pop bc
 	pop af
 
+	; ポケモンを捕獲済みでないなら、身長体重、説明文の描画処理はスキップする
 	ld a, c
 	and a
-	jp z, .waitForButtonPress ; if the pokemon has not been owned, don't print the height, weight, or description
+	jp z, .waitForButtonPress
+
 	inc de ; de = address of feet (height)
 	ld a, [de] ; reads feet, but a is overwritten without being used
 	coord hl, 12, 6
@@ -527,6 +548,7 @@ ShowPokedexDataInternal:
 	call PrintNumber ; print inches (height)
 	ld a, $61 ; inches symbol tile (two ticks)
 	ld [hl], a
+	
 ; now print the weight (note that weight is stored in tenths of pounds internally)
 	inc de
 	inc de
@@ -589,6 +611,8 @@ ShowPokedexDataInternal:
 	ld [rNR50], a
 	ret
 
+; "HT ?` ??`"  
+; "WT ???lb"  
 HeightWeightText:
 	db   "HT  ?",$60,"??",$61
 	next "WT   ???lb@"
