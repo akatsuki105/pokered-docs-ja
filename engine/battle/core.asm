@@ -241,7 +241,7 @@ StartBattle:
 	ld [wSerialExchangeNybbleReceiveData], a
 
 	; if it is a trainer battle, send out enemy mon
-	ifNotInWildBattle OP_CALL, EnemySendOutFirstMon
+	callNotIfInWildBattle EnemySendOutFirstMon
 
 	ld c, 40
 	call DelayFrames
@@ -825,7 +825,7 @@ HandleEnemyMonFainted:
 FaintEnemyPokemon:
 	call ReadPlayerMonCurHPAndStatus
 
-	ifInWildBattle OP_JR, .wild
+	jrIfInWildBattle .wild
 	
 	ld a, [wEnemyMonPartyPos]
 	ld hl, wEnemyMon1HP
@@ -867,7 +867,7 @@ FaintEnemyPokemon:
 	lb bc, 4, 11
 	call ClearScreenArea
 
-	ifInWildBattle OP_JR, .wild_win
+	jrIfInWildBattle .wild_win
 
 	xor a
 	ld [wFrequencyModifier], a
@@ -1597,7 +1597,7 @@ TryRunningFromBattle:
 	cp LINK_STATE_BATTLING
 	jp z, .canEscape
 
-	ifNotInWildBattle OP_JR, .trainerBattle
+	jrNotIfInWildBattle .trainerBattle
 
 	ld a, [wNumRunAttempts]
 	inc a
@@ -3047,7 +3047,7 @@ SelectEnemyMove:
 	ld a, STRUGGLE ; struggle if the only move is disabled
 	jr nz, .done
 .atLeastTwoMovesAvailable
-	ifInWildBattle OP_JR, .chooseRandomMove
+	jrIfInWildBattle .chooseRandomMove
 	callab AIEnemyTrainerChooseMoves
 .chooseRandomMove
 	push hl
@@ -6241,7 +6241,7 @@ LoadEnemyMonData:
 	push hl
 	call CalcStats
 	pop hl
-	ifInTrainerBattle OP_JR, .copyHPAndStatusFromPartyData
+	jrIfInTrainerBattle .copyHPAndStatusFromPartyData
 	ld a, [wEnemyBattleStatus3]
 	bit TRANSFORMED, a ; is enemy mon transformed?
 	jr nz, .copyTypes ; if transformed, jump
@@ -6283,7 +6283,7 @@ LoadEnemyMonData:
 	ld [de], a
 	inc de
 
-	ifNotInTrainerBattle OP_JR, .copyStandardMoves
+	jrNotIfInTrainerBattle .copyStandardMoves
 	; if it's a trainer battle, copy moves from enemy party data
 	ld hl, wEnemyMon1Moves
 	ld a, [wWhichPokemon]
@@ -6966,7 +6966,7 @@ _InitBattleCommon:
 	lb bc, 4, 10
 	call ClearScreenArea
 	call ClearSprites
-	ifInWildBattle OP_CALL, DrawEnemyHUDAndHPBar	; draw enemy HUD and HP bar if it's a wild battle
+	callIfInWildBattle DrawEnemyHUDAndHPBar	; draw enemy HUD and HP bar if it's a wild battle
 	call StartBattle
 	callab EndOfBattle
 	pop af
@@ -7015,7 +7015,7 @@ AnimateSendingOutMon:
 	ld [hBaseTileID], a
 	ld b, $4c
 
-	ifInField OP_JR, .notInBattle
+	jrIfInField .notInBattle
 
 	add b
 	ld [hl], a
@@ -8053,7 +8053,7 @@ SwitchAndTeleportEffect:
 	ld a, [H_WHOSETURN]
 	and a
 	jr nz, .handleEnemy
-	ifNotInWildBattle OP_JR, .notWildBattle1
+	jrNotIfInWildBattle .notWildBattle1
 	ld a, [wCurEnemyLVL]
 	ld b, a
 	ld a, [wBattleMonLevel]
@@ -8093,7 +8093,7 @@ SwitchAndTeleportEffect:
 	jp nz, PrintText
 	jp PrintButItFailedText_
 .handleEnemy
-	ifNotInWildBattle OP_JR, .notWildBattle2
+	jrNotIfInWildBattle .notWildBattle2
 	ld a, [wBattleMonLevel]
 	ld b, a
 	ld a, [wCurEnemyLVL]

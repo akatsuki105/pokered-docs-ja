@@ -211,7 +211,7 @@ Evolution_PartyMonLoop: ; loop over party mons
 	pop hl
 	predef SetPartyMonTypes
 
-	ifInField OP_CALL, Evolution_ReloadTilesetTilePatterns
+	callIfInField Evolution_ReloadTilesetTilePatterns
 
 	predef IndexToPokedex
 	ld a, [wd11e]

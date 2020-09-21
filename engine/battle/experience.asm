@@ -83,7 +83,7 @@ GainExperience:
 	ld a, 1
 .next
 	ld [wGainBoostedExp], a
-	ifNotInWildBattle OP_CALL, BoostExp
+	callNotIfInWildBattle BoostExp
 	inc hl
 	inc hl
 	inc hl

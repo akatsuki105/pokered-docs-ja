@@ -53,7 +53,7 @@ DontAbandonLearning:
 	pop de
 	pop hl
 	ld [hl], a
-	ifInField OP_JP, PrintLearnedMove
+	jpIfInField PrintLearnedMove
 	ld a, [wWhichPokemon]
 	ld b, a
 	ld a, [wPlayerMonNumber]

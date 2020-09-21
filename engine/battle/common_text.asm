@@ -1,5 +1,5 @@
 PrintBeginningBattleText:
-	ifNotInWildBattle OP_JR, .trainerBattle
+	jrNotIfInWildBattle .trainerBattle
 	ld a, [wCurMap]
 	cp POKEMON_TOWER_3F
 	jr c, .notPokemonTower

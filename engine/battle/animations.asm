@@ -743,7 +743,7 @@ DoBallTossSpecialEffects:
 	ld a, SFX_BALL_TOSS
 	call PlaySound
 .skipPlayingSound
-	ifInTrainerBattle OP_JR, .isTrainerBattle
+	jrIfInTrainerBattle .isTrainerBattle
 	ld a, [wd11e]
 	cp $10 ; is the enemy pokemon the Ghost Marowak?
 	ret nz
@@ -3027,7 +3027,7 @@ BattleAnimCopyTileMapToVRAM:
 	jp Delay3
 
 TossBallAnimation:
-	ifInTrainerBattle OP_JR, .BlockBall
+	jrIfInTrainerBattle .BlockBall
 	ld a, [wPokeBallAnimData]
 	ld b, a
 

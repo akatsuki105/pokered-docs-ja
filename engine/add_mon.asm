@@ -148,7 +148,7 @@ _AddPartyMon:
 	push hl
 
 	; 個体値の計算 (野生の場合) -> 野生のポケモンの個体値をコピーするために .copyEnemyMonData
-	ifInBattle OP_JR, .copyEnemyMonData
+	jrIfInBattle .copyEnemyMonData
 	; 個体値の計算 (野生でない場合) -> ランダムに決定
 	call Random
 	ld b, a
@@ -315,7 +315,7 @@ _AddPartyMon:
 	inc de
 	
 	; 野生のポケモンではない -> .calcFreshStats
-	ifNotInWildBattle OP_JR, .calcFreshStats
+	jrNotIfInWildBattle .calcFreshStats
 
 	; 野生のポケモン -> ステータスはすでに計算されているのでそれをコピー
 	ld hl, wEnemyMonMaxHP

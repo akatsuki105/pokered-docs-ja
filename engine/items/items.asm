@@ -126,7 +126,7 @@ ItemUsePtrTable:
 	dw ItemUsePPRestore  ; MAX_ELIXER
 
 ItemUseBall:
-	ifInField OP_JP, ItemUseNotTime	; 戦闘外ではボールは使えない
+	jpIfInField ItemUseNotTime	; 戦闘外ではボールは使えない
 
 	; 野生ポケモン以外(トレーナー戦)では、ポケモンは捕まえられない
 	dec a
@@ -645,13 +645,13 @@ ItemUseBallText06:
 ; **ItemUseTownMap**  
 ; タウンマップを使った時の処理  
 ItemUseTownMap:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 
 	; タウンマップを開く
 	jpba DisplayTownMap
 
 ItemUseBicycle:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 	ld a, [wWalkBikeSurfState]
 	ld [wWalkBikeSurfStateCopy], a
 	cp 2 ; is the player surfing?
@@ -774,7 +774,7 @@ ItemUsePokedex:
 ; - - -  
 ; [wActionResultOrTookBattleTurn] = 0(失敗: 進化はさせず石も減らなかった) or 1(成功: 進化させて石が減った)
 ItemUseEvoStone:
-	ifInBattle OP_JP, ItemUseNotTime	; 戦闘中では使えない
+	jpIfInBattle ItemUseNotTime	; 戦闘中では使えない
 
 	; 退避
 	ld a, [wWhichPokemon]
@@ -833,7 +833,7 @@ ItemUseEvoStone:
 	ret
 
 ItemUseVitamin:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 	; fallthrough to ItemUseMedicine
 
 ItemUseMedicine:
@@ -963,7 +963,7 @@ ItemUseMedicine:
 	jr z, .updateInBattleFaintedData
 	jp .healingItemNoEffect
 .updateInBattleFaintedData
-	ifInField OP_JR, .compareCurrentHPToMaxHP
+	jrIfInField .compareCurrentHPToMaxHP
 	push hl
 	push de
 	push bc
@@ -1521,7 +1521,7 @@ ThrewRockText:
 
 ; also used for Dig out-of-battle effect
 ItemUseEscapeRope:
-	ifInBattle OP_JR, .notUsable
+	jrIfInBattle .notUsable
 	ld a, [wCurMap]
 	cp AGATHAS_ROOM
 	jr z, .notUsable
@@ -1564,14 +1564,14 @@ ItemUseRepel:
 	ld b, 100
 
 ItemUseRepelCommon:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 	ld a, b
 	ld [wRepelRemainingSteps], a
 	jp PrintItemUseTextAndRemoveItem
 
 ; handles X Accuracy item
 ItemUseXAccuracy:
-	ifInField OP_JP, ItemUseNotTime
+	jpIfInField ItemUseNotTime
 	ld hl, wPlayerBattleStatus2
 	set USING_X_ACCURACY, [hl] ; X Accuracy bit
 	jp PrintItemUseTextAndRemoveItem
@@ -1670,13 +1670,13 @@ CardKeyTable3:
 	db $ff
 
 ItemUsePokedoll:
-	ifNotInWildBattle OP_JP, ItemUseNotTime
+	jpNotIfInWildBattle ItemUseNotTime
 	ld a, $01
 	ld [wEscapedFromBattle], a
 	jp PrintItemUseTextAndRemoveItem
 
 ItemUseGuardSpec:
-	ifInField OP_JP, ItemUseNotTime
+	jpIfInField ItemUseNotTime
 	ld hl, wPlayerBattleStatus2
 	set PROTECTED_BY_MIST, [hl] ; Mist bit
 	jp PrintItemUseTextAndRemoveItem
@@ -1690,13 +1690,13 @@ ItemUseMaxRepel:
 	jp ItemUseRepelCommon
 
 ItemUseDireHit:
-	ifInField OP_JP, ItemUseNotTime
+	jpIfInField ItemUseNotTime
 	ld hl, wPlayerBattleStatus2
 	set GETTING_PUMPED, [hl] ; Focus Energy bit
 	jp PrintItemUseTextAndRemoveItem
 
 ItemUseXStat:
-	ifInBattle OP_JR, .inBattle
+	jrIfInBattle .inBattle
 
 	call ItemUseNotTime
 	ld a, 2
@@ -1729,7 +1729,7 @@ ItemUseXStat:
 	ret
 
 ItemUsePokeflute:
-	ifInBattle OP_JR, .inBattle
+	jrIfInBattle .inBattle
 ; if not in battle
 	call ItemUseReloadOverworldData
 	ld a, [wCurMap]
@@ -1768,7 +1768,7 @@ ItemUsePokeflute:
 	ld hl, wPartyMon1Status
 	call WakeUpEntireParty
 
-	ifInWildBattle OP_JR, .skipWakingUpEnemyParty
+	jrIfInWildBattle .skipWakingUpEnemyParty
 	; if it's a trainer battle
 	ld hl, wEnemyMon1Status
 	call WakeUpEntireParty
@@ -1860,7 +1860,7 @@ PlayedFluteHadEffectText:
 	TX_BLINK
 	TX_ASM
 
-	ifInBattle OP_JR, .done
+	jrIfInBattle .done
 
 ; play out-of-battle pokeflute music
 	ld a, $ff
@@ -1877,7 +1877,7 @@ PlayedFluteHadEffectText:
 	jp TextScriptEnd ; end text
 
 ItemUseCoinCase:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 	ld hl, CoinCaseNumCoinsText
 	jp PrintText
 
@@ -1953,7 +1953,7 @@ RodResponse:
 ; checks if fishing is possible and if so, runs initialization code common to all rods
 ; unsets carry if fishing is possible, sets carry if not
 FishingInit:
-	ifInField OP_JR, .notInBattle
+	jrIfInField .notInBattle
 	scf ; can't fish during battle
 	ret
 .notInBattle
@@ -1979,7 +1979,7 @@ ItemUseOaksParcel:
 	jp ItemUseNotYoursToUse
 
 ItemUseItemfinder:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 	call ItemUseReloadOverworldData
 	callba HiddenItemNear ; check for hidden items
 	ld hl, ItemfinderFoundNothingText
@@ -2005,7 +2005,7 @@ ItemfinderFoundNothingText:
 	db "@"
 
 ItemUsePPUp:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 
 ItemUsePPRestore:
 	ld a, [wWhichPokemon]
@@ -2210,7 +2210,7 @@ UnusableItem:
 	jp ItemUseNotTime
 
 ItemUseTMHM:
-	ifInBattle OP_JP, ItemUseNotTime
+	jpIfInBattle ItemUseNotTime
 	ld a, [wcf91]
 	sub TM_01
 	push af
