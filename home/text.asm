@@ -415,11 +415,11 @@ TextCommandProcessor::
 	ld a, [wLetterPrintingDelayFlags]
 	push af
 
-	; TODO: ポケモン図鑑のみの処理
+	; ポケモン図鑑の説明文のみの処理(なんの処理か不明)
 	set 1, a
-	ld e, a
-	ld a, [$fff4]
-	xor e	; [wLetterPrintingDelayFlags] | [$fff4]
+	ld e, a					; 0b1X
+	ld a, [hPokedexDescriptionText]	; 0b00 or 0b10
+	xor e	; [wLetterPrintingDelayFlags] | [hPokedexDescriptionText]
 	ld [wLetterPrintingDelayFlags], a
 
 	; [wTextDest] = 描画先

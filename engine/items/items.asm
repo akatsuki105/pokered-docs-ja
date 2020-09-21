@@ -126,11 +126,7 @@ ItemUsePtrTable:
 	dw ItemUsePPRestore  ; MAX_ELIXER
 
 ItemUseBall:
-
-	; 戦闘外ではボールは使えない
-	ld a, [wIsInBattle]
-	and a
-	jp z, ItemUseNotTime	; return
+	ifInFieldJP ItemUseNotTime	; 戦闘外ではボールは使えない
 
 	; 野生ポケモン以外(トレーナー戦)では、ポケモンは捕まえられない
 	dec a
@@ -310,12 +306,12 @@ ItemUseBall:
 	ld b, 4
 	call Divide
 
-	; 255以下のとき、Wは255とする X = (W > 255 ? W : 255)
+	; X = (W >= 256 ? (W | 0x000000ff) : W)
 	ld a, [H_QUOTIENT + 2]
 	and a
-	jr z, .skip3
+	jr z, .skip3			; X = W
 	ld a, 255
-	ld [H_QUOTIENT + 3], a	; X = 255
+	ld [H_QUOTIENT + 3], a	; X = W | 0x000000ff
 
 .skip3
 	pop bc ; b = Rand1
@@ -649,18 +645,13 @@ ItemUseBallText06:
 ; **ItemUseTownMap**  
 ; タウンマップを使った時の処理  
 ItemUseTownMap:
-	; 戦闘中 -> "OAK: ${PLAYER}! This isn't the time to use that!"
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime	; return
+	ifInBattleJP ItemUseNotTime
 
 	; タウンマップを開く
 	jpba DisplayTownMap
 
 ItemUseBicycle:
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime
 	ld a, [wWalkBikeSurfState]
 	ld [wWalkBikeSurfStateCopy], a
 	cp 2 ; is the player surfing?
@@ -783,10 +774,7 @@ ItemUsePokedex:
 ; - - -  
 ; [wActionResultOrTookBattleTurn] = 0(失敗: 進化はさせず石も減らなかった) or 1(成功: 進化させて石が減った)
 ItemUseEvoStone:
-	; 戦闘中では使えない
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime	; 戦闘中では使えない
 
 	; 退避
 	ld a, [wWhichPokemon]
@@ -845,11 +833,7 @@ ItemUseEvoStone:
 	ret
 
 ItemUseVitamin:
-	; 戦闘中 -> "OAK: ${PLAYER}! This isn't the time to use that!"
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
-
+	ifInBattleJP ItemUseNotTime
 	; fallthrough to ItemUseMedicine
 
 ItemUseMedicine:
@@ -979,9 +963,7 @@ ItemUseMedicine:
 	jr z, .updateInBattleFaintedData
 	jp .healingItemNoEffect
 .updateInBattleFaintedData
-	ld a, [wIsInBattle]
-	and a
-	jr z, .compareCurrentHPToMaxHP
+	ifInFieldJR .compareCurrentHPToMaxHP
 	push hl
 	push de
 	push bc
@@ -1539,9 +1521,7 @@ ThrewRockText:
 
 ; also used for Dig out-of-battle effect
 ItemUseEscapeRope:
-	ld a, [wIsInBattle]
-	and a
-	jr nz, .notUsable
+	ifInBattleJR .notUsable
 	ld a, [wCurMap]
 	cp AGATHAS_ROOM
 	jr z, .notUsable
@@ -1584,18 +1564,14 @@ ItemUseRepel:
 	ld b, 100
 
 ItemUseRepelCommon:
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime
 	ld a, b
 	ld [wRepelRemainingSteps], a
 	jp PrintItemUseTextAndRemoveItem
 
 ; handles X Accuracy item
 ItemUseXAccuracy:
-	ld a, [wIsInBattle]
-	and a
-	jp z, ItemUseNotTime
+	ifInFieldJP ItemUseNotTime
 	ld hl, wPlayerBattleStatus2
 	set USING_X_ACCURACY, [hl] ; X Accuracy bit
 	jp PrintItemUseTextAndRemoveItem
@@ -1694,17 +1670,13 @@ CardKeyTable3:
 	db $ff
 
 ItemUsePokedoll:
-	ld a, [wIsInBattle]
-	dec a
-	jp nz, ItemUseNotTime
+	ifNotInWildBattle ItemUseNotTime
 	ld a, $01
 	ld [wEscapedFromBattle], a
 	jp PrintItemUseTextAndRemoveItem
 
 ItemUseGuardSpec:
-	ld a, [wIsInBattle]
-	and a
-	jp z, ItemUseNotTime
+	ifInFieldJP ItemUseNotTime
 	ld hl, wPlayerBattleStatus2
 	set PROTECTED_BY_MIST, [hl] ; Mist bit
 	jp PrintItemUseTextAndRemoveItem
@@ -1718,21 +1690,19 @@ ItemUseMaxRepel:
 	jp ItemUseRepelCommon
 
 ItemUseDireHit:
-	ld a, [wIsInBattle]
-	and a
-	jp z, ItemUseNotTime
+	ifInFieldJP ItemUseNotTime
 	ld hl, wPlayerBattleStatus2
 	set GETTING_PUMPED, [hl] ; Focus Energy bit
 	jp PrintItemUseTextAndRemoveItem
 
 ItemUseXStat:
-	ld a, [wIsInBattle]
-	and a
-	jr nz, .inBattle
+	ifInBattleJR .inBattle
+
 	call ItemUseNotTime
 	ld a, 2
 	ld [wActionResultOrTookBattleTurn], a ; item not used
 	ret
+	
 .inBattle
 	ld hl, wPlayerMoveNum
 	ld a, [hli]
@@ -1759,9 +1729,7 @@ ItemUseXStat:
 	ret
 
 ItemUsePokeflute:
-	ld a, [wIsInBattle]
-	and a
-	jr nz, .inBattle
+	ifInBattleJR .inBattle
 ; if not in battle
 	call ItemUseReloadOverworldData
 	ld a, [wCurMap]
@@ -1799,12 +1767,12 @@ ItemUsePokeflute:
 	ld b, ~SLP & $ff
 	ld hl, wPartyMon1Status
 	call WakeUpEntireParty
-	ld a, [wIsInBattle]
-	dec a ; is it a trainer battle?
-	jr z, .skipWakingUpEnemyParty
-; if it's a trainer battle
+
+	ifInWildBattle .skipWakingUpEnemyParty
+	; if it's a trainer battle
 	ld hl, wEnemyMon1Status
 	call WakeUpEntireParty
+
 .skipWakingUpEnemyParty
 	ld hl, wBattleMonStatus
 	ld a, [hl]
@@ -1891,9 +1859,9 @@ PlayedFluteHadEffectText:
 	TX_FAR _PlayedFluteHadEffectText
 	TX_BLINK
 	TX_ASM
-	ld a, [wIsInBattle]
-	and a
-	jr nz, .done
+
+	ifInBattleJR .done
+
 ; play out-of-battle pokeflute music
 	ld a, $ff
 	call PlaySound ; turn off music
@@ -1909,9 +1877,7 @@ PlayedFluteHadEffectText:
 	jp TextScriptEnd ; end text
 
 ItemUseCoinCase:
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime
 	ld hl, CoinCaseNumCoinsText
 	jp PrintText
 
@@ -1987,9 +1953,7 @@ RodResponse:
 ; checks if fishing is possible and if so, runs initialization code common to all rods
 ; unsets carry if fishing is possible, sets carry if not
 FishingInit:
-	ld a, [wIsInBattle]
-	and a
-	jr z, .notInBattle
+	ifInFieldJR .notInBattle
 	scf ; can't fish during battle
 	ret
 .notInBattle
@@ -2015,9 +1979,7 @@ ItemUseOaksParcel:
 	jp ItemUseNotYoursToUse
 
 ItemUseItemfinder:
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime
 	call ItemUseReloadOverworldData
 	callba HiddenItemNear ; check for hidden items
 	ld hl, ItemfinderFoundNothingText
@@ -2043,9 +2005,7 @@ ItemfinderFoundNothingText:
 	db "@"
 
 ItemUsePPUp:
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime
 
 ItemUsePPRestore:
 	ld a, [wWhichPokemon]
@@ -2250,9 +2210,7 @@ UnusableItem:
 	jp ItemUseNotTime
 
 ItemUseTMHM:
-	ld a, [wIsInBattle]
-	and a
-	jp nz, ItemUseNotTime
+	ifInBattleJP ItemUseNotTime
 	ld a, [wcf91]
 	sub TM_01
 	push af

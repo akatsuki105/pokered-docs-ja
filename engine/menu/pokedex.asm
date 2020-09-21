@@ -534,6 +534,7 @@ ShowPokedexDataInternal:
 	and a
 	jp z, .waitForButtonPress
 
+	; ここから身長
 	inc de ; de = address of feet (height)
 	ld a, [de] ; reads feet, but a is overwritten without being used
 	coord hl, 12, 6
@@ -548,13 +549,14 @@ ShowPokedexDataInternal:
 	call PrintNumber ; print inches (height)
 	ld a, $61 ; inches symbol tile (two ticks)
 	ld [hl], a
-	
-; now print the weight (note that weight is stored in tenths of pounds internally)
+
+	; ここから体重
+	; now print the weight (note that weight is stored in tenths of pounds internally)
 	inc de
 	inc de
 	inc de ; de = address of upper byte of weight
 	push de
-; put weight in big-endian order at hDexWeight
+	; put weight in big-endian order at hDexWeight
 	ld hl, hDexWeight
 	ld a, [hl] ; save existing value of [hDexWeight]
 	push af
@@ -585,19 +587,27 @@ ShowPokedexDataInternal:
 	ld [hDexWeight + 1], a ; restore original value of [hDexWeight + 1]
 	pop af
 	ld [hDexWeight], a ; restore original value of [hDexWeight]
+
+	; ここから説明文
 	pop hl
 	inc hl ; hl = address of pokedex description text
 	coord bc, 1, 11
 	ld a, 2
-	ld [$fff4], a
+	ld [hPokedexDescriptionText], a
 	call TextCommandProcessor ; print pokedex description text
 	xor a
-	ld [$fff4], a
+	ld [hPokedexDescriptionText], a
+
+	; A/Bボタンが押されるまで待機
 .waitForButtonPress
+; {
 	call JoypadLowSensitivity
 	ld a, [hJoy5]
 	and A_BUTTON | B_BUTTON
 	jr z, .waitForButtonPress
+; }
+
+	; 下の画面に戻す
 	pop af
 	ld [hTilesetType], a
 	call GBPalWhiteOut

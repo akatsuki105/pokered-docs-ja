@@ -344,6 +344,9 @@ hSpriteAnimFrameCounter EQU $FFEA
 ; 1 -> 相手のターン
 H_WHOSETURN EQU $FFF3
 
+; 用途不明 基本的に0 図鑑のテキスト描画の真っ最中だけ 2になる
+hPokedexDescriptionText EQU $FFF4
+
 ; bit 0: 1なら HPバーの AA/BBを HPバーの下ではなく、右に描画する (手持ちの画面用)  
 ; bit 1: メニューの各アイテムの行間を2タイル分に(0なら1タイル分)  
 hFlags_0xFFF6 EQU $FFF6
