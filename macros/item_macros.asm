@@ -25,7 +25,7 @@ ENDM
 retIfInBattle: MACRO
 	ld a, [wIsInBattle]
 	and a
-    ret nz, \1
+    ret nz
 ENDM
 
 ; Field
@@ -51,7 +51,7 @@ ENDM
 retIfInField: MACRO
 	ld a, [wIsInBattle]
 	and a
-    ret z, \1
+    ret z
 ENDM
 
 ; Wild battle
@@ -77,33 +77,33 @@ ENDM
 retIfInWildBattle: MACRO
 	ld a, [wIsInBattle]
 	dec a
-    ret z, \1
+    ret z
 ENDM
 
 ; Not wild battle
 
-jpNotIfInWildBattle: MACRO
+jpIfNotInWildBattle: MACRO
 	ld a, [wIsInBattle]
 	dec a
     jp nz, \1
 ENDM
 
-jrNotIfInWildBattle: MACRO
+jrIfNotInWildBattle: MACRO
 	ld a, [wIsInBattle]
 	dec a
     jr nz, \1
 ENDM
 
-callNotIfInWildBattle: MACRO
+callIfNotInWildBattle: MACRO
 	ld a, [wIsInBattle]
 	dec a
     call nz, \1
 ENDM
 
-retNotIfInWildBattle: MACRO
+retIfNotInWildBattle: MACRO
 	ld a, [wIsInBattle]
 	dec a
-    ret nz, \1
+    ret nz
 ENDM
 
 ; Trainer battle
@@ -129,31 +129,31 @@ ENDM
 retIfInTrainerBattle: MACRO
 	ld a, [wIsInBattle]
 	cp $2
-    ret z, \1
+    ret z
 ENDM
 
 ; Not traner battle
 
-jpNotIfInTrainerBattle: MACRO
+jpIfNotInTrainerBattle: MACRO
 	ld a, [wIsInBattle]
 	cp $2
     jp nz, \1
 ENDM
 
-jrNotIfInTrainerBattle: MACRO
+jrIfNotInTrainerBattle: MACRO
 	ld a, [wIsInBattle]
 	cp $2
     jr nz, \1
 ENDM
 
-callNotIfInTrainerBattle: MACRO
+callIfNotInTrainerBattle: MACRO
 	ld a, [wIsInBattle]
 	cp $2
     call nz, \1
 ENDM
 
-retNotIfInTrainerBattle: MACRO
+retIfNotInTrainerBattle: MACRO
 	ld a, [wIsInBattle]
 	cp $2
-    ret nz, \1
+    ret nz
 ENDM

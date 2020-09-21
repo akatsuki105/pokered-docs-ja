@@ -241,7 +241,7 @@ StartBattle:
 	ld [wSerialExchangeNybbleReceiveData], a
 
 	; if it is a trainer battle, send out enemy mon
-	callNotIfInWildBattle EnemySendOutFirstMon
+	callIfNotInWildBattle EnemySendOutFirstMon
 
 	ld c, 40
 	call DelayFrames
@@ -800,9 +800,7 @@ HandleEnemyMonFainted:
 	or [hl] ; is battle mon HP zero?
 	call nz, DrawPlayerHUDAndHPBar ; if battle mon HP is not zero, draw player HD and HP bar
 
-	ld a, [wIsInBattle]
-	dec a
-	ret z ; return if it's a wild battle
+	retIfInWildBattle
 
 	call AnyEnemyPokemonAliveCheck
 	jp z, TrainerBattleVictory
@@ -1073,9 +1071,7 @@ HandlePlayerMonFainted:
 	jr nz, .doUseNextMonDialogue ; if not, jump
 ; the enemy mon has 0 HP
 	call FaintEnemyPokemon
-	ld a, [wIsInBattle]
-	dec a
-	ret z            ; if wild encounter, battle is over
+	retIfInWildBattle
 	call AnyEnemyPokemonAliveCheck
 	jp z, TrainerBattleVictory
 .doUseNextMonDialogue
@@ -1597,7 +1593,7 @@ TryRunningFromBattle:
 	cp LINK_STATE_BATTLING
 	jp z, .canEscape
 
-	jrNotIfInWildBattle .trainerBattle
+	jrIfNotInWildBattle .trainerBattle
 
 	ld a, [wNumRunAttempts]
 	inc a
@@ -3374,9 +3370,7 @@ GetOutText:
 ; - - -  
 ; OUTPUT: z = 1(ゆうれい) or 0(ではない)
 IsGhostBattle:
-	ld a, [wIsInBattle]
-	dec a
-	ret nz
+	retIfNotInWildBattle
 	ld a, [wCurMap]
 	cp POKEMON_TOWER_1F
 	jr c, .next
@@ -6283,7 +6277,7 @@ LoadEnemyMonData:
 	ld [de], a
 	inc de
 
-	jrNotIfInTrainerBattle .copyStandardMoves
+	jrIfNotInTrainerBattle .copyStandardMoves
 	; if it's a trainer battle, copy moves from enemy party data
 	ld hl, wEnemyMon1Moves
 	ld a, [wWhichPokemon]
@@ -8053,7 +8047,7 @@ SwitchAndTeleportEffect:
 	ld a, [H_WHOSETURN]
 	and a
 	jr nz, .handleEnemy
-	jrNotIfInWildBattle .notWildBattle1
+	jrIfNotInWildBattle .notWildBattle1
 	ld a, [wCurEnemyLVL]
 	ld b, a
 	ld a, [wBattleMonLevel]
@@ -8093,7 +8087,7 @@ SwitchAndTeleportEffect:
 	jp nz, PrintText
 	jp PrintButItFailedText_
 .handleEnemy
-	jrNotIfInWildBattle .notWildBattle2
+	jrIfNotInWildBattle .notWildBattle2
 	ld a, [wBattleMonLevel]
 	ld b, a
 	ld a, [wCurEnemyLVL]

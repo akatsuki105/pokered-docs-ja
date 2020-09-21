@@ -1670,7 +1670,7 @@ CardKeyTable3:
 	db $ff
 
 ItemUsePokedoll:
-	jpNotIfInWildBattle ItemUseNotTime
+	jpIfNotInWildBattle ItemUseNotTime
 	ld a, $01
 	ld [wEscapedFromBattle], a
 	jp PrintItemUseTextAndRemoveItem

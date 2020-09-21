@@ -250,9 +250,7 @@ Evolution_PartyMonLoop: ; loop over party mons
 	cp LINK_STATE_TRADING
 	ret z
 
-	ld a, [wIsInBattle]
-	and a
-	ret nz
+	retIfInBattle
 
 	ld a, [wEvolutionOccurred]
 	and a

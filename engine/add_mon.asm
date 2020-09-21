@@ -315,7 +315,7 @@ _AddPartyMon:
 	inc de
 	
 	; 野生のポケモンではない -> .calcFreshStats
-	jrNotIfInWildBattle .calcFreshStats
+	jrIfNotInWildBattle .calcFreshStats
 
 	; 野生のポケモン -> ステータスはすでに計算されているのでそれをコピー
 	ld hl, wEnemyMonMaxHP
