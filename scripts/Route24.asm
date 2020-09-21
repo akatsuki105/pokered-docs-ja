@@ -58,9 +58,7 @@ Route24Script4:
 	ret
 
 Route24Script3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, Route24Script_513c0
+	jpIfInLostBattle Route24Script_513c0
 	call UpdateSprites
 	ld a, $f0
 	ld [wJoyIgnore], a

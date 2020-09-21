@@ -73,9 +73,7 @@ MtMoon3Script_49d91:
 	ret
 
 MtMoon3Script3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, MtMoon3Script_49d58
+	jpIfInLostBattle MtMoon3Script_49d58
 	call UpdateSprites
 	call Delay3
 	SetEvent EVENT_BEAT_MT_MOON_EXIT_SUPER_NERD

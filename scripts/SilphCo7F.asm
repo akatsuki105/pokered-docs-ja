@@ -203,9 +203,7 @@ SilphCo7Script3:
 	jp SilphCo7Text_51c10
 
 SilphCo7Script4:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, SilphCo7Text_51c0c
+	jpIfInLostBattle SilphCo7Text_51c0c
 	ld a, $f0
 	ld [wJoyIgnore], a
 	SetEvent EVENT_BEAT_SILPH_CO_RIVAL

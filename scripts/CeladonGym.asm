@@ -36,9 +36,7 @@ CeladonGym_ScriptPointers:
 	dw CeladonGymScript3
 
 CeladonGymScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, CeladonGymText_48943
+	jpIfInLostBattle CeladonGymText_48943
 	ld a, $f0
 	ld [wJoyIgnore], a
 

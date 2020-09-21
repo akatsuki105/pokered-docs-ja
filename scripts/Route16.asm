@@ -43,9 +43,7 @@ Route16Script0:
 	ret
 
 Route16Script3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, Route16Script_59946
+	jpIfInLostBattle Route16Script_59946
 	call UpdateSprites
 	ld a, [wBattleResult]
 	cp $2

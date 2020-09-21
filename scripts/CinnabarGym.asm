@@ -92,9 +92,7 @@ CinnabarGymFlagAction:
 	predef_jump FlagActionPredef
 
 CinnabarGymScript2:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, CinnabarGymScript_75792
+	jpIfInLostBattle CinnabarGymScript_75792
 	ld a, [wTrainerHeaderFlagBit]
 	ld [$ffdb], a
 	AdjustEventBit EVENT_BEAT_CINNABAR_GYM_TRAINER_0, 2
@@ -134,9 +132,7 @@ CinnabarGymScript2:
 	ret
 
 CinnabarGymScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, CinnabarGymScript_75792
+	jpIfInLostBattle CinnabarGymScript_75792
 	ld a, $f0
 	ld [wJoyIgnore], a
 CinnabarGymScript3_75857:

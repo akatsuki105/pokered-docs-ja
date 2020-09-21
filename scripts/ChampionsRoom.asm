@@ -90,9 +90,7 @@ GaryScript2:
 	ret
 
 GaryScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, ResetGaryScript
+	jpIfInLostBattle ResetGaryScript
 	call UpdateSprites
 	SetEvent EVENT_BEAT_CHAMPION_RIVAL
 	ld a, $f0

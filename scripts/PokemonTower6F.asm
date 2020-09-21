@@ -45,9 +45,7 @@ CoordsData_60b45:
 	db $10,$0A,$FF
 
 PokemonTower6Script4:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, PokemonTower6Script_60b02
+	jpIfInLostBattle PokemonTower6Script_60b02
 	ld a, $ff
 	ld [wJoyIgnore], a
 	ld a, [wd72d]

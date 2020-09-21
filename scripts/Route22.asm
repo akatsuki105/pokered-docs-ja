@@ -146,9 +146,7 @@ StarterMons_50faf:
 	db STARTER1,$06
 
 Route22Script2:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, Route22Script_50ece
+	jpIfInLostBattle Route22Script_50ece
 	ld a, [wSpriteStateData1 + 9]
 	and a ; cp SPRITE_FACING_DOWN
 	jr nz, .notDown
@@ -301,9 +299,7 @@ StarterMons_510d9:
 	db STARTER1,$0c
 
 Route22Script5:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, Route22Script_50ece
+	jpIfInLostBattle Route22Script_50ece
 	ld a, $2
 	ld [H_SPRITEINDEX], a
 	ld a, [wcf0d]

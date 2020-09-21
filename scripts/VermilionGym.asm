@@ -55,9 +55,7 @@ VermilionGym_ScriptPointers:
 	dw VermilionGymScript3
 
 VermilionGymScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, VermilionGymScript_5ca8a
+	jpIfInLostBattle VermilionGymScript_5ca8a
 	ld a, $f0
 	ld [wJoyIgnore], a
 

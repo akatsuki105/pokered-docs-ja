@@ -36,9 +36,7 @@ SaffronGym_ScriptPointers:
 	dw SaffronGymScript3
 
 SaffronGymScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, SaffronGymText_5d048
+	jpIfInLostBattle SaffronGymText_5d048
 	ld a, $f0
 	ld [wJoyIgnore], a
 

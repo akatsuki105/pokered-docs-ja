@@ -44,9 +44,7 @@ RocketHideoutB4F_ScriptPointers:
 	dw RocketHideout4Script3
 
 RocketHideout4Script3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, RocketHideout4Script_454a3
+	jpIfInLostBattle RocketHideout4Script_454a3
 	call UpdateSprites
 	ld a, $f0
 	ld [wJoyIgnore], a

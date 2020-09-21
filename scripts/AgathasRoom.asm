@@ -106,9 +106,7 @@ AgathaScript3:
 
 AgathaScript2:
 	call EndTrainerBattle
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, ResetAgathaScript
+	jpIfInLostBattle ResetAgathaScript
 	ld a, $1
 	ld [hSpriteIndexOrTextID], a
 	call DisplayTextID

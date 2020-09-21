@@ -37,9 +37,7 @@ FuchsiaGym_ScriptPointers:
 	dw FuchsiaGymScript3
 
 FuchsiaGymScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, FuchsiaGymScript_75477
+	jpIfInLostBattle FuchsiaGymScript_75477
 	ld a, $f0
 	ld [wJoyIgnore], a
 FuchsiaGymScript3_75497:

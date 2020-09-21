@@ -165,3 +165,9 @@ jpIfInLostBattle: MACRO
 	cp $ff
     jp z, \1
 ENDM
+
+jrIfInLostBattle: MACRO
+	ld a, [wIsInBattle]
+	cp $ff
+    jr z, \1
+ENDM

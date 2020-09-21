@@ -53,9 +53,7 @@ FightingDojoScript1:
 	ret
 
 FightingDojoScript3:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, FightingDojoScript_5cd70
+	jpIfInLostBattle FightingDojoScript_5cd70
 	ld a, [wcf0d]
 	and a
 	jr z, .asm_5cde4

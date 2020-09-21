@@ -108,9 +108,7 @@ LoreleiScript3:
 
 LoreleiScript2:
 	call EndTrainerBattle
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, ResetLoreleiScript
+	jpIfInLostBattle ResetLoreleiScript
 	ld a, $1
 	ld [hSpriteIndexOrTextID], a
 	jp DisplayTextID

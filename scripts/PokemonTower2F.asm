@@ -59,9 +59,7 @@ CoordsData_6055e:
 	db $0F ; isn't this supposed to end in $ff?
 
 PokemonTower2Script1:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, PokemonTower2Script_604fe
+	jpIfInLostBattle PokemonTower2Script_604fe
 	ld a, $f0
 	ld [wJoyIgnore], a
 	SetEvent EVENT_BEAT_POKEMON_TOWER_RIVAL

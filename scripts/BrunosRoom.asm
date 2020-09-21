@@ -106,9 +106,7 @@ BrunoScript3:
 
 BrunoScript2:
 	call EndTrainerBattle
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, ResetBrunoScript
+	jpIfInLostBattle ResetBrunoScript
 	ld a, $1
 	ld [hSpriteIndexOrTextID], a
 	jp DisplayTextID

@@ -24,9 +24,7 @@ PokemonTower7F_ScriptPointers:
 PokemonTower7Script2:
 	ld hl, wFlags_0xcd60
 	res 0, [hl]
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, PokemonTower7Script_60d18
+	jpIfInLostBattle PokemonTower7Script_60d18
 	call EndTrainerBattle
 	ld a, $f0
 	ld [wJoyIgnore], a

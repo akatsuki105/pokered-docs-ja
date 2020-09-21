@@ -20,9 +20,7 @@ CeruleanCity_ScriptPointers:
 	dw CeruleanCityScript4
 
 CeruleanCityScript4:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, CeruleanCityScript_1948c
+	jpIfInLostBattle CeruleanCityScript_1948c
 	ld a, $f0
 	ld [wJoyIgnore], a
 	SetEvent EVENT_BEAT_CERULEAN_ROCKET_THIEF
@@ -161,9 +159,7 @@ CeruleanCityScript1:
 	ret
 
 CeruleanCityScript2:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, CeruleanCityScript_1948c
+	jpIfInLostBattle CeruleanCityScript_1948c
 	call CeruleanCityScript_1955d
 	ld a, $f0
 	ld [wJoyIgnore], a

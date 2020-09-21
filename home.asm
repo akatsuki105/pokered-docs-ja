@@ -3081,10 +3081,8 @@ EndTrainerBattle::
 	res 7, [hl]
 	ld hl, wFlags_0xcd60
 	res 0, [hl]                  ; player is no longer engaged by any trainer
-	
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, ResetButtonPressedAndMapScript
+
+	jpIfInLostBattle ResetButtonPressedAndMapScript
 
 	ld a, $2
 	call ReadTrainerHeaderInfo

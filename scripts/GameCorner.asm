@@ -51,9 +51,7 @@ CeladonGameCornerScript0:
 	ret
 
 CeladonGameCornerScript1:
-	ld a, [wIsInBattle]
-	cp $ff
-	jp z, CeladonGameCornerScript_48c07
+	jpIfInLostBattle CeladonGameCornerScript_48c07
 	ld a, $f0
 	ld [wJoyIgnore], a
 	ld a, $d
