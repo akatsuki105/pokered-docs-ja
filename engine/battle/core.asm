@@ -240,9 +240,8 @@ StartBattle:
 	ld a, d
 	ld [wSerialExchangeNybbleReceiveData], a
 
-	ld a, [wIsInBattle]
-	dec a ; is it a trainer battle?
-	call nz, EnemySendOutFirstMon ; if it is a trainer battle, send out enemy mon
+	; if it is a trainer battle, send out enemy mon
+	ifNotInWildBattle OP_CALL, EnemySendOutFirstMon
 
 	ld c, 40
 	call DelayFrames
@@ -800,9 +799,11 @@ HandleEnemyMonFainted:
 	ld a, [hli]
 	or [hl] ; is battle mon HP zero?
 	call nz, DrawPlayerHUDAndHPBar ; if battle mon HP is not zero, draw player HD and HP bar
+
 	ld a, [wIsInBattle]
 	dec a
 	ret z ; return if it's a wild battle
+
 	call AnyEnemyPokemonAliveCheck
 	jp z, TrainerBattleVictory
 	ld hl, wBattleMonHP
@@ -823,9 +824,9 @@ HandleEnemyMonFainted:
 
 FaintEnemyPokemon:
 	call ReadPlayerMonCurHPAndStatus
-	ld a, [wIsInBattle]
-	dec a
-	jr z, .wild
+
+	ifInWildBattle OP_JR, .wild
+	
 	ld a, [wEnemyMonPartyPos]
 	ld hl, wEnemyMon1HP
 	ld bc, wEnemyMon2 - wEnemyMon1
@@ -865,9 +866,9 @@ FaintEnemyPokemon:
 	coord hl, 0, 0
 	lb bc, 4, 11
 	call ClearScreenArea
-	ld a, [wIsInBattle]
-	dec a
-	jr z, .wild_win
+
+	ifInWildBattle OP_JR, .wild_win
+
 	xor a
 	ld [wFrequencyModifier], a
 	ld [wTempoModifier], a
@@ -1595,9 +1596,9 @@ TryRunningFromBattle:
 	ld a, [wLinkState]
 	cp LINK_STATE_BATTLING
 	jp z, .canEscape
-	ld a, [wIsInBattle]
-	dec a
-	jr nz, .trainerBattle ; jump if it's a trainer battle
+
+	ifNotInWildBattle OP_JR, .trainerBattle
+
 	ld a, [wNumRunAttempts]
 	inc a
 	ld [wNumRunAttempts], a
@@ -3046,9 +3047,7 @@ SelectEnemyMove:
 	ld a, STRUGGLE ; struggle if the only move is disabled
 	jr nz, .done
 .atLeastTwoMovesAvailable
-	ld a, [wIsInBattle]
-	dec a
-	jr z, .chooseRandomMove ; wild encounter
+	ifInWildBattle OP_JR, .chooseRandomMove
 	callab AIEnemyTrainerChooseMoves
 .chooseRandomMove
 	push hl
@@ -6242,9 +6241,7 @@ LoadEnemyMonData:
 	push hl
 	call CalcStats
 	pop hl
-	ld a, [wIsInBattle]
-	cp $2 ; is it a trainer battle?
-	jr z, .copyHPAndStatusFromPartyData
+	ifInTrainerBattle OP_JR, .copyHPAndStatusFromPartyData
 	ld a, [wEnemyBattleStatus3]
 	bit TRANSFORMED, a ; is enemy mon transformed?
 	jr nz, .copyTypes ; if transformed, jump
@@ -6285,10 +6282,9 @@ LoadEnemyMonData:
 	ld a, [hli]            ; copy catch rate
 	ld [de], a
 	inc de
-	ld a, [wIsInBattle]
-	cp $2 ; is it a trainer battle?
-	jr nz, .copyStandardMoves
-; if it's a trainer battle, copy moves from enemy party data
+
+	ifNotInTrainerBattle OP_JR, .copyStandardMoves
+	; if it's a trainer battle, copy moves from enemy party data
 	ld hl, wEnemyMon1Moves
 	ld a, [wWhichPokemon]
 	ld bc, wEnemyMon2 - wEnemyMon1
@@ -8057,9 +8053,7 @@ SwitchAndTeleportEffect:
 	ld a, [H_WHOSETURN]
 	and a
 	jr nz, .handleEnemy
-	ld a, [wIsInBattle]
-	dec a
-	jr nz, .notWildBattle1
+	ifNotInWildBattle OP_JR, .notWildBattle1
 	ld a, [wCurEnemyLVL]
 	ld b, a
 	ld a, [wBattleMonLevel]
@@ -8099,9 +8093,7 @@ SwitchAndTeleportEffect:
 	jp nz, PrintText
 	jp PrintButItFailedText_
 .handleEnemy
-	ld a, [wIsInBattle]
-	dec a
-	jr nz, .notWildBattle2
+	ifNotInWildBattle OP_JR, .notWildBattle2
 	ld a, [wBattleMonLevel]
 	ld b, a
 	ld a, [wCurEnemyLVL]

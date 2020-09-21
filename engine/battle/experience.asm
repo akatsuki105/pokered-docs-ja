@@ -83,9 +83,7 @@ GainExperience:
 	ld a, 1
 .next
 	ld [wGainBoostedExp], a
-	ld a, [wIsInBattle]
-	dec a ; is it a trainer battle?
-	call nz, BoostExp ; if so, boost exp
+	ifNotInWildBattle OP_CALL, BoostExp
 	inc hl
 	inc hl
 	inc hl
