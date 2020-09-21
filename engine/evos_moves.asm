@@ -211,9 +211,7 @@ Evolution_PartyMonLoop: ; loop over party mons
 	pop hl
 	predef SetPartyMonTypes
 
-	ld a, [wIsInBattle]
-	and a
-	call z, Evolution_ReloadTilesetTilePatterns
+	ifInField OP_CALL, Evolution_ReloadTilesetTilePatterns
 
 	predef IndexToPokedex
 	ld a, [wd11e]
@@ -255,7 +253,7 @@ Evolution_PartyMonLoop: ; loop over party mons
 	ld a, [wIsInBattle]
 	and a
 	ret nz
-	
+
 	ld a, [wEvolutionOccurred]
 	and a
 	call nz, PlayDefaultMusic
