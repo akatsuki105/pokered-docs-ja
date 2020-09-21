@@ -627,8 +627,11 @@ wSlotMachineSevenAndBarModeChance:: ; cc5b
 wHallOfFame::
 
 wBoostExpByExpAll:: ; cc5b
-wAnimationType:: ; cc5b
-; values between 0-6. Shake screen horizontally, shake screen vertically, blink Pokemon...
+
+; cc5b  
+; 0-6の値  
+; Shake screen horizontally, shake screen vertically, blink Pokemon...
+wAnimationType::
 
 ; cc5b
 wNPCMovementDirections::
@@ -1877,13 +1880,15 @@ wCurOpponent:: ; d059
 wBattleType::
 	ds 1
 
-wDamageMultipliers:: ; d05b
-; bits 0-6: Effectiveness
-   ;  $0 = immune
-   ;  $5 = not very effective
-   ;  $a = neutral
-   ; $14 = super-effective
-; bit 7: STAB
+; d05b  
+; bits 0-6: Effectiveness  
+;  $0 = ダメージなし  
+;  $5 = いまひとつ  
+;  $a = ふつう  
+; $14 = 効果抜群  
+; 
+; bit 7: STAB  
+wDamageMultipliers::
 	ds 1
 
 wLoneAttackNo:: ; d05c

@@ -381,16 +381,18 @@ MoveAnimation:
 	push af
 	call WaitForSoundToFinish
 	call SetAnimationPalette
+
+	; [wAnimationID] == 0 -> .animationFinished
 	ld a, [wAnimationID]
 	and a
 	jr z, .animationFinished
 
-	; if throwing a Poké Ball, skip the regular animation code
+	; モンスターボールを投げるアニメーションのときは、特殊な処理(TossBallAnimation)を行って -> .animationFinished
 	cp TOSS_ANIM
 	jr nz, .moveAnimation
 	ld de, .animationFinished
 	push de
-	jp TossBallAnimation
+	jp TossBallAnimation	; return to .animationFinished
 
 .moveAnimation
 	; check if battle animations are disabled in the options

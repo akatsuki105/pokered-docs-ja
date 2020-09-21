@@ -26,16 +26,19 @@ UseItem_:
 ; **ItemUsePtrTable**  
 ; アイテムID -> ハンドラ関数  
 ItemUsePtrTable:
+	; ボール
 	dw ItemUseBall       ; MASTER_BALL
 	dw ItemUseBall       ; ULTRA_BALL
 	dw ItemUseBall       ; GREAT_BALL
 	dw ItemUseBall       ; POKE_BALL
 	dw ItemUseTownMap    ; TOWN_MAP
+	; その他
 	dw ItemUseBicycle    ; BICYCLE
 	dw ItemUseSurfboard  ; out-of-battle Surf effect
 	dw ItemUseBall       ; SAFARI_BALL
 	dw ItemUsePokedex    ; POKEDEX
 	dw ItemUseEvoStone   ; MOON_STONE
+	; 回復アイテム
 	dw ItemUseMedicine   ; ANTIDOTE
 	dw ItemUseMedicine   ; BURN_HEAL
 	dw ItemUseMedicine   ; ICE_HEAL
@@ -46,6 +49,7 @@ ItemUsePtrTable:
 	dw ItemUseMedicine   ; HYPER_POTION
 	dw ItemUseMedicine   ; SUPER_POTION
 	dw ItemUseMedicine   ; POTION
+	; バッジ
 	dw ItemUseBait       ; BOULDERBADGE
 	dw ItemUseRock       ; CASCADEBADGE
 	dw UnusableItem      ; THUNDERBADGE
@@ -54,18 +58,21 @@ ItemUsePtrTable:
 	dw UnusableItem      ; MARSHBADGE
 	dw UnusableItem      ; VOLCANOBADGE
 	dw UnusableItem      ; EARTHBADGE
+	; その他
 	dw ItemUseEscapeRope ; ESCAPE_ROPE
 	dw ItemUseRepel      ; REPEL
 	dw UnusableItem      ; OLD_AMBER
 	dw ItemUseEvoStone   ; FIRE_STONE
 	dw ItemUseEvoStone   ; THUNDER_STONE
 	dw ItemUseEvoStone   ; WATER_STONE
+	; 増強アイテム
 	dw ItemUseVitamin    ; HP_UP
 	dw ItemUseVitamin    ; PROTEIN
 	dw ItemUseVitamin    ; IRON
 	dw ItemUseVitamin    ; CARBOS
 	dw ItemUseVitamin    ; CALCIUM
 	dw ItemUseVitamin    ; RARE_CANDY
+	; その他
 	dw UnusableItem      ; DOME_FOSSIL
 	dw UnusableItem      ; HELIX_FOSSIL
 	dw UnusableItem      ; SECRET_KEY
@@ -222,7 +229,7 @@ ItemUseBall:
 
 	; この時点で b = Rand1
 
-; 捕獲対象に状態異常があれば、Rand1から一定値差し引くことで捕獲率をあげる
+; 状態異常による補正(Rand1から一定値差し引くことで捕獲率をあげる)
 ; 状態異常なし -> 0
 ; 火傷/麻痺/毒 -> 12
 ; 氷/睡眠 -> 25
@@ -295,12 +302,12 @@ ItemUseBall:
 	ld b, 4
 	call Divide
 
-	; 255以下のとき、Wは255とする
+	; 255以下のとき、Wは255とする X = (W > 255 ? W : 255)
 	ld a, [H_QUOTIENT + 2]
 	and a
 	jr z, .skip3
 	ld a, 255
-	ld [H_QUOTIENT + 3], a	; W = 255
+	ld [H_QUOTIENT + 3], a	; X = 255
 
 .skip3
 	pop bc ; b = Rand1
@@ -316,9 +323,9 @@ ItemUseBall:
 	jr nz, .captured
 
 	; Rand1 > CatchRate のときに W <= 255 (W == 255)の場合
-	call Random ; Let this random number be called Rand2.
+	call Random ; a = Rand2
 
-	; If Rand2 > X, the ball fails to capture the Pokémon.
+	; Rand2 > X なら捕獲失敗
 	ld b, a
 	ld a, [H_QUOTIENT + 3]
 	cp b
@@ -328,10 +335,11 @@ ItemUseBall:
 	jr .skipShakeCalculations
 
 .failedToCapture
+	; X を [wPokeBallCaptureCalcTemp] に退避
 	ld a, [H_QUOTIENT + 3]
-	ld [wPokeBallCaptureCalcTemp], a ; Save X.
+	ld [wPokeBallCaptureCalcTemp], a
 
-; Calculate CatchRate * 100.
+	; Calculate CatchRate * 100.
 	xor a
 	ld [H_MULTIPLICAND], a
 	ld [H_MULTIPLICAND + 1], a
@@ -341,10 +349,7 @@ ItemUseBall:
 	ld [H_MULTIPLIER], a
 	call Multiply
 
-; Determine BallFactor2.
-; Poké Ball:         BallFactor2 = 255
-; Great Ball:        BallFactor2 = 200
-; Ultra/Safari Ball: BallFactor2 = 150
+	; b = ボール係数2 = 255(モンボ) or 200(スーパー) or 150(ハイパー/サファリ)
 	ld a, [wcf91]
 	ld b, 255
 	cp POKE_BALL
@@ -357,35 +362,28 @@ ItemUseBall:
 	jr z, .skip4
 
 .skip4
-; Let Y = (CatchRate * 100) / BallFactor2. Calculate Y.
+	; Y = (CatchRate×100)÷ボール係数2
 	ld a, b
 	ld [H_DIVISOR], a
 	ld b, 4
 	call Divide
 
-; If Y > 255, there are 3 shakes.
-; Note that this shouldn't be possible.
-; The maximum value of Y is (255 * 100) / 150 = 170.
+	; Y >= 256 ならボールは3回揺れる(しかし Yの最大値は (255×100)÷150=170 なのでこれは起こらない)
 	ld a, [H_QUOTIENT + 2]
 	and a
 	ld b, $63 ; 3 shakes
 	jr nz, .setAnimData
 
-; Calculate X * Y.
+	; Calculate X×Y÷255.
 	ld a, [wPokeBallCaptureCalcTemp]
 	ld [H_MULTIPLIER], a
 	call Multiply
-
-; Calculate (X * Y) / 255.
 	ld a, 255
 	ld [H_DIVISOR], a
 	ld b, 4
 	call Divide
 
-; Determine Status2.
-; no status ailment:     Status2 = 0
-; Burn/Paralysis/Poison: Status2 = 5
-; Freeze/Sleep:          Status2 = 10
+	; 状態異常による補正2 = 0 or 5(火傷/麻痺/毒) or 10(氷/睡眠)
 	ld a, [wEnemyMonStatus]
 	and a
 	jr z, .skip5
@@ -395,30 +393,25 @@ ItemUseBall:
 	ld b, 10
 
 .addAilmentValue
-; If the Pokémon has a status ailment, add Status2.
+	; Z = ((X * Y) / 255) + 状態補正2
 	ld a, [H_QUOTIENT + 3]
 	add b
 	ld [H_QUOTIENT + 3], a
 
 .skip5
-; Finally determine the number of shakes.
-; Let Z = ((X * Y) / 255) + Status2 = [H_QUOTIENT + 3].
-; The number of shakes depend on the range Z is in.
-; 0  ≤ Z < 10: 0 shakes (the ball misses)
-; 10 ≤ Z < 30: 1 shake
-; 30 ≤ Z < 70: 2 shakes
-; 70 ≤ Z:      3 shakes
+	; ボールが何回揺れるかは Zの値 による
 	ld a, [H_QUOTIENT + 3]
 	cp 10
 	ld b, $20
-	jr c, .setAnimData
+	jr c, .setAnimData	; 0  ≤ Z < 10: 0 shakes (ボールははずれる)
 	cp 30
 	ld b, $61
-	jr c, .setAnimData
+	jr c, .setAnimData	; 10 ≤ Z < 30: 1 shake
 	cp 70
 	ld b, $62
-	jr c, .setAnimData
+	jr c, .setAnimData	; 30 ≤ Z < 70: 2 shakes
 	ld b, $63
+	; fallthrough 		; 70 ≤ Z:      3 shakes
 
 .setAnimData
 	ld a, b
@@ -428,13 +421,13 @@ ItemUseBall:
 	ld c, 20
 	call DelayFrames
 
-; Do the animation.
+	; ボールを投げるアニメーションを描画する(ポケモンの技扱い？)
 	ld a, TOSS_ANIM
-	ld [wAnimationID], a
+	ld [wAnimationID], a	; [wAnimationID] = TOSS_ANIM
 	xor a
-	ld [H_WHOSETURN], a
+	ld [H_WHOSETURN], a			; プレイヤーのターン
 	ld [wAnimationType], a
-	ld [wDamageMultipliers], a
+	ld [wDamageMultipliers], a	; 効果なし
 	ld a, [wWhichPokemon]
 	push af
 	ld a, [wcf91]
@@ -598,22 +591,27 @@ ItemUseBallText00:
 ;"This pokemon can't be caught"
 	TX_FAR _ItemUseBallText00
 	db "@"
+
 ItemUseBallText01:
 ;"You missed the pokemon!"
 	TX_FAR _ItemUseBallText01
 	db "@"
+
 ItemUseBallText02:
 ;"Darn! The pokemon broke free!"
 	TX_FAR _ItemUseBallText02
 	db "@"
+
 ItemUseBallText03:
 ;"Aww! It appeared to be caught!"
 	TX_FAR _ItemUseBallText03
 	db "@"
+
 ItemUseBallText04:
 ;"Shoot! It was so close too!"
 	TX_FAR _ItemUseBallText04
 	db "@"
+
 ItemUseBallText05:
 ;"All right! {MonName} was caught!"
 ;play sound
@@ -621,10 +619,12 @@ ItemUseBallText05:
 	TX_SFX_CAUGHT_MON
 	TX_BLINK
 	db "@"
+
 ItemUseBallText07:
 ;"X was transferred to Bill's PC"
 	TX_FAR _ItemUseBallText07
 	db "@"
+
 ItemUseBallText08:
 ;"X was transferred to someone's PC"
 	TX_FAR _ItemUseBallText08
@@ -638,10 +638,15 @@ ItemUseBallText06:
 	TX_BLINK
 	db "@"
 
+; **ItemUseTownMap**  
+; タウンマップを使った時の処理  
 ItemUseTownMap:
+	; 戦闘中 -> "OAK: ${PLAYER}! This isn't the time to use that!"
 	ld a, [wIsInBattle]
 	and a
-	jp nz, ItemUseNotTime
+	jp nz, ItemUseNotTime	; return
+
+	; タウンマップを開く
 	jpba DisplayTownMap
 
 ItemUseBicycle:
