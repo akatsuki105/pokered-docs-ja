@@ -1474,8 +1474,9 @@ wHPBarHPDifference:: ; cefd
 	ds 1
 	ds 7
 
-wAIItem:: ; cf05
-; the item that the AI used
+; cf05  
+; the item that the AI used  
+wAIItem::
 	ds 1
 
 wUsedItemOnWhichPokemon:: ; cf06

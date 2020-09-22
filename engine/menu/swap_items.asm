@@ -1,7 +1,10 @@
 HandleItemListSwapping:
+	; アイテムのlist以外 -> DisplayListMenuIDLoop
 	ld a, [wListMenuID]
 	cp ITEMLISTMENU
 	jp nz, DisplayListMenuIDLoop ; only rearrange item list menus
+
+	; a = 現在listで選択しているアイテムID
 	push hl
 	ld hl, wListPointer
 	ld a, [hli]
@@ -15,38 +18,50 @@ HandleItemListSwapping:
 	add a
 	ld c, a
 	ld b, 0
-	add hl, bc ; hl = address of currently selected item entry
+	add hl, bc 
 	ld a, [hl]
 	pop hl
+
+	; cancel を選択している場合 -> DisplayListMenuIDLoop
 	inc a
-	jp z, DisplayListMenuIDLoop ; ignore attempts to swap the Cancel menu item
-	ld a, [wMenuItemToSwap] ; ID of item chosen for swapping (counts from 1)
-	and a ; has the first item to swap already been chosen?
+	jp z, DisplayListMenuIDLoop
+
+	; すでにセレクトでアイテムを選択している状態でセレクトを押した場合は、swapを実行する -> .swapItems
+	ld a, [wMenuItemToSwap]
+	and a
 	jr nz, .swapItems
-; if not, set the currently selected item as the first item
+
+	; はじめてセレクトを押した場合 
+	; [wMenuItemToSwap] = list のオフセット(画面内オフセットではなくlist全体のオフセット)
 	ld a, [wCurrentMenuItem]
-	inc a
+	inc a	; [wMenuItemToSwap] は 1から始まるので
 	ld b, a
-	ld a, [wListScrollOffset] ; index of top (visible) menu item within the list
+	ld a, [wListScrollOffset]
 	add b
-	ld [wMenuItemToSwap], a ; ID of item chosen for swapping (counts from 1)
+	ld [wMenuItemToSwap], a
 	ld c, 20
 	call DelayFrames
 	jp DisplayListMenuIDLoop
+
 .swapItems
+	; b = 2回目にセレクトを押したアイテムのオフセット
 	ld a, [wCurrentMenuItem]
 	inc a
 	ld b, a
 	ld a, [wListScrollOffset]
 	add b
 	ld b, a
-	ld a, [wMenuItemToSwap] ; ID of item chosen for swapping (counts from 1)
-	cp b ; is the currently selected item the same as the first item to swap?
-	jp z, DisplayListMenuIDLoop ; ignore attempts to swap an item with itself
+
+	; 同じアイテムでセレクトを2回押した場合は何も起こらない -> DisplayListMenuIDLoop
+	ld a, [wMenuItemToSwap]
+	cp b
+	jp z, DisplayListMenuIDLoop
+
 	dec a
 	ld [wMenuItemToSwap], a ; ID of item chosen for swapping (counts from 1)
 	ld c, 20
 	call DelayFrames
+
 	push hl
 	push de
 	ld hl, wListPointer
@@ -128,14 +143,10 @@ HandleItemListSwapping:
 	inc hl
 	inc hl ; hl = address of item after first item to swap
 .moveItemsUpLoop ; erase the first item slot and move up all the following item slots to fill the gap
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	inc a ; reached the $ff terminator?
 	jr z, .afterMovingItemsUp
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	jr .moveItemsUpLoop
 .afterMovingItemsUp
 	xor a

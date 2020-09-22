@@ -4911,7 +4911,7 @@ WriteOAMBlock::
 	add c
 	ld c, a				
 	; fallthrough		  lower right 
-	
+
 	; INPUT: [hl] = OAMエントリ
 .writeOneEntry
 	ld [hl], b ; Y coordinate
@@ -5810,8 +5810,8 @@ CheckForHiddenObjectOrBookshelfOrCardKeyDoor::
 	ret
 
 ; **PrintPredefTextID**  
-; - - - 
 ; PredefTextを画面に描画する  
+; - - -  
 ; INPUT: a = TextPredefs(PredefTextのテーブル)のオフセット
 PrintPredefTextID::
 	ld [hSpriteIndexOrTextID], a
@@ -5848,8 +5848,10 @@ SetMapTextPointer::
 	ld [wMapTextPtr + 1], a
 	ret
 
-; PrintPredefTextIDで利用されるPredefTextを定義したテーブル 
-; オフセット = PredefTextID 
+; **TextPredefs**  
+; PredefTextID -> PredefText  
+; - - -  
+; PrintPredefTextID で利用されるPredefTextを定義したテーブル  
 TextPredefs::
 const_value = 1
 
