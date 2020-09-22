@@ -1023,12 +1023,14 @@ wFieldMoves::
 ; トレーナーカードでバッジの左上に表示される番号のタイルのタイル番号
 wBadgeNumberTile::
 
-wRodResponse:: ; cd3d
-; 0 = no bite
-; 1 = bite
-; 2 = no fish on map
+; cd3d  
+; 0 = no bite  
+; 1 = bite  
+; 2 = no fish on map  
+wRodResponse::
 
-wWhichTownMapLocation:: ; cd3d
+; cd3d
+wWhichTownMapLocation::
 
 wStoppingWhichSlotMachineWheel:: ; cd3d
 ; which wheel the player is trying to stop
@@ -1380,6 +1382,7 @@ wNumMovesMinusOne:: ; cd6c
 
 UNION
 
+; cd6d  
 ; 様々なデータを格納する 4byte のバッファ
 wcd6d:: ds 4
 
@@ -1417,8 +1420,9 @@ wEvoOldSpecies:: ; cee9
 wBuffer::
 ; Temporary storage area of 30 bytes.
 
-wTownMapCoords:: ; cee9
-; lower nybble is x, upper nybble is y
+; cee9  
+; 下位ニブルが x, 上位ニブルが y  
+wTownMapCoords::
 
 ; cee9  
 ; whether WriteMonMoves is being used to make a mon learn moves from day care  
@@ -2184,9 +2188,10 @@ wOutwardSpiralTileMapPointer:: ; d09a
 ; d09b  
 wPartyMenuAnimMonEnabled::
 
-; d09b
-; non-zero when enabled. causes nest locations to blink on and off.
-; the town selection cursor will blink regardless of what this value is
+; d09b  
+; non-zero when enabled.   
+; causes nest locations to blink on and off.  
+; the town selection cursor will blink regardless of what this value is  
 wTownMapSpriteBlinkingEnabled::
 
 wUnusedD09B:: ; d09b

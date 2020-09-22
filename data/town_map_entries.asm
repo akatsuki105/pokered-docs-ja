@@ -37,6 +37,8 @@ ExternalMapEntries:
 	EMAP $A,$1,Route24Name
 	EMAP $B,$0,Route25Name
 
+; **InternalMapEntries**  
+; マップID -> タウンマップでxマス目, タウンマップでyマス目, タウンマップに表示するマップ名  
 InternalMapEntries:
 	IMAP OAKS_LAB,                      $2,$B,PalletTownName
 	IMAP VIRIDIAN_GYM,                  $2,$8,ViridianCityName

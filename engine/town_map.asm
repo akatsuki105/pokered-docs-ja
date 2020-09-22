@@ -1,29 +1,50 @@
+; **DisplayTownMap**  
+; タウンマップを画面に描画し、ユーザーの選択を待つ  
+; - - -  
+; タウンマップの処理の本体  
+; 
+; INPUT:  
+; [wcd6d] = タウンマップで上に表示する文字列 (e.g. PALLET TOWN)  
 DisplayTownMap:
 	call LoadTownMap
+
+	; UpdateSpritesを無効化
 	ld hl, wUpdateSpritesEnabled
 	ld a, [hl]
 	push af
 	ld [hl], $ff
 	push hl
+
 	ld a, $1
 	ld [hJoy7], a
+
+	; 現在のマップにプレイヤーのスプライトを表示
 	ld a, [wCurMap]
 	push af
 	ld b, $0
 	call DrawPlayerOrBirdSprite ; player sprite
+
+	; タウンマップ上部に文字列を描画
 	coord hl, 1, 0
 	ld de, wcd6d
 	call PlaceString
+
+	; OAMを退避
 	ld hl, wOAMBuffer
 	ld de, wTileMapBackup
 	ld bc, $10
 	call CopyData
+
+	; プレイヤーの後ろ姿の2bppデータのところのVRAMにタウンマップのカーソルの2bppデータをおく
 	ld hl, vSprites + $40
 	ld de, TownMapCursor
 	lb bc, BANK(TownMapCursor), (TownMapCursorEnd - TownMapCursor) / $8
 	call CopyVideoDataDouble
+
+	; [wWhichTownMapLocation] = 0
 	xor a
 	ld [wWhichTownMapLocation], a
+
 	pop af
 	jr .enterLoop
 
@@ -37,10 +58,13 @@ DisplayTownMap:
 	ld b, 0
 	add hl, bc
 	ld a, [hl]
+
 .enterLoop
 	ld de, wTownMapCoords
 	call LoadTownMapEntry
 	ld a, [de]
+
+	; タウンマップのカーソルをOAMに配置
 	push hl
 	call TownMapCoordsToOAMCoords
 	ld a, $4
@@ -48,13 +72,17 @@ DisplayTownMap:
 	ld hl, wOAMBuffer + $10
 	call WriteTownMapSpriteOAM ; town map cursor sprite
 	pop hl
+
 	ld de, wcd6d
 .copyMapName
+; {
 	ld a, [hli]
 	ld [de], a
 	inc de
 	cp $50
 	jr nz, .copyMapName
+; }
+
 	coord hl, 1, 0
 	ld de, wcd6d
 	call PlaceString
@@ -274,52 +302,74 @@ TownMapUpArrow:
 	INCBIN "gfx/up_arrow.1bpp"
 TownMapUpArrowEnd:
 
+; **LoadTownMap**  
+; タウンマップを画面に描画する
 LoadTownMap:
+	; 画面をまっさらに
 	call GBPalWhiteOutWithDelay3
 	call ClearScreen
 	call UpdateSprites
+
 	coord hl, 0, 0
 	ld b, $12
 	ld c, $12
 	call TextBoxBorder
+
 	call DisableLCD
+
+	; タウンマップの2bppデータをVRAMからロード
 	ld hl, WorldMapTileGraphics
 	ld de, vChars2 + $600
 	ld bc, WorldMapTileGraphicsEnd - WorldMapTileGraphics
 	ld a, BANK(WorldMapTileGraphics)
 	call FarCopyData2
+
+	; タウンマップのカーソルの2bppデータをVRAMからロード
 	ld hl, MonNestIcon
 	ld de, vSprites + $40
 	ld bc, MonNestIconEnd - MonNestIcon
 	ld a, BANK(MonNestIcon)
 	call FarCopyDataDouble
+
 	coord hl, 0, 0
 	ld de, CompressedMap
 .nextTile
+; {
+	; 
 	ld a, [de]
 	and a
 	jr z, .done
-	ld b, a
-	and $f
-	ld c, a
-	ld a, b
-	swap a
-	and $f
+
+	ld b, a	; b = 0xXXXXYYYY
+	and $f	; a = 0x0000YYYY
+	ld c, a	; c = 0x0000YYYY
+	ld a, b	; a = 0xXXXXYYYY 
+	swap a	; a = 0xYYYYXXXX
+	and $f	; a = 0xYYYY0000
 	add $60
 .writeRunLoop
+;	{
 	ld [hli], a
 	dec c
 	jr nz, .writeRunLoop
+; 	}
 	inc de
 	jr .nextTile
+; }
+
 .done
+	; 描画の準備ができたので LCD を有効にしてタウンマップをプレイヤーに表示
 	call EnableLCD
 	ld b, SET_PAL_TOWN_MAP
 	call RunPaletteCommand
 	call Delay3
 	call GBPalNormal
+
+	; [wAnimCounter] = 0
 	xor a
 	ld [wAnimCounter], a
+
+	; [wTownMapSpriteBlinkingEnabled] = 1
 	inc a
 	ld [wTownMapSpriteBlinkingEnabled], a
 	ret
@@ -340,9 +390,15 @@ ExitTownMap:
 	call UpdateSprites
 	jp RunDefaultPaletteCommand
 
+; **DrawPlayerOrBirdSprite**  
+; プレイヤーか鳥のスプライトを画面に描画する  
+; - - -  
+; タウンマップで使用  
+; 
+; INPUT:  
+; a = map number  
+; b = OAM base tile  
 DrawPlayerOrBirdSprite:
-; a = map number
-; b = OAM base tile
 	push af
 	ld a, b
 	ld [wOAMBaseTile], a
@@ -417,9 +473,16 @@ DisplayWildLocations:
 AreaUnknownText:
 	db " AREA UNKNOWN@"
 
+; **TownMapCoordsToOAMCoords**  
+; - - -  
+; INPUT:  
+; aの上位ニブル = タウンマップにおけるX座標(マス)  
+; aの下位ニブル = タウンマップにおけるY座標(マス)  
+; 
+; OUTPUT:  
+; b = [hl] = (y * 8) + 24  
+; c = [hl+1] = (x * 8) + 24  
 TownMapCoordsToOAMCoords:
-; in: lower nybble of a = x, upper nybble of a = y
-; out: b and [hl] = (y * 8) + 24, c and [hl+1] = (x * 8) + 24
 	push af
 	and $f0
 	srl a
@@ -442,14 +505,13 @@ WritePlayerOrBirdSpriteOAM:
 	jr z, WriteTownMapSpriteOAM
 	ld hl, wOAMBuffer + $80 ; for bird sprite
 
+; INPUT:  
+; hl = 描画先 (wOAMBuffer + $XX)  
 WriteTownMapSpriteOAM:
+	; b -= 3, c -= 4 (cのキャリーはbに加算されるので実質bは-3)
 	push hl
-
-; Subtract 4 from c (X coord) and 4 from b (Y coord). However, the carry from c
-; is added to b, so the net result is that only 3 is subtracted from b.
 	lb hl, -4, -4
 	add hl, bc
-
 	ld b, h
 	ld c, l
 	pop hl
@@ -552,9 +614,15 @@ ZeroOutDuplicatesInList:
 	inc hl
 	jr .zeroDuplicatesLoop
 
+; INPUT:  
+; a = マップID  
+; de = wTownMapCoords  
+; 
+; OUTPUT:  
+; [de]の下位ニブル = タウンマップにおけるX座標(マス)  
+; [de]の上位ニブル = タウンマップにおけるY座標(マス)  
+; hl = タウンマップに表示する名前  
 LoadTownMapEntry:
-; in: a = map number
-; out: lower nybble of [de] = x, upper nybble of [de] = y, hl = address of name
 	cp REDS_HOUSE_1F
 	jr c, .external
 	ld bc, 4
