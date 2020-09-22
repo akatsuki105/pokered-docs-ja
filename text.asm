@@ -1565,6 +1565,7 @@ _PickUpPayDayMoneyText::
 	text "!"
 	prompt
 
+; "Clear all saved data?"
 _ClearSaveDataText::
 	text "Clear all saved"
 	line "data?"

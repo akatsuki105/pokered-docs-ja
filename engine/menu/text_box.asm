@@ -6,6 +6,7 @@
 ; INPUT:  
 ; [wTextBoxID] = TextBoxID  
 ; hl = テキストボックスのボーダーが描画されるべきアドレス  
+; [wTwoOptionMenuID] = 2択Menuを表示するなら 2択menu の種類  
 DisplayTextBoxID_:
 	ld a, [wTextBoxID]
 

@@ -2768,6 +2768,7 @@ IsKeyItem::
 ; [wTextBoxID] = TextBox ID  
 ; b, c = カーソルのy, x (2択メニューのみで引数として与える)  
 ; hl = テキストボックスのボーダーが描画されるべきアドレス  
+; [wTwoOptionMenuID] = 2択Menuを表示するなら 2択menu の種類  
 DisplayTextBoxID::
 	ld a, [H_LOADEDROMBANK]
 	push af
@@ -3895,7 +3896,7 @@ LoadFontTilePatterns::
 	jp CopyVideoDataDouble ; if LCD is on, transfer during V-blank
 
 ; **LoadTextBoxTilePatterns**  
-; VRAMにテキストボックスの2bppデータをコピーする関数
+; テキストボックスの2bppデータをVRAMにロードする関数
 LoadTextBoxTilePatterns::
 	; LCDが有効 -> .on 無効 -> .off
 	ld a, [rLCDC]

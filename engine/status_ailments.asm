@@ -1,5 +1,5 @@
 ; **PrintStatusAilment**  
-; 瀕死じゃないポケモンの状態異常を描画する  
+; 瀕死じゃないポケモンの状態異常を文字として描画する  
 ; - - -  
 ; INPUT:  
 ; de = status condition(`box_struct` の XXXStatus e.g. wLoadedMonStatus)  

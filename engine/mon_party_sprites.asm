@@ -377,9 +377,8 @@ WriteMonPartySpriteOAMByPartyIndex:
 	pop hl
 	ret
 
+; Write OAM blocks for the party sprite of the species in [wMonPartySpriteSpecies].
 WriteMonPartySpriteOAMBySpecies:
-; Write OAM blocks for the party sprite of the species in
-; [wMonPartySpriteSpecies].
 	xor a
 	ld [hPartyMonIndex], a
 	ld a, [wMonPartySpriteSpecies]
