@@ -73,34 +73,46 @@ DisplayTownMap:
 	call WriteTownMapSpriteOAM ; town map cursor sprite
 	pop hl
 
+; wcd6d に タウンマップに表示する名前(from LoadTownMapEntry)をコピー
 	ld de, wcd6d
 .copyMapName
 ; {
-	inline "[de++] = [hl++]"	; [de++] = [hl++]
+	inline "[de++] = [hl++]"
 	cp "@"
 	jr nz, .copyMapName
 ; }
 
+	; タウンマップ上部に名前を描画
 	coord hl, 1, 0
 	ld de, wcd6d
 	call PlaceString
+
+	; カーソルのスプライトを退避
 	ld hl, wOAMBuffer + $10
-	ld de, wTileMapBackup + 16
+	ld de, wTileMapBackup + $10
 	ld bc, $10
 	call CopyData
+
+	; カーソルを点滅させながら A/B/↑/↓ が押されるのを待つ
 .inputLoop
+; {
 	call TownMapSpriteBlinkingAnimation
 	call JoypadLowSensitivity
 	ld a, [hJoy5]
 	ld b, a
 	and A_BUTTON | B_BUTTON | D_UP | D_DOWN
 	jr z, .inputLoop
+; }
+
 	ld a, SFX_TINK
 	call PlaySound
+
 	bit 6, b
 	jr nz, .pressedUp
 	bit 7, b
 	jr nz, .pressedDown
+
+	; A/B が押された場合はタウンマップからExit
 	xor a
 	ld [wTownMapSpriteBlinkingEnabled], a
 	ld [hJoy7], a
@@ -110,6 +122,7 @@ DisplayTownMap:
 	pop af
 	ld [hl], a
 	ret
+
 .pressedUp
 	ld a, [wWhichTownMapLocation]
 	inc a

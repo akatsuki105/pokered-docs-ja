@@ -4,6 +4,12 @@ inline: MACRO
             ld a, [hli]
             ld [de], a
             inc de
+        ELSE
+            IF \1 == "[++de] = [hl++]"
+                ld a, [hli]
+                inc de
+                ld [de], a
+            ENDC
         ENDC
 	ENDC
 ENDM

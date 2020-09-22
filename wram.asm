@@ -2189,9 +2189,8 @@ wOutwardSpiralTileMapPointer:: ; d09a
 wPartyMenuAnimMonEnabled::
 
 ; d09b  
-; non-zero when enabled.   
-; causes nest locations to blink on and off.  
-; the town selection cursor will blink regardless of what this value is  
+; タウンマップのカーソルを開いた時に1を入れて、Exitするときに 0になる  
+; この値にかかわらずタウンマップ時にはカーソルが点滅している  
 wTownMapSpriteBlinkingEnabled::
 
 wUnusedD09B:: ; d09b

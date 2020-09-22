@@ -283,9 +283,7 @@ Audio2_sound_call:
 	ld e, l
 	ld d, h
 	pop hl
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hld]
 	ld [de], a ; copy current channel address
 	pop de

@@ -99,9 +99,7 @@ _AddPartyMon:
 	ld [wd0b5], a
 	call GetMonHeader
 	ld hl, wMonHeader
-	ld a, [hli]
-	ld [de], a 	; wPartyMons に図鑑番号を格納
-	inc de		; de = wPartyMons の HP数値 のアドレス
+	inline "[de++] = [hl++]"	; wPartyMons に図鑑番号を格納, de = wPartyMons の HP数値 のアドレス		
 
 	pop hl
 	push hl
@@ -213,13 +211,9 @@ _AddPartyMon:
 	ld hl, wMonHTypes	; GetMonHeader で取得している 
 
 	; wPartyMon${N}Type1 = wMonHTypes のタイプ1
-	ld a, [hli]       ; type 1
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	; wPartyMon${N}Type2 = wMonHTypes のタイプ2
-	ld a, [hli]       ; type 2
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	
 	; wPartyMon${N}CatchRate
 	ld a, [hli]       ; catch rate (held item in gen 2)

@@ -1591,9 +1591,7 @@ LoadItemList::
 	ld [wItemListPointer + 1], a
 	ld de, wItemList
 .loop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	cp $ff
 	jr nz, .loop
 	ret
@@ -3652,15 +3650,11 @@ GetTrainerInformation::
 	ld bc, $5
 	call AddNTimes
 	ld de, wTrainerPicPointer
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hli]
 	ld [de], a
 	ld de, wTrainerBaseMoney
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hli]
 	ld [de], a
 	jp BankswitchBack
@@ -4502,10 +4496,7 @@ PrintLetterDelay::
 ; - - -  
 ; hlからbc-1までをdeにコピーする
 CopyDataUntil::
-	; [de] = [hl] && hl++,de++
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	
 	; hl+1 == bcになるまで続ける
 	ld a, h
