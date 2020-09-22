@@ -93,10 +93,7 @@ LoadSpecialWarpData:
 	; Special warpの情報をwCurMapに格納
 	; [wCurMap:wCurMap+7] = [XXXSpec:XXXSpec+7]
 .copyWarpDataLoop
-	; [de++] = [hl++]
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .copyWarpDataLoop
 
@@ -211,10 +208,7 @@ LoadSpecialWarpData:
 	ld c, $6
 	; wCurrentTileBlockMapViewPointerにWarpDataをコピーする
 .copyWarpDataLoop2
-	; [de++] = [hl++]
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .copyWarpDataLoop2
 	; [wCurMapTileset] = OVERWORLD

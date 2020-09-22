@@ -598,10 +598,7 @@ UpdateMovingBgTiles::
 .loop
 ; VRAM に FlowerTileN の 2bppデータをコピー
 ; {
-	; [de++] = [hl++]
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .loop
 ; }

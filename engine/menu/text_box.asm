@@ -599,10 +599,8 @@ TwoOptionMenu_SaveScreenTiles:
 	ld de, wBuffer
 	lb bc, 5, 6	; 5*6 = 30(wBufferのサイズ)
 .loop
-	; [de++] = [hl++] 1行分保存
-	ld a, [hli]
-	ld [de], a
-	inc de
+	; 1行分保存
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .loop
 

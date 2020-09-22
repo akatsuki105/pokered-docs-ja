@@ -1544,10 +1544,7 @@ LoadCurrentMapView::
 .rowLoop2 ; 画面全体を処理するループ
 	ld c, SCREEN_WIDTH
 .rowInnerLoop2 ; 各行を処理するループ
-	; [de++] = [hl++]
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 
 	; 次のタイル?
 	dec c
@@ -2624,10 +2621,7 @@ CopyMapConnectionHeader::
 	ld c, $0b	; コネクションデータは 11byte
 .loop
 ; {
-	; [de++] = [hl++]
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .loop
 ; }

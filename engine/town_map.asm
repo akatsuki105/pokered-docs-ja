@@ -76,9 +76,7 @@ DisplayTownMap:
 	ld de, wcd6d
 .copyMapName
 ; {
-	ld a, [hli]
-	ld [de], a
-	inc de		; [de++] = [hl++]
+	inline "[de++] = [hl++]"	; [de++] = [hl++]
 	cp "@"
 	jr nz, .copyMapName
 ; }

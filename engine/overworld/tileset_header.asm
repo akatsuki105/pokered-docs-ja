@@ -29,9 +29,7 @@ LoadTilesetHeader:
 	ld de, wTilesetBank
 	ld c, $b ; 11 = tileset headerのサイズ
 .copyTilesetHeaderLoop
-	ld a, [hli]
-	ld [de], a
-	inc de		; [de++] = [hl++]
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .copyTilesetHeaderLoop
 
