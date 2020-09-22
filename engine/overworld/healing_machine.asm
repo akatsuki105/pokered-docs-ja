@@ -136,23 +136,8 @@ FlashSprite8Times:
 ; - hl = hl + 4
 ; - de = de + 4
 CopyHealingMachineOAM:
-	; [hl++] = [de++]
-	ld a, [de]
-	inc de
-	ld [hli], a
-
-	; [hl++] = [de++]
-	ld a, [de]
-	inc de
-	ld [hli], a
-	
-	; [hl++] = [de++]
-	ld a, [de]
-	inc de
-	ld [hli], a
-
-	; [hl++] = [de++]
-	ld a, [de]
-	inc de
-	ld [hli], a
+	inline "[hl++] = [de++]"
+	inline "[hl++] = [de++]"
+	inline "[hl++] = [de++]"
+	inline "[hl++] = [de++]"
 	ret

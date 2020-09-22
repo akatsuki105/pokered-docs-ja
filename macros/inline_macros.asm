@@ -8,6 +8,10 @@ inline: MACRO
             ld a, [hli]
             inc de
             ld [de], a
+        ELIF !STRCMP(\1, "[hl++] = [de++]")
+            ld a, [de]
+            inc de
+            ld [hli], a
         ENDC
 	ENDC
 ENDM

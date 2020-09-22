@@ -75,9 +75,7 @@ RedrawRowOrColumn::
 .loop1
 ; {
 	; [de] = [hl++] 列(1列=8px*2 なので その1枚目)
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	; 2枚目
 	ld a, [hli]
 	ld [de], a
