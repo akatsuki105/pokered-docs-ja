@@ -229,19 +229,13 @@ _AddPartyMon:
 	ld [de], a
 
 	; Move2
-	ld a, [hli]
-	inc de
-	ld [de], a
+	inline "[++de] = [hl++]"
 
 	; Move3
-	ld a, [hli]
-	inc de
-	ld [de], a
+	inline "[++de] = [hl++]"
 
 	; Move4
-	ld a, [hli]
-	inc de
-	ld [de], a
+	inline "[++de] = [hl++]"
 	
 	push de	; このとき de = wPartyMon${N}Moves + 3 = 4つめの技アドレス
 	dec de
