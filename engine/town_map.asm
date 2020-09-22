@@ -45,7 +45,7 @@ DisplayTownMap:
 	xor a
 	ld [wWhichTownMapLocation], a
 
-	pop af
+	pop af			; a = [wCurMap]
 	jr .enterLoop
 
 .townMapLoop
@@ -78,8 +78,8 @@ DisplayTownMap:
 ; {
 	ld a, [hli]
 	ld [de], a
-	inc de
-	cp $50
+	inc de		; [de++] = [hl++]
+	cp "@"
 	jr nz, .copyMapName
 ; }
 

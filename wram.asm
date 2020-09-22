@@ -1029,7 +1029,7 @@ wBadgeNumberTile::
 ; 2 = no fish on map  
 wRodResponse::
 
-; cd3d
+; cd3d  
 wWhichTownMapLocation::
 
 wStoppingWhichSlotMachineWheel:: ; cd3d
