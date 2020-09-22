@@ -1,4 +1,9 @@
+; **SaveTrainerName**  
+; wcd6d にトレーナーの名前を格納する  
+; - - -  
+; [wTrainerClass] = 対象の trainer class  
 SaveTrainerName:
+	; hl = TrainerNamePointers の該当エントリ
 	ld hl, TrainerNamePointers
 	ld a, [wTrainerClass]
 	dec a
@@ -6,20 +11,24 @@ SaveTrainerName:
 	ld b, 0
 	add hl, bc
 	add hl, bc
+
+	; hl = 名前
 	ld a, [hli]
 	ld h, [hl]
 	ld l, a
+
+; wcd6d にトレーナーの名前を格納する  
 	ld de, wcd6d
 .CopyCharacter
-	ld a, [hli]
-	ld [de], a
-	inc de
+; {
+	inline "[de++] = [hl++]"
 	cp "@"
 	jr nz, .CopyCharacter
+; }
 	ret
 
+; trainer class -> トレーナー名
 TrainerNamePointers:
-; what is the point of these?
 	dw YoungsterName
 	dw BugCatcherName
 	dw LassName
@@ -68,18 +77,30 @@ TrainerNamePointers:
 	dw wTrainerName
 	dw wTrainerName
 
+; "YOUNGSTER"
 YoungsterName:
 	db "YOUNGSTER@"
+
+; "BUG CATCHER"
 BugCatcherName:
 	db "BUG CATCHER@"
+
+; "LASS"
 LassName:
 	db "LASS@"
+
+; "JR.TRAINER♂"
 JrTrainerMName:
 	db "JR.TRAINER♂@"
+
+; "JR.TRAINER♀"
 JrTrainerFName:
 	db "JR.TRAINER♀@"
+
+; "POKéMANIAC"
 PokemaniacName:
 	db "POKéMANIAC@"
+
 SuperNerdName:
 	db "SUPER NERD@"
 BurglarName:

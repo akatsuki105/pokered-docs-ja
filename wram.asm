@@ -1500,10 +1500,11 @@ wBankswitchHomeTemp:: ; cf09
 wBoughtOrSoldItemInMart::
 	ds 1
 
-wBattleResult:: ; cf0b
-; $00 - win
-; $01 - lose
-; $02 - draw
+; cf0b  
+; $00: win  
+; $01: lose  
+; $02: draw  
+wBattleResult::
 	ds 1
 
 ; cf0c  
@@ -1626,10 +1627,14 @@ wGainBoostedExp:: ; cf4d
 
 	ds 17
 
-wGymCityName:: ; cf5f
+; cf5f  
+; 現在の街の名前が入る(ジムがある街のみ)  
+wGymCityName::
 	ds 17
 
-wGymLeaderName:: ; cf70
+; cf70  
+; 現在の街のジムリーダーの名前が入る
+wGymLeaderName::
 	ds NAME_LENGTH
 
 ; cf7b
@@ -1827,8 +1832,8 @@ wEnemyMonBaseExp:: ds 1
 wBattleMonNick:: ds NAME_LENGTH ; d009
 wBattleMon:: battle_struct wBattleMon ; d014
 
-
-wTrainerClass:: ; d031
+; d031
+wTrainerClass::
 	ds 1
 
 	ds 1
@@ -2153,15 +2158,21 @@ wSubAnimTransform:: ; d08b
 ; 04: reverse the subanimation
 	ds 1
 
-wEndBattleWinTextPointer:: ; d08c
+; d08c  
+; プレイヤーがトレーナーに勝った時にトレーナーの言うテキストを格納  
+wEndBattleWinTextPointer::
 	ds 2
 
-wEndBattleLoseTextPointer:: ; d08e
+; d08e  
+; プレイヤーがトレーナーに負けた時にトレーナーの言うテキストを格納  
+wEndBattleLoseTextPointer::
 	ds 2
 
 	ds 2
 
-wEndBattleTextRomBank:: ; d092
+; d092  
+; プレイヤーがトレーナーに勝った/負けた時にトレーナーの言うテキストのあるバング番号 
+wEndBattleTextRomBank::
 	ds 1
 
 	ds 1

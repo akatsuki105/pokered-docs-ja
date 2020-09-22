@@ -2894,6 +2894,11 @@ ExecuteCurMapScriptInTable::
 	ld a, [wCurMapScript]
 	ret
 
+; **LoadGymLeaderAndCityName**  
+; wGymCityName と wGymLeaderName に 街の名前とジムリーダーの名前をロードする
+; INPUT:  
+; hl = 街の名前  
+; de = ジムリーダーの名前  
 LoadGymLeaderAndCityName::
 	push de
 	ld de, wGymCityName
@@ -3147,9 +3152,12 @@ SetSpritePosition1::
 
 SetSpritePosition2::
 	ld hl, _SetSpritePosition2
+	; fallthrough
+
 SpritePositionBankswitch::
 	ld b, BANK(_GetSpritePosition1) ; BANK(_GetSpritePosition2), BANK(_SetSpritePosition1), BANK(_SetSpritePosition2)
 	jp Bankswitch ; indirect jump to one of the four functions
+
 
 CheckForEngagingTrainers::
 	xor a
@@ -3197,8 +3205,10 @@ CheckForEngagingTrainers::
 	ld e, l
 	jr .trainerLoop
 
-; hl = text if the player wins
-; de = text if the player loses
+; **SaveEndBattleTextPointers**  
+; - - -  
+; hl = プレイヤーが勝った時のテキスト  
+; de = プレイヤーが負けた時のテキスト  
 SaveEndBattleTextPointers::
 	ld a, [H_LOADEDROMBANK]
 	ld [wEndBattleTextRomBank], a
@@ -3241,39 +3251,51 @@ EngageMapTrainer::
 	; トレーナーとのエンカウントBGMを流す
 	jp PlayTrainerMusic	; return
 
+; **PrintEndBattleText**  
+; トレーナーとの戦闘終了後のテキストを描画し、トレーナーを動かなくする  
 PrintEndBattleText::
+	; 意味なさそう
 	push hl
 	ld hl, wd72d
 	bit 7, [hl]
 	res 7, [hl]
 	pop hl
 	ret z
+
+	; バンクをスイッチ
 	ld a, [H_LOADEDROMBANK]
 	push af
 	ld a, [wEndBattleTextRomBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	; トレーナーとの戦闘終了後のテキストを描画
 	push hl
 	callba SaveTrainerName
 	ld hl, TrainerEndBattleText
 	call PrintText
 	pop hl
+
 	pop af
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	callba FreezeEnemyTrainerSprite
-	jp WaitForSoundToFinish
+	jp WaitForSoundToFinish	; return
 
+; **GetSavedEndBattleTextPointer**  
+; OUTPUT: hl = [wEndBattleWinTextPointer] or [wEndBattleLoseTextPointer]  
 GetSavedEndBattleTextPointer::
 	ld a, [wBattleResult]
 	and a
-; won battle
 	jr nz, .lostBattle
+
+	; won battle
 	ld a, [wEndBattleWinTextPointer]
 	ld h, a
 	ld a, [wEndBattleWinTextPointer + 1]
 	ld l, a
 	ret
+
 .lostBattle
 	ld a, [wEndBattleLoseTextPointer]
 	ld h, a
@@ -3281,10 +3303,12 @@ GetSavedEndBattleTextPointer::
 	ld l, a
 	ret
 
+; **TrainerEndBattleText**  
+; トレーナーとの戦闘終了後のテキスト  
 TrainerEndBattleText::
 	TX_FAR _TrainerNameText
 	TX_ASM
-	call GetSavedEndBattleTextPointer
+	call GetSavedEndBattleTextPointer	; hl = [wEndBattleWinTextPointer] or [wEndBattleLoseTextPointer]
 	call TextCommandProcessor
 	jp TextScriptEnd
 
@@ -3524,6 +3548,13 @@ GetPointerWithinSpriteStateData1::
 GetPointerWithinSpriteStateData2::
 	ld h, $c2
 
+; INPUT:  
+; h = $c1 or $c2($cXYZの X)  
+; [H_SPRITEINDEX] = $cXYZの Y  
+; [H_SPRITEDATAOFFSET] = $cXYZの Z  
+; 
+; OUTPUT:  
+; hl = $cXYZ  
 _GetPointerWithinSpriteStateData:
 	ld a, [H_SPRITEDATAOFFSET]
 	ld b, a
@@ -4006,7 +4037,7 @@ LoadScreenTilesFromBuffer1::
 	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
-; cレジスタで指定したフレームの間haltする
+; cレジスタで指定したフレームの間 haltする
 DelayFrames::
 	call DelayFrame
 	dec c
@@ -4052,13 +4083,13 @@ NamePointers::
 ; アイテムの名前を取得する  
 ; - - - 
 ; INPUT:  
-; - [wd0b5] = 対象のアイテムID
-; - [wNameListType] = アイテムのType ID(カテゴリ別に割り振られたID constants/list_constants.asm)
-; - [wPredefBank] = リストのあるバンク番号
+; [wd0b5] = 対象のアイテムID  
+; [wNameListType] = アイテムのType ID(カテゴリ別に割り振られたID constants/list_constants.asm)  
+; [wPredefBank] = リストのあるバンク番号  
 ;
 ; OUTPUT:  
-; - [wcd6d] = アイテム名の文字列データ
-; - [wUnusedCF8D] = アイテム名終端のポインタ
+; [wcd6d] = アイテム名の文字列データ  
+; [wUnusedCF8D] = アイテム名終端のポインタ  
 GetName::
 	; [wd11e] = アイテムID
 	ld a, [wd0b5]
@@ -4236,9 +4267,7 @@ CopyStringToCF4B::
 ; **CopyString**  
 ; 文字列を [de] から [hl] にコピー
 CopyString::
-	ld a, [de]
-	inc de
-	ld [hli], a
+	inline "[hl++] = [de++]"
 	cp "@"
 	jr nz, CopyString
 	ret
@@ -4833,7 +4862,9 @@ AddNTimes::
 	jr nz, .loop
 	ret
 
+; **StringCmp**  
 ; de と hl を cバイトだけ文字列として比較する  
+; - - -  
 ; バトルの計算処理でビッグエンディアンの数値を比較するのに用いられる  
 ;  
 ; OUTPUT:  
@@ -4854,13 +4885,13 @@ StringCmp::
 ; OAMBufferにOAM blockのデータを書き込む  
 ; OAM block: 2*2のOAMタイルの塊  
 ; - - - 
-; INPUT:
-; - a = OAM blockのインデックス
-; - b = OAM blockの左上角のYcoord
-; - c = OAM blockの左上角のXcoord
-; - de = OAM blockの4つのタイル番号と属性のペアの開始アドレス
+; INPUT:  
+; a = OAM blockのインデックス  
+; b = OAM blockの左上角のYcoord  
+; c = OAM blockの左上角のXcoord  
+; de = OAM blockの4つのタイル番号と属性のペアの開始アドレス  
 WriteOAMBlock::
-	; hl = 対象のOAM blockのwOAMBufferでの開始アドレス
+	; hl = 対象のOAM block のwOAMBufferでの開始アドレス
 	ld h, wOAMBuffer / $100
 	swap a ; *= 16 => 各OAM blockは16バイトなので
 	ld l, a
@@ -4879,19 +4910,16 @@ WriteOAMBlock::
 	ld a, 8
 	add c
 	ld c, a				
-						; lower right
+	; fallthrough		  lower right 
+	
 	; INPUT: [hl] = OAMエントリ
 .writeOneEntry
 	ld [hl], b ; Y coordinate
 	inc hl
 	ld [hl], c ; X coordinate
 	inc hl
-	ld a, [de] ; tile number
-	inc de
-	ld [hli], a
-	ld a, [de] ; attribute
-	inc de
-	ld [hli], a
+	inline "[hl++] = [de++]"	; tile番号
+	inline "[hl++] = [de++]"	; attr
 	ret
 
 ; **HandleMenuInput**  
