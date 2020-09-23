@@ -423,9 +423,7 @@ DrawPlayerOrBirdSprite:
 	pop hl
 	ld de, wcd6d
 .loop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	cp "@"
 	jr nz, .loop
 	ld hl, wOAMBuffer
@@ -654,11 +652,8 @@ LoadTownMapEntry:
 	add hl, bc
 	add hl, bc
 .readEntry
-	ld a, [hli]
-	ld [de], a
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "[de] = [hl++]"
+	inline "hl = [hl]"
 	ret
 
 INCLUDE "data/town_map_entries.asm"

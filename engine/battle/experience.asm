@@ -208,9 +208,7 @@ GainExperience:
 ; current mon is in battle
 	ld de, wBattleMonHP
 ; copy party mon HP to battle mon HP
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 ; copy other stats from party mon to battle mon

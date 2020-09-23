@@ -1032,9 +1032,7 @@ LoadNorthSouthConnectionsTileMap::
 	ld a, [hNorthSouthConnectionStripWidth]
 	ld b, a
 .innerLoop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec b
 	jr nz, .innerLoop
 	pop hl
@@ -1061,9 +1059,7 @@ LoadEastWestConnectionsTileMap::
 	push de
 	ld c, MAP_BORDER
 .innerLoop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .innerLoop
 	pop de
@@ -1281,9 +1277,7 @@ CheckTilePassable::
 	ld a, [wTileInFrontOfPlayer] ; tile in front of player
 	ld c, a
 	ld hl, wTilesetCollisionPtr ; pointer to list of passable tiles
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a ; hl now points to passable tiles
+	inline "hl = [hl]"
 .loop
 	ld a, [hli]
 	cp $ff
@@ -2066,9 +2060,7 @@ CollisionCheckOnWater::
 ; check if the [land] tile in front of the player is passable
 .checkIfNextTileIsPassable
 	ld hl, wTilesetCollisionPtr ; pointer to list of passable tiles
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 .loop
 	ld a, [hli]
 	cp $ff
@@ -2287,8 +2279,7 @@ LoadMapHeader::
 
 	; [wMapBackgroundTile] = ボーダーのタイルID
 	ld de, wMapBackgroundTile
-	ld a, [hli]
-	ld [de], a
+	inline "[de] = [hl++]"
 
 .loadWarpData
 	; [wNumberOfWarps] = マップの warp の数
@@ -2310,9 +2301,7 @@ LoadMapHeader::
 .warpInnerLoop
 ; 1回のループで warp情報(4byte) を 1byteずつ書き込んでいく
 ;  {
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec b
 	jr nz, .warpInnerLoop
 ;  }
@@ -2343,12 +2332,8 @@ LoadMapHeader::
 .signLoop
 ; {
 	; wSignCoords に sign の coord をコピーしていく
-	ld a, [hli]
-	ld [de], a
-	inc de	; Y
-	ld a, [hli]
-	ld [de], a
-	inc de	; X
+	inline "[de++] = [hl++]"	; Y
+	inline "[de++] = [hl++]"	; X
 
 	push de
 	
@@ -2359,9 +2344,7 @@ LoadMapHeader::
 	ld e, a
 
 	; wSignTextIDs に sign の TextID を格納
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 
 	; [hSignCoordPointer] = wSignTextIDs の次のエントリ
 	ld a, d
@@ -2662,8 +2645,7 @@ LoadMapData::
 .vramCopyLoop
 	ld c, 20
 .vramCopyInnerLoop
-	ld a, [hli]
-	ld [de], a
+	inline "[de] = [hl++]"
 	inc e
 	dec c
 	jr nz, .vramCopyInnerLoop

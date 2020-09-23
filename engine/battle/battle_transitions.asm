@@ -59,9 +59,7 @@ BattleTransition:
 	ld hl, BattleTransitions
 	add hl, bc
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp hl
 
 ; the three GetBattleTransitionID functions set the first
@@ -674,9 +672,7 @@ BattleTransition_Circle_Sub2:
 	ld e, a
 	ld a, [hli]
 	ld d, a
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp BattleTransition_Circle_Sub3
 
 BattleTransition_HalfCircle1:

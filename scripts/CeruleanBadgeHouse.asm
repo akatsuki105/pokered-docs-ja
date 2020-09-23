@@ -39,9 +39,7 @@ CeruleanHouse2Text1:
 	ld d, $0
 	ld e, a
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call PrintText
 	jr .asm_74e23
 .asm_74e60

@@ -28,9 +28,7 @@ PewterGuys:
 	add hl, bc
 
 	; 最初のエントリのcoord (findMatchingCoordsLoop のinit処理)
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	
 	; bc = プレイヤーのcoord
 	ld a, [wYCoord]
@@ -49,9 +47,7 @@ PewterGuys:
 	jr nz, .nextEntry2
 
 	; プレイヤーがイベントマスにいる
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 ; イベントマスに対応する movement data を wSimulatedJoypadStatesEnd に付け足していく
 .copyMovementDataLoop

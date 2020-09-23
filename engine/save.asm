@@ -455,9 +455,7 @@ GetBoxSRAMLocation:
 	ld d, 0
 	add hl, de
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ret
 
 BoxSRAMPointerTable:
@@ -749,9 +747,7 @@ SAVCheckRandomID:
 	cp c
 	jr nz, .next
 	ld hl, sMainData + (wPlayerID - wMainDataStart) ; player ID
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld a, [wPlayerID]
 	cp l
 	jr nz, .next

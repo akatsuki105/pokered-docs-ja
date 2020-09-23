@@ -96,9 +96,7 @@ PrepareOAMData:
 	ld a, [hli]
 	ld b, a
 	; hl = SpriteOAMParameters(Flipped) (SpriteFacingAndAnimationTable の dwエントリ1)
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	call GetSpriteScreenXY
 

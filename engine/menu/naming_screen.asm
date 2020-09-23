@@ -215,9 +215,7 @@ DisplayNamingScreen:
 	ld e, a
 	ld a, [hli]
 	ld d, a		; e.g. de = .ABStartReturnPoint
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a		; e.g. hl = .pressedA
+	inline "hl = [hl]"		; e.g. hl = .pressedA
 	push de		; hlのハンドラでのreturn先
 	jp hl		; .pressedXに飛ぶ
 
@@ -306,9 +304,7 @@ DisplayNamingScreen:
 .didNotPressCaseSwtich
 	; hl = [wMenuCursorLocation] = メニューカーソルのタイルのアドレス
 	ld hl, wMenuCursorLocation
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; a = [メニューカーソル+1] = 指している文字のタイルID = 入力した文字
 	inc hl

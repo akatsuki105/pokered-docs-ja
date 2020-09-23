@@ -69,9 +69,7 @@ ResetStatMods:
 ResetStats:
 	ld b, $8
 .loop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec b
 	jr nz, .loop
 	ret

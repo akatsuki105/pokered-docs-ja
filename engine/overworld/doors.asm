@@ -12,9 +12,7 @@ IsPlayerStandingOnDoorTile:
 	
 	; ???
 	inc hl ; タイルセット名 -> ドアタイルID
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; b = 画面(8, 9)のタイルID
 	aCoord 8, 9 ; a = lower left background tile under player's sprite

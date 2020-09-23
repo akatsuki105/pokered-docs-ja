@@ -18,9 +18,7 @@ _RunPaletteCommand:
 	; hl = 実行すべきパレットデータ変更関数
 	ld de, SetPalFunctions
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a	; 上位,下位バイトをスワップ
+	inline "hl = [hl]"	; 上位,下位バイトをスワップ
 
 	ld de, SendSGBPackets
 	push de

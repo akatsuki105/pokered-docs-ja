@@ -131,9 +131,7 @@ LinkCableHelp:
 	ld d, 0
 	ld e, a
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call PrintText
 	jp .linkHelpLoop
 .exit
@@ -248,9 +246,7 @@ ViridianSchoolBlackboard:
 	ld d, 0
 	ld e, a
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call PrintText
 	jp .blackboardLoop
 .exitBlackboard

@@ -39,9 +39,7 @@ DisplayTextBoxID_:
 
 .functionTableMatch
 	; hl = address of function
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; call hl でテキストボックスを描画
 	ld de, .done

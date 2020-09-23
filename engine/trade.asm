@@ -41,9 +41,7 @@ TradeAnimCommon:
 	ld c, a
 	ld b, $0
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, .loop
 	push de
 	jp hl ; call trade func, which will return to the top of the loop

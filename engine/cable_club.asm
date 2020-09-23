@@ -301,9 +301,7 @@ CallCurrentTradeCenterFunction:
 	add a
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp hl
 
 TradeCenter_SelectMon:

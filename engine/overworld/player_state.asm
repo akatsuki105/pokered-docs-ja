@@ -143,9 +143,7 @@ IsPlayerFacingEdgeOfMap:
 	ld b, $0
 	ld hl, .functionPointerTable
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; b = Ycoord, c = Xcoord
 	ld a, [wYCoord]
@@ -235,9 +233,7 @@ IsWarpTileInFrontOfPlayer:
 	ld b, 0
 	ld hl, .warpTileListPointers
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; 目の前のタイルが warp タイルのリストに該当するかチェック
 	ld a, [wTileInFrontOfPlayer]
@@ -298,9 +294,7 @@ IsPlayerStandingOnDoorTileOrWarpTile:
 	ld b, $0
 	ld hl, WarpTileIDPointers
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; プレイヤーが warpマス の上に立っているか
 	ld de, $1
@@ -518,9 +512,7 @@ CheckForCollisionWhenPushingBoulder:
 
 	; hl = プレイヤーが通行可能なタイルのリストのアドレス
 	ld hl, wTilesetCollisionPtr
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 ; プレイヤーの2マス前のタイルが通行可能か(かいりき岩を2マス前に押せるかどうかチェック)  
 ; 押せる -> loopの下へ  

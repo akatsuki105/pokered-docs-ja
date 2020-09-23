@@ -3844,9 +3844,7 @@ _PrintMoveName:
 	ld c, a
 	add hl, bc
 	pop bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ret
 
 ExclamationPointPointerTable:
@@ -4008,9 +4006,7 @@ PrintCriticalOHKOText:
 	ld b, $0
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call PrintText
 	xor a
 	ld [wCriticalHitOrOHKO], a
@@ -4489,9 +4485,7 @@ GetEnemyMonStat:
 	call GetMonHeader
 	ld hl, wEnemyMonDVs
 	ld de, wLoadedMonSpeedExp
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 	pop bc
@@ -6267,15 +6261,9 @@ LoadEnemyMonData:
 .copyTypes
 	ld hl, wMonHTypes
 	ld de, wEnemyMonType
-	ld a, [hli]            ; copy type 1
-	ld [de], a
-	inc de
-	ld a, [hli]            ; copy type 2
-	ld [de], a
-	inc de
-	ld a, [hli]            ; copy catch rate
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"            ; copy type 1
+	inline "[de++] = [hl++]"            ; copy type 2
+	inline "[de++] = [hl++]"			; copy catch rate
 
 	jrIfNotInTrainerBattle .copyStandardMoves
 	; if it's a trainer battle, copy moves from enemy party data
@@ -6289,15 +6277,9 @@ LoadEnemyMonData:
 .copyStandardMoves
 ; for a wild mon, first copy default moves from the mon header
 	ld hl, wMonHMoves
-	ld a, [hli]
-	ld [de], a
-	inc de
-	ld a, [hli]
-	ld [de], a
-	inc de
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
+	inline "[de++] = [hl++]"
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 	dec de
@@ -6314,15 +6296,11 @@ LoadEnemyMonData:
 	ld de, wEnemyMonBaseStats
 	ld b, NUM_STATS
 .copyBaseStatsLoop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec b
 	jr nz, .copyBaseStatsLoop
 	ld hl, wMonHCatchRate
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]     ; base exp
 	ld [de], a
 	ld a, [wEnemyMonSpecies2]
@@ -7152,9 +7130,7 @@ _JumpMoveEffect:
 	ld b, 0
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp hl ; jump to special effect handler
 
 MoveEffectPointerTable:

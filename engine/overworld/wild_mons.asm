@@ -14,9 +14,7 @@ LoadWildData:
 	add hl, bc
 
 	; hl = 野生ポケモンテーブル の先頭のアドレス
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; [wGrassRate] に地上でのエンカウント率を格納し、 0、つまり地上に野生のポケモンがいないなら -> .NoGrassData
 	ld a, [hli]

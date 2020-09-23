@@ -1371,9 +1371,7 @@ DisplayTextID::
 
 	; hl = マップのテキストエントリの先頭
 	ld hl, wMapTextPtr
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	ld d, $00
 	ld a, [hSpriteIndexOrTextID] ; text ID
@@ -1436,9 +1434,7 @@ DisplayTextID::
 	add hl, de
 
 	; hl = テキストIDに対応するテキストがあるアドレス
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld a, [hl] ; a = テキストの1バイト目
 	
 	; 最初の1バイト目を見て特殊なテキストであるならそのハンドラにジャンプ
@@ -2821,9 +2817,7 @@ RunNPCMovementScript::
 	ld hl, .NPCMovementScriptPointerTables
 	add hl, de
 	
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; [wNPCMovementScriptBank] にバンクスイッチ
 	ld a, [H_LOADEDROMBANK]
@@ -2976,10 +2970,7 @@ ReadTrainerHeaderInfo::
 	jr .done
 
 .readPointer
-	; hl = [hl] = Trainer Header から読み出す内容
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"	; hl = Trainer Header から読み出す内容
 
 .done
 	; return 
@@ -4216,9 +4207,7 @@ GetItemPrice::
 	
 	; hl = [wItemPrices]
 	ld hl, wItemPrices
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	
 	; アイテムが技マシン -> .getTMPrice
 	ld a, [wcf91] ; a contains item id

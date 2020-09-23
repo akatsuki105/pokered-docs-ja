@@ -256,9 +256,7 @@ StatusScreen:
 	ld c, a
 	ld b, 0
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld a, [wMonDataLocation]
 	cp DAYCARE_DATA
 	ret z

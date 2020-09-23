@@ -75,9 +75,7 @@ ShakeElevatorRedrawRow:
 
 	push hl		; hl = wMapViewVRAMPointer
 	push hl
-	ld a, [hli] ; a = [wMapViewVRAMPointer];
-	ld h, [hl]  ; h = [wMapViewVRAMPointer + 1];
-	ld l, a		; hl = ((wMapViewVRAMPointer + 1) << 8) | wMapViewVRAMPointer
+	inline "hl = [hl]"
 	add hl, de
 	ld a, h
 	and $3

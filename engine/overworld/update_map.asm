@@ -98,9 +98,7 @@ RedrawMapView:
 
 	; hl = [wMapViewVRAMPointer]
 	ld hl, wMapViewVRAMPointer
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	
 	; hl = 
 	ld de, -2 * 32

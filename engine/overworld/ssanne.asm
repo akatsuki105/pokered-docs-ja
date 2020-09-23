@@ -77,9 +77,7 @@ GetMoveBoulderDustFunctionPointer:
 	ld e, a
 
 	; hl = AdjustOAMBlockXPos (or AdjustOAMBlockYPos)
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	push hl
 
 	; de = wOAMBuffer + $90(上下) or wOAMBuffer + $91(右左)

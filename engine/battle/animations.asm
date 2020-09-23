@@ -52,9 +52,7 @@ DrawFrameBlock:
 	add $31 ; base tile ID for battle animations
 	ld [de], a ; store tile ID
 	inc de
-	ld a, [hli]
-	ld [de], a ; store flags
-	inc de
+	inline "[de++] = [hl++]"
 	jp .nextTile
 .flipHorizontalAndVertical
 	ld a, [wBaseCoordY]
@@ -172,9 +170,7 @@ PlayAnimation:
 	add hl, hl
 	ld de, AttackAnimationPointers  ; animation command stream pointers
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 .animationLoop
 	ld a, [hli]
 	cp $FF
@@ -456,9 +452,7 @@ PlayApplyingAttackAnimation:
 	ld b, 0
 	ld hl, AnimationTypePointerTable
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp hl
 
 AnimationTypePointerTable:
@@ -639,9 +633,7 @@ DoSpecialEffectByAnimationId:
 	call IsInArray
 	jr nc, .done
 	inc hl
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, .done
 	push de
 	jp hl

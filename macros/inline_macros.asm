@@ -4,6 +4,9 @@ inline: MACRO
             ld a, [hli]
             ld [de], a
             inc de
+        ELIF !STRCMP(\1, "[de] = [hl++]")
+            ld a, [hli]
+            ld [de], a
         ELIF !STRCMP(\1, "[++de] = [hl++]")
             ld a, [hli]
             inc de
@@ -12,6 +15,10 @@ inline: MACRO
             ld a, [de]
             inc de
             ld [hli], a
+        ELIF !STRCMP(\1, "hl = [hl]")
+            ld a, [hli]
+            ld h, [hl]
+            ld l, a
         ENDC
 	ENDC
 ENDM

@@ -179,9 +179,7 @@ RedrawPartyMenu_:
 	ld bc, 2
 	call FarCopyData
 	ld hl, wEvosMoves
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, wEvosMoves
 	ld a, BANK(EvosMovesPointerTable)
 	ld bc, wEvosMoves.end - wEvosMoves
@@ -248,9 +246,7 @@ RedrawPartyMenu_:
 	ld b, 0
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call PrintText
 
 .done
@@ -272,9 +268,7 @@ RedrawPartyMenu_:
 	ld c, a
 	ld b, 0
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	push hl
 	ld a, [wUsedItemOnWhichPokemon]
 	ld hl, wPartyMonNicks

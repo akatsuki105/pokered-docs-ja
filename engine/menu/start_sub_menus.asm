@@ -178,9 +178,7 @@ StartMenu_Pokemon:
 	add hl, bc
 
 	; .outOfBattleMovePointers の該当エントリ にジャンプ
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld a, [wObtainedBadges] ; badges obtained
 	jp hl
 

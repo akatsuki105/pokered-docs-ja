@@ -13,9 +13,7 @@ SaveTrainerName:
 	add hl, bc
 
 	; hl = 名前
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 ; wcd6d にトレーナーの名前を格納する  
 	ld de, wcd6d

@@ -442,9 +442,7 @@ SlotMachine_CheckForMatches:
 	ld a, [hli]
 	ld d, a
 	push de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, wcf4b
 	ld bc, 4
 	call CopyData

@@ -191,9 +191,7 @@ DayCareMText1:
 	ld e, l
 	ld bc, wPartyMon1MaxHP - wPartyMon1HP
 	add hl, bc
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 

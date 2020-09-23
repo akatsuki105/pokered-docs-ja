@@ -19,9 +19,7 @@ FarCopyData::
 
 ; hlが示すアドレスからdeが示すアドレスにbcバイトだけコピー
 CopyData::
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec bc
 	ld a, c
 	or b

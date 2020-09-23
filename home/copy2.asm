@@ -51,9 +51,7 @@ FarCopyDataDouble::
 	ld [MBC1RomBank], a
 .loop
 	; 1bpp -> 2bppに変換
-	ld a, [hli] 
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld [de], a
 	inc de
 

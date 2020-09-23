@@ -150,9 +150,7 @@ CinnabarGymQuiz:
 	ld e, a
 	ld hl, CinnabarQuizQuestions
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call PrintText
 	ld a, 1
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a

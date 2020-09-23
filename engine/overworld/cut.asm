@@ -272,9 +272,7 @@ ReplaceTreeTileBlock:
 
 	; hl = [wCurrentTileBlockMapViewPointer]
 	ld hl, wCurrentTileBlockMapViewPointer
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	add hl, bc
 

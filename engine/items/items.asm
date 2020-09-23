@@ -24,9 +24,7 @@ UseItem_:
 	ld c, a
 	ld b, 0
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; ハンドラ関数にジャンプ
 	jp hl
@@ -712,9 +710,7 @@ ItemUseSurfboard:
 	call CheckForTilePairCollisions
 	jr c, .cannotStopSurfing
 	ld hl, wTilesetCollisionPtr ; pointer to list of passable tiles
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a ; hl now points to passable tiles
+	inline "hl = [hl]" ; hl now points to passable tiles
 	ld a, [wTileInFrontOfPlayer] ; tile in front of the player
 	ld b, a
 .passableTileLoop
@@ -2976,9 +2972,7 @@ ReadSuperRodData:
 	inc hl ; skip map id
 
 	; read fishing group address
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	ld b, [hl] ; how many mons in group
 	inc hl ; point to data
@@ -3024,9 +3018,7 @@ FindWildLocationsOfMon:
 	inc a
 	jr z, .done
 	push hl
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld a, [hli]
 	and a
 	call nz, CheckMapForMon ; land

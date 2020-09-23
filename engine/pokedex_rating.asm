@@ -29,9 +29,7 @@ DisplayDexRating:
 	jr .findRating
 .foundRating
 	; hl = 評価テキスト
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a ; load text pointer into hl
+	inline "hl = [hl]"
 
 	; 殿堂入り時の図鑑評価の時
 	CheckAndResetEventA EVENT_HALL_OF_FAME_DEX_RATING

@@ -7,9 +7,7 @@ HandleItemListSwapping:
 	; a = 現在listで選択しているアイテムID
 	push hl
 	ld hl, wListPointer
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	inc hl ; hl = beginning of list entries
 	ld a, [wCurrentMenuItem]
 	ld b, a
@@ -65,9 +63,7 @@ HandleItemListSwapping:
 	push hl
 	push de
 	ld hl, wListPointer
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	inc hl ; hl = beginning of list entries
 	ld d, h
 	ld e, l ; de = beginning of list entries
@@ -127,9 +123,7 @@ HandleItemListSwapping:
 .combineItemSlots
 	ld [hl], a ; put the sum in the second item slot
 	ld hl, wListPointer
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	dec [hl] ; decrease the number of items
 	ld a, [hl]
 	ld [wListCount], a ; update number of items variable

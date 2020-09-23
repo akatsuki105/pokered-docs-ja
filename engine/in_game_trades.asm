@@ -69,9 +69,7 @@ DoInGameTradeDialogue:
 	ld h, a
 	add hl, de
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp PrintText
 
 ; copies name of species a to hl

@@ -68,9 +68,7 @@ CheckForHiddenObject:
 	add hl, de
 
 	; h:l = 現在のマップのhidden object一覧へのポインタ
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	push hl
 
 	; wHiddenObjectFunctionArgumentを0クリア
@@ -128,9 +126,7 @@ CheckForHiddenObject:
 	ld a, [hli]
 	ld [wHiddenObjectFunctionRomBank], a
 	; hl = object routineのポインタ
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ret
 .noMatch
 	ld a, $ff

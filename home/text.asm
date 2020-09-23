@@ -375,9 +375,7 @@ ScrollTextUpOneLine::
 	coord de, 0, 13 ; empty line above text
 	ld b, SCREEN_WIDTH * 3
 .copyText
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec b
 	jr nz, .copyText
 	coord hl, 1, 16
@@ -460,9 +458,7 @@ NextTextCommand::
 	ld c, a
 	add hl, bc
 	pop bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	jp hl
 
 ; draw box

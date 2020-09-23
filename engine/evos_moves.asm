@@ -49,9 +49,7 @@ Evolution_PartyMonLoop: ; loop over party mons
 	rl b
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	push hl
 	ld a, [wcf91]
 	push af
@@ -328,9 +326,7 @@ LearnMoveFromLevelUp:
 	rl b
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 .skipEvolutionDataLoop ; loop to skip past the evolution data, which comes before the move data
 	ld a, [hli]
 	and a ; have we reached the end of the evolution data?
@@ -390,9 +386,7 @@ WriteMonMoves:
 	rl b
 	ld c, a
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 .skipEvoEntriesLoop
 	ld a, [hli]
 	and a

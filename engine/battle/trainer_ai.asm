@@ -46,9 +46,7 @@ AIEnemyTrainerChooseMoves:
 	ld c, a
 	ld b, 0
 	add hl, bc    ; skip to pointer
-	ld a, [hli]   ; read pointer into hl
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, .nextMoveChoiceModification  ; set return address
 	push de
 	jp hl         ; execute modification function
@@ -360,9 +358,7 @@ TrainerAI:
 	ld a, [hli]
 	ld [wAICount], a
 .getpointer
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call Random
 	jp hl
 

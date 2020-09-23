@@ -198,9 +198,7 @@ LoadSpecialWarpData:
 
 .foundFlyWarpMatch
 	; hl = PalletTownFlyWarp
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 	; INPUT: hl = XXXWarpDataのアドレス
 .copyWarpData2

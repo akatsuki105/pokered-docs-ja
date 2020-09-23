@@ -22,9 +22,7 @@ ReadTrainer:
 	ld c, a
 	ld b, 0
 	add hl, bc ; hl points to trainer class
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld a, [wTrainerNo]
 	ld b, a
 ; At this point b contains the trainer number,

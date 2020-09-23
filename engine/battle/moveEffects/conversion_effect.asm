@@ -14,9 +14,7 @@ ConversionEffect_:
 	bit INVULNERABLE, a ; is mon immune to typical attacks (dig/fly)
 	jr nz, PrintButItFailedText
 ; copy target's types to user
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 	ld hl, PlayCurrentMoveAnimation

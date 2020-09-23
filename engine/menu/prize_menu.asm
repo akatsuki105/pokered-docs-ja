@@ -81,9 +81,7 @@ GetPrizeMenuId:
 	ld hl, wPrize1
 	call CopyString
 	pop hl
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, wPrize1Price
 	ld bc, 6
 	call CopyData

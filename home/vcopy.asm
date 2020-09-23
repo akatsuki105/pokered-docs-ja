@@ -77,8 +77,7 @@ RedrawRowOrColumn::
 	; [de] = [hl++] 列(1列=8px*2 なので その1枚目)
 	inline "[de++] = [hl++]"
 	; 2枚目
-	ld a, [hli]
-	ld [de], a
+	inline "[de] = [hl++]"
 
 	; 次の行へ
 	ld a, BG_MAP_WIDTH - 1
@@ -128,11 +127,8 @@ RedrawRowOrColumn::
 ; .loop1と同じような処理
 .loop2
 ; {
-	ld a, [hli]
-	ld [de], a
-	inc de
-	ld a, [hli]
-	ld [de], a
+	inline "[de++] = [hl++]"
+	inline "[de] = [hl++]"
 	ld a, e
 	inc a
 ; the following 6 lines wrap us from the right edge to the left edge if necessary
