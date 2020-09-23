@@ -4540,10 +4540,8 @@ CopyDataUntil::
 ; 手持ちか、現在のPCBoxから指定したポケモンを逃がす(削除する)関数  
 ; - - -  
 ; INPUT:  
-; wWhichPokemon = どのポケモンが対象か  
-; 
-; OUTPUT:  
-; [wRemoveMonFromBox] = 0(手持ちから逃がす) or 1(PCBoxから逃がす)
+; wWhichPokemon = どのポケモンが対象か(インデックス番号)  
+; [wRemoveMonFromBox] = 0(手持ちから) or 1(PCBoxから)  
 RemovePokemon::
 	jpab _RemovePokemon
 

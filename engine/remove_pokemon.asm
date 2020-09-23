@@ -1,3 +1,11 @@
+; **_RemovePokemon**  
+; ポケモンを1匹、データスロットから削除する  
+; - - -  
+; 逃す処理などで利用  
+; 
+; INPUT:  
+; [wRemoveMonFromBox] = 0(手持ちから) or 1(PCBoxから)  
+; [wWhichPokemon] = 削除対象のポケモンがいるオフセット
 _RemovePokemon:
 	; 手持ちから逃がす -> hl = wPartyCount
 	; PCBoxから逃がす -> hl = wNumInBox
@@ -29,9 +37,7 @@ _RemovePokemon:
 	; 削除したポケモンのスロットが空くのでスロットしたのポケモンを上に1つずつずらす
 .asm_7b81
 	; 上にずらす
-	ld a, [de]
-	inc de
-	ld [hli], a
+	inline "[hl++] = [de++]"
 	
 	; 次の下のスロットへ
 	inc a
