@@ -70,14 +70,10 @@ Route23Script_5125d:
 	ld b, 0
 	add hl, bc
 	add hl, bc
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, wcd6d
 .copyTextLoop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	cp "@"
 	jr nz, .copyTextLoop
 	ret

@@ -216,8 +216,7 @@ _AddPartyMon:
 	inline "[de++] = [hl++]"
 	
 	; wPartyMon${N}CatchRate
-	ld a, [hli]       ; catch rate (held item in gen 2)
-	ld [de], a
+	inline "[de] = [hl++]"	; catch rate (held item in gen 2)
 
 	ld hl, wMonHMoves
 	ld a, [hli] ; a = 技数
@@ -225,16 +224,10 @@ _AddPartyMon:
 	inc de		; de = wPartyMon${N}Moves
 	push de
 
-	; Move1
+	; Move1, Move2, Move3, Move4
 	ld [de], a
-
-	; Move2
 	inline "[++de] = [hl++]"
-
-	; Move3
 	inline "[++de] = [hl++]"
-
-	; Move4
 	inline "[++de] = [hl++]"
 	
 	push de	; このとき de = wPartyMon${N}Moves + 3 = 4つめの技アドレス

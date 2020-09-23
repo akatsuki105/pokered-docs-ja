@@ -1826,9 +1826,7 @@ CopyToRedrawRowOrColumnSrcTiles::
 	ld de, wRedrawRowOrColumnSrcTiles
 	ld c, 2 * SCREEN_WIDTH
 .loop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .loop
 	ret
@@ -1874,9 +1872,7 @@ ScheduleColumnRedrawHelper::
 	ld de, wRedrawRowOrColumnSrcTiles
 	ld c, SCREEN_HEIGHT
 .loop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 	inc de
@@ -2114,9 +2110,7 @@ RunMapScript::
 	ld a, [wCurMap] ; current map number
 	call SwitchToMapRomBank ; change to the ROM bank the map's data is in
 	ld hl, wMapScriptPtr
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, .return
 	push de
 	jp hl ; jump to script
@@ -2209,18 +2203,14 @@ LoadMapHeader::
 .noCarry2
 
 	; hl = 現在のマップの Map Header のアドレス
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 
 ; wCurMapTileset 以下に Map Header の最初の 10byte までを格納していく
 	ld de, wCurMapTileset
 	ld c, $0a
 .copyFixedHeaderLoop
 ; {
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	dec c
 	jr nz, .copyFixedHeaderLoop
 ; }
@@ -2413,8 +2403,7 @@ LoadMapHeader::
 	ld c, $00
 .loadSpriteLoop
 	; c1X0 = スプライトID(picture ID)
-	ld a, [hli]
-	ld [de], a ; store picture ID at C1X0
+	inline "[de] = [hl++]" ; store picture ID at C1X0
 
 	inc d
 	ld a, $04
@@ -2422,17 +2411,14 @@ LoadMapHeader::
 	ld e, a
 
 	; c2X4 = Y座標
-	ld a, [hli]
-	ld [de], a ; store Y position at C2X4
+	inline "[de] = [hl++]" ; store Y position at C2X4
 	inc e
 	; c2X5 = X座標
-	ld a, [hli]
-	ld [de], a ; store X position at C2X5
+	inline "[de] = [hl++]" ; store X position at C2X5
 	inc e
 
 	; c2X6 = movement byte 1 (WALK(0xfe) or STAY(0xff))
-	ld a, [hli]
-	ld [de], a
+	inline "[de] = [hl++]"
 
 	; [hLoadSpriteTemp1] = movement byte 2(スプライトの初期方向)
 	ld a, [hli]

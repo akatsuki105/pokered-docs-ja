@@ -76,12 +76,8 @@ TransformEffect_:
 	dec de
 .next
 ; DVs
-	ld a, [hli]
-	ld [de], a
-	inc de
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
+	inline "[de++] = [hl++]"
 ; Attack, Defense, Speed, and Special stats
 	inc hl
 	inc hl

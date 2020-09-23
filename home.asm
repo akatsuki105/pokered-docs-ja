@@ -5564,9 +5564,7 @@ CallFunctionInTable::
 	ld d, 0
 	ld e, a
 	add hl, de
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	ld de, .returnAddress
 	push de	; call hl
 	jp hl

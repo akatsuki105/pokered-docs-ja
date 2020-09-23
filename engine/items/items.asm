@@ -2880,9 +2880,7 @@ SendNewMonToBox:
 	ld bc, wEnemyMonDVs - wEnemyMon
 	call CopyData
 	ld hl, wPlayerID
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 	inc de
@@ -2908,17 +2906,13 @@ SendNewMonToBox:
 	dec b
 	jr nz, .asm_e89f
 	ld hl, wEnemyMonDVs
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hli]
 	ld [de], a
 	ld hl, wEnemyMonPP
 	ld b, NUM_MOVES
 .asm_e8b1
-	ld a, [hli]
-	inc de
-	ld [de], a
+	inline "[++de] = [hl++]"
 	dec b
 	jr nz, .asm_e8b1
 	ret

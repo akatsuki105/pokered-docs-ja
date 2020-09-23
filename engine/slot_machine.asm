@@ -551,9 +551,7 @@ SlotMachine_GetWheelTiles:
 	add hl, bc
 	ld c, 3
 .loop
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	inc hl
 	dec c
 	jr nz, .loop

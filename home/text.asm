@@ -428,9 +428,8 @@ TextCommandProcessor::
 	; fallthrough
 
 NextTextCommand::
-	ld a, [hli]	; a = 文字
-
 	; @でない -> .doTextCommand
+	ld a, [hli]	; a = 文字
 	cp "@"
 	jr nz, .doTextCommand
 

@@ -498,9 +498,7 @@ ChangeBox::
 	call CopyBoxToOrFromSRAM ; copy new box from SRAM to WRAM
 	ld hl, wMapTextPtr
 	ld de, wChangeBoxSavedMapTextPointer
-	ld a, [hli]
-	ld [de], a
-	inc de
+	inline "[de++] = [hl++]"
 	ld a, [hl]
 	ld [de], a
 	call RestoreMapTextPointer

@@ -350,9 +350,7 @@ LoadSpinnerArrowTiles:
 	ld c, a
 	ld a, [hli]
 	ld b, a
-	ld a, [hli]
-	ld h, [hl]
-	ld l, a
+	inline "hl = [hl]"
 	call CopyVideoData
 	pop bc
 	ld a, $6
