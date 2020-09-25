@@ -137,10 +137,11 @@ CompareMapMusicBankWithCurrentBank::
 	ret
 
 ; **PlayMusic**  
-; 
-; INPUT:
-; - a = ??>
-; - c = ???
+; BGMを再生する  
+; - - -  
+; INPUT:  
+; a = ???  
+; c = ???  
 PlayMusic::
 	ld b, a
 	ld [wNewSoundID], a
@@ -152,7 +153,8 @@ PlayMusic::
 	ld a, b
 
 ; **PlaySound**  
-; 
+; SEを再生する  
+; - - -  
 ; INPUT:  
 ; a = musicID ($ffならoffにして音楽を止める)
 PlaySound::
