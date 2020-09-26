@@ -523,7 +523,8 @@ wLinkTimeoutCounter:: ; cc47
 wUnknownSerialCounter:: ; cc47
 ; 2 bytes
 
-wEnteringCableClub:: ; cc47
+; cc47
+wEnteringCableClub::
 	ds 1
 
 	ds 1
@@ -1880,9 +1881,11 @@ wPartyGainExpFlags:: ; d058
 ; flags that indicate which party members should be be given exp when GainExperience is called
 	flag_array 6
 
-wCurOpponent:: ; d059
-; in a wild battle, this is the species of pokemon
-; in a trainer battle, this is the trainer class + OPP_ID_OFFSET
+; d059  
+; 戦闘中じゃない -> 0  
+; 野生ポケモンの場合 -> ポケモンの種類  
+; トレーナーの場合 -> trainer class + OPP_ID_OFFSET  
+wCurOpponent::
 	ds 1
 
 ; d05a  

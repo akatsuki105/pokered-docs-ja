@@ -138,19 +138,23 @@ OverworldLoopLessDelay::
 	bit 0, a
 	jr nz, .checkForOpponent
 
-	aCoord 8, 9
-	ld [wTilePlayerStandingOn], a ; unused?
+	; unused?
+	aCoord 8, 9	; プレイヤーの立っている座標のタイル番号
+	ld [wTilePlayerStandingOn], a
 
-	call DisplayTextID ; display either the start menu or the NPC/sign text
+	; プレイヤーの話しかけたsignかスプライトのテキストを表示
+	call DisplayTextID
 
+	; [wEnteringCableClub] == 0 -> .checkForOpponent
+	; [wEnteringCableClub] == 1 -> .changeMap
 	ld a, [wEnteringCableClub]
 	and a
 	jr z, .checkForOpponent
-	
 	dec a
 	ld a, 0
 	ld [wEnteringCableClub], a
 	jr z, .changeMap
+
 ; XXX can this code be reached?
 	predef LoadSAV
 	ld a, [wCurMap]
@@ -160,6 +164,7 @@ OverworldLoopLessDelay::
 	call SwitchToMapRomBank ; switch to the ROM bank of the current map
 	ld hl, wCurMapTileset
 	set 7, [hl]
+
 .changeMap
 	jp EnterMap
 
@@ -167,6 +172,7 @@ OverworldLoopLessDelay::
 	ld a, [wCurOpponent]
 	and a
 	jp nz, .newBattle
+	
 	jp OverworldLoop
 
 .noDirectionButtonsPressed

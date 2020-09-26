@@ -19,7 +19,7 @@ HandleLedges:
 	ld a, [wSpriteStateData1 + 9]
 	ld b, a
 
-	; c = (8, 9)　= プレイヤーの立っている座標のBGタイル番号
+	; c = (8, 9)　= プレイヤーの立っている座標のタイル番号
 	aCoord 8, 9
 	ld c, a
 	; d = プレイヤーの目の前のBGタイル番号

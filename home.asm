@@ -2988,6 +2988,10 @@ ReadTrainerHeaderInfo::
 TrainerFlagAction::
 	predef_jump FlagActionPredef
 
+; **TalkToTrainer**  s
+; トレーナーに話しかける処理  
+; - - -  
+; INPUT: hl = Trainer Header(AgathaTrainerHeader0)
 TalkToTrainer::
 	call StoreTrainerHeaderPointer
 	xor a
