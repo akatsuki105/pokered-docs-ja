@@ -29,9 +29,12 @@ IsPlayerOnDungeonWarp:
 	set 4, [hl]
 	ret
 
+; **CheckForHiddenObject**  
 ; hidden objectが存在するかチェック  
-; OUTPUT: 
-; - [$ffee] = hidden objectが見つかったなら$00, 見つからなかったら$ff
+; - - -  
+; OUTPUT:  
+; [$ffee] = $00(hidden objectが見つかった) or $ff(なかった)  
+; hl = object routineのポインタ(e.g. GymStatues, AerodactylFossil, HiddenCoins)  
 CheckForHiddenObject:
 	; ループの前に初期化
 	ld hl, $ffeb
@@ -43,7 +46,9 @@ CheckForHiddenObject:
 	ld de, $0	; de = 0
 	ld hl, HiddenObjectMaps
 
+; HiddenObjectMapsのエントリに現在のマップがある か見ていく
 .hiddenMapLoop
+; {
 	; b = HiddenObjectMapsのエントリ
 	ld a, [hli]
 	ld b, a
@@ -61,6 +66,7 @@ CheckForHiddenObject:
 	inc de
 	inc de
 	jr .hiddenMapLoop
+; }
 
 .foundMatchingMap
 	; hl = 現在のマップのHiddenObjectPointersテーブルのエントリ
@@ -125,7 +131,7 @@ CheckForHiddenObject:
 	; [wHiddenObjectFunctionArgument] = hidden objectのobject routineのバンク番号
 	ld a, [hli]
 	ld [wHiddenObjectFunctionRomBank], a
-	; hl = object routineのポインタ
+	; hl = object routineのポインタ(e.g. GymStatues, AerodactylFossil, HiddenCoins)
 	inline "hl = [hl]"
 	ret
 .noMatch

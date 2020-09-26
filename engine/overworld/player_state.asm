@@ -376,8 +376,8 @@ SafariBallText:
 ; プレイヤーの目の前の座標とタイル番号を得る  
 ; - - -  
 ; OUTPUT:  
-; d = 目の前の Ycoord(16*16単位)  
-; e = 目の前の Xcoord(16*16単位)  
+; d = 目の前の Ycoord(16×16単位)  
+; e = 目の前の Xcoord(16×16単位)  
 ; [wTileInFrontOfPlayer] = プレイヤーの目の前のタイルのタイル番号  
 GetTileAndCoordsInFrontOfPlayer:
 	call GetPredefRegisters

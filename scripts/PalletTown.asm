@@ -165,8 +165,9 @@ PalletTownScript5:
 PalletTownScript6:
 	ret
 
+; TextID -> テキスト
 PalletTown_TextPointers:
-	dw PalletTownText1
+	dw PalletTownText1	; TextID 1
 	dw PalletTownText2
 	dw PalletTownText3
 	dw PalletTownText4

@@ -9,7 +9,7 @@
 - border block マップを囲む壁に使うタイルの種類
 - warps ワープが起こるマス
 - signs 看板やテレビなどのAボタンでテキストが出てくるオブジェクト
-- objects 人などのオブジェクト
+- objects 人などのスプライト
 - warp-to ここで定義した場所にワープが可能
 
 主人公の家の1Fを例に Map Object を解説する
@@ -30,7 +30,7 @@ RedsHouse1F_Object:
 	sign 3, 1, 2    ; TV
 
     ; objects
-	db 1                                    ; オブジェクトは1つ
+	db 1                                    ; スプライトは1つ(wNumSpritesにこれが入る)
 	object SPRITE_MOM, 5, 4, STAY, LEFT, 1  ; 主人公の母親
 
 	; warp-to
@@ -60,25 +60,23 @@ dest_warp_idの割り振りについてはwarp_to参照
 
 signsは看板やテレビなどのAボタンでテキストが出てくるオブジェクトのこと
 
+sign はスプライトではないことに注意
+
 ```
 ; signマクロ  
 ; \1: x座標
 ; \2: y座標
-; \3: signID
+; \3: TextID
 sign \1, \2, \3
 ```
 
-#### signID
-
-spriteIDはsignsのsignIDと同じスコープに存在していて、`DisplayTextID`の対象の識別子として使われるID
-
 ## objects
 
-objectsは人やアイテムなどのオブジェクトのこと
+objectsは人やアイテムなどのスプライトのこと
 
 ```
 ; objectマクロ
-; \1: spriteID
+; \1: スプライトオフセット
 ; \2: x座標
 ; \3: y座標
 ; \4: そのオブジェクトが動くかどうか(WALK or STAY)
@@ -97,15 +95,9 @@ object SPRITE_MOM, 5, 4, STAY, LEFT, 1
 object SPRITE_SLOWBRO, 27, 13, STAY, DOWN, 1, MEWTWO, 70
 ```
 
-#### spriteID
+#### スプライトオフセット
 
-spriteIDはsignsのsignIDと同じスコープに存在していて、`DisplayTextID`の対象の識別子として使われるID
-
-0は常にプレイヤーに割り当てられるので1から始まる？
-
-#### テキストID
-
-[テキストIDのドキュメント](./text_id.md)を参照
+スプライトオフセット はsignsのsignIDと同じスコープに存在していて、これがスプライトのオフセットとなる($c1X0 のX)
 
 ## warp_to
 

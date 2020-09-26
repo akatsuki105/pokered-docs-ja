@@ -45,7 +45,8 @@ hMapWidth  EQU $FF8C
 hNorthSouthConnectionStripWidth EQU $FF8B
 hNorthSouthConnectedMapWidth    EQU $FF8C
 
-; スプライトのオフセット($c1X0のX) か テキストID(DisplayTextIDの引数) のバッファ
+; スプライトのオフセット($c1X0のX) か テキストID のバッファ  
+; start menuは 0  
 hSpriteIndexOrTextID EQU $FF8C
 
 ; `RedrawPartyMenu_`のループ処理で何匹めの手持ちポケモンを描画中かを表す

@@ -1348,54 +1348,53 @@ FadeOutAudio::
 
 
 ; **DisplayTextID**  
-; signメッセージやスプライトのダイアログ表示などで利用される  
+; テキストID　に対応するテキストを表示する  
 ; - - -  
-; INPUT: [hSpriteIndexOrTextID] = スプライトのオフセット or text ID (スプライトのオフセット がわたされたときはそのスプライトが保持しているTextIDのテキストを表示する)
+; signメッセージやスプライトのダイアログ表示などで利用される  
+; スプライトのオフセット がテキストIDとしてわたされたときはそのスプライトが保持しているTextIDのテキストを表示する  
+; 
+; INPUT: [hSpriteIndexOrTextID] = スプライトのオフセット or テキストID  
 DisplayTextID::
 	ld a, [H_LOADEDROMBANK]
 	push af
 	callba DisplayTextIDInit ; initialization
 
-	; wTextPredefFlag[0]がセットされている
+	; wTextPredefFlag[0]がセットされているなら 現在のマップデータが格納されているバンクにスイッチ
 	ld hl, wTextPredefFlag
 	bit 0, [hl]
 	res 0, [hl]				; wTextPredefFlag[0]はクリアしておく
 	jr nz, .skipSwitchToMapBank
-
-	; 現在のマップデータが格納されているバンクにスイッチ
 	ld a, [wCurMap]
 	call SwitchToMapRomBank
+
 .skipSwitchToMapBank
 	ld a, 30 ; half a second
 	ld [H_FRAMECOUNTER], a ; used as joypad poll timer
 
-	; hl = マップのテキストエントリの先頭
+	; hl = 現在のマップのテキストテーブル
 	ld hl, wMapTextPtr
 	inline "hl = [hl]"
 
 	ld d, $00
-	ld a, [hSpriteIndexOrTextID] ; text ID
-	ld [wSpriteIndex], a	; 話しかけたスプライトのスプライトオフセット
 
 	; 特殊なテキスト描画処理でないか検討
-	and a
-	jp z, DisplayStartMenu
-	cp TEXT_SAFARI_GAME_OVER
-	jp z, DisplaySafariGameOverText
-	cp TEXT_MON_FAINTED
-	jp z, DisplayPokemonFaintedText
-	cp TEXT_BLACKED_OUT
-	jp z, DisplayPlayerBlackedOutText
-	cp TEXT_REPEL_WORE_OFF
-	jp z, DisplayRepelWoreOffText
+	ld a, [hSpriteIndexOrTextID] 	; TextID or スプライトオフセット
+	ld [wSpriteIndex], a			; 話しかけたスプライトのスプライトオフセット
+	SWITCH $00, DisplayStartMenu
+	SWITCH TEXT_SAFARI_GAME_OVER, DisplaySafariGameOverText
+	SWITCH TEXT_MON_FAINTED, DisplayPokemonFaintedText
+	SWITCH TEXT_BLACKED_OUT, DisplayPlayerBlackedOutText
+	SWITCH TEXT_REPEL_WORE_OFF, DisplayRepelWoreOffText
 
-	; [hSpriteIndexOrTextID] <= スプライトの数 なら hSpriteIndexOrTextID は スプライトのオフセット として -> .spriteHandling
+	; [hSpriteIndexOrTextID] が 
+	; スプライトのオフセット -> .spriteHandling ([hSpriteIndexOrTextID] <= スプライトの数)
+	; テキストID -> .skipSpriteHandling ([hSpriteIndexOrTextID] > スプライトの数)
 	ld a, [wNumSprites]
 	ld e, a
 	ld a, [hSpriteIndexOrTextID] ; sprite ID
 	cp e
 	jr z, .spriteHandling
-	jr nc, .skipSpriteHandling	; [hSpriteIndexOrTextID] > スプライトの数 つまり hSpriteIndexOrTextID は テキストID -> .skipSpriteHandling 
+	jr nc, .skipSpriteHandling
 
 ; スプライトのテキストIDを取得
 .spriteHandling
@@ -1423,9 +1422,9 @@ DisplayTextID::
 	ld a, [hl] ; a = スプライトの text ID
 	pop hl
 
-; マップのテキストエントリの中から対象のテキストのアドレスを探す  
-; a = テキストID (スプライトの時も.spriteHandlingでテキストIDがaに入れられている)
-; hl = wMapTextPtr + 1
+; テキストテーブル の中から対象のテキストのアドレスを探す  
+; a = テキストID
+; hl = テキストテーブル(e.g. PalletTown_TextPointers)
 .skipSpriteHandling
 	; hl = (textID-1)*2 + マップのテキストエントリ
 	dec a
@@ -2776,15 +2775,24 @@ DisplayTextBoxID::
 	ld [MBC1RomBank], a
 	ret
 
-; not zero if an NPC movement script is running, the player character is
-; automatically stepping down from a door, or joypad states are being simulated
+; **IsPlayerCharacterBeingControlledByGame**  
+; 次のどれかの状態のときに 0 以外の値が返る  
+; - - -  
+; NPC movement script が動いている  
+; プレイヤーがドアから出るために自動的に下に進んでいる  
+; simulated joypad  
 IsPlayerCharacterBeingControlledByGame::
+	; NPC movement script が動いているか
 	ld a, [wNPCMovementScriptPointerTableNum]
 	and a
 	ret nz
+
+	; プレイヤーがドアから出るために自動的に下に進んでいる
 	ld a, [wd736]
 	bit 1, a ; currently stepping down from door bit
 	ret nz
+
+	; simulated joypad
 	ld a, [wd730]
 	and $80
 	ret
@@ -5757,13 +5765,23 @@ INCLUDE "home/predef.asm"
 UpdateCinnabarGymGateTileBlocks::
 	jpba UpdateCinnabarGymGateTileBlocks_
 
+; **CheckForHiddenObjectOrBookshelfOrCardKeyDoor**  
+; hidden objectか本棚やジムの石像などのアイテムやカードキーで開くドアが目の前にあるかチェック  
+; - - -  
+; hidden objectの場合は、そのobject routineまで行う  
+; OUTPUT: [$ffeb] = 0x00 or 0xff
 CheckForHiddenObjectOrBookshelfOrCardKeyDoor::
 	ld a, [H_LOADEDROMBANK]
 	push af
+
+	; Aボタンが押されていない -> .nothingFound
 	ld a, [hJoyHeld]
 	bit 0, a ; A button
 	jr z, .nothingFound
-; A button is pressed
+
+	; Aボタンが押されている
+
+	; hidden object がないなら -> .hiddenObjectNotFound
 	ld a, Bank(CheckForHiddenObject)
 	ld [MBC1RomBank], a
 	ld [H_LOADEDROMBANK], a
@@ -5774,19 +5792,25 @@ CheckForHiddenObjectOrBookshelfOrCardKeyDoor::
 	ld a, [wHiddenObjectFunctionRomBank]
 	ld [MBC1RomBank], a
 	ld [H_LOADEDROMBANK], a
+
+	; hidden objectがあった場合は call object routine 
 	ld de, .returnAddress
 	push de
 	jp hl
+
 .returnAddress
 	xor a
 	jr .done
+
 .hiddenObjectNotFound
 	callba PrintBookshelfText
 	ld a, [$ffdb]
 	and a
 	jr z, .done
+
 .nothingFound
 	ld a, $ff
+
 .done
 	ld [$ffeb], a
 	pop af

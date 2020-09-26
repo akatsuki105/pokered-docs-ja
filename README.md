@@ -37,7 +37,7 @@
 - [Diploma](./docs/diploma.md)
 - [イベント](./docs/event.md)
 - [連行イベント](./docs/follow.md)
-- [hidden object](./docs/hidden_object.md)
+- [hidden object](./docs/hidden_object/README.md)
 - [intro](./docs/intro.md)
 - [キー入力](./docs/joypad.md)
 - [list](./docs/list.md)

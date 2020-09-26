@@ -1032,24 +1032,29 @@ _IndigoPlateauStatuesText3::
 	cont "#MON LEAGUE HQ"
 	done
 
+; "Crammed full of #MON books!"
 _PokemonBooksText::
 	text "Crammed full of"
 	line "#MON books!"
 	done
 
+; "It's a sculpture of DIGLETT."
 _DiglettSculptureText::
 	text "It's a sculpture"
 	line "of DIGLETT."
 	done
 
+; "This is an elevator."
 _ElevatorText::
 	text "This is an"
 	line "elevator."
 	done
 
+; "A TOWN MAP."
 _TownMapText::
 	text "A TOWN MAP.@@"
 
+; "Wow! Tons of #MON stuff!"
 _PokemonStuffText::
 	text "Wow! Tons of"
 	line "#MON stuff!"

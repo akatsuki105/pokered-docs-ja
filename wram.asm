@@ -1342,6 +1342,7 @@ wRightGBMonSpecies:: ; cd5f
 ; cd60  
 ; bit 0: プレイヤーがトレーナーに見つかったか (複数のトレーナーに同時に見つかった時は発見されてないことにする)  
 ; bit 1: かいりきのアニメーション再生を待機中  
+; bit 2: ???  
 ; bit 3: 普通のPCを使っているか (0ならマサキのパソコンを使用している)  
 ; bit 4: 1 -> .skipMovingSprites  
 ; bit 5: 1なら menu で A/Bボタンが押された時にサウンドをならさない  
@@ -2842,7 +2843,9 @@ wCurMapWidth::
 wMapDataPtr:: ; d36a
 	ds 2
 
-; d36c
+; d36c  
+; 現在のマップのテキストテーブル(TextID -> テキスト のテーブル)を格納  
+; e.g. PalletTown_TextPointers
 wMapTextPtr::
 	ds 2
 
@@ -3524,11 +3527,12 @@ wd72e::
 	ds 1
 
 ; d730  
-; - bit 0: NPCスプライトがスクリプトによって動かされているか(scripted NPC)  
-; - bit 1: ???
-; - bit 5: キー入力を無視する  
-; - bit 6: 1なら テキスト出力時に文字ごとに遅延を生じない  
-; - bit 7: キー入力がゲーム内で勝手に入れられているか(simulated joypad)  
+; bit 0: NPCスプライトがスクリプトによって動かされているか(scripted NPC)  
+; bit 1: ???  
+; bit 2: 方向キーが押されたかの判定に OverworldLoop で使われている  
+; bit 5: キー入力を無視する  
+; bit 6: 1なら テキスト出力時に文字ごとに遅延を生じない  
+; bit 7: キー入力がゲーム内で勝手に入れられているか(simulated joypad)  
 wd730::
 	ds 1
 

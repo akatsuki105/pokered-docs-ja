@@ -6,7 +6,7 @@ PalletTown_Object:
 	warp 13, 5, 0, BLUES_HOUSE
 	warp 12, 11, 1, OAKS_LAB
 
-	db 4 ; signs
+	db 4 ; signs(スプライトではない)
 	sign 13, 13, 4 ; PalletTownText4
 	sign 7, 9, 5 ; PalletTownText5
 	sign 3, 5, 6 ; PalletTownText6

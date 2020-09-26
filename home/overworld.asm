@@ -71,8 +71,9 @@ OverworldLoopLessDelay::
 	res 3, [hl]
 	jp nz, WarpFound2
 
+	; 空を飛ぶか、dungeon warp中 -> HandleFlyWarpOrDungeonWarp
 	ld a, [wd732]
-	and 1 << 4 | 1 << 3 ; fly warp or dungeon warp
+	and 1 << 4 | 1 << 3
 	jp nz, HandleFlyWarpOrDungeonWarp
 
 	ld a, [wCurOpponent]
@@ -91,42 +92,61 @@ OverworldLoopLessDelay::
 .checkIfStartIsPressed
 	bit 3, a ; start button
 	jr z, .startButtonNotPressed
-	
-; if START is pressed
+
+	; STARTボタンが押されたらstart menuを出す -> .displayDialogue
 	xor a
 	ld [hSpriteIndexOrTextID], a ; start menu text ID
 	jp .displayDialogue
+
 .startButtonNotPressed
+
+	; Aボタンが押されなかった -> .checkIfDownButtonIsPressed
 	bit 0, a ; A button
 	jp z, .checkIfDownButtonIsPressed
-; if A is pressed
+
+	; Aボタンが押されたとき
+
+	; ???
 	ld a, [wd730]
 	bit 2, a
 	jp nz, .noDirectionButtonsPressed
+	
+	; プレイヤーが simulated joypad (or それに類する状態) -> .checkForOpponent
 	call IsPlayerCharacterBeingControlledByGame
 	jr nz, .checkForOpponent
+
+	; HiddenObjectsか本棚があった場合(カードキーは考えない) -> OverworldLoop
 	call CheckForHiddenObjectOrBookshelfOrCardKeyDoor
 	ld a, [$ffeb]
 	and a
-	jp z, OverworldLoop ; jump if a hidden object or bookshelf was found, but not if a card key door was found
+	jp z, OverworldLoop
+
+	; スプライトが目の前にない場合 -> OverworldLoop
 	call IsSpriteOrSignInFrontOfPlayer
 	ld a, [hSpriteIndexOrTextID]
 	and a
 	jp z, OverworldLoop
+
+	; fallthrough(スプライトが目の前にある場合)
 .displayDialogue
 	predef GetTileAndCoordsInFrontOfPlayer
 	call UpdateSprites
+
 	ld a, [wFlags_0xcd60]
 	bit 2, a
 	jr nz, .checkForOpponent
 	bit 0, a
 	jr nz, .checkForOpponent
+
 	aCoord 8, 9
 	ld [wTilePlayerStandingOn], a ; unused?
+
 	call DisplayTextID ; display either the start menu or the NPC/sign text
+
 	ld a, [wEnteringCableClub]
 	and a
 	jr z, .checkForOpponent
+	
 	dec a
 	ld a, 0
 	ld [wEnteringCableClub], a
@@ -142,11 +162,13 @@ OverworldLoopLessDelay::
 	set 7, [hl]
 .changeMap
 	jp EnterMap
+
 .checkForOpponent
 	ld a, [wCurOpponent]
 	and a
 	jp nz, .newBattle
 	jp OverworldLoop
+
 .noDirectionButtonsPressed
 	ld hl, wFlags_0xcd60
 	res 2, [hl]
