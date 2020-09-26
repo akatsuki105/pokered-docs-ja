@@ -2846,7 +2846,10 @@ wMapDataPtr:: ; d36a
 wMapTextPtr::
 	ds 2
 
-wMapScriptPtr:: ; d36e
+; d36e  
+; 現在のマップの map script  
+; e.g. PalletTown_Script
+wMapScriptPtr::
 	ds 2
 
 ; d370  

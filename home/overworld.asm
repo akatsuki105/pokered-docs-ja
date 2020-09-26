@@ -42,31 +42,44 @@ EnterMap::
 	ld [wJoyIgnore], a
 
 OverworldLoop::
-	call DelayFrame
+	call DelayFrame	; 1 frame
 OverworldLoopLessDelay::
-	call DelayFrame
+	call DelayFrame	; 2 frame
+	
 	call LoadGBPal
+	
+	; 段差をジャンプしているモーション中 -> HandleMidJump
 	ld a, [wd736]
-	bit 6, a ; jumping down a ledge?
+	bit 6, a
 	call nz, HandleMidJump
+
+	; プレイヤーが歩きモーション中 -> .moveAhead
 	ld a, [wWalkCounter]
 	and a
-	jp nz, .moveAhead ; if the player sprite has not yet completed the walking animation
-	call JoypadOverworld ; get joypad state (which is possibly simulated)
+	jp nz, .moveAhead
+
+	; get joypad state (which is possibly simulated)
+	call JoypadOverworld
+
 	callba SafariZoneCheck
 	ld a, [wSafariZoneGameOver]
 	and a
 	jp nz, WarpFound2
+
 	ld hl, wd72d
 	bit 3, [hl]
 	res 3, [hl]
 	jp nz, WarpFound2
+
 	ld a, [wd732]
 	and 1 << 4 | 1 << 3 ; fly warp or dungeon warp
 	jp nz, HandleFlyWarpOrDungeonWarp
+
 	ld a, [wCurOpponent]
 	and a
 	jp nz, .newBattle
+
+; a = [hJoyHeld](simulated joypad) or [hJoyPressed](それ以外)
 	ld a, [wd730]
 	bit 7, a ; are we simulating button presses?
 	jr z, .notSimulating
@@ -74,9 +87,11 @@ OverworldLoopLessDelay::
 	jr .checkIfStartIsPressed
 .notSimulating
 	ld a, [hJoyPressed]
+
 .checkIfStartIsPressed
 	bit 3, a ; start button
 	jr z, .startButtonNotPressed
+	
 ; if START is pressed
 	xor a
 	ld [hSpriteIndexOrTextID], a ; start menu text ID
@@ -1963,26 +1978,40 @@ DrawTileBlock::
 
 ; function to update joypad state and simulate button presses
 JoypadOverworld::
+	; c1X3, c1X5 を0クリア
 	xor a
 	ld [wSpriteStateData1 + 3], a
 	ld [wSpriteStateData1 + 5], a
+
 	call RunMapScript
+
 	call Joypad
+
+	; トレーナーと目があった -> .notForcedDownwards
 	ld a, [wFlags_D733]
 	bit 3, a ; check if a trainer wants a challenge
 	jr nz, .notForcedDownwards
+
+	; サイクリングロードにいない -> .notForcedDownwards
 	ld a, [wCurMap]
-	cp ROUTE_17 ; Cycling Road
+	cp ROUTE_17
 	jr nz, .notForcedDownwards
+
+	; 何らかのボタンがプレイヤーによって入力された -> .notForcedDownwards
 	ld a, [hJoyHeld]
 	and D_DOWN | D_UP | D_LEFT | D_RIGHT | B_BUTTON | A_BUTTON
 	jr nz, .notForcedDownwards
+
+	; サイクリングロードにいる場合は、トレーナーと目があっていないときにプレイヤーがボタンを入力していなかったら、下入力がされたことにする
 	ld a, D_DOWN
-	ld [hJoyHeld], a ; on the cycling road, if there isn't a trainer and the player isn't pressing buttons, simulate a down press
+	ld [hJoyHeld], a
+
 .notForcedDownwards
+	; simulated joypad 状態でない -> 終了
 	ld a, [wd730]
 	bit 7, a
 	ret z
+
 ; if simulating button presses
 	ld a, [hJoyHeld]
 	ld b, a
@@ -2089,14 +2118,15 @@ CollisionCheckOnWater::
 	jr nz, .noCollision ; keep surfing if it's not the boarding platform tile
 	jr .stopSurfing ; if it is the boarding platform tile, stop surfing
 
-; function to run the current map's script
+; 現在のMapの Map Scriptを実行する
 RunMapScript::
 	push hl
 	push de
 	push bc
+	
+	; かいりきの岩を押しているか判定
 	callba TryPushingBoulder
-
-	; TryPushingBoulder でかいりきの岩を押すことになったら DoBoulderDustAnimation
+	; 押しているなら土埃のアニメーション
 	ld a, [wFlags_0xcd60]
 	bit 1, a
 	jr z, .afterBoulderEffect
@@ -2106,14 +2136,21 @@ RunMapScript::
 	pop bc
 	pop de
 	pop hl
+
+	; まずNPC Movement script(https://github.com/Akatsuki-py/understanding-pokemon-red/blob/master/docs/sprite/movement_script.md)
 	call RunNPCMovementScript
+
+	; hl = map script
 	ld a, [wCurMap] ; current map number
 	call SwitchToMapRomBank ; change to the ROM bank the map's data is in
 	ld hl, wMapScriptPtr
 	inline "hl = [hl]"
+
+	; call hl (map scriptを実行)
 	ld de, .return
 	push de
-	jp hl ; jump to script
+	jp hl
+
 .return
 	ret
 
