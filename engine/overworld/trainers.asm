@@ -267,7 +267,10 @@ GetSpriteDataPointer:
 ; - - -  
 ; エンカウント処理: [wEngagedTrainerClass] と [wEngagedTrainerSet] に trainer class と trainer number をセット
 ; 
-; OUTPUT: [wTrainerSpriteOffset] = 0xff or 0x00
+; OUTPUT:  
+; [wTrainerSpriteOffset] = 0xff(発見された) or 0x00(されなかった)  
+; [wEngagedTrainerClass] = trainer class  
+; [wEngagedTrainerSet] = trainer number  
 TrainerEngage:
 	push hl
 	push de

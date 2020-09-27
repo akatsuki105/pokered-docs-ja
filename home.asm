@@ -2985,54 +2985,82 @@ ReadTrainerHeaderInfo::
 	pop de
 	ret
 
+; **TrainerFlagAction**  
+; hlのビットフィールドのビットcにおいてアクションbを実行する  
+; - - -  
+; INPUT:  
+; c = アクション b の対象が hl の何ビット目か  
+; b = bitに対してとるアクション(0 -> クリア, 1 -> セット, 2 -> リード)  
+; 
+; OUTPUT: cレジスタ = アクションの結果(リードなら読み取ったbit)  
 TrainerFlagAction::
 	predef_jump FlagActionPredef
 
-; **TalkToTrainer**  s
-; トレーナーに話しかける処理  
+; **TalkToTrainer**  
+; トレーナーと会話をする処理  
 ; - - -  
 ; INPUT: hl = Trainer Header(AgathaTrainerHeader0)
 TalkToTrainer::
 	call StoreTrainerHeaderPointer
+
+	; [wTrainerHeaderFlagBit]に撃破フラグのあるbitを読み出す
 	xor a
-	call ReadTrainerHeaderInfo     ; read flag's bit
+	call ReadTrainerHeaderInfo
+
+	; hl = 撃破フラグのあるアドレス
 	ld a, $2
-	call ReadTrainerHeaderInfo     ; read flag's byte ptr
+	call ReadTrainerHeaderInfo
+	
+	; トレーナーを未撃破 -> .trainerNotYetFought
 	ld a, [wTrainerHeaderFlagBit]
 	ld c, a
 	ld b, FLAG_TEST
-	call TrainerFlagAction      ; read trainer's flag
+	call TrainerFlagAction
 	ld a, c
 	and a
-	jr z, .trainerNotYetFought     ; test trainer's flag
+	jr z, .trainerNotYetFought
+
+	; トレーナーを撃破済みのときは 戦闘終了後に話しかけた時のテキスト を描画して終了
 	ld a, $6
-	call ReadTrainerHeaderInfo     ; print after battle text
-	jp PrintText
+	call ReadTrainerHeaderInfo
+	jp PrintText	; return
+
 .trainerNotYetFought
+	; 戦闘開始前のテキスト
 	ld a, $4
 	call ReadTrainerHeaderInfo     ; print before battle text
 	call PrintText
+
+	; hl = 勝利時に戦闘画面で出てくるテキスト
 	ld a, $a
 	call ReadTrainerHeaderInfo     ; (?) does nothing apparently (maybe bug in ReadTrainerHeaderInfo)
 	push de
 	ld a, $8
 	call ReadTrainerHeaderInfo     ; read end battle text
 	pop de
+
 	call SaveEndBattleTextPointers
+
+	; ExecuteCurMapScriptInTable で Aレジスタによる上書きを許可する
 	ld hl, wFlags_D733
 	set 4, [hl]                    ; activate map script index override (index is set below)
+	
+	; プレイヤーが、Map scriptですでにトレーナーに見つかっている場合はreturn
 	ld hl, wFlags_0xcd60
 	bit 0, [hl]                    ; test if player is already engaging the trainer (because the trainer saw the player)
 	ret nz
-; if the player talked to the trainer of his own volition
+
+	; プレイヤーが自分の意志でトレーナーに話しかけた時、[wCurMapScript]++して -> StartTrainerBattle
 	call EngageMapTrainer
 	ld hl, wCurMapScript
 	inc [hl]      ; increment map script index before StartTrainerBattle increments it again (next script function is usually EndTrainerBattle)
 	jp StartTrainerBattle
 
-; checks if any trainers are seeing the player and wanting to fight
+; checks if any trainers are seeing the player and wanting to fight  
+; hl = 0番目の Trainer Header (e.g. CeruleanGymTrainerHeader0)
 CheckFightingMapTrainers::
 	call CheckForEngagingTrainers
+	; 
 	ld a, [wSpriteIndex]
 	cp $ff
 	jr nz, .trainerEngaging
@@ -3162,18 +3190,35 @@ SpritePositionBankswitch::
 	jp Bankswitch ; indirect jump to one of the four functions
 
 
+; **CheckForEngagingTrainers**  
+; マップ上のトレーナーのどれかに発見されたかチェックする  
+; - - -  
+; INPUT: hl = 0番目の Trainer Header (e.g. CeruleanGymTrainerHeader0)  
+; 
+; OUTPUT:  
+; [wTrainerSpriteOffset] = 0xff(発見された) or 0x00  
+; [wSpriteIndex] = 発見したトレーナー  
 CheckForEngagingTrainers::
+	; [wTrainerHeaderFlagBit] = 撃破フラグのあるbit, de, hl = Trainer Header
 	xor a
-	call ReadTrainerHeaderInfo       ; read trainer flag's bit (unused)
-	ld d, h                          ; store trainer header address in de
+	call ReadTrainerHeaderInfo
+	ld d, h
 	ld e, l
+
+; Trainer Headerを1つずつ見ていく
 .trainerLoop
-	call StoreTrainerHeaderPointer   ; set trainer header pointer to current trainer
+	; [wTrainerHeaderPtr] = 現在処理中のTrainer Header
+	call StoreTrainerHeaderPointer
+
 	ld a, [de]
-	ld [wSpriteIndex], a                     ; store trainer flag's bit
+	ld [wSpriteIndex], a                     ; [wSpriteIndex] = 撃破フラグのあるbit
 	ld [wTrainerHeaderFlagBit], a
+
+	; 全部見た -> return
 	cp $ff
 	ret z
+
+	; すでに撃破済み -> .continue
 	ld a, $2
 	call ReadTrainerHeaderInfo       ; read trainer flag's byte ptr
 	ld b, FLAG_TEST
@@ -3183,6 +3228,8 @@ CheckForEngagingTrainers::
 	ld a, c
 	and a ; has the trainer already been defeated?
 	jr nz, .continue
+
+	; トレーナーに発見されたか判定
 	push hl
 	push de
 	push hl
@@ -3198,10 +3245,14 @@ CheckForEngagingTrainers::
 	predef TrainerEngage
 	pop de
 	pop hl
+
+	; 発見されたら return 
 	ld a, [wTrainerSpriteOffset]
 	and a
 	ret nz        ; break if the trainer is engaging
+
 .continue
+	; 次のTrainer Headerへ
 	ld hl, $c
 	add hl, de
 	ld d, h
@@ -3210,8 +3261,14 @@ CheckForEngagingTrainers::
 
 ; **SaveEndBattleTextPointers**  
 ; - - -  
+; INPUT:  
 ; hl = プレイヤーが勝った時のテキスト  
 ; de = プレイヤーが負けた時のテキスト  
+; 
+; OUTPUT:  
+; [wEndBattleTextRomBank] = テキストのあるバンク  
+; [wEndBattleWinTextPointer] = 勝った時のテキスト  
+; [wEndBattleLoseTextPointer] = 負けた時のテキスト  
 SaveEndBattleTextPointers::
 	ld a, [H_LOADEDROMBANK]
 	ld [wEndBattleTextRomBank], a

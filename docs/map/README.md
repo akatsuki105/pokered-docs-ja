@@ -20,6 +20,12 @@ Map Header はタイルセットの情報やテキストデータのテーブル
 
 詳細は [Map Object](./map_object.md)を参照
 
+## Map Script
+
+マップに紐づけられた処理
+
+詳細は [Map Script](./map_script.md)を参照
+
 ## 単位
 
 このレポジトリで使われる様々な単位

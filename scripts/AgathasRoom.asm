@@ -149,6 +149,7 @@ AgathaAfterBattleText:
 	TX_FAR _AgathaAfterBattleText
 	db "@"
 
+; "Someone's voice: Don't run away!"
 AgathaDontRunAwayText:
 	TX_FAR _AgathaDontRunAwayText
 	db "@"

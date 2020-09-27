@@ -97,4 +97,3 @@ $ff が `Trainer Header` の終端記号として使われている
 撃破フラグを表す bit がどこにあるかは、`Trainer Header` の中で `dbEventFlagBit` と `dwEventFlagAddress` によって示されている
 
 `dwEventFlagAddress` は撃破フラグのあるアドレスを、`dbEventFlagBit` はそのアドレスの何bit目かを示している
-

@@ -567,7 +567,8 @@ wPredefID:: ; cc4e
 wPredefRegisters:: ; cc4f
 	ds 6
 
-wTrainerHeaderFlagBit:: ; cc55
+; cc55
+wTrainerHeaderFlagBit::
 	ds 1
 
 	ds 1
@@ -1341,7 +1342,7 @@ wRightGBMonSpecies:: ; cd5f
 	ds 1
 
 ; cd60  
-; bit 0: プレイヤーがトレーナーに見つかったか (複数のトレーナーに同時に見つかった時は発見されてないことにする)  
+; bit 0: `TrainerEngage`でプレイヤーがトレーナーに見つかったか (複数のトレーナーに同時に見つかった時は発見されてないことにする)  
 ; bit 1: かいりきのアニメーション再生を待機中  
 ; bit 2: ???  
 ; bit 3: 普通のPCを使っているか (0ならマサキのパソコンを使用している)  
