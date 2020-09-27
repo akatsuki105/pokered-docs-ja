@@ -96,7 +96,7 @@ Char4ETest::
 
 .ok
 	; hl を改行
-	pop hl
+	pop hl	; ここで行の最初に戻っている
 	add hl, bc				
 	push hl
 	jp PlaceNextChar_inc
