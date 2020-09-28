@@ -348,6 +348,7 @@ Char49::
 	push hl
 	jp PlaceNextChar_inc
 
+; cont
 Char4B::
 	ld a, "▼"
 	Coorda 18, 16
