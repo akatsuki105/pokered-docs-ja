@@ -1,10 +1,11 @@
 ; **_Joypad**  
 ; ジョイパッドの状態を記録する変数を更新  
 ; - - -  
-; hJoyReleased: (hJoyLast ^ hJoyInput) & hJoyLast  
-; hJoyPressed:  (hJoyLast ^ hJoyInput) & hJoyInput (wJoyIgnoreを考慮)  
-; hJoyLast:     hJoyInput 今回の_Joypad処理で押されたボタン  
-; hJoyHeld:	  今回の_Joypad処理で押されたボタン(wJoyIgnoreを考慮)  
+; OUTPUT:  
+; hJoyReleased =  (hJoyLast ^ hJoyInput) & hJoyLast  
+; hJoyPressed =  (hJoyLast ^ hJoyInput) & hJoyInput (wJoyIgnoreを考慮)  
+; hJoyLast = hJoyInput 今回の_Joypad処理で押されたボタン  
+; hJoyHeld = 今回の_Joypad処理で押されたボタン(wJoyIgnoreを考慮)  
 _Joypad::
 	ld a, [hJoyInput]	; [↓, ↑, ←, →, Start, Select, B, A] 押されているときにbitが立つ
 
