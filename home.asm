@@ -4344,15 +4344,13 @@ CopyString::
 JoypadLowSensitivity::
 	call Joypad
 
-	; [hJoy7] == 1 -> a = [hJoyHeld]
-	; [hJoy7] == 0 -> a = [hJoyPressed]
+; [hJoy5] = [hJoyPressed]([hJoy7] == 0) or [hJoyHeld]([hJoy7] == 1)
 	ld a, [hJoy7] ; flag
 	and a ; get all currently pressed buttons or only newly pressed buttons?
 	ld a, [hJoyPressed] ; newly pressed buttons
 	jr z, .storeButtonState
 	ld a, [hJoyHeld] ; all currently pressed buttons
 .storeButtonState
-	; [hJoy5] = [hJoyPressed] or [hJoyHeld]
 	ld [hJoy5], a
 
 	; 新たに押されたボタンがない -> .noNewlyPressedButtons

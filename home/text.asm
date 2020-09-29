@@ -372,6 +372,8 @@ Char4C::
 ; 1回目: 2行のテキストを『in between』行という常に空白の行にコピーする(スクロールのアニメーションを表現するため？)  
 ; 2回目: 2行目のテキストを1行目にコピーする  
 ScrollTextUpOneLine::
+
+; 14-16 -> 13-15
 	coord hl, 0, 14 ; top row of text
 	coord de, 0, 13 ; empty line above text
 	ld b, SCREEN_WIDTH * 3
@@ -379,15 +381,18 @@ ScrollTextUpOneLine::
 	inline "[de++] = [hl++]"
 	dec b
 	jr nz, .copyText
+
 	coord hl, 1, 16
 	ld a, " "
 	ld b, SCREEN_WIDTH - 2
 .clearText
+; {
 	ld [hli], a
 	dec b
 	jr nz, .clearText
+; }
 
-	; wait five frames
+; wait five frames
 	ld b, 5
 .WaitFrame
 	call DelayFrame
