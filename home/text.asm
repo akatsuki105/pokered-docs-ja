@@ -331,6 +331,7 @@ Char51:: ; para
 	coord hl, 1, 14
 	jp PlaceNextChar_inc
 
+; page
 Char49::
 	push de
 	ld a, "▼"
