@@ -2029,12 +2029,15 @@ DisplayListMenuIDLoop::
 	; ↓ -> .downPressed(fallthrough)
 
 .downPressed
+	; CANCELボタンが見えている -> wListScrollOffsetそのまま
 	ld a, [hl]
 	add 3
 	ld b, a
 	ld a, [wListCount]
 	cp b ; will going down scroll past the Cancel button?
 	jp c, DisplayListMenuIDLoop
+
+	; wListScrollOffset++
 	inc [hl] ; if not, go down
 	jp DisplayListMenuIDLoop	; loop
 
