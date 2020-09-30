@@ -398,8 +398,9 @@ wTileBehindCursor::
 	ds 1
 
 ; cc28  
-; menuの一番下の項目のID  
-; e.g. 2択menuなら Yes No の2つなので 0, 1 なので 1になる
+; menuの一番下の項目のID(画面に表示されているもののオフセット)  
+; e.g. 2択menuなら Yes No の2つなので 0, 1 なので 1になる  
+; e.g. listmenu なら上から4つ目の項目にカーソルがいくとスクロールするので 2  
 wMaxMenuItem::
 	ds 1
 
@@ -1695,12 +1696,12 @@ wHPBarType::
 
 ; cf94  
 ; DisplayListMenuIDで使われるID  
-; list menu ID's以下のどれかを格納
-; - PCPOKEMONLISTMENU  EQU $00
-; - MOVESLISTMENU      EQU $01
-; - PRICEDITEMLISTMENU EQU $02
-; - ITEMLISTMENU       EQU $03
-; - SPECIALLISTMENU    EQU $04
+; list menu ID's以下のどれかを格納  
+; PCPOKEMONLISTMENU  EQU $00  
+; MOVESLISTMENU      EQU $01  
+; PRICEDITEMLISTMENU EQU $02  
+; ITEMLISTMENU       EQU $03  
+; SPECIALLISTMENU    EQU $04  
 wListMenuID::
 	ds 1
 
