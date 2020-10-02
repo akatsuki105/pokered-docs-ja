@@ -5080,7 +5080,7 @@ HandleMenuInput_::
 	bit 6, a ; pressed Up key?
 	jr z, .checkIfDownPressed	; 次は下ボタンのチェック
 
-	; 上ボタンを押したとき
+; 上ボタンを押したとき
 .upPressed
 	; 一番上を選択中かどうか
 	ld a, [wCurrentMenuItem] ; selected menu item
@@ -5102,7 +5102,7 @@ HandleMenuInput_::
 	ld [wCurrentMenuItem], a ; wrap to the bottom of the menu
 	jr .checkOtherKeys
 	
-	; 下ボタンのチェック(上ボタンと同様)
+; 下ボタンのチェック(上ボタンと同様)
 .checkIfDownPressed
 	bit 7, a
 	jr z, .checkOtherKeys
