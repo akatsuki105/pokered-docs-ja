@@ -2459,7 +2459,7 @@ PrintListMenuEntries::
 	cp c ; is it this item?
 	jr nz, .nextListEntry
 	dec hl
-	ld a, $ec ; unfilled right arrow menu cursor to indicate an item being swapped
+	ld a, "▷" ; unfilled right arrow menu cursor to indicate an item being swapped
 	ld [hli], a
 .nextListEntry
 	ld bc, 2 * SCREEN_WIDTH ; 2 rows
@@ -5276,7 +5276,7 @@ PlaceUnfilledArrowMenuCursor::
 	ld a, [wMenuCursorLocation + 1]
 	ld h, a
 	; [wMenuCursorLocation]の示すアドレス = ▷
-	ld [hl], $ec ; 白抜きの三角 
+	ld [hl], "▷"
 	ld a, b
 	ret
 
