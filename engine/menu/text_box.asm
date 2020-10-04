@@ -338,7 +338,7 @@ DisplayMoneyBox:
 	call ClearScreenArea
 	coord hl, 12, 1
 	ld de, wPlayerMoney
-	ld c, $a3
+	ld c, $a3	; ¥
 	call PrintBCDNumber
 	ld hl, wd730
 	res 6, [hl]

@@ -1,3 +1,17 @@
+; **_Multiply**  
+; 掛け算を行う関数  
+; - - -  
+; GBZ80 には mul命令 がないため関数として定義する必要がある  
+; すべての値は ビッグエンディアン として扱う  
+; 
+; c = a * b
+; 
+; INPUT  
+; H_MULTIPLICAND, H_MULTIPLICAND+1, H_MULTIPLICAND+2 =  被乗数(a)  
+; H_MULTIPLIER = 乗数(b)
+; 
+; OUTPUT  
+; FF95-FF98 = 掛け算の結果(c)
 _Multiply:
 	ld a, $8
 	ld b, a
@@ -9,32 +23,41 @@ _Multiply:
 	ld [H_MULTIPLYBUFFER+3], a
 .loop
 	ld a, [H_MULTIPLIER]
-	srl a
+	srl a	; 1 >> a
 	ld [H_MULTIPLIER], a ; (aliases: H_DIVISOR, H_MULTIPLIER, H_POWEROFTEN)
 	jr nc, .smallMultiplier
+
+; .notSmallMultiplier
 	ld a, [H_MULTIPLYBUFFER+3]
 	ld c, a
 	ld a, [H_MULTIPLICAND+2]
 	add c
+
 	ld [H_MULTIPLYBUFFER+3], a
 	ld a, [H_MULTIPLYBUFFER+2]
 	ld c, a
 	ld a, [H_MULTIPLICAND+1]
 	adc c
+
 	ld [H_MULTIPLYBUFFER+2], a
 	ld a, [H_MULTIPLYBUFFER+1]
 	ld c, a
 	ld a, [H_MULTIPLICAND] ; (aliases: H_MULTIPLICAND)
 	adc c
+
 	ld [H_MULTIPLYBUFFER+1], a
 	ld a, [H_MULTIPLYBUFFER]
 	ld c, a
 	ld a, [H_PRODUCT] ; (aliases: H_PRODUCT, H_PASTLEADINGZEROES, H_QUOTIENT)
 	adc c
+
 	ld [H_MULTIPLYBUFFER], a
+
 .smallMultiplier
+	; b == 1 なら掛け算の必要なし
 	dec b
 	jr z, .done
+
 	ld a, [H_MULTIPLICAND+2]
 	sla a
 	ld [H_MULTIPLICAND+2], a
@@ -48,6 +71,7 @@ _Multiply:
 	rl a
 	ld [H_PRODUCT], a
 	jr .loop
+	
 .done
 	ld a, [H_MULTIPLYBUFFER+3]
 	ld [H_PRODUCT+3], a
