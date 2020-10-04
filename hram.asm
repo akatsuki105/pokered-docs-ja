@@ -78,6 +78,7 @@ hSpriteImageIndex EQU $FF8D
 hLoadSpriteTemp1 EQU $FF8D
 hLoadSpriteTemp2 EQU $FF8E
 
+; 1 なら DisplayChooseQuantityMenu で表示する価格を半分にする
 hHalveItemPrices EQU $FF8E
 
 hSpriteOffset2 EQU $FF8F

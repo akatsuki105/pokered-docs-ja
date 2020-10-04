@@ -2207,10 +2207,12 @@ DisplayChooseQuantityMenu::
 	call PrintNumber
 	; キー入力を待つ
 	jp .waitForKeyPressLoop
+
 .buttonAPressed ; the player chose to make the transaction
 	xor a
 	ld [wMenuItemToSwap], a ; 0 means no item is currently being swapped
 	ret
+	
 .buttonBPressed ; the player chose to cancel the transaction
 	xor a
 	ld [wMenuItemToSwap], a ; 0 means no item is currently being swapped
