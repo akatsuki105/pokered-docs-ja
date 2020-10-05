@@ -17,7 +17,7 @@ UpdatePlayerSprite:
 	cp $ff
 	jr z, .disableSprite
 
-	; c200 = 0x01
+	; c200 != 0xff
 	dec a
 	ld [wSpriteStateData2], a
 	jr .disableSprite
@@ -359,7 +359,7 @@ ChangeFacingDirection:
 	; そのまま下の処理に(TryWalking)
 
 ; **TryWalking**  
-; 止まっている状態から歩行を始める関数  
+; 止まっている状態から歩行を始める関数(NPC限定)  
 ; - - -  
 ; c1XX, c2XXを更新して、スプライトが歩き始めた状態にする  
 ; 
@@ -506,7 +506,7 @@ UpdateSpriteMovementDelay:
 	ld l, a
 	ld a, [hl]              ; c2x6: movement byte 1
 	inc l
-	inc l
+	inc l					; hl = c2x8
 	cp $fe
 	jr nc, .tickMoveCounter ; values $fe or $ff
 	ld [hl], $0

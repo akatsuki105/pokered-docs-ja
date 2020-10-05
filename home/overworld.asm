@@ -41,6 +41,8 @@ EnterMap::
 	xor a
 	ld [wJoyIgnore], a
 
+; **OverworldLoop**  
+; 2frameごとに実行される
 OverworldLoop::
 	call DelayFrame	; 1 frame
 OverworldLoopLessDelay::
@@ -135,6 +137,7 @@ OverworldLoopLessDelay::
 	ld a, [wFlags_0xcd60]
 	bit 2, a
 	jr nz, .checkForOpponent
+
 	bit 0, a
 	jr nz, .checkForOpponent
 
@@ -175,25 +178,36 @@ OverworldLoopLessDelay::
 	
 	jp OverworldLoop
 
+; 今回の OverworldLoop でボタンが押されなかった場合
+; 前回の OverworldLoop で方向キーが押されてたりしたら方向転換処理をする
 .noDirectionButtonsPressed
+
 	ld hl, wFlags_0xcd60
 	res 2, [hl]
+
+	; 方向転換を行う このとき [wPlayerMovingDirection] = 前回の OverworldLoop での方向キー  つまり方向転換を行う方向
 	call UpdateSprites
+
 	ld a, 1
 	ld [wCheckFor180DegreeTurn], a
+
+	; 方向転換してない -> OverworldLoop
 	ld a, [wPlayerMovingDirection] ; the direction that was pressed last time
 	and a
 	jp z, OverworldLoop
-; if a direction was pressed last time
-	ld [wPlayerLastStopDirection], a ; save the last direction
+
+	; 方向転換した(その場でそのままもありうる)
+	ld [wPlayerLastStopDirection], a ; [wPlayerLastStopDirection] = [wPlayerMovingDirection]
 	xor a
-	ld [wPlayerMovingDirection], a ; zero the direction
+	ld [wPlayerMovingDirection], a ; [wPlayerMovingDirection] = 0
 	jp OverworldLoop
 
 .checkIfDownButtonIsPressed
+	; not ↓ -> .checkIfUpButtonIsPressed
 	ld a, [hJoyHeld] ; current joypad state
 	bit 7, a ; down button
 	jr z, .checkIfUpButtonIsPressed
+	; [c1x3] = 1
 	ld a, 1
 	ld [wSpriteStateData1 + 3], a ; delta Y
 	ld a, PLAYER_DIR_DOWN
@@ -221,26 +235,29 @@ OverworldLoopLessDelay::
 	ld a, 1
 	ld [wSpriteStateData1 + 5], a ; delta X
 
-
+; なんらかの方向キーが入力された場合ここにくる
 .handleDirectionButtonPress
 	ld [wPlayerDirection], a ; new direction
+
 	ld a, [wd730]
 	bit 7, a ; are we simulating button presses?
 	jr nz, .noDirectionChange ; ignore direction changes if we are
+
 	ld a, [wCheckFor180DegreeTurn]
 	and a
 	jr z, .noDirectionChange
+
 	ld a, [wPlayerDirection] ; new direction
 	ld b, a
 	ld a, [wPlayerLastStopDirection] ; old direction
 	cp b
 	jr z, .noDirectionChange
-; Check whether the player did a 180-degree turn.
-; It appears that this code was supposed to show the player rotate by having
-; the player's sprite face an intermediate direction before facing the opposite
+
+; プレイヤーが180°方向転換したかチェックする(意味のない)
+; It appears that this code was supposed to show the player rotate by having the player's sprite face an intermediate direction before facing the opposite
 ; direction (instead of doing an instantaneous about-face), but the intermediate
-; direction is only set for a short period of time. It is unlikely for it to
-; ever be visible because DelayFrame is called at the start of OverworldLoop and
+; direction is only set for a short period of time. 
+; It is unlikely for it to ever be visible because DelayFrame is called at the start of OverworldLoop and
 ; normally not enough cycles would be executed between then and the time the
 ; direction is set for V-blank to occur while the direction is still set.
 	swap a ; put old direction in upper half
@@ -280,9 +297,11 @@ OverworldLoopLessDelay::
 	jp OverworldLoop
 
 .noDirectionChange
+	; プレイヤーを歩かせる
 	ld a, [wPlayerDirection] ; current direction
 	ld [wPlayerMovingDirection], a ; save direction
 	call UpdateSprites
+
 	ld a, [wWalkBikeSurfState]
 	cp $02 ; surfing
 	jr z, .surfing
@@ -311,6 +330,7 @@ OverworldLoopLessDelay::
 	ld [wWalkCounter], a
 	jr .moveAhead2
 
+; すでに歩きモーション中
 .moveAhead
 	ld a, [wd736]
 	bit 7, a
@@ -319,12 +339,16 @@ OverworldLoopLessDelay::
 .noSpinning
 	call UpdateSprites
 
+; 歩き始めた
 .moveAhead2
+	; 歩行まっさい中はトレーナーに発見されない
 	ld hl, wFlags_0xcd60
 	res 2, [hl]
+
 	ld a, [wWalkBikeSurfState]
 	dec a ; riding a bike?
 	jr nz, .normalPlayerSpriteAdvancement
+
 	ld a, [wd736]
 	bit 6, a ; jumping a ledge?
 	jr nz, .normalPlayerSpriteAdvancement
@@ -1610,20 +1634,26 @@ AdvancePlayerSprite::
 	ld b, a
 	ld a, [wSpriteStateData1 + 5] ; delta X
 	ld c, a
+
+	; wWalkCounter-- して まだ 0 じゃなかったら .afterUpdateMapCoords
 	ld hl, wWalkCounter ; walking animation counter
 	dec [hl]
 	jr nz, .afterUpdateMapCoords
-; if it's the end of the animation, update the player's map coordinates
+
+	; wWalkCounter が 0 つまり1マス歩行が終わったらプレイヤーの coord を更新
 	ld a, [wYCoord]
 	add b
 	ld [wYCoord], a
 	ld a, [wXCoord]
 	add c
 	ld [wXCoord], a
+
 .afterUpdateMapCoords
+	; 歩行中 -> .scrollBackgroundAndSprites
 	ld a, [wWalkCounter] ; walking animation counter
 	cp $07
 	jp nz, .scrollBackgroundAndSprites
+
 ; if this is the first iteration of the animation
 	ld a, c
 	cp $01

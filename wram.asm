@@ -1345,7 +1345,7 @@ wRightGBMonSpecies:: ; cd5f
 ; cd60  
 ; bit 0: `TrainerEngage`でプレイヤーがトレーナーに見つかったか (複数のトレーナーに同時に見つかった時は発見されてないことにする)  
 ; bit 1: かいりきのアニメーション再生を待機中  
-; bit 2: ???  
+; bit 2: 1 ならトレーナーに発見されたかの判定を OverworldLoopで行う  
 ; bit 3: 普通のPCを使っているか (0ならマサキのパソコンを使用している)  
 ; bit 4: 1 -> .skipMovingSprites  
 ; bit 5: 1なら menu で A/Bボタンが押された時にサウンドをならさない  
@@ -1741,7 +1741,7 @@ wFontLoaded::
 	ds 1
 
 ; cfc5  
-; プレイヤーの歩きモーションカウンタ  
+; プレイヤーの歩きモーションカウンタ 最大8  
 ; 0 なら プレイヤーが現在歩きモーション中ではないことを表す
 wWalkCounter::
 	ds 1
@@ -2603,8 +2603,9 @@ wWhichPrize:: ; d139
 wIgnoreInputCounter::
 	ds 1
 
-wStepCounter:: ; d13b
+; d13b  
 ; counts down once every step
+wStepCounter::
 	ds 1
 
 wNumberOfNoRandomBattleStepsLeft:: ; d13c
@@ -3084,13 +3085,17 @@ wMapViewVRAMPointer::
 wPlayerMovingDirection::
 	ds 1
 
-wPlayerLastStopDirection:: ; d529
-; the direction in which the player was moving before the player last stopped
+; d529  
+; プレイヤーが最後に止まる前に動いていた方向
+wPlayerLastStopDirection::
 	ds 1
 
-wPlayerDirection:: ; d52a
-; if the player is moving, the current direction
-; if the player is not moving, the last the direction in which the player moved
+; d52a  
+; プレイヤーが歩行中なら歩いている方向  
+; プレイヤーが止まっているなら最後に歩いた方向  
+; 
+; PLAYER_DIR_RIGHT or PLAYER_DIR_LEFT or PLAYER_DIR_DOWN or PLAYER_DIR_UP   
+wPlayerDirection::
 	ds 1
 
 ; d52b  

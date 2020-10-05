@@ -2783,9 +2783,9 @@ DisplayTextBoxID::
 ; **IsPlayerCharacterBeingControlledByGame**  
 ; 次のどれかの状態のときに 0 以外の値が返る  
 ; - - -  
-; NPC movement script が動いている  
-; プレイヤーがドアから出るために自動的に下に進んでいる  
-; simulated joypad  
+; - NPC movement script が動いている  
+; - プレイヤーがドアから出るために自動的に下に進んでいる  
+; - simulated joypad  
 IsPlayerCharacterBeingControlledByGame::
 	; NPC movement script が動いているか
 	ld a, [wNPCMovementScriptPointerTableNum]
