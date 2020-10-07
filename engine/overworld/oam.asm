@@ -95,7 +95,7 @@ PrepareOAMData:
 	ld c, a
 	ld a, [hli]
 	ld b, a
-	; hl = SpriteOAMParameters(Flipped) (SpriteFacingAndAnimationTable の dwエントリ1)
+	; hl = SpriteOAMParameters(or SpriteOAMParametersFlipped) (SpriteFacingAndAnimationTable の dwエントリ1)
 	inline "hl = [hl]"
 
 	call GetSpriteScreenXY
@@ -124,14 +124,14 @@ PrepareOAMData:
 
 	inc e					; de = OAMのタイルID
 
-	; a = SpriteFacing${A}And${B}[i] = pattern number offset
+	; a = SpriteFacingUpAndStanding[i] (SpriteFacing${A}And${B}[i]) = pattern number offset
 	; pattern number offset = animation | orientation
 	; animation = 歩きモーション(0x80) or 突っ立っている(0x00)
 	; orientation = 0x00 or 0x04 or 0x08
 	ld a, [bc]
 
 	; SpriteFacing${A}And${B} の次のエントリへ  
-	; 例: bc = SpriteFacingDownAndStanding の $02 のアドレスなら $03 のアドレスへ
+	; 例: bc = SpriteFacingDownAndStanding なら $01 -> $02 -> $03 -> $04
 	inc bc
 	push bc
 

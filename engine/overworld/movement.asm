@@ -1,5 +1,5 @@
-; マップ上にテキストボックスが存在するとき、
-; マップが表示されているのは Y <= $60 つまり上から96pxまでであることを示している
+; マップを構成するタイルセットは $60枚のタイルからなっている
+; VRAMでは 0x9000 からタイルセットのタイルが並んでおり、 $60枚以降にはテキストボックス用のタイルがある
 MAP_TILESET_SIZE EQU $60
 
 ; **UpdatePlayerSprite**  
@@ -239,18 +239,17 @@ UpdateNPCSprite:
 
 ; 以後はscripted NPCの動作(.randomMovementまで)
 	
-	; [c2x6] + 2 - 1 = [c2X6] + 1
-	dec a
+	; [c2X6] = [c2X6] + 1
+	dec a			; 上で+2 しているのでトータル+1
 	ld [hl], a       ; increment movement byte 1 (movement data index)
-	; [c2x6] + 2 - 1 - 1 = [c2x6] 
 	dec a
-	push hl	; hl(c2x6)を退避
+	push hl	; push [c2x6]
 
-	; wNPCNumScriptedStepsを減らす
+	; [wNPCNumScriptedSteps]--
 	ld hl, wNPCNumScriptedSteps
 	dec [hl]         ; decrement wNPCNumScriptedSteps
 
-	; a = [wNPCMovementDirections + "movement byte 1"] = 次のscripted NPCの動作
+	; a = [wNPCMovementDirections + [c2x6]] = 次のscripted NPCの動作
 	pop hl
 	ld de, wNPCMovementDirections
 	call LoadDEPlusA
@@ -427,14 +426,18 @@ TryWalking:
 
 ; update the walking animation parameters for a sprite that is currently walking
 UpdateSpriteInWalkingAnimation:
+	; [c1x7]++
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $7
 	ld l, a
 	ld a, [hl]                       ; c1x7 (counter until next walk animation frame)
 	inc a
 	ld [hl], a                       ; c1x7 += 1
+
 	cp $4
 	jr nz, .noNextAnimationFrame
+	
+	; [c1x7] が 4 になったら [c1x8] をインクリメント
 	xor a
 	ld [hl], a                       ; c1x7 = 0
 	inc l
@@ -442,7 +445,9 @@ UpdateSpriteInWalkingAnimation:
 	inc a
 	and $3
 	ld [hl], a                       ; advance to next animation frame every 4 ticks (16 ticks total for one step)
+
 .noNextAnimationFrame
+	; [c1x4] += [c1x3]
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $3
 	ld l, a
@@ -451,11 +456,15 @@ UpdateSpriteInWalkingAnimation:
 	ld a, [hl]                       ; c1x4 (screen Y position)
 	add b
 	ld [hli], a                      ; update screen Y position
+
+	; [c1x6] += [c1x5]
 	ld a, [hli]                      ; c1x5 (movement X delta)
 	ld b, a
 	ld a, [hl]                       ; c1x6 (screen X position)
 	add b
 	ld [hl], a                       ; update screen X position
+
+	; [c2x0]--
 	ld a, [H_CURRENTSPRITEOFFSET]
 	ld l, a
 	inc h
@@ -463,25 +472,31 @@ UpdateSpriteInWalkingAnimation:
 	dec a
 	ld [hl], a                       ; update walk animation counter
 	ret nz
+
+	; [c2x0] == 0 つまり 歩行が終わった
+
+	; [c2x6] が $fe or $ff -> .initNextMovementCounter
 	ld a, $6                         ; walking finished, update state
 	add l
 	ld l, a
 	ld a, [hl]                       ; c2x6 (movement byte 1)
 	cp $fe
 	jr nc, .initNextMovementCounter  ; values $fe and $ff
+
 	ld a, [H_CURRENTSPRITEOFFSET]
 	inc a
 	ld l, a
 	dec h
 	ld [hl], $1                      ; c1x1 = 1 (movement status ready)
 	ret
+
 .initNextMovementCounter
 	call Random
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $8
 	ld l, a
 	ld a, [hRandomAdd]
-	and $7f
+	and $7f							; 乱数 & 0x7f
 	ld [hl], a                       ; c2x8: set next movement delay to a random value in [0,$7f]
 	dec h                            ;       note that value 0 actually makes the delay $100 (bug?)
 	ld a, [H_CURRENTSPRITEOFFSET]
@@ -536,6 +551,7 @@ MakeNPCFacePlayer:
 	bit 5, a
 	jr nz, notYetMoving
 	res 7, [hl]
+	
 	ld a, [wPlayerDirection]
 	bit PLAYER_DIR_BIT_UP, a
 	jr z, .notFacingDown
@@ -643,10 +659,13 @@ CheckSpriteAvailability:
 	add $4
 	ld l, a
 	ld b, [hl]					; b = [$c2X4] = スプライトのYcoord
+
+	; プレイヤーとスプライトのY座標が一致 ->.skipYVisibilityTest
 	ld a, [wYCoord]
-	cp b
-	jr z, .skipYVisibilityTest	; プレイヤーとスプライトのY座標が一致
-	jr nc, .spriteInvisible ; スプライトが画面より上側
+	cp b	; [wYCoord] - スプライトのYcoord
+	jr z, .skipYVisibilityTest	
+
+	jr nc, .spriteInvisible ; [wYCoord] > スプライトのYcoord
 	add $8                  ; screen is 9 tiles high
 	cp b
 	jr c, .spriteInvisible  ; スプライトが画面より下側
@@ -917,7 +936,7 @@ GetTileSpriteStandsOn:
 	add hl, de     ; hl = 5*bc + de
 	ret
 
-; loads [de+a] into a
+; a = [de+a]
 LoadDEPlusA:
 	add e
 	ld e, a

@@ -1794,6 +1794,7 @@ AdvancePlayerSprite::
 	jr nz, .scrollBackgroundAndSprites
 ; if moving west
 	call ScheduleWestColumnRedraw
+	
 .scrollBackgroundAndSprites
 	ld a, [wSpriteStateData1 + 3] ; delta Y
 	ld b, a

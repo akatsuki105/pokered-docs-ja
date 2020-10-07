@@ -3072,7 +3072,7 @@ wCurrentMapWidth2::
 	ds 1
 
 ; d526  
-; VRAMのBGタイルマップの表示部分の左上隅のアドレス
+; 画面の左上がVRAMのBGタイルマップでどこにあるか
 wMapViewVRAMPointer::
 	ds 2
 
