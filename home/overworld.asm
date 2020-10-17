@@ -460,6 +460,7 @@ CheckWarpsNoCollision::
 	ld a, [wNumberOfWarps]
 	and a
 	jp z, CheckMapConnections
+
 	ld a, [wNumberOfWarps]
 	ld b, 0
 	ld c, a
@@ -475,17 +476,22 @@ CheckWarpsNoCollisionLoop::
 	ld a, [hli] ; check if the warp's X position matches
 	cp e
 	jr nz, CheckWarpsNoCollisionRetry2
+
 ; if a match was found
 	push hl
 	push bc
+
 	ld hl, wd736
 	set 2, [hl] ; standing on warp flag
+
 	callba IsPlayerStandingOnDoorTileOrWarpTile
 	pop bc
 	pop hl
 	jr c, WarpFound1 ; jump if standing on door or warp
+
 	push hl
 	push bc
+
 	call ExtraWarpCheck
 	pop bc
 	pop hl
@@ -555,6 +561,7 @@ WarpFound2::
 	ld [wWarpedFromWhichMap], a
 	call CheckIfInOutsideMap
 	jr nz, .indoorMaps
+
 ; this is for handling "outside" maps that can't have the 0xFF destination map
 	ld a, [wCurMap]
 	ld [wLastMap], a
@@ -564,9 +571,11 @@ WarpFound2::
 	ld [wCurMap], a
 	cp ROCK_TUNNEL_1F
 	jr nz, .notRockTunnel
+
 	ld a, $06
 	ld [wMapPalOffset], a
 	call GBFadeOutToBlack
+	
 .notRockTunnel
 	call PlayMapChangeSound
 	jr .done
@@ -740,6 +749,7 @@ CheckMapConnections::
 	ld [wCurrentTileBlockMapViewPointer], a ; pointer to upper left corner of current tile block map section
 	ld a, h
 	ld [wCurrentTileBlockMapViewPointer + 1], a
+	
 .loadNewMap ; load the connected map that was entered
 	call LoadMapHeader
 	call PlayDefaultMusicFadeOutCurrent
@@ -770,8 +780,8 @@ PlayMapChangeSound::
 	ret nz
 	jp GBFadeOutToBlack
 
-CheckIfInOutsideMap::
 ; If the player is in an outside map (a town or route), set the z flag
+CheckIfInOutsideMap::
 	ld a, [wCurMapTileset]
 	and a ; most towns/routes have tileset 0 (OVERWORLD)
 	ret z

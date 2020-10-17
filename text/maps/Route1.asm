@@ -42,6 +42,7 @@ _Route1Text2::
 	cont "quicker that way."
 	done
 
+; ROUTE 1 PALLET TOWN - VIRIDIAN CITY"
 _Route1Text3::
 	text "ROUTE 1"
 	line "PALLET TOWN -"

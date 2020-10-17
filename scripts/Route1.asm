@@ -47,6 +47,7 @@ Route1Text2:
 	TX_FAR _Route1Text2
 	db "@"
 
+; ROUTE 1 PALLET TOWN - VIRIDIAN CITY"
 Route1Text3:
 	TX_FAR _Route1Text3
 	db "@"
