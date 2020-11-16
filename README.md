@@ -29,3 +29,42 @@ This documentation assumes you already have some knowledge of:
 * [RGBDS (Rednex Game Boy Development System)](https://www.github.com/rednex/rgbds).
 
 It’s also recommended to use Visual Studio Code along with this [RGBDS-tailored extension](https://marketplace.visualstudio.com/items?itemName=donaldhays.rgbds-z80) when wanting to read the code in an editor.
+
+## Sections
+
+Click on any of these topics to read more about them:
+
+* [2bpp graphics format](docs/2bpp.md)
+* [Binary-coded decimal](docs/bcd.md)
+* [Boulders](docs/boulder.md)
+* [Button input](docs/joypad.md)
+* [Cartridge](docs/cartridge.md)
+* [Conditional-visibility object](docs/missable_object.md)
+* [Diploma](docs/diploma.md)
+* [Events](docs/event.md)
+* [Following NPCs](docs/follow.md)
+* [Glossary](docs/term.md)
+* [Gym badges](docs/badge.md)
+* [Hidden objects](docs/hidden_object/README.md)
+* [Intro sequence](docs/intro.md)
+* [List data structure](docs/list.md)
+* [List menus](docs/list_menu.md)
+* [Macros](docs/macro.md)
+* [Map](docs/map/README.md)
+* [Menus](docs/menu.md)
+* [PC](docs/pc/README.md)
+* [“pic” data format](docs/pic/README.md)
+* [Pokédex](docs/pokedex.md)
+* [Pokémon data structure](docs/pokemon/README.md)
+* [Pre-registering functions (“predef”)](docs/predef.md)
+* [“rgbgfx” graphics converter](docs/rgbgfx.md)
+* [ROM banks](docs/bank.md)
+* [Saving](docs/save.md)
+* [Simulated button presses](docs/simulated_joypad.md)
+* [Sprites](docs/sprite/README.md)
+* [Text](docs/text/README.md)
+* [Tiles](docs/map/tile.md)
+* [Title screen](docs/titlescreen.md)
+* [Trainer data structure](docs/trainer/README.md)
+* [Warps](docs/warp/README.md)
+* [Wild Pokémon](docs/wild_pokemon.md)
