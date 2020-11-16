@@ -68,3 +68,32 @@ Click on any of these topics to read more about them:
 * [Trainer data structure](docs/trainer/README.en.md)
 * [Warps](docs/warp/README.en.md)
 * [Wild Pokémon](docs/wild_pokemon.en.md)
+
+## Codebase structure
+
+| Directory/file                 | Contents                                                                                |
+|--------------------------------|-----------------------------------------------------------------------------------------|
+| [audio/](audio)                | _Code pertaining to music and sound effects._                                           |
+| [constants/](constants)        | _Abstracted constants that are referenced throughout the codebase._                     |
+| [data/](data)                  | _Tabular game data loaded into memory on demand._                                       |
+| [engine/](engine)              | _The core gameplay mechanics are implemented here._                                     |
+| [gfx/](gfx)                    | _Sprite graphics, blocksets, tilesets and tilemaps live here._                          |
+| [home/](home)                  | _Initialisation code and utilities._                                                    |
+| [macros/](macros)              | _Macro definitions that can be called-on anywhere in the codebase._                     |
+| [maps/](maps)                  | _Data for all explorable areas of the game, both inside and outside._                   |
+| [pic/](pic)                    | _Graphics data for Pokémon and trainers._                                               |
+| [scripts/](scripts)            | _Higher-level scripts used to define events in the game._                               |
+| [text/](text)                  | _All the text data for the game is stored here._                                        |
+| [tools/](tools)                | _Various utility scripts (in C and Python) for things like graphics data encoding._     |
+| [audio.asm](audio.asm)         | _All audio data and subroutines get included here, as well as some extra definitions._  |
+| [charmap.asm](charmap.asm)     | _Unicode string to tile mappings, so that text can be defined as string literals._      |
+| [constants.asm](constants.asm) | _Includes for all constant definitions._                                                |
+| [home.asm](home.asm)           | _Initialisation code and utility subroutines._                                          |
+| [hram.asm](hram.asm)           | _Defines what data gets placed in high RAM._                                            |
+| [macros.asm](macros.asm)       | _Includes for all macro definitions._                                                   |
+| [main.asm](main.asm)           | _Entry point for the game._                                                             |
+| [pokered.link](pokered.link)   | _Linker script that specifies which address and in which bank each section is located._ |
+| [sram.asm](sram.asm)           | _Defines what data is to be saved to the cartridge’s SRAM and where it’s located._      |
+| [text.asm](text.asm)           | _Dialogue text is defined here and all other text is loaded via includes._              |
+| [vram.asm](vram.asm)           | _Video RAM vectors defining the address spaces for graphics data to be loaded into._    |
+| [wram.asm](wram.asm)           | _Memory layout for where pieces of data get stored in work RAM._                        |
