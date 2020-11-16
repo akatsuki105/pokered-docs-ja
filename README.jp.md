@@ -1,4 +1,4 @@
-[Click here to view this README in English…](README.md)
+[Click here to view this README in English…](https://www.github.com/Stack-in-a-box/understanding-pokemon-red-english-translation)
 
 # 詳解ポケモン赤
 
