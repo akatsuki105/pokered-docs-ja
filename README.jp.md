@@ -1,4 +1,4 @@
-[Click here to view this README in English…](https://www.github.com/Stack-in-a-box/understanding-pokemon-red-english-translation)
+![Japanese Flag](docs/image/japan.svg) → ![British Flag](docs/image/uk.svg) [Click here to view this README in English…](https://www.github.com/Stack-in-a-box/understanding-pokemon-red-english-translation)
 
 # 詳解ポケモン赤
 
