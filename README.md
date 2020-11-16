@@ -19,3 +19,13 @@ As mentioned above, this repository contains the Pokémon Red disassembly and ad
 * Formal documentation for data formats and concepts unique to Pokémon Red.
 
 These additions provide much-needed extra detailed information to the [original repository](https://www.github.com/pret/pokered).
+
+## Prerequisites
+
+This documentation assumes you already have some knowledge of:
+
+* Low-level compilation steps, i.e. assemblers, linkers, etc.
+* Game Boy hardware specifications, such as its Z80-like ISA (instruction set architecture), interrupts, MBCs (memory bank controllers), banking, and so on.
+* [RGBDS (Rednex Game Boy Development System)](https://www.github.com/rednex/rgbds).
+
+It’s also recommended to use Visual Studio Code along with this [RGBDS-tailored extension](https://marketplace.visualstudio.com/items?itemName=donaldhays.rgbds-z80) when wanting to read the code in an editor.
