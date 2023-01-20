@@ -1,0 +1,11 @@
+{
+    "files.encoding": "utf8",
+    "files.autoGuessEncoding": false,
+    "deno.enable": true,
+    "deno.enablePaths": ["encryption/"],
+    
+    "[typescript]": {
+        "editor.defaultFormatter": "denoland.vscode-deno",
+        "editor.formatOnSave": true
+    },
+}

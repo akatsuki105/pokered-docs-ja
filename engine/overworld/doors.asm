@@ -1,0 +1,86 @@
+; プレイヤーがドアタイルにいるならキャリーをセット いないならキャリーをクリアする関数
+IsPlayerStandingOnDoorTile:
+	; DoorTileIDPointersから現在のタイルセットのエントリを探す
+	push de
+	ld hl, DoorTileIDPointers
+	ld a, [wCurMapTileset]
+	ld de, $3
+	call IsInArray
+	pop de
+
+	jr nc, .notStandingOnDoor	; タイルセットが見つからない
+	
+	; ???
+	inc hl ; タイルセット名 -> ドアタイルID
+	inline "hl = [hl]"
+
+	; b = 画面(8, 9)のタイルID
+	aCoord 8, 9 ; a = lower left background tile under player's sprite
+	ld b, a
+.loop
+	; ドアタイルをすべて検討したが、プレイヤーはいなかった
+	ld a, [hli]
+	and a
+	jr z, .notStandingOnDoor
+
+	; ドアタイルにいない
+	cp b
+	jr nz, .loop
+
+	; ドアタイルにいる
+	scf		; キャリーセット
+	ret
+.notStandingOnDoor
+	and a	; キャリークリア
+	ret
+
+; dbw タイルセット名, タイルセットIDの何番がドアのタイルか
+DoorTileIDPointers:
+	dbw OVERWORLD,   OverworldDoorTileIDs
+	dbw FOREST,      ForestDoorTileIDs
+	dbw MART,        MartDoorTileIDs
+	dbw HOUSE,       HouseDoorTileIDs
+	dbw FOREST_GATE, TilesetMuseumDoorTileIDs
+	dbw MUSEUM,      TilesetMuseumDoorTileIDs
+	dbw GATE,        TilesetMuseumDoorTileIDs
+	dbw SHIP,        ShipDoorTileIDs
+	dbw LOBBY,       LobbyDoorTileIDs
+	dbw MANSION,     MansionDoorTileIDs
+	dbw LAB,         LabDoorTileIDs
+	dbw FACILITY,    FacilityDoorTileIDs
+	dbw PLATEAU,     PlateauDoorTileIDs
+	db $ff
+
+; タイルセットの$1b(+$1c), $58(+$59)がドアタイル
+OverworldDoorTileIDs:
+	db $1B,$58,$00
+
+ForestDoorTileIDs:
+	db $3a,$00
+
+MartDoorTileIDs:
+	db $5e,$00
+
+HouseDoorTileIDs:
+	db $54,$00
+
+TilesetMuseumDoorTileIDs:
+	db $3b,$00
+
+ShipDoorTileIDs:
+	db $1e,$00
+
+LobbyDoorTileIDs:
+	db $1c,$38,$1a,$00
+
+MansionDoorTileIDs:
+	db $1a,$1c,$53,$00
+
+LabDoorTileIDs:
+	db $34,$00
+
+FacilityDoorTileIDs:
+	db $43,$58,$1b,$00
+
+PlateauDoorTileIDs:
+	db $3b,$1b,$00
